@@ -1,0 +1,1767 @@
+<!--Distributed under GNU Public License version 3-->
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252">
+	<title>VisualSpinner 2.1, by Glenn Wright</title>
+<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+	 <script src="scripts/gl-matrix-min.js"></script>
+	 <script src="scripts/phoria-min.js"></script>
+	 <script src="scripts/requestAnimationFrame.js"></script>
+	<script>
+		// set parameters
+		var HEIGHT = 400;
+		var WIDTH = 400;
+		var ORIGINX = WIDTH/2;
+		var ORIGINY = HEIGHT/2;
+		var BACKGROUND = "black";
+
+		// set constants
+		var UNIT = 2 * Math.PI;
+		var SAME = 0;
+		var SPLIT = Math.PI;
+		var TOGETHER = 0;
+		var OPPOSITE = Math.PI;
+		var CLOCKWISE = 1;
+		var COUNTERCLOCKWISE = -1;
+		var INSPIN = 1;
+		var ANTISPIN = -1;
+		var NOSPIN = 0;
+		var STATIC = 0;
+		var TWELVE = 1.5*Math.PI;
+		var THREE = 0;
+		var SIX = 0.5*Math.PI;
+		var NINE = Math.PI;
+		var NOOFFSET = 0;
+		var OFFSET = Math.PI;
+		var STAGGER = 0.5*Math.PI;
+		var QUARTER = 0.5*Math.PI;
+		
+		var ZAXIS = [0,0,1];
+		var YAXIS = [0,-1,0];
+		var XAXIS = [1,0,0];
+		
+		var BEAT = 360;
+		
+		var SPEED = UNIT/BEAT;
+
+
+		
+		var myProps = new Array();
+		var controller = new Controller();
+		var viewOption = "2d";
+		
+		
+		var cameraSpin = 0.0;
+		
+		$.urlParam = function(name){
+			var results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(window.location.href);
+			if (!results) {return 0;}
+			return results[1] || 0;
+		}
+		
+		function init() {
+			ctx=document.getElementById('canvas').getContext('2d');
+			// optionally, pull parameters from URL
+			var params = [	"1prop","2prop","3prop","4prop",
+						"2hands","3hands","4hands",
+						"2props","3props","4props",
+						"2spins","3spins","4spins",
+						"1move","2move","3move","4move"];
+			var defaults = [	"poi","poi","poi","poi",
+						"same","same","same",
+						"same","same","same",
+						"opps","same","opps",
+						"xtsn","xtsn","3paf","3paf"];
+			for (var i = 0; i<params.length; i++) {
+				var txt = $.urlParam(params[i]);
+				if (txt==0) {txt = defaults[i];}
+				$("#"+params[i]).val(txt);
+			}
+			
+			canvasSetup();
+			canvasLoop();
+		}
+
+		var scene;
+		var renderer;
+		function canvasSetup() {
+			canvas.height = HEIGHT;
+			canvas.width = WIDTH;
+			ctx.fillStyle = BACKGROUND;
+			ctx.strokeStyle=BACKGROUND;
+			ctx.fillRect(0,0,WIDTH,HEIGHT);
+			
+			// set up Phoria scene for 3D rendering
+			   scene = new Phoria.Scene();
+			   scene.camera.position = {x:0.0, y:1.0, z:10.0};
+			   scene.perspective.aspect = canvas.width / canvas.height;
+			   scene.viewport.width = canvas.width;
+			   scene.viewport.height = canvas.height;
+			   renderer = new Phoria.CanvasRenderer(canvas);
+			   var plane = Phoria.Util.generateTesselatedPlane(8,8,0,20);
+			   scene.graph.push(Phoria.Entity.create({
+			      points: plane.points,
+			      edges: plane.edges,
+			      polygons: plane.polygons,
+			      style: {
+				 drawmode: "wireframe",
+				 shademode: "plain",
+				 linewidth: 0.5,
+				 objectsortmode: "back"
+			      }
+			   }));
+			scene.graph.push(new Phoria.DistantLight());
+			var light = new Phoria.DistantLight();
+			light.direction.x = 1;
+			light.direction.z = 0;
+			scene.graph.push(light);
+			light = new Phoria.DistantLight();
+			light.direction.y = 1;
+			light.direction.z = 0;
+			scene.graph.push(light);
+			
+
+			// set up props
+			var propOne = new Prop(new Poi());
+			var propTwo = new Prop(new Poi());
+			var propThree = new Prop(new Poi());
+			var propFour = new Prop(new Poi());
+			propOne.sphere.style.color = [255, 0, 0];
+			propTwo.renderer.head_color = "blue";
+			propTwo.renderer.handle_color = "blue";
+			propTwo.sphere.style.color = [0,0,255];
+			propThree.renderer.head_color = "yellow";
+			propThree.renderer.handle_color = "yellow";
+			propThree.sphere.style.color = [255, 255, 0];
+			propFour.sphere.style.color = [0,255,0];
+			propFour.renderer.head_color = "green";
+			propFour.renderer.handle_color = "green";
+			myProps.push(propOne);
+			myProps.push(propTwo);
+			myProps.push(propThree);
+			myProps.push(propFour);
+			
+			// set up controller
+			controller.updateParameters();
+		}
+
+		// animation loop
+		function canvasLoop() {
+			setTimeout(function() {
+				requestAnimationFrame(canvasLoop);
+				redraw();
+				for (var i = 0; i < myProps.length; i++) {
+					myProps[i].spin();
+					myProps[i].render();
+				}
+			},1000/BEAT);
+			
+			cameraSpin+=0.001;
+			scene.camera.position.x = 12*Math.sin(cameraSpin);
+			scene.camera.position.z = 12*Math.cos(cameraSpin);
+		}
+		function redraw() {
+			if (viewOption=="2d") {
+				ctx.fillStyle = "rgba(0,0,0,0.1)";
+				ctx.strokeStyle=BACKGROUND;
+				ctx.fillRect(0,0,WIDTH,HEIGHT);
+			} else if (viewOption=="3d") {
+				scene.modelView();
+				renderer.render(scene);
+			}
+		}
+
+		function Controller() {
+			this.handDir = [CLOCKWISE,CLOCKWISE];
+			this.propAng = [TWELVE,SIX];
+			this.handAng = [TWELVE,SIX];		
+		}
+		Controller.prototype.queueIsEmpty = function() {
+			this.updateParameters();
+		}
+		Controller.prototype.updateParameters = function() {
+			var list;
+			var txt;
+			var renderer;
+			var move;
+			var propn;
+			
+			//Check 2D vs. 3D
+			list = document.getElementById("2d3d");
+			txt = list.options[list.selectedIndex].value;
+			viewOption = txt;
+			if (viewOption == "2d") {cameraSpin=0.0;}
+			
+			//Update prop types
+			for(var i = 1; i<=4; i++) {
+				list = document.getElementById(i+"prop");
+				txt = list.options[list.selectedIndex].value;	
+				if (txt=="poi") {
+					renderer = new Poi();
+				} else if (txt=="fpoi") {
+					renderer = new FirePoi();
+				} else if (txt=="hoop") {
+					renderer = new MiniHoop();
+				} else if (txt=="fhoop") {
+					renderer = new FireHoop();
+				} else if (txt=="staff") {
+					renderer = new MiniStaff();
+				} else if (txt=="fstaff") {
+					renderer = new FireStaff();
+				} else if (txt=="ffan") {
+					renderer = new FireFan();
+				} else if (txt=="pfan") {
+					renderer = new PracticeFan();
+				} else if (txt=="none") {
+					renderer = new NoProp();
+				}
+				renderer.head_color = myProps[i-1].renderer.head_color;
+				renderer.handle_color = myProps[i-1].renderer.head_color;
+				myProps[i-1].renderer = renderer;
+				renderer.prop = myProps[i-1];
+			}
+			
+			//Update  hand and prop relationships
+			this.propAng[0] = TWELVE;
+			this.handAng[0] = TWELVE;
+			this.handDir[0] = CLOCKWISE;
+			for (var i = 2; i<=4; i++) {
+				list = document.getElementById(i+"props");
+				txt = list.options[list.selectedIndex].value;
+				if (txt=="same") {
+					this.propAng[i-1] = TWELVE;
+				}
+				else if (txt=="splt") {
+					this.propAng[i-1] = SIX;
+				}
+				else if (txt=="qrtr") {
+					this.propAng[i-1] = THREE;
+				} else if (txt="qrtr") {
+					this.propAng[i-1] = NINE;
+				}
+				list = document.getElementById(i+"hands");
+				txt = list.options[list.selectedIndex].value;
+				if (txt=="same") {
+					this.handAng[i-1] = TWELVE;
+				}
+				else if (txt=="splt") {
+					this.handAng[i-1] = SIX;
+				}
+				else if (txt=="qrtr") {
+					this.handAng[i-1] = THREE;
+				}
+				else if (txt=="sqrt") {
+					this.handAng[i-1] = NINE;
+				}
+				list = document.getElementById(i+"spins");
+				txt = list.options[list.selectedIndex].value;
+				if (txt=="same") {
+					this.handDir[i-1] = CLOCKWISE;
+				}
+				else if (txt=="opps") {
+					this.handDir[i-1] = COUNTERCLOCKWISE;
+				}
+			}
+			
+			//Generate moves
+			for (var i = 1; i<=4; i++) {
+				list = document.getElementById(i+"move");
+				txt = list.options[list.selectedIndex].value;
+				move = this.generateMove(i-1,txt);
+				move.isOneShot = true;
+				move.initHandAngle = this.handAng[i-1];
+				move.initPropAngle = this.propAng[i-1];
+				while (myProps[i-1].getMoveQueue().length > 2) {
+					myProps[i-1].getMoveQueue().pop();
+				}
+				myProps[i-1].addMove(move);
+			}
+			
+			var linktxt = "http://infiniteperplexity.github.io";
+			var params = [	"1prop","2prop","3prop","4prop",
+						"2hands","3hands","4hands",
+						"2props","3props","4props",
+						"2spins","3spins","4spins",
+						"1move","2move","3move","4move"];
+			
+			
+			for (var i = 0; i<params.length; i++) {
+				if (i==0) {
+					linktxt += "?" + params[i] + "=" + $("#"+params[i]).val();
+				} else {
+					linktxt += "&" + params[i] + "=" + $("#"+params[i]).val();
+				}
+			}
+			$('#myLink').text(linktxt);
+		}
+		Controller.prototype.generateMove = function(n, txt) {
+			var move;
+			if (txt=="stat") {
+				move = new StaticSpin(this.handDir[n],1,1);
+			} else if (txt=="xtsn") {
+				move = new Flower(this.handDir[n],INSPIN,0,1,1,1);
+			} else if (txt=="1pif") {
+				move = new Flower(this.handDir[n],INSPIN,1,1,1,1);
+			} else if (txt=="2pif") {
+				move = new Flower(this.handDir[n],INSPIN,2,1,1,1);
+			} else if (txt=="4pif") {
+				move = new Flower(this.handDir[n],INSPIN,4,1,1,1);
+			} else if (txt=="3paf") {
+				move = new Flower(this.handDir[n],ANTISPIN,3,1,1,1);
+			} else if (txt=="4paf") {
+				move = new Flower(this.handDir[n],ANTISPIN,4,1,1,1);
+			} else if (txt=="6paf") {
+				move = new Flower(this.handDir[n],ANTISPIN,6,1,1,1);
+			} else if (txt=="hcap") {
+				move = new CCap(this.handDir[n],0,4,1,1);
+			} else if (txt=="vcap") {
+				move = new CCap(this.handDir[n],0,4,1,1);
+				move.changePhase(1);
+			} else if (txt=="hcpo") {
+				move = new CCap(-this.handDir[n],0,4,1,1);
+				move.changePhase(2);
+			} else if (txt=="vcpo") {
+				move = new CCap(-this.handDir[n],0,4,1,1);
+				move.changePhase(3);
+			} else if (txt=="star") {
+				move = new Star(this.handDir[n], 3, 1, 1, 1);
+			} else if (txt=="pend") {
+				move = new Pendulum(this.handDir[n], 1, 1);
+			} else if (txt=="1pt5") {
+				move = new OnePointFive(this.handDir[n], 1, 1);
+			} else if (txt=="isol") {
+				move = new Isolation(this.handDir[n], INSPIN, SPLIT, 1, 1);
+			} else if (txt=="cate") {
+				move = new Isolation(this.handDir[n], ANTISPIN, SPLIT, 1, 1);
+			} else if (txt=="utri") {
+				move = new Flower(this.handDir[n],ANTISPIN,3,0.5,1,1);
+			} else if (txt=="isop") {
+				move = new IsoPop(this.handDir[n], INSPIN, INSPIN, SPLIT, 1);
+			} else if (txt=="isob") {
+				move = new IsoPop(this.handDir[n], INSPIN, ANTISPIN, SPLIT, 1);
+			} else if (txt=="hlex") {
+				move = new Snake(this.handAng[n]+STAGGER,this.handDir[n], 1, 1);
+			} else if (txt=="vlex") {
+				move = new Snake(this.handAng[n],this.handDir[n], 1, 1);
+			}  else if (txt=="2ant") {
+				move = new FractalTriangle(this.handDir[n],ANTISPIN,0.5);
+			}  else if(txt=="anin") {
+				move = new FractalTriangle(this.handDir[n],INSPIN,0.5);
+			} else if(txt=="zdin") {
+				move = new Diamond(this.handDir[n],INSPIN,1);
+			} else if(txt=="zdan") {
+				move = new Diamond(this.handDir[n],ANTISPIN,1);
+			}
+			return move;
+		}
+		
+		
+		
+		//geometry helper
+		function unique_angle(angle) {
+			while (angle<0) {angle+=UNIT;}
+			angle%UNIT;
+			return angle;
+		}
+		
+		// Definitions of Props
+		function Prop(renderer) {
+			// Position (State)
+			this.tether_pixels = 50;
+			this.home_extend = 0;
+			this.home_angle = 0;
+			this.hand_extend = 0;
+			this.tether_extend = 1;
+			this.hand_angle = 0;
+			this.tether_angle = 0;
+			this.grip_angle = 0;
+			this.renderer = renderer;
+			renderer.prop = this;
+			
+			//new 3d nonsense...
+			this.home_axis = [0,0,1];
+			this.hand_axis = [0,0,1];
+			this.prop_axis = [0,0,1];
+			var c = Phoria.Util.generateCylinder(0.001,1,8);
+			this.cylinder = Phoria.Entity.create({
+			      points: c.points,
+			      edges: c.edges,
+			      polygons: c.polygons
+			});
+			var s = Phoria.Util.generateSphere(0.2,12,12);
+			this.sphere = Phoria.Entity.create({
+			      points: s.points,
+			      edges: s.edges,
+			      polygons: s.polygons
+			});
+			scene.graph.push(this.sphere);
+			scene.graph.push(this.cylinder);
+		}
+		Prop.prototype.setHomeAngle = function(angle) {this.home_angle = unique_angle(angle);}
+		Prop.prototype.setHandAngle = function(angle) {this.hand_angle = unique_angle(angle);}
+		Prop.prototype.rotateHand = function(angle) {this.setHandAngle(this.hand_angle + angle);}
+		Prop.prototype.rotateProp = function(angle) {this.setTetherAngle(this.tether_angle + angle);}
+		Prop.prototype.setTetherAngle = function(angle) {this.tether_angle = unique_angle(angle);}
+		Prop.prototype.setGripAngle = function(angle) {this.grip_angle= unique_angle(angle);}
+		Prop.prototype.getHomeExtendX = function() {return Math.cos(this.home_angle)*this.home_extend;}
+		Prop.prototype.getHomeExtendY = function() {return Math.sin(this.home_angle)*this.home_extend;}
+		Prop.prototype.getHandExtendX = function() {return Math.cos(this.hand_angle)*this.hand_extend;}
+		Prop.prototype.getHandExtendY = function() {return Math.sin(this.hand_angle)*this.hand_extend;}
+		Prop.prototype.getPixelLength = function() {return this.tether_pixels*this.tether_extend;}
+		Prop.prototype.setHomeExtendXY = function(x, y) {
+			this.home_extend = Math.sqrt(y*y+x*x);
+			var convert = 0;
+			if(x==0) {
+				if(y==0) {
+					this.setHomeAngle(0);
+				} else if (y>0) {
+					this.setHomeAngle(0.5*Math.PI);
+				} else {
+					this.setHomeAngle(1.5*Math.PI);
+				}
+			} else {
+				if (x<0) {convert = Math.PI;}
+				this.setHomeangle(Math.atan(y/x)+convert);
+			}
+		}	
+		Prop.prototype.setHandExtendXY = function(x, y) {
+			this.hand_extend = Math.sqrt(Math.pow(y-this.getHomeExtendY(),2)+Math.pow(x-this.getHomeExtendX(),2));
+			var convert = 0;
+			if (x-this.getHomeExtendX()==0) {
+				if (y-this.getHomeExtendY()==0) {
+					this.setHandAngle(0);
+				} else if (y-this.getHomeExtendY()>0) {
+					this.setHandAngle(0.5*Math.PI);
+				} else {
+					this.setHandAngle(1.5*Math.PI);
+				}
+			} else {
+				if (x<0) {convert = Math.PI;}
+				this.setHandAngle(Math.atan((y-this.getHomeExtendY())/(x-this.getHomeExtendX()))+convert);
+			}
+		}
+		Prop.prototype.nudge = function(distance, angle) {
+			var x = this.getHomeExtendX();
+			var y = this.getHomeExtendY();
+			this.setHomeExtendXY(x+Math.cos(angle)*distance,y+Math.sin(angle)*distance);
+		}
+		Prop.prototype.slideHand = function(distance, angle) {
+			var x = this.getHandExtendX();
+			var y = this.getHandExtendY();
+			this.setHandExtendXY(x+Math.cos(angle)*distance,y+Math.sin(angle)*distance);
+		}
+		Prop.prototype.getHandExtendFromPivot = function(pradius, pangle) {
+			var r1 = this.hand_extend;
+			var r2 = pradius;
+			var a1 = this.hand_angle;
+			var a2 = pangle;
+			return Math.sqrt(r1*r1+r2*r2-2*r1*r2*Math.cos(a1-a2));
+		}
+		Prop.prototype.getHandAngleFromPivot = function(pradius, pangle) {
+			var x1 = Math.cos(pangle)*pradius;
+			var y1 = Math.sin(pangle)*pradius;
+			var x2 = this.getHandExtendX();
+			var y2 = this.getHandExtendY();
+			var convert = 0;
+			var angle = 0;
+			if (x2-x1==0) {
+				if (y2-y1==0) {
+					angle = 0;
+				} else if (y2-y1>0) {
+					angle = 0.5*Math.PI;
+				} else {
+					angle = 1.5*Math.PI;
+				}
+			} else {
+				if (x2<x1) {convert = Math.PI;}
+				angle = Math.atan((y2-y1)/(x2-x1))+convert;
+			}
+			return unique_angle(angle);
+		}
+		Prop.prototype.setHandExtendFromPivot = function(hextend, pradius, pangle) {
+			var current_angle = this.getHandAngleFromPivot(pradius, pangle);
+			this.hand_extend = pradius;
+			this.setHandAngle(pangle);
+			this.slideHand(hextend, current_angle);
+		}
+		Prop.prototype.setHandAngleFromPivot = function(hangle, pradius, pangle) {
+			var current_extend = this.getHandExtendFromPivot(pradius, pangle);
+			this.hand_extend = pradius;
+			this.setHandAngle(pangle);
+			this.slideHand(current_extend, hangle);
+		}
+		Prop.prototype.rotateHandAroundPivot = function (angle, pradius, pangle) {
+			var current_angle = this.getHandAngleFromPIvot(pradius,pangle);
+			this.setHandAngleFromPivot(current_angle+angle, pradius, pangle);
+		}
+
+  		Prop.prototype.setAngleOffset = function(angle, offset) {this.setHandAngle(angle); this.setTetherAngle(angle+offset);}
+  		Prop.prototype.alignProp = function(target, hangle, pangle) {
+    		target.hand_extend = this.hand_extend;
+			target.setHandAngle(this.hand_angle+hangle);
+    		target.setTetherAngle(this.tether_angle+pangle);
+  		}
+	
+		Prop.prototype.spin = function() {
+			if (this.myMoveQueue === undefined) {this.myMoveQueue = new CompositeMove(); this.myMoveQueue.myProp = this;}
+			if (this.myMoveQueue.mySubMoves.length==0) {controller.queueIsEmpty();}
+			this.myMoveQueue.spin(this);
+		}
+		Prop.prototype.addMove = function(myMove) {
+			if (this.myMoveQueue === undefined) {this.myMoveQueue = new CompositeMove(); this.myMoveQueue.myProp = this;}
+			this.myMoveQueue.addMove(myMove);
+		}
+		Prop.prototype.getMoveQueue = function() {
+		if (this.myMoveQueue === undefined) {this.myMoveQueue = new CompositeMove(); this.myMoveQueue.myProp = this;}
+			return(this.myMoveQueue);
+		}
+		Prop.prototype.addPartneredMove = function(otherProp, myMove) {
+			this.addMove(myMove.getFirstMove());
+			otherProp.addMove(myMove.getSecondMove());
+		}
+		Prop.prototype.render = function() {
+			if (viewOption == "2d") {
+				ctx.save();
+				ctx.translate(ORIGINX, ORIGINY);
+				ctx.rotate(this.home_angle);
+				ctx.translate(this.home_extend*this.tether_pixels,0);
+				ctx.rotate(this.hand_angle - this.home_angle);
+				ctx.translate(this.hand_extend*this.tether_pixels,0);
+				ctx.rotate(this.tether_angle - this.hand_angle);
+				this.renderer.render();
+				ctx.restore();
+			} else if (viewOption == "3d") {
+				// new matrix centered on the origin
+				var mat= mat4.create();
+				// reflect across the XZ plane due to differing +Y directions
+				mat[5] = -1;
+				// rotate around the origin
+				mat4.rotate(mat, mat, this.home_angle, this.home_axis);
+				// translate to "home" (the shoulder)
+				mat4.translate(mat, mat, [this.home_extend,0,0]);
+				// reset rotation
+				mat4.rotate(mat, mat, -this.home_angle, this.home_axis);
+				// rotate around "home"
+				mat4.rotate(mat, mat, this.hand_angle,this.hand_axis);
+				// translate to the "hand"
+				mat4.translate(mat, mat, [this.hand_extend,0,0]);
+				// reset rotation
+				mat4.rotate(mat, mat, -this.hand_angle, this.hand_axis);
+				// rotate around "hand"
+				mat4.rotate(mat, mat, this.tether_angle, this.prop_axis);
+				// position the tether
+				var  tmat = mat4.clone(mat);
+				mat4.translate(tmat, tmat, [0.5*this.tether_extend,0,0]);
+				mat4.rotate(tmat, tmat, STAGGER, ZAXIS);
+				this.cylinder.matrix = tmat;
+				// translate to prop head
+				mat4.translate(mat, mat, [this.tether_extend,0,0]);
+				this.sphere.matrix = mat;
+			}
+		}
+
+		
+		function PropRenderer() {
+			this.head_size = 10;
+			this.head_color = "red";
+			this.handle_size = 3;
+			this.handle_color = "red";
+			this.tether_color = "gray";
+			this.tether_thickness = 1;
+		}
+		PropRenderer.prototype.drawWick = function(x,y,size) {
+    		var fire_density = 10;
+    		var mote_size = 0.5;
+			var yellow;
+			ctx.save();
+			ctx.translate(x,y);
+			for (var i = 0; i < fire_density; i++) {
+				ctx.save();
+				ctx.rotate(Math.random()*UNIT);
+				yellow = Math.round(Math.random()*255);
+				ctx.fillStyle = 'rgba(255,'+ yellow + ',0,0.5)';
+				ctx.beginPath();
+				ctx.arc(Math.random()*2*size-Math.random()*2*size, 0, mote_size*size, 0, UNIT);
+				ctx.fill();
+				ctx.restore();	
+			}
+			ctx.restore();
+		}
+
+		function Poi() {}
+		Poi.prototype = new PropRenderer();
+		Poi.prototype.render = function() {	
+			ctx.save();
+
+			ctx.beginPath();
+			ctx.moveTo(0, 0);
+			ctx.lineTo(this.prop.getPixelLength(),0);
+			ctx.lineWidth = this.tether_thickness;
+			ctx.strokeStyle = this.tether_color;
+			ctx.stroke();
+			
+			ctx.beginPath();
+			ctx.arc(0, 0, this.handle_size, 0, UNIT);
+			ctx.fillStyle = this.handle_color;
+			ctx.fill();
+			ctx.stroke();
+
+			ctx.beginPath();
+			ctx.arc(this.prop.getPixelLength(), 0, this.head_size, 0, UNIT);
+			ctx.fillStyle = this.head_color;
+			ctx.fill();
+			ctx.stroke();
+			
+			ctx.restore();
+		};
+
+		function FirePoi() {}
+		FirePoi.prototype = new Poi();
+		FirePoi.prototype.render = function() {
+			ctx.save();
+
+			ctx.beginPath();
+			ctx.moveTo(0, 0);
+			ctx.lineTo(this.prop.getPixelLength(),0);
+			ctx.lineWidth = this.tether_thickness;
+			ctx.strokeStyle = this.tether_color;
+			ctx.stroke();
+			
+			ctx.beginPath();
+			ctx.arc(0, 0, this.handle_size, 0, UNIT);
+			ctx.fillStyle = this.handle_color;
+			ctx.fill();
+			ctx.stroke();
+
+			this.drawWick(this.prop.getPixelLength(),0,this.head_size);
+
+			ctx.restore();
+		};
+
+		function MiniStaff() {}
+		MiniStaff.prototype = new PropRenderer();
+		MiniStaff.prototype.render = function() {
+			ctx.save();
+			ctx.fillStyle = this.handle_color;
+			ctx.beginPath();
+			ctx.rect(-this.prop.getPixelLength(),-0.5*this.handle_size,2*this.prop.getPixelLength(),this.handle_size);
+			ctx.fill();
+			ctx.beginPath();
+			ctx.arc(0,0,this.handle_size,0,UNIT);
+			ctx.fillStyle = "gray";
+			ctx.fill();
+			ctx.restore();
+		};
+		
+		function FireStaff() {}
+		FireStaff.prototype = new PropRenderer();
+		FireStaff.prototype.render = function() {
+			ctx.save();
+			ctx.fillStyle = this.handle_color;
+			ctx.beginPath();
+			ctx.rect(-this.prop.getPixelLength(),-0.5*this.handle_size,2*this.prop.getPixelLength(),this.handle_size);
+			ctx.fill();
+			this.drawWick(-this.prop.getPixelLength(),0,this.head_size);
+			this.drawWick(this.prop.getPixelLength(),0,this.head_size);
+			ctx.restore();
+		};
+		
+		function MiniHoop() {}
+		MiniHoop.prototype = new PropRenderer();
+		MiniHoop.prototype.render = function() {
+			ctx.save();
+			ctx.translate(0.5*this.prop.getPixelLength(),0);
+			ctx.beginPath();
+			ctx.arc(0,0,0.5*this.prop.getPixelLength(),0,UNIT);
+			ctx.strokeStyle = this.handle_color;
+			ctx.lineWidth = this.handle_size;
+			ctx.stroke();
+			ctx.beginPath();
+			ctx.arc(-0.5*this.prop.getPixelLength(),0,this.handle_size,0,UNIT);
+			ctx.fillStyle = "gray";
+			ctx.fill();
+			ctx.restore();
+
+		}
+		
+		function FireHoop() {}
+		FireHoop.prototype = new PropRenderer();
+		FireHoop.prototype.render = function() {
+			var wick_length = 25;
+			var num_wicks = 4;
+			ctx.save();
+			ctx.translate(0.5*this.prop.getPixelLength(),0);
+			ctx.beginPath();
+			ctx.arc(0,0,0.5*this.prop.getPixelLength(),0,UNIT);
+			ctx.strokeStyle = this.handle_color;
+			ctx.lineWidth = this.handle_size;
+			ctx.stroke();
+			ctx.strokeStyle = this.tether_color;
+			ctx.lineWidth = this.tether_thickness;
+			for(var i = 0; i < num_wicks; i++) {
+				ctx.beginPath();
+				ctx.moveTo(0.5*this.prop.getPixelLength()+0.5*this.handle_size,0);
+				ctx.lineTo(0.5*this.prop.getPixelLength()+0.5*this.handle_size+wick_length,0);
+				ctx.stroke();
+				this.drawWick(0.5*this.prop.getPixelLength()+0.5*this.handle_size+wick_length,0,this.head_size);
+				ctx.rotate(UNIT/num_wicks);
+			}
+			ctx.restore();
+		}
+		
+		function FireFan() {
+			this.handle_size = 10;
+		}
+		FireFan.prototype = new PropRenderer();
+		FireFan.prototype.render = function() {
+			var num_wicks = 5;
+			var angle = num_wicks*UNIT / (2*num_wicks+2);
+			ctx.save();
+			ctx.strokeStyle = this.tether_color;
+			ctx.lineWidth = this.tether_width;
+			ctx.beginPath();
+			ctx.arc(0,0,this.handle_size,0,UNIT);
+			ctx.stroke();
+			ctx.beginPath();
+			ctx.arc(0,0,0.5*this.prop.getPixelLength(),0,angle/2);
+			ctx.stroke();
+			ctx.beginPath();
+			ctx.arc(0,0,0.5*this.prop.getPixelLength(),0,-angle/2,true);
+			ctx.stroke();
+			ctx.rotate(angle/2);
+			for(var i = 0; i < num_wicks; i++) {
+				ctx.beginPath();
+				ctx.moveTo(this.handle_size,0);
+				ctx.lineTo(this.prop.getPixelLength(),0);
+				ctx.stroke();
+				this.drawWick(this.prop.getPixelLength(),0,this.head_size);
+				ctx.rotate(-angle/(num_wicks-1));
+			}
+			ctx.restore();
+		}
+		
+		function PracticeFan() {
+			this.handle_size = 10;
+		}
+		PracticeFan.prototype = new PropRenderer();
+		PracticeFan.prototype.render = function() {
+			var num_wicks = 5;
+			var angle = num_wicks*UNIT / (2*num_wicks+2);
+			ctx.save();
+			ctx.strokeStyle = this.tether_color;
+			ctx.lineWidth = this.tether_width;
+			ctx.beginPath();
+			ctx.arc(0,0,this.handle_size,0,UNIT);
+			ctx.stroke();
+			ctx.rotate(angle/2);
+			for(var i = 0; i < num_wicks; i++) {
+				ctx.beginPath();
+				ctx.moveTo(this.handle_size,0);
+				ctx.lineTo(0.5*this.prop.getPixelLength(),0);
+				ctx.stroke();
+				ctx.rotate(-angle/(num_wicks-1));
+			}
+			ctx.rotate(angle/(num_wicks-1));
+			ctx.beginPath();
+			ctx.arc(0,0,0.5*this.prop.getPixelLength(),0,angle);
+			ctx.arc(0,0,this.prop.getPixelLength(),angle,0,true);
+			ctx.closePath();
+			ctx.fillStyle = this.head_color;
+			ctx.fill();
+			ctx.stroke();
+			ctx.restore();
+		}
+		
+		function NoProp() {}
+		NoProp.prototype = new PropRenderer();
+		NoProp.prototype.render = function() {
+			//do nothing
+		}
+
+		function CompositeMove() {
+			this.isStarted = false;
+			this.isFinished = false;
+			this.isOneShot = false;
+			this.flower = false;
+			this.tally = 0;
+		}
+		CompositeMove.prototype.resetSubMoves = function() {
+			for(var i=0;i<this.mySubMoves.length;i++) {
+				this.mySubMoves[i].isStarted = false;
+				this.mySubMoves[i].isFinished = false;
+			}
+		}
+		CompositeMove.prototype.getProp = function() {
+			if (this.myParentMove === undefined) {return this.myProp;}
+			return myParentMove.getProp();
+		}
+		CompositeMove.prototype.spin = function(myProp) {
+			if (this.isStarted == false) {this.setUpProp(myProp);}
+			this.isStarted = true;
+			this.isFinished = false;
+			if (this.mySubMoves === undefined || this.mySubMoves.length == 0) {this.alert("bad move!"); return;}
+			var nextMove = this.mySubMoves[0];
+			nextMove.spin(myProp);
+			if(nextMove.isFinished==true) {
+				if (nextMove.isOneShot==true) {
+					this.mySubMoves.shift();
+				} else {
+					this.mySubMoves.push(this.mySubMoves.shift());
+				}
+				if (this.mySubMoves.length==0 || this.mySubMoves[0].isFinished == true) {
+					this.isFinished = true;
+					this.resetSubMoves();
+				}
+			}
+		}
+		
+		
+		CompositeMove.prototype.addMove = function(myMove) {
+			if (this.mySubMoves === undefined) {this.mySubMoves = new Array();}
+			this.mySubMoves.push(myMove);
+		}
+		CompositeMove.prototype.addSubMovesFrom = function(myMove) {
+			if (this.mySubMoves === undefined) {this.mySubMoves = new Array();}
+			if (myMove.mySubMoves === undefined) {myMove.mySubMoves = new Array();}
+			this.mySubMoves = this.mySubMoves.concat(myMove.mySubMoves);
+		}
+  		CompositeMove.prototype.setUpProp = function(myProp) {this.autoAlign(myProp);}
+  		CompositeMove.prototype.autoAlign = function(myProp) {
+	  		if ('undefined' !== typeof this.initHandAngle) {
+		  		myProp.setHandAngle(this.initHandAngle);
+	  		}
+	  		if ('undefined' !== typeof this.initPropAngle) {
+		  		myProp.setTetherAngle(this.initPropAngle);
+	  		}
+  		} 
+
+		//Phasing
+		CompositeMove.prototype.newPhase = function() {
+			var newPhase = new CompositeMove();
+			this.addMove(newPhase);
+			return newPhase;
+		}
+		CompositeMove.prototype.changePhase = function(phase) {
+			if (phase>0) {
+				for (var i = 0; i<phase; i++) {
+					this.mySubMoves.push(this.mySubMoves.shift());
+				}
+			} else if (phase<0) {
+				for (var i = 0; i<phase; i++) {
+					this.mySubMoves.unshift(this.mySubMoves.pop());
+				}
+			}
+			return this;
+		}
+		//Reflective Setters
+		CompositeMove.prototype.setBeats = function(arg) {this.setReflect("setBeats",arg);}
+		CompositeMove.prototype.setHandSpeed = function(arg) {this.setReflect("setHandSpeed",arg);}
+		CompositeMove.prototype.setPropSpeed = function(arg) {this.setReflect("setPropSpeed",arg);}
+		CompositeMove.prototype.setHandExtend = function(arg) {this.setReflect("setHandExtend",arg);}
+		CompositeMove.prototype.setPropExtend = function(arg) {this.setReflect("setPropExtend",arg);}
+		CompositeMove.prototype.setReflect = function(meth, arg) {
+			for(var i = 0; i < this.mySubMoves.length; i++) {this.mySubMoves[i][meth](arg);}
+		}
+		CompositeMove.prototype.getBeats = function() {
+			var tally = 0;
+			for(var i = 0; i < this.mySubMoves.length; i++) {tally+=this.mySubMoves[i].getBeats();}
+			return tally;
+		}
+
+		function SimpleMove() {
+			this.begin_hand_extend = 0;
+			this.end_hand_extend = 0;
+			this.begin_hand_speed = 0;
+			this.end_hand_speed = 0;
+			this.begin_prop_extend = 1;
+			this.end_prop_extend = 1;
+			this.begin_prop_speed = 1;
+			this.end_prop_speed = 1;
+			this.beats = 1;
+			this.t = 0;
+			this.isStarted = false;
+			this.isFinished = false;
+		}
+		SimpleMove.prototype.getBeats = function() {return this.beats};
+		SimpleMove.prototype.setBeats = function(beats) {this.beats = beats;}
+		SimpleMove.prototype.setHandSpeed = function(speed) {this.begin_hand_speed = speed; this.end_hand_speed = speed;}
+		SimpleMove.prototype.setPropSpeed = function(speed) {this.begin_prop_speed = speed; this.end_prop_speed = speed;}
+		SimpleMove.prototype.setHandExtend = function(extend) {this.begin_hand_extend = extend; this.end_hand_extend = extend;}
+		SimpleMove.prototype.setPropExtend = function(extend) {this.begin_prop_extend = extend; this.end_prop_extend = extend;}
+		SimpleMove.prototype.getProp = function() {return this.myParentMove.getProp();}
+		SimpleMove.prototype.getSubMove = function() {return this;}
+		SimpleMove.prototype.getPosition = function() {return this.t/(BEAT*this.beats);}	
+		SimpleMove.prototype.spin = function(myProp) {
+			if (this.isStarted == false) {this.setUpProp(myProp);}
+			this.isStarted = true;
+			if (this.beats==0) {this.isFinished = true; return;}
+			this.isFinished = false;
+			this.doHand(myProp);
+			this.doProp(myProp);
+			this.t+=1;
+			if (this.t >= this.beats*BEAT) {this.isFinished = true; this.t = 0;}
+		}
+		SimpleMove.prototype.doHand = function(myProp) {
+			this.spinHand(myProp);
+			this.extendHand(myProp);
+		}
+		SimpleMove.prototype.spinHand = function(myProp) {
+			var hand_speed = this.begin_hand_speed + this.getPosition()*(this.end_hand_speed - this.begin_hand_speed);
+			myProp.rotateHand(hand_speed*SPEED);
+		}
+		SimpleMove.prototype.extendHand = function(myProp) {
+			myProp.hand_extend = this.begin_hand_extend + this.getPosition()*(this.end_hand_extend - this.begin_hand_extend);
+		}
+		SimpleMove.prototype.doProp = function(myProp) {
+			this.spinProp(myProp);
+			this.extendProp(myProp);
+		}
+		SimpleMove.prototype.spinProp = function(myProp) {
+			var prop_speed = this.begin_prop_speed + this.getPosition()*(this.end_prop_speed - this.begin_prop_speed);
+			myProp.rotateProp(prop_speed*SPEED);
+		}
+		SimpleMove.prototype.extendProp = function(myProp) {
+			myProp.tether_extend = this.begin_prop_extend + this.getPosition()*(this.end_prop_extend - this.begin_prop_extend);
+		}
+		SimpleMove.prototype.setUpProp = function(myProp) {this.autoAlign(myProp);}
+		SimpleMove.prototype.autoAlign = function(myProp) {
+	  		if ('undefined' !== typeof this.initHandAngle) {
+		  		myProp.setHandAngle(this.initHandAngle);
+	  		}
+	  		if ('undefined' !== typeof this.initPropAngle) {
+		  		myProp.setTetherAngle(this.initPropAngle);
+	  		}
+  		} 
+		
+		function SimpleLinear() {this.hand_trajectory = 0;}
+		SimpleLinear.prototype = new SimpleMove();
+		SimpleLinear.prototype.doHand = function(myProp) {
+			var hand_speed = this.begin_hand_speed + this.getPosition()*(this.end_hand_speed-this.begin_hand_speed);
+			var x = myProp.getHandExtendX();
+			var y = myProp.getHandExtendY();
+			// using (1/BEAT) instead of SPEED makes it go in extensions instead of radians
+			myProp.setHandExtendXY(x+Math.cos(this.hand_trajectory)*hand_speed/BEAT,y+Math.sin(this.hand_trajectory)*hand_speed/BEAT);
+		}
+		
+		function SimpleArc() {
+			this.pivot_radius = 0;
+			this.pivot_angle = 0;
+		}
+		SimpleArc.prototype = new SimpleMove();
+		SimpleArc.prototype.spinHand = function(myProp) {
+			var hand_speed = this.begin_hand_speed + this.getPosition()*(this.end_hand_speed-this.begin_hand_speed);
+			myProp.rotateHandAroundPivot(hand_speed*SPEED, this.pivot_radius, this.pivot_angle);
+		}
+		SimpleArc.prototype.extendHand = function(myProp) {
+			var hand_extend = this.begin_hand_extend + this.getPosition()*(this.end_hand_extend - this.begin_hand_extend);
+   			myProp.setHandExtendFromPivot(hand_extend, pivot_radius, pivot_angle);
+		}
+		
+		function NormalSpin() {this.setPropSpeed(1);}
+		NormalSpin.prototype = new SimpleMove();
+		function ReverseSpin() {this.setPropSpeed(-1);}
+		ReverseSpin.prototype = new SimpleMove();
+		function SlowSpin() {this.setPropSpeed(0.5);}
+		SlowSpin.prototype = new SimpleMove();
+
+
+
+		function StallEntry(dir, spin, loops, extend, speed, beats) {
+			var myMove = new SimpleMove();
+			myMove.beats = beats;
+			myMove.setHandExtend(extend);
+			myMove.begin_hand_speed = dir*speed;
+			myMove.end_hand_speed = 0;
+			myMove.begin_prop_speed = spin*dir*loops*speed;
+			myMove.end_prop_speed = 0;
+			this.addMove(myMove);
+		}
+		StallEntry.prototype = new CompositeMove();
+	
+
+		function StallExit(dir, spin, loops, extend, speed, beats) {
+			var myMove = new SimpleMove();
+			myMove.beats = beats;
+			myMove.setHandExtend(extend);
+			myMove.begin_hand_speed = 0;
+			myMove.end_hand_speed = dir*speed;
+			myMove.begin_prop_speed = 0;
+			myMove.end_prop_speed = spin*dir*loops*speed;
+			this.addMove(myMove);
+		}
+		StallExit.prototype = new CompositeMove();
+	
+		function Flower(dir, spin, petals, extend, speed, beats) {
+			this.flower = true;
+			var myMove = new SimpleMove();
+			myMove.beats = beats;
+			if (spin==INSPIN)
+				{myMove.setPropSpeed((petals+1)*spin*dir*speed);}
+			else
+				{myMove.setPropSpeed((petals-1)*spin*dir*speed);}
+			myMove.setHandExtend(extend);
+			myMove.setHandSpeed(dir*speed);
+			this.addMove(myMove);
+		}
+		Flower.prototype = new CompositeMove();
+	
+		function CCap(dir, inpetals, antipetals, extend, speed) {
+			this.addMove(new Flower(dir, INSPIN, inpetals, extend, speed, 0.25/speed));
+			this.addMove(new Flower(dir, INSPIN, inpetals, extend, speed, 0.25/speed));
+			this.addMove(new Flower(-dir, ANTISPIN, antipetals, extend, speed, 0.25/speed));
+			this.addMove(new Flower(-dir, ANTISPIN, antipetals, extend, speed, 0.25/speed));
+		}
+		CCap.prototype = new CompositeMove();
+
+		function Pendulum(dir, extend, speed) {	
+			var myMove;
+			this.dir = dir;
+			myMove = new SimpleMove();
+			myMove.beats = 0.25;
+			myMove.setHandExtend(extend);
+			myMove.setHandSpeed(dir*speed);
+			myMove.begin_prop_speed = 2*INSPIN*dir*speed;
+			myMove.end_prop_speed = 0;
+			this.addMove(myMove);
+			myMove = new SimpleMove();
+			myMove.beats = 0.25;
+			myMove.setHandExtend(extend);
+			myMove.setHandSpeed(dir*speed);
+			myMove.begin_prop_speed = 0;
+			myMove.end_prop_speed = 2*ANTISPIN*dir*speed;
+			this.addMove(myMove);
+			myMove = new SimpleMove();
+			myMove.beats = 0.25;
+			myMove.setHandExtend(extend);
+			myMove.setHandSpeed(dir*speed);
+			myMove.begin_prop_speed = 2*ANTISPIN*dir*speed;
+			myMove.end_prop_speed = 0;
+			this.addMove(myMove);
+			myMove = new SimpleMove();
+			myMove.beats = 0.25;
+			myMove.setHandExtend(extend);
+			myMove.setHandSpeed(dir*speed);
+			myMove.begin_prop_speed = 0;
+			myMove.end_prop_speed = 2*INSPIN*dir*speed;
+			this.addMove(myMove);
+		}
+		Pendulum.prototype = new CompositeMove();
+		Pendulum.prototype.autoAlign = function(myProp) {
+	  		if ('undefined' !== typeof this.initHandAngle) {
+		  		myProp.setHandAngle(this.initHandAngle);
+	  		}
+	  		if ('undefined' !== typeof this.initPropAngle) {
+				if (this.initHandAngle == TWELVE) {
+					this.changePhase(2);
+					myProp.setTetherAngle(OFFSET+this.initHandAngle);
+				} else if (this.initHandAngle == THREE) {
+					if (this.dir==COUNTERCLOCKWISE) {
+						this.changePhase(1)
+					} else {
+						this.changePhase(3);
+					}
+					myProp.setTetherAngle(this.initHandAngle);
+				} else if (this.initHandAngle == NINE) {
+					if (this.dir==COUNTERCLOCKWISE) {
+						this.changePhase(3)
+					} else {
+						this.changePhase(1);
+					}
+					myProp.setTetherAngle(this.initHandAngle);
+				} else {
+					myProp.setTetherAngle(this.initHandAngle);
+				}
+	  		}
+  		} 
+
+		function OnePointFive(dir, extend, speed) {	
+			var myMove;
+			this.dir = dir;
+			myMove = new SimpleMove();
+			myMove.beats = 0.25;
+			myMove.setHandExtend(extend);
+			myMove.setHandSpeed(dir*speed);
+			myMove.begin_prop_speed = 6*INSPIN*dir*speed;
+			myMove.end_prop_speed = 0;
+			this.addMove(myMove);
+			myMove = new SimpleMove();
+			myMove.beats = 0.25;
+			myMove.setHandExtend(extend);
+			myMove.setHandSpeed(dir*speed);
+			myMove.begin_prop_speed = 0;
+			myMove.end_prop_speed = 2*ANTISPIN*dir*speed;
+			this.addMove(myMove);
+			myMove = new SimpleMove();
+			myMove.beats = 0.25;
+			myMove.setHandExtend(extend);
+			myMove.setHandSpeed(dir*speed);
+			myMove.begin_prop_speed = 2*ANTISPIN*dir*speed;
+			myMove.end_prop_speed = 0;
+			this.addMove(myMove);
+			myMove = new SimpleMove();
+			myMove.beats = 0.25;
+			myMove.setHandExtend(extend);
+			myMove.setHandSpeed(dir*speed);
+			myMove.begin_prop_speed = 0;
+			myMove.end_prop_speed = 6*INSPIN*dir*speed;
+			this.addMove(myMove);
+		}
+		OnePointFive.prototype = new CompositeMove();
+		OnePointFive.prototype.autoAlign = function(myProp) {
+	  		if ('undefined' !== typeof this.initHandAngle) {
+		  		myProp.setHandAngle(this.initHandAngle);
+			} 
+			if ('undefined' !== typeof this.initPropAngle) {
+				if (this.initHandAngle == TWELVE) {
+					this.changePhase(2);
+					myProp.setTetherAngle(OFFSET+this.initHandAngle);
+				} else if (this.initHandAngle == THREE) {
+					if (this.dir==COUNTERCLOCKWISE) {
+						this.changePhase(1)
+					} else {
+						this.changePhase(3);
+					}
+					myProp.setTetherAngle(this.initHandAngle);
+				} else if (this.initHandAngle == NINE) {
+					if (this.dir==COUNTERCLOCKWISE) {
+						this.changePhase(3)
+					} else {
+						this.changePhase(1);
+					}
+					myProp.setTetherAngle(this.initHandAngle);
+				} else {
+					myProp.setTetherAngle(OFFSET+this.initHandAngle);
+				}
+	  		}
+  		} 
+
+		function Star(dir, inspeed, antispeed, extend, speed) {
+			var myMove;
+			var newPhase;
+			newPhase = this.newPhase();
+			myMove = new SimpleMove();
+			myMove.beats = 0.125;
+			myMove.setHandExtend(extend);
+			myMove.begin_hand_speed = 0;
+			myMove.end_hand_speed = 2*dir*speed;
+			myMove.begin_prop_speed = 0;
+			myMove.end_prop_speed = 2*antispeed*ANTISPIN*dir*speed;
+			newPhase.addMove(myMove);
+			myMove = new SimpleMove();
+			myMove.beats = 0.125;
+			myMove.setHandExtend(extend);
+			myMove.begin_hand_speed = 2*dir*speed;
+			myMove.end_hand_speed = 0;
+			myMove.begin_prop_speed = 2*antispeed*ANTISPIN*dir*speed;
+			myMove.end_prop_speed = 0;
+			newPhase.addMove(myMove);
+			newPhase = this.newPhase();
+			myMove = new SimpleMove();
+			myMove.beats = 0.125;
+			myMove.setHandExtend(extend);
+			myMove.begin_hand_speed = 0;
+			myMove.end_hand_speed = 2*dir*speed;
+			myMove.begin_prop_speed = 0;
+			myMove.end_prop_speed = 2*inspeed*INSPIN*dir*speed;
+			newPhase.addMove(myMove);
+			myMove = new SimpleMove();
+			myMove.beats = 0.125;
+			myMove.setHandExtend(extend);
+			myMove.begin_hand_speed = 2*dir*speed;
+			myMove.end_hand_speed = 0;
+			myMove.begin_prop_speed = 2*inspeed*INSPIN*dir*speed;
+			myMove.end_prop_speed = 0;
+			newPhase.addMove(myMove);
+			newPhase = this.newPhase();
+			myMove = new SimpleMove();
+			myMove.beats = 0.125;
+			myMove.setHandExtend(extend);
+			myMove.begin_hand_speed = 0;
+			myMove.end_hand_speed = 2*dir*speed;
+			myMove.begin_prop_speed = 0;
+			myMove.end_prop_speed = 2*antispeed*ANTISPIN*dir*speed;
+			newPhase.addMove(myMove);
+			myMove = new SimpleMove();
+			myMove.beats = 0.125;
+			myMove.setHandExtend(extend);
+			myMove.begin_hand_speed = 2*dir*speed;
+			myMove.end_hand_speed = 0;
+			myMove.begin_prop_speed = 2*antispeed*ANTISPIN*dir*speed;
+			myMove.end_prop_speed = 0;
+			newPhase.addMove(myMove);
+			newPhase = this.newPhase();
+			myMove = new SimpleMove();
+			myMove.beats = 0.125;
+			myMove.setHandExtend(extend);
+			myMove.begin_hand_speed = 0;
+			myMove.end_hand_speed = 2*dir*speed;
+			myMove.begin_prop_speed = 0;
+			myMove.end_prop_speed = 2*inspeed*INSPIN*dir*speed;
+			newPhase.addMove(myMove);
+			myMove = new SimpleMove();
+			myMove.beats = 0.125;
+			myMove.setHandExtend(extend);
+			myMove.begin_hand_speed = 2*dir*speed;
+			myMove.end_hand_speed = 0;
+			myMove.begin_prop_speed = 2*inspeed*INSPIN*dir*speed;
+			myMove.end_prop_speed = 0;
+			newPhase.addMove(myMove);
+		}
+		Star.prototype = new CompositeMove();
+
+		// Multi-Prop Move stuff
+		function PartneredMove() {}
+		PartneredMove.prototype.addFirstMove = function(myMove) {
+			if (this.myMoves === undefined) {this.myMoves = new Array();}
+			this.myMoves[0] = myMove;
+		}
+		PartneredMove.prototype.addSecondMove = function(myMove) {
+			if (this.myMoves === undefined) {this.myMoves = new Array();}
+			this.myMoves[1] = myMove;
+		}
+		PartneredMove.prototype.getFirstMove = function() {return this.myMoves[0];}
+		PartneredMove.prototype.getSecondMove = function() {return this.myMoves[1];}
+	
+		function TwoPropButterfly() {
+			this.addFirstMove(new SimpleMove());
+			this.addSecondMove(new SimpleMove());
+			this.getSecondMove().setPropSpeed(-1);	
+		}
+		TwoPropButterfly.prototype = new PartneredMove();
+
+		function Isolation(dir, spin, offset, speed, beats) {
+		// A no-offset isolation is a unit-circle extension. An anti-spin isolation is a cateye;
+			var myMove = new SimpleMove();
+			this.offset = offset;
+			myMove.beats = beats;
+			myMove.setPropSpeed(spin*dir*speed);
+			myMove.setHandExtend(0.5);
+			myMove.setHandSpeed(dir*speed);
+			this.addMove(myMove);
+		}
+		Isolation.prototype = new CompositeMove();
+		Isolation.prototype.autoAlign = function(myProp) {
+	  		if ('undefined' !== typeof this.initHandAngle) {
+		  		myProp.setHandAngle(this.initHandAngle);
+	  		}
+	  		if ('undefined' !== typeof this.initPropAngle) {
+		  		myProp.setTetherAngle(this.offset+this.initPropAngle);
+	  		}
+  		} 
+
+		function StaticSpin(dir, speed, beats) {
+    			var mySpin = new SimpleMove();
+    			mySpin.beats = beats;
+    			mySpin.setPropSpeed(dir*speed);
+    			this.addMove(mySpin);
+  		}
+		StaticSpin.prototype = new CompositeMove();
+
+		function IsoPop(dir, spin, pop, split, speed) {
+			//pop = ANTISPIN for an IsoBreak
+			var iso = new Isolation(dir, spin, split, speed, 1);
+			var pop = new StaticSpin(dir*spin*pop, speed, 1);
+			pop.setHandExtend(0.5);
+			this.addMove(iso);
+			this.addMove(pop);
+		}
+		IsoPop.prototype = new CompositeMove();
+
+		function IsoExtend(dir, speed) {
+			this.addFirstMove(new Isolation(dir, INSPIN, SPLIT, speed, 1));
+			this.addSecondMove(new Isolation(dir, INSPIN, SAME, speed, 1));	
+		}
+		IsoExtend.prototype = new PartneredMove();
+		
+		function Snake(angle, dir, coils, speed) {
+			var coil = new SimpleLinear();
+			var uncoil = new SimpleLinear();
+			this.angle = angle;
+			this.dir = dir;
+			coil.beats = 0.5;
+			uncoil.beats = 0.5;
+			coil.setPropSpeed(coils*dir*speed);
+			uncoil.setPropSpeed(coils*dir*speed);
+			coil.begin_hand_speed = 8*speed;
+			coil.end_hand_speed = -8*speed;
+			coil.hand_trajectory = angle;
+			uncoil.begin_hand_speed = 8*speed;
+			uncoil.end_hand_speed = -8*speed;
+			uncoil.hand_trajectory = OFFSET+angle;
+			this.addMove(coil);
+			this.addMove(uncoil);
+		}
+		Snake.prototype = new CompositeMove();
+		Snake.prototype.autoAlign = function(myProp) {
+			myProp.setTetherAngle(this.angle-this.dir*STAGGER);
+			myProp.hand_extend = 0;
+  		} 
+		
+		function FractalTriangle(dir, spindir, extend) {
+			var segment;
+			var beat = 12;
+			this.dir = dir;
+			this.spindir = spindir;
+			this.extend = extend;
+			for(var i = 0; i<12; i++) {
+				segment = new SimpleLinear();
+				segment.setHandSpeed(extend*beat*Math.acos(Math.PI/beat));
+				segment.setBeats(1/beat);
+				if  (i==0 || i==1 ||  i==6 || i==11) {
+					if (dir == CLOCKWISE) {segment.hand_trajectory = UNIT/6;}
+					else {segment.hand_trajectory = 2*UNIT/6;}
+				} else if (i==3 || i==4 || i==5 || i==10) {
+					if (dir == CLOCKWISE) {segment.hand_trajectory = UNIT/2}
+					else {segment.hand_trajectory = 0;}
+				} else if (i==2 || i==7 || i==8 || i==9) {
+					if (dir == CLOCKWISE) {segment.hand_trajectory = 5*UNIT/6;}
+					else {segment.hand_trajectory = 4*UNIT/6;}
+				}
+				if (i==2 || i==6 || i==10) {
+					if (spindir == ANTISPIN) {segment.setPropSpeed(-dir*4);}
+					else {segment.setPropSpeed(dir*8);}
+				} else {
+					if (spindir == ANTISPIN) {segment.setPropSpeed(-dir*4/3);}
+					else {segment.setPropSpeed(dir*8/3);}
+				}
+				this.addMove(segment);
+			}
+		}
+		FractalTriangle.prototype = new CompositeMove();
+		FractalTriangle.prototype.autoAlign = function(myProp) {
+			myProp.hand_extend = this.extend;
+			if (this.spindir == ANTISPIN) {
+				if (this.dir == CLOCKWISE) {
+					myProp.setTetherAngle(UNIT/2);
+				} else {
+					myProp.setTetherAngle(0);
+				}
+			} else {
+				myProp.setTetherAngle(3*UNIT/4);
+			}
+		}
+		
+		
+		function Diamond(dir, spindir, extend) {
+			var segment;
+			var beat = 8;
+			this.extend = extend;
+			for(var i = 0; i<8 ;i++) {
+				segment = new SimpleLinear();
+				segment.setBeats(1/beat);
+				if  (i==0 || i==4 ) {
+					segment.hand_trajectory = UNIT/4;
+				} else if (i==2 ) {
+					if (dir == CLOCKWISE) {segment.hand_trajectory = 0}
+					else {segment.hand_trajectory = UNIT/2;}
+				} else if (i==6 ) {
+					if (dir == CLOCKWISE) {segment.hand_trajectory = UNIT/2}
+					else {segment.hand_trajectory = 0;}
+				} else if (i==1|| i== 3) {
+					if (dir == CLOCKWISE) {segment.hand_trajectory = 5*UNIT/8}
+					else {segment.hand_trajectory = 7*UNIT/8;}
+				} else if (i==5|| i== 7) {
+					if (dir == CLOCKWISE) {segment.hand_trajectory = 7*UNIT/8}
+					else {segment.hand_trajectory = 5*UNIT/8;}
+				} 
+				if (i==1 || i==3 || i==5 || i==7) {
+					segment.setHandSpeed(beat*Math.sqrt(2)*extend);
+					if (spindir==INSPIN) {
+						if (i==1 || i==7) {segment.setPropSpeed(dir*spindir*2);}
+						else {segment.setPropSpeed(dir*spindir*6);}
+					} else {
+						if (i==1 || i==7) {segment.setPropSpeed(dir*spindir*6);}
+						else {segment.setPropSpeed(dir*spindir*2);}
+					}
+				} else {
+					segment.setHandSpeed(16*extend);
+					segment.setPropSpeed(dir*spindir*4);
+				}
+				this.addMove(segment);
+			}
+		}
+		Diamond.prototype = new CompositeMove();
+		Diamond.prototype.autoAlign = function(myProp) {
+			myProp.hand_extend = this.extend;
+			myProp.setHandAngle(TWELVE);
+			myProp.setTetherAngle (TWELVE);
+		}
+		
+		function Lock(extend, beats) {
+			move = new SimpleMove();
+			move.setHandExtend(extend);
+			move.setBeats(beats);
+			move.setPropSpeed(0);
+			this.addMove(move);				
+		}
+		Lock.prototype = new CompositeMove();
+		
+		function StallChaser(dir, phase, extend, speed) {
+			this.direct = dir;
+			this.phase = phase;
+			this.addMove(new Flower(dir, INSPIN, 0, 1, 1, 0.5));
+			this.addMove(new Flower(dir, INSPIN, 1, 1, 1, 0.5));
+			this.addMove(new Flower(-dir, INSPIN, 1, 1, 1, 0.5));
+			this.addMove(new Flower(-dir, INSPIN, 0, 1, 1, 0.5));
+			this.addMove(new Lock(1, 0.5));
+			this.addMove(new Lock(1, 0.5));
+			this.changePhase(phase);
+		}
+		StallChaser.prototype = new CompositeMove();
+		StallChaser.prototype.autoAlign = function(myProp) {
+			var offset = 0;
+			if (this.direct==COUNTERCLOCKWISE) {offset=OFFSET;}
+			if (this.phase==0 || this.phase==4 || this.phase==5) {
+				myProp.setHandAngle(NINE+offset);
+				myProp.setTetherAngle(SIX);
+			} else if (this.phase==1 || this.phase==3) {
+				myProp.setHandAngle(THREE+offset);
+				myProp.setTetherAngle(TWELVE);
+			} else if (this.phase==2) {
+				myProp.setHandAngle(NINE+offset);
+				myProp.setTetherAngle(TWELVE);
+			}
+		}
+		
+
+		
+		
+	
+	</script>
+<script>try {  for(var lastpass_iter=0; lastpass_iter < document.forms.length; lastpass_iter++){    var lastpass_f = document.forms[lastpass_iter];    if(typeof(lastpass_f.lpsubmitorig)=="undefined"){      if (typeof(lastpass_f.submit) == "function") {        lastpass_f.lpsubmitorig = lastpass_f.submit;        lastpass_f.submit = function(){          var form = this;          try {            if (document.documentElement && 'createEvent' in document)            {              var forms = document.getElementsByTagName('form');              for (var i=0 ; i<forms.length ; ++i)                if (forms[i]==form)                {                  var element = document.createElement('lpformsubmitdataelement');                  element.setAttribute('formnum',i);                  element.setAttribute('from','submithook');                  document.documentElement.appendChild(element);                  var evt = document.createEvent('Events');                  evt.initEvent('lpformsubmit',true,false);                  element.dispatchEvent(evt);                  break;                }            }          } catch (e) {}          try {            form.lpsubmitorig();          } catch (e) {}        }      }    }  }} catch (e) {}</script></head>
+<body onload="init();">
+<table>
+<tbody><tr>
+<td rowspan="9" colspan="2">
+	<canvas id="canvas" style="background-color: #000">
+		Your browser doesn't support the HTML5 element canvas.
+	</canvas>
+</td>
+<td>
+First Prop:
+</td>
+<form></form>
+<td>
+	<select id="1prop" onchange="controller.updateParameters()">
+		<option value="poi" selected="selected">Poi</option>
+		<option value="fpoi">Fire Poi</option>
+		<option value="hoop">Mini Hoop</option>
+		<option value="fhoop">Fire Hoop</option>
+		<option value="staff">Double Staff</option>
+		<option value="fstaff">Fire Staff</option>
+		<option value="pfan">Practice Fan</option>
+		<option value="ffan">Fire Fan</option>
+		<option value="none">None</option>
+	</select>
+
+</td>
+
+<td>
+Second Prop:
+</td>
+<form></form>
+<td>
+	<select id="2prop" onchange="controller.updateParameters()">
+		<option value="poi" selected="selected">Poi</option>
+		<option value="fpoi">Fire Poi</option>
+		<option value="hoop">Mini Hoop</option>
+		<option value="fhoop">Fire Hoop</option>
+		<option value="staff">Double Staff</option>
+		<option value="fstaff">Fire Staff</option>
+		<option value="pfan">Practice Fan</option>
+		<option value="ffan">Fire Fan</option>
+		<option value="none">None</option>
+	</select>
+</td>
+
+</tr>
+<tr>
+<td>
+Third Prop:
+</td>
+<form></form>
+<td>
+	<select id="3prop" onchange="controller.updateParameters()">
+		<option value="poi" selected="selected">Poi</option>
+		<option value="fpoi">Fire Poi</option>
+		<option value="hoop">Mini Hoop</option>
+		<option value="fhoop">Fire Hoop</option>
+		<option value="staff">Double Staff</option>
+		<option value="fstaff">Fire Staff</option>
+		<option value="pfan">Practice Fan</option>
+		<option value="ffan">Fire Fan</option>
+		<option value="none">None</option>
+	</select>
+</td>
+
+<td>
+Fourth Prop:
+</td>
+<form></form>
+<td>
+	<select id="4prop" onchange="controller.updateParameters()">
+		<option value="poi" selected="selected">Poi</option>
+		<option value="fpoi">Fire Poi</option>
+		<option value="hoop">Mini Hoop</option>
+		<option value="fhoop">Fire Hoop</option>
+		<option value="staff">Double Staff</option>
+		<option value="fstaff">Fire Staff</option>
+		<option value="pfan">Practice Fan</option>
+		<option value="ffan">Fire Fan</option>
+		<option value="none">None</option>
+	</select>
+</td>
+</tr>
+<tr>
+<td>
+Hand Relations:
+</td>
+<form></form>
+<td>
+	<select id="2hands" onchange="controller.updateParameters()">
+		<option value="same" selected="selected">Same</option>
+		<option value="splt">Split</option>
+		<option value="qrtr">Quarter</option>
+		<option value="sqrt">SpltQrtr</option>
+	</select>
+</td>
+<form></form>
+<td>
+	<select id="3hands" onchange="controller.updateParameters()">
+		<option value="same" selected="selected">Same</option>
+		<option value="splt">Split</option>
+		<option value="qrtr">Quarter</option>
+		<option value="sqrt">SpltQrtr</option>
+	</select>
+</td>
+<form></form>
+<td>
+	<select id="4hands" onchange="controller.updateParameters()">
+		<option value="same" selected="selected">Same</option>
+		<option value="splt" >Split</option>
+		<option value="qrtr">Quarter</option>
+		<option value="sqrt">SpltQrtr</option>
+	</select>
+</td>
+</tr>
+<tr>
+<td>
+Prop Relations:
+</td>
+<form></form>
+<td>
+	<select id="2props" onchange="controller.updateParameters()">
+		<option value="same" selected="selected">Same</option>
+		<option value="splt">Split</option>
+		<option value="qrtr">Quarter</option>
+		<option value="sqrt">SpltQrtr</option>
+	</select>
+</td>
+<td>
+	<select id="3props" onchange="controller.updateParameters()">
+		<option value="same" selected="selected">Same</option>
+		<option value="splt">Split</option>
+		<option value="qrtr">Quarter</option>
+		<option value="sqrt">SpltQrtr</option>
+	</select>
+</td>
+<td>
+	<select id="4props" onchange="controller.updateParameters()">
+		<option value="same" selected="selected">Same</option>
+		<option value="splt">Split</option>
+		<option value="qrtr">Quarter</option>
+		<option value="sqrt">SpltQrtr</option>
+	</select>
+</td>
+</tr>
+<tr>
+<td>
+Spin Directions:
+</td>
+<form></form>
+<td>
+	<select id="2spins" onchange="controller.updateParameters()">
+		<option value="same">Same</option>
+		<option value="opps" selected="selected">Opposite</option>
+	</select>
+</td>
+<td>
+	<select id="3spins" onchange="controller.updateParameters()">
+		<option value="same" selected="selected">Same</option>
+		<option value="opps" >Opposite</option>
+	</select>
+</td>
+<td>
+	<select id="4spins" onchange="controller.updateParameters()">
+		<option value="same">Same</option>
+		<option value="opps" selected="selected">Opposite</option>
+	</select>
+</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>
+First Move:
+</td>
+<form></form>
+<td colspan="3">
+	<select id="1move" onchange="controller.updateParameters()">
+		<option value="stat">Static Spin</option>
+		<option value="xtsn" selected="selected">Extension</option>
+		<option value="1pif">One-Petal In-Spin Flower</option>
+		<option value="2pif">Two-Petal In-Spin Flower</option>
+		<option value="4pif">Four-Petal In-Spin Flower</option>
+		<option value="3paf">Three-Petal Anti-Spin Flower</option>
+		<option value="4paf">Four-Petal Anti-Spin Flower</option>
+		<option value="6paf">Six-Petal Anti-Spin Flower</option>
+		<option value="hcap">Horizontal C-CAP</option>
+		<option value="hcpo">Horizontal C-CAP (offset)</option>
+		<option value="vcap">Vertical C-CAP</option>
+		<option value="vcpo">Vertical C-CAP (offset)</option>
+		<option value="star">Star</option>
+		<option value="pend">Pendulum</option>
+		<option value="1pt5">1.5</option>
+		<option value="isol">Isolation</option>
+		<option value="cate">Cat-Eye</option>
+		<option value="utri">Unit Triquetra</option>
+		<option value="isop">Iso-Pop</option>
+		<option value="isob">Iso-Break</option>
+		<option value="hlex">Horizontal Linear Extension</option>
+		<option value="vlex">Vertical Linear Extension</option>
+		<option value="2ant">Double Antispin</option>
+		<option value="anin">Antispin/Inspin</option>
+		<option value="zdin">Zan's Diamond (A)</option>
+		<option value="zdan">Zan's Diamond (B)</option>
+	</select>
+</td>
+
+</tr>
+<tr>
+<td>
+Second Move:
+</td>
+<form></form>
+<td colspan="3">
+	<select id="2move" onchange="controller.updateParameters()">
+		<option value="stat">Static Spin</option>
+		<option value="xtsn" selected="selected">Extension</option>
+		<option value="1pif">One-Petal In-Spin Flower</option>
+		<option value="2pif">Two-Petal In-Spin Flower</option>
+		<option value="4pif">Four-Petal In-Spin Flower</option>
+		<option value="3paf">Three-Petal Anti-Spin Flower</option>
+		<option value="4paf">Four-Petal Anti-Spin Flower</option>
+		<option value="6paf">Six-Petal Anti-Spin Flower</option>
+		<option value="hcap">Horizontal C-CAP</option>
+		<option value="hcpo">Horizontal C-CAP (offset)</option>
+		<option value="vcap">Vertical C-CAP</option>
+		<option value="vcpo">Vertical C-CAP (offset)</option>
+		<option value="star">Star</option>
+		<option value="pend">Pendulum</option>
+		<option value="1pt5">1.5</option>
+		<option value="isol">Isolation</option>
+		<option value="cate">Cat-Eye</option>
+		<option value="utri">Unit Triquetra</option>
+		<option value="isop">Iso-Pop</option>
+		<option value="isob">Iso-Break</option>
+		<option value="hlex">Horizontal Linear Extension</option>
+		<option value="vlex">Vertical Linear Extension</option>
+		<option value="2ant">Double Antispin</option>
+		<option value="anin">Antispin/Inspin</option>
+		<option value="zdin">Zan's Diamond (A)</option>
+		<option value="zdan">Zan's Diamond (B)</option>
+	</select>
+</td>
+</tr>
+<tr>
+<td>
+Third Move:
+</td>
+<form></form>
+<td colspan="3">
+	<select id="3move" onchange="controller.updateParameters()">
+		<option value="stat">Static Spin</option>
+		<option value="xtsn">Extension</option>
+		<option value="1pif">One-Petal In-Spin Flower</option>
+		<option value="2pif">Two-Petal In-Spin Flower</option>
+		<option value="4pif">Four-Petal In-Spin Flower</option>
+		<option value="3paf" selected="selected">Three-Petal Anti-Spin Flower</option>
+		<option value="4paf">Four-Petal Anti-Spin Flower</option>
+		<option value="6paf">Six-Petal Anti-Spin Flower</option>
+		<option value="hcap">Horizontal C-CAP</option>
+		<option value="hcpo">Horizontal C-CAP (offset)</option>
+		<option value="vcap">Vertical C-CAP</option>
+		<option value="vcpo">Vertical C-CAP (offset)</option>
+		<option value="star">Star</option>
+		<option value="pend">Pendulum</option>
+		<option value="1pt5">1.5</option>
+		<option value="isol">Isolation</option>
+		<option value="cate">Cat-Eye</option>
+		<option value="utri">Unit Triquetra</option>
+		<option value="isop">Iso-Pop</option>
+		<option value="isob">Iso-Break</option>
+		<option value="hlex">Horizontal Linear Extension</option>
+		<option value="vlex">Vertical Linear Extension</option>
+		<option value="2ant">Double Antispin</option>
+		<option value="anin">Antispin/Inspin</option>
+		<option value="zdin">Zan's Diamond (A)</option>
+		<option value="zdan">Zan's Diamond (B)</option>
+	</select>
+</td>
+</tr>
+<tr>
+<td>
+Fourth Move:
+</td>
+<form></form>
+<td colspan="3">
+	<select id="4move" onchange="controller.updateParameters()">
+		<option value="stat">Static Spin</option>
+		<option value="xtsn">Extension</option>
+		<option value="1pif">One-Petal In-Spin Flower</option>
+		<option value="2pif">Two-Petal In-Spin Flower</option>
+		<option value="4pif">Four-Petal In-Spin Flower</option>
+		<option value="3paf"  selected="selected">Three-Petal Anti-Spin Flower</option>
+		<option value="4paf">Four-Petal Anti-Spin Flower</option>
+		<option value="6paf">Six-Petal Anti-Spin Flower</option>
+		<option value="hcap">Horizontal C-CAP</option>
+		<option value="hcpo">Horizontal C-CAP (offset)</option>
+		<option value="vcap">Vertical C-CAP</option>
+		<option value="vcpo">Vertical C-CAP (offset)</option>
+		<option value="star">Star</option>
+		<option value="pend">Pendulum</option>
+		<option value="1pt5">1.5</option>
+		<option value="isol">Isolation</option>
+		<option value="cate">Cat-Eye</option>
+		<option value="utri">Unit Triquetra</option>
+		<option value="isop">Iso-Pop</option>
+		<option value="isob">Iso-Break</option>
+		<option value="hlex">Horizontal Linear Extension</option>
+		<option value="vlex">Vertical Linear Extension</option>
+		<option value="2ant">Double Antispin</option>
+		<option value="anin">Antispin/Inspin</option>
+		<option value="zdin">Zan's Diamond (A)</option>
+		<option value="zdan">Zan's Diamond (B)</option>
+	</select>
+</td>
+</tr>
+<tr>
+<td>
+View in...
+</td>
+<form></form>
+<td>
+	<select id="2d3d" onchange="controller.updateParameters()">
+		<option value="2d" selected="selected">2D</option>
+		<option value="3d">3D (poi only)</option>
+</td>
+</tr>
+</tbody></table>
+
+<p></p>
+Pasteable link to these settings:
+<p id="myLink"></p><p></p>
+<p>Source: https://github.com/infiniteperplexity/infiniteperplexity.github.io</p>
+<p>Questions, comments, and suggestions: infinite DOT perplexity AT gmail DOT com</p>
+
+
+</body></html>
