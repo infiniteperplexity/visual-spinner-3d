@@ -8,6 +8,8 @@ var CLOCKWISE = 1;
 var COUNTERCLOCKWISE = -1;
 var INSPIN = 1;
 var ANTISPIN = -1;
+var FORWARD = CLOCKWISE;
+var BACKWARD = COUNTERCLOCKWISE;
 var NOSPIN = 0;
 var STATIC = 0;
 var TWELVE = 1.5*Math.PI;
@@ -270,6 +272,11 @@ function CompositeMove() {
 	this.hand = {};
 	this.prop = {}
 }
+CompositeMove.prototype.getSubMoves = function() {
+	if (this.mySubMoves === undefined) {this.mySubMoves = new Array();}
+	return this.mySubMoves;
+}
+
 CompositeMove.prototype.resetSubMoves = function() {
 	for(var i=0;i<this.mySubMoves.length;i++) {
 		this.mySubMoves[i].isStarted = false;
@@ -446,6 +453,11 @@ function setup(myProp) {
 	} else {
 		hand_plane = this.align.hand.plane;
 	}
+	if (this.align.prop.plane === undefined) {
+		prop_plane = this.prop.plane;
+	} else {
+		prop_plane = this.align.prop.plane;
+	}
 	if (this.align.hand.angle !== undefined) {
 		myProp.setHandAngle(this.align.hand.angle,hand_plane);
 	}
@@ -454,11 +466,6 @@ function setup(myProp) {
 	}
 	if (this.align.prop.offset!==undefined) {
 		myProp.setPropAngle(myProp.getHandAngle(hand_plane)+this.align.prop.offset, hand_plane);
-	}
-	if (this.align.prop.plane === undefined) {
-		prop_plane = this.prop.plane;
-	} else {
-		prop_plane = this.align.prop.plane;
 	}
 	if (this.align.hand.radius !== undefined) {
 		myProp.hand.radius = this.align.hand.radius;
@@ -493,6 +500,11 @@ function setup(myProp) {
 		} else {
 			hand_plane = this.align[lookup].hand.plane;
 		}
+		if (this.align[lookup].prop === undefined || this.align[lookup].prop.plane === undefined) {
+			prop_plane = this.prop.plane;
+		} else {
+			prop_plane = this.align[lookup].prop.plane;
+		}
 		if (this.align[lookup].hand !== undefined && this.align[lookup].hand.angle !== undefined) {
 			myProp.setHandAngle(this.align[lookup].hand.angle,hand_plane);
 		}
@@ -501,11 +513,6 @@ function setup(myProp) {
 		}
 		if (this.align[lookup].prop !== undefined && this.align[lookup].prop.offset!==undefined) {
 			myProp.setPropAngle(myProp.getHandAngle(hand_plane)+this.align[lookup].prop.offset, hand_plane);
-		}
-		if (this.align[lookup].prop === undefined || this.align[lookup].prop.plane === undefined) {
-			prop_plane = this.prop.plane;
-		} else {
-			prop_plane = this.align[lookup].prop.plane;
 		}
 		if (this.align[lookup].hand !== undefined && this.align[lookup].hand.radius !== undefined) {
 			myProp.hand.radius = this.align[lookup].hand.radius;
@@ -518,7 +525,7 @@ function setup(myProp) {
 		}
 		if (this.align[lookup].prop !== undefined && this.align[lookup].prop.tilt !== undefined) {
 			this.prop.plane = myProp.hand.vectorize().rotate(this.align[lookup].prop.tilt, myProp.hand.vectorize());
-		}	
+		}
 	}
 }
 SimpleMove.prototype.cleanup = function(myProp) {
@@ -546,4 +553,10 @@ function cleanup(myProp) {
 	if (this.finish.prop.rotate !== undefined) {
 		myProp.rotateProp(this.finish.prop.rotate, hand_plane);
 	}
+}
+
+function SimpleLinear() {
+	var myMove = new SimpleMove();
+	myMove.hand = new LinearElement(myMove,"hand");
+	return myMove;
 }
