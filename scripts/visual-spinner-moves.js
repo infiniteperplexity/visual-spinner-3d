@@ -131,7 +131,7 @@ MoveFactory.prototype.isobend = function(options) {
 		segment.align.prop.offset = OFFSET;
 		segment.align.prop.tilt = -QUARTER;
 		segment.finish.hand.rotate = options.direction*UNIT/options.lobes;
-		segment.finish.prop.rotate = -options.direction*UNIT/options.lobes;
+		segment.finish.prop.rotate = options.direction*UNIT/options.lobes;
 		myMove.addMove(segment);
 	}
 	return myMove;
@@ -310,8 +310,8 @@ MoveFactory.prototype.linex = function(options) {
 	});
 	var myMove = new CompositeMove();
 	myMove.options = options;
-	var one = this.simplelinear();
-	var two = this.simplelinear();
+	var one = new SimpleLinear();
+	var two = new SimpleLinear();
 	one.beats = options.duration/2;
 	two.beats = options.duration/2;
 	one.prop.speed = options.loops*options.direction*options.speed;
@@ -328,10 +328,112 @@ MoveFactory.prototype.linex = function(options) {
 	myMove.align.prop.angle = options.angle-options.direction*QUARTER;
 	return myMove;
 }
-MoveFactory.prototype.simplelinear = function() {
-	var myMove = new SimpleMove();
-	myMove.hand = new LinearElement(myMove,"hand");
-	return myMove;
+
+
+
+
+MoveFactory.prototype.weave = function(options) {
+        options = this.defaults(options,{
+		//could use spin instead of direction
+                direction: CLOCKWISE,
+		spin: FORWARD,
+                beats: 2,
+                duration: 1,
+                speed: 1,
+                extend: 0.5,
+                hand_plane: WALL,
+                prop_plane: WHEEL,
+                bendiness: 0,
+                shape: "linear",
+		bendiness: 0
+        });
+        var myMove = new CompositeMove();
+        myMove.options = options;
+        var one;
+        var two;
+        if (options.shape=="linear") {
+                one = new SimpleLinear();
+                two = new SimpleLinear();
+                one.hand.angle = THREE;
+                one.hand.begin_speed = 8*options.extend*options.direction*options.speed;
+                one.hand.end_speed = -8*options.extend*options.direction*options.speed;
+                two.hand.angle = NINE ;
+                two.hand.begin_speed = 8*options.extend*options.direction*options.speed;
+                two.hand.end_speed = -8*options.extend*options.direction*options.speed;
+                myMove.align.hand.radius = 0;
+        } else if (options.shape=="circular") {
+                one = new SimpleMove();
+                two = new SimpleMove();
+                one.hand.speed = options.direction*options.speed;
+                two.hand.speed = options.direction*options.speed;
+                one.hand.radius = options.extend;
+                two.hand.radius = options.extend;
+        }
+        one.beats = options.duration/2;
+        two.beats = options.duration/2;
+        one.hand.plane = options.hand_plane;
+        two.hand.plane = options.hand_plane;
+        one.prop.plane = options.prop_plane;
+        two.prop.plane = options.prop_plane;
+        one.prop.speed = options.beats*options.spin*options.speed;
+        two.prop.speed = options.beats*options.spin*options.speed;
+        myMove.addMove(one);
+        myMove.addMove(two);
+        return myMove;
 }
 
-
+MoveFactory.prototype.superman = function(options) {
+                options = this.defaults(options,{
+                direction: CLOCKWISE,
+                spin: INSPIN,
+                extend: 0.5,
+                duration: 1,
+                speed: 1,
+                hand_plane: WALL,
+                prop_plane: FLOOR,
+                shape: "linear"
+        });
+        var myMove = new CompositeMove();
+        myMove.options = options;
+	var segment;
+	for (var i = 0; i<4; i++) {
+		if (options.shape=="linear") {
+			segment = new SimpleLinear();
+			segment.hand.angle = THREE;
+			if (i==0 || i==2) {
+				segment.hand.begin_speed = 8*options.extend*options.direction*options.speed;
+				segment.hand.end_speed = 0;
+			} else {
+				segment.hand.begin_speed = 0;
+				segment.hand.end_speed = 8*options.extend*options.direction*options.speed;
+			}
+			if (i==0 || i==3) {
+				segment.hand.angle = THREE;
+			} else {
+				segment.hand.angle = NINE;
+			}
+			myMove.align.hand.radius = 0;
+		} else if (options.shape=="circular") {
+			segment= new SimpleMove();
+			segment.hand.speed = options.direction*options.speed;
+			segment.hand.radius = options.extend;
+		}
+		segment.beats = options.duration/4;
+		segment.hand.plane = options.hand_plane;
+		segment.prop.plane = options.prop_plane;
+		if (i==0 || i==3) {
+			segment.prop.speed = 2*options.speed*options.direction*options.spin;
+		} else {
+			segment.prop.speed = -2*options.speed*options.direction*options.spin;
+		}
+		myMove.addMove(segment);
+		if (i==0 || i==2) {
+			segment.align.prop.angle=TWELVE;
+		} else {
+			segment.align.prop.angle=SIX;
+		}
+	}
+	//I think this gets overridden by the controller
+	//myMove.align.prop.angle = TWELVE;
+        return myMove;
+} 
