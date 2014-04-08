@@ -1,15 +1,14 @@
 <!--Distributed under GNU Public License version 3-->
 <html><head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-	<title>VisualSpinner3D, by Glenn Wright</title>
+<title>VisualSpinner3D v. 1.1, by Glenn Wright</title>
 <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
 <script src="scripts/gl-matrix-min.js"></script>
 <script src="scripts/phoria-min.js"></script>
 <script src="scripts/requestAnimationFrame.js"></script>
 <script src="scripts/visual-spinner-engine.js"></script>
 <script src="scripts/visual-spinner-moves.js"></script>
-<script src="scripts/visual-spinner-renderers.js"></script>
-<script>
+<script src="scripts/visual-spinner-renderers.js"></script><script>
 // set parameters
 
 var HEIGHT = 400;
@@ -165,7 +164,7 @@ Controller.prototype.updateParameters = function() {
 			this.propAng[i-1] = SIX;
 		} else if (txt=="qrtr") {
 			this.propAng[i-1] = THREE;
-		} else if (txt="qrtr") {
+		} else if (txt=="sqrt") {
 			this.propAng[i-1] = NINE;
 		}
 		list = document.getElementById(i+"hands");
@@ -188,6 +187,7 @@ Controller.prototype.updateParameters = function() {
 		}
 	}	
 	//Generate moves
+	var submoves;
 	for (var i = 1; i<=myProps.length; i++) {
 		list = document.getElementById(i+"move");
 		txt = list.options[list.selectedIndex].value;
@@ -197,8 +197,9 @@ Controller.prototype.updateParameters = function() {
 		move.align.hand.plane = WALL;
 		move.align.prop.angle = this.propAng[i-1];
 		move.align.prop.plane = WALL;
-		while (myProps[i-1].getMoveQueue().length > 2) {
-			myProps[i-1].getMoveQueue().pop();
+		submoves = myProps[i-1].getMoveQueue().getSubMoves();
+		while (submoves.length > 1) {
+			submoves.pop();
 		}
 		myProps[i-1].addMove(move);
 	}
@@ -258,6 +259,16 @@ Controller.prototype.generateMove = function(n, txt) {
 		move = moves.linex({direction: this.handDir[n], angle: this.handAng[n]+STAGGER});
 	} else if (txt=="vlex") {
 		move = moves.linex({direction: this.handDir[n], angle: this.handAng[n]});
+	} else if (txt=="2btw") {
+		move = moves.weave({direction: this.handDir[n]});
+	} else if (txt=="3btw") {
+		move = moves.weave({beats: 3, direction: this.handDir[n]});
+	} else if (txt=="e3bt") {
+		move = moves.weave({shape: "circular", extend: 1, beats: 3, direction: this.handDir[n]});
+	} else if (txt=="supr") {
+		move = moves.superman({direction: this.handDir[n]});
+	} else if (txt=="esup") {
+		move = moves.superman({shape: "circular", extend: 1, direction: this.handDir[n]});
 	} else if (txt=="isob") {
 		move = moves.isobend({direction: this.handDir[n]});
 	} else if (txt=="antb") {
@@ -266,12 +277,12 @@ Controller.prototype.generateMove = function(n, txt) {
 	return move;
 }
 </script>
-</head>
+<script>try {  for(var lastpass_iter=0; lastpass_iter < document.forms.length; lastpass_iter++){    var lastpass_f = document.forms[lastpass_iter];    if(typeof(lastpass_f.lpsubmitorig)=="undefined"){      if (typeof(lastpass_f.submit) == "function") {        lastpass_f.lpsubmitorig = lastpass_f.submit;        lastpass_f.submit = function(){          var form = this;          try {            if (document.documentElement && 'createEvent' in document)            {              var forms = document.getElementsByTagName('form');              for (var i=0 ; i<forms.length ; ++i)                if (forms[i]==form)                {                  var element = document.createElement('lpformsubmitdataelement');                  element.setAttribute('formnum',i);                  element.setAttribute('from','submithook');                  document.documentElement.appendChild(element);                  var evt = document.createEvent('Events');                  evt.initEvent('lpformsubmit',true,false);                  element.dispatchEvent(evt);                  break;                }            }          } catch (e) {}          try {            form.lpsubmitorig();          } catch (e) {}        }      }    }  }} catch (e) {}</script></head>
 <body onload="init();">
 <table>
 <tbody><tr>
 <td rowspan="9" colspan="2">
-	<canvas id="canvas" style="background-color: #000">
+	<canvas width="400" height="400" id="canvas" style="background-color: #000">
 		Your browser doesn't support the HTML5 element canvas.
 	</canvas>
 </td>
@@ -348,7 +359,7 @@ Hand Relations:
 <td>
 	<select id="4hands" onchange="controller.updateParameters()">
 		<option value="same" selected="selected">Same</option>
-		<option value="splt" >Split</option>
+		<option value="splt">Split</option>
 		<option value="qrtr">Quarter</option>
 		<option value="sqrt">SpltQrtr</option>
 	</select>
@@ -398,7 +409,7 @@ Spin Directions:
 <td>
 	<select id="3spins" onchange="controller.updateParameters()">
 		<option value="same" selected="selected">Same</option>
-		<option value="opps" >Opposite</option>
+		<option value="opps">Opposite</option>
 	</select>
 </td>
 <td>
@@ -434,6 +445,11 @@ First Move:
 		<option value="cate">Cat-Eye</option>
 		<option value="hlex">Horizontal Linear Extension</option>
 		<option value="vlex">Vertical Linear Extension</option>
+		<option value="2btw">Two-Beat Weave</option>
+		<option value="3btw">Three-Beat Weave</option>
+		<option value="e3bt">Three-Beat Extension</option>
+		<option value="supr">Superman</option>
+		<option value="esup">Extended Superman</option>
 		<option value="isob">Four-Lobe Iso-bend Toroid</option>
 		<option value="antb">Four-Lobe Anti-bend Toroid</option>
 	</select>
@@ -464,6 +480,11 @@ Second Move:
 		<option value="cate">Cat-Eye</option>
 		<option value="hlex">Horizontal Linear Extension</option>
 		<option value="vlex">Vertical Linear Extension</option>
+		<option value="2btw">Two-Beat Weave</option>
+		<option value="3btw">Three-Beat Weave</option>
+		<option value="e3bt">Three-Beat Extension</option>
+		<option value="supr">Superman</option>
+		<option value="esup">Extended Superman</option>
 		<option value="isob">Four-Lobe Iso-bend Toroid</option>
 		<option value="antb">Four-Lobe Anti-bend Toroid</option>
 	</select>
@@ -477,11 +498,11 @@ Third Move:
 <td colspan="3">
 	<select id="3move" onchange="controller.updateParameters()">
 		<option value="stat">Static Spin</option>
-		<option value="xtsn" selected="selected">Extension</option>
+		<option value="xtsn">Extension</option>
 		<option value="1pif">One-Petal In-Spin Flower</option>
 		<option value="2pif">Two-Petal In-Spin Flower</option>
 		<option value="4pif">Four-Petal In-Spin Flower</option>
-		<option value="3paf">Three-Petal Anti-Spin Flower</option>
+		<option selected="selected" value="3paf">Three-Petal Anti-Spin Flower</option>
 		<option value="4paf">Four-Petal Anti-Spin Flower</option>
 		<option value="hcap">Horizontal C-CAP</option>
 		<option value="hcpo">Horizontal C-CAP (offset)</option>
@@ -493,6 +514,11 @@ Third Move:
 		<option value="cate">Cat-Eye</option>
 		<option value="hlex">Horizontal Linear Extension</option>
 		<option value="vlex">Vertical Linear Extension</option>
+		<option value="2btw">Two-Beat Weave</option>
+		<option value="3btw">Three-Beat Weave</option>
+		<option value="e3bt">Three-Beat Extension</option>
+		<option value="supr">Superman</option>
+		<option value="esup">Extended Superman</option>
 		<option value="isob">Four-Lobe Iso-bend Toroid</option>
 		<option value="antb">Four-Lobe Anti-bend Toroid</option>
 	</select>
@@ -506,11 +532,11 @@ Fourth Move:
 <td colspan="3">
 	<select id="4move" onchange="controller.updateParameters()">
 		<option value="stat">Static Spin</option>
-		<option value="xtsn" selected="selected">Extension</option>
+		<option value="xtsn">Extension</option>
 		<option value="1pif">One-Petal In-Spin Flower</option>
 		<option value="2pif">Two-Petal In-Spin Flower</option>
 		<option value="4pif">Four-Petal In-Spin Flower</option>
-		<option value="3paf">Three-Petal Anti-Spin Flower</option>
+		<option selected="selected" value="3paf">Three-Petal Anti-Spin Flower</option>
 		<option value="4paf">Four-Petal Anti-Spin Flower</option>
 		<option value="hcap">Horizontal C-CAP</option>
 		<option value="hcpo">Horizontal C-CAP (offset)</option>
@@ -521,8 +547,12 @@ Fourth Move:
 		<option value="isol">Isolation</option>
 		<option value="cate">Cat-Eye</option>
 		<option value="hlex">Horizontal Linear Extension</option>
-
 		<option value="vlex">Vertical Linear Extension</option>
+		<option value="2btw">Two-Beat Weave</option>
+		<option value="3btw">Three-Beat Weave</option>
+		<option value="e3bt">Three-Beat Extension</option>
+		<option value="supr">Superman</option>
+		<option value="esup">Extended Superman</option>
 		<option value="isob">Four-Lobe Iso-bend Toroid</option>
 		<option value="antb">Four-Lobe Anti-bend Toroid</option>
 	</select>
@@ -532,9 +562,10 @@ Fourth Move:
 
 <p></p>
 Pasteable link to these settings:
-<p id="myLink"></p><p></p>
+<p id="myLink">http://infiniteperplexity.github.io/visual-spinner-3d/?1prop=poi&amp;2prop=poi&amp;3prop=poi&amp;4prop=poi&amp;2hands=same&amp;3hands=same&amp;4hands=same&amp;2props=same&amp;3props=same&amp;4props=same&amp;2spins=opps&amp;3spins=same&amp;4spins=opps&amp;1move=xtsn&amp;2move=xtsn&amp;3move=3paf&amp;4move=3paf</p><p></p>
 <p>Source: https://github.com/infiniteperplexity/visual-spinner-3d</p>
 <p>Questions, comments, and suggestions: infinite DOT perplexity AT gmail DOT com</p>
+
 
 
 </body></html>
