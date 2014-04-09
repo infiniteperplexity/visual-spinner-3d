@@ -32,15 +32,16 @@ function init() {
 	ctx=document.getElementById('canvas').getContext('2d');
 	// optionally, pull parameters from URL
 	var params = [	"1prop","2prop","3prop","4prop",
-			"2hands","3hands","4hands",
-			"2props","3props","4props",
-			"2spins","3spins","4spins",
-			"1move","2move","3move","4move"];
+					"1plane","2plane","3plane",4plane",
+					"1hand","2hand","3hand","4hand",
+					"1spin","2spin","3spin","4spin"
+					"1move","2move","3move","4move"];
 	var defaults = ["poi","poi","poi","poi",
-			"same","same","same",
-			"same","same","same",
-			"opps","same","opps",
-			"xtsn","xtsn","3paf","3paf"];
+					"wall","wall","wall","wall"
+					"twelve","twelve","twelve","twelve",
+					"cw","same","same",
+					"ccw","cw","ccw",
+					"xtsn","xtsn","3paf","3paf"];
 	for (var i = 0; i<params.length; i++) {
 		var txt = $.urlParam(params[i]);
 		if (txt==0) {txt = defaults[i];}
@@ -49,6 +50,7 @@ function init() {
 	canvasSetup();
 	canvasLoop();
 }
+
 
 var scene;
 var renderer;
@@ -119,14 +121,14 @@ function redraw() {
 }
 
 function Controller() {
-	this.handDir = [CLOCKWISE,CLOCKWISE];
-	this.propAng = [TWELVE,SIX];
-	this.handAng = [TWELVE,SIX];		
+	this.prop = [];
+	this.plane = [];
+	this.hand = [];
+	this.spin = [];
 }
 Controller.prototype.queueIsEmpty = function() {
 	this.updateParameters();
 }
-var prevr = Array(myProps.length);
 Controller.prototype.updateParameters = function() {
 	var list;
 	var txt;
@@ -138,7 +140,9 @@ Controller.prototype.updateParameters = function() {
 	for(var i = 1; i<=myProps.length; i++) {
 		list = document.getElementById(i+"prop");
 		txt = list.options[list.selectedIndex].value;
-		if (prevr[i-1]!==txt) {
+		//if this is undefined will it throw an error?
+		if (this.prop[i-1]!==txt) {
+			this.prop[i-1]=txt;
 			if (txt=="poi") {
 				renderer = new Poi();
 			} else if (txt=="none") {
@@ -150,40 +154,35 @@ Controller.prototype.updateParameters = function() {
 			renderer.prop = myProps[i-1];
 			renderer.activate();
 		}
-	}		
-	//Update  hand and prop relationships
-	this.propAng[0] = TWELVE;
-	this.handAng[0] = TWELVE;
-	this.handDir[0] = CLOCKWISE;
-	for (var i = 2; i<=myProps.length; i++) {
-		list = document.getElementById(i+"props");
+	}			
+	//Update  hand and prop positions
+	for (var i = 1; i<=myProps.length; i++) {
+		list = document.getElementById(i+"planes");
 		txt = list.options[list.selectedIndex].value;
-		if (txt=="same") {
-			this.propAng[i-1] = TWELVE;
-		} else if (txt=="splt") {
-			this.propAng[i-1] = SIX;
-		} else if (txt=="qrtr") {
-			this.propAng[i-1] = THREE;
-		} else if (txt=="sqrt") {
-			this.propAng[i-1] = NINE;
+		if (txt=="wall") {
+			this.plane[i-1] = WALL;
+		} else if (txt=="wheel") {
+			this.plane[i-1] = WHEEL;
+		} else if (txt=="floor") {
+			this.plane[i-1] = FLOOR;
 		}
 		list = document.getElementById(i+"hands");
 		txt = list.options[list.selectedIndex].value;
-		if (txt=="same") {
-			this.handAng[i-1] = TWELVE;
-		} else if (txt=="splt") {
-			this.handAng[i-1] = SIX;
-		} else if (txt=="qrtr") {
-			this.handAng[i-1] = THREE;
-		} else if (txt=="sqrt") {
-			this.handAng[i-1] = NINE;
+		if (txt=="twelve") {
+			this.hand[i-1] = TWELVE;
+		} else if (txt=="six") {
+			this.hand[i-1] = SIX;
+		} else if (txt=="three") {
+			this.hand[i-1] = THREE;
+		} else if (txt=="nine") {
+			this.hand[i-1] = NINE;
 		}
 		list = document.getElementById(i+"spins");
 		txt = list.options[list.selectedIndex].value;
-		if (txt=="same") {
-			this.handDir[i-1] = CLOCKWISE;
-		} else if (txt=="opps") {
-			this.handDir[i-1] = COUNTERCLOCKWISE;
+		if (txt=="cw") {
+			this.spin[i-1] = CLOCKWISE;
+		} else if (txt=="ccw") {
+			this.spin[i-1] = COUNTERCLOCKWISE;
 		}
 	}	
 	//Generate moves
@@ -193,10 +192,7 @@ Controller.prototype.updateParameters = function() {
 		txt = list.options[list.selectedIndex].value;
 		move = this.generateMove(i-1,txt);
 		move.isOneShot = true;		
-		move.align.hand.angle = this.handAng[i-1];
-		move.align.hand.plane = WALL;
-		move.align.prop.angle = this.propAng[i-1];
-		move.align.prop.plane = WALL;
+		move.align.hand.angle = this.hand[i-1];
 		submoves = myProps[i-1].getMoveQueue().getSubMoves();
 		while (submoves.length > 1) {
 			submoves.pop();
@@ -205,10 +201,10 @@ Controller.prototype.updateParameters = function() {
 	}
 	var linktxt = "http://infiniteperplexity.github.io/visual-spinner-3d/";
 	var params = [	"1prop","2prop","3prop","4prop",
-			"2hands","3hands","4hands",
-			"2props","3props","4props",
-			"2spins","3spins","4spins",
-			"1move","2move","3move","4move"];
+					"1plane","2plane","3plane","4plane",
+					"1hand","2hand","3hand","4hand",
+					"1spin","2spin","3spin","4spin"
+					"1move","2move","3move","4move"];
 	for (var i = 0; i<params.length; i++) {
 		if (i==0) {
 			linktxt += "?" + params[i] + "=" + $("#"+params[i]).val();
@@ -223,56 +219,63 @@ Controller.prototype.updateParameters = function() {
 Controller.prototype.generateMove = function(n, txt) {
 	var move;
 	if (txt=="stat") {
-		move = moves.staticspin({direction: this.handDir[n]});
+		move = moves.staticspin({direction: this.spin[n], plane: this.plane[n]});
+		// or could do this as a 0 offset...
+		move.align.prop.angle = this.hand[n];
 	} else if (txt=="xtsn") {
-		move = moves.flower({direction: this.handDir[n], petals: 0});
+		move = moves.flower({direction: this.spin[n], plane: this.plane[n], petals: 0});
 	} else if (txt=="1pif") {
-		move = moves.flower({direction: this.handDir[n], petals: 1});
+		move = moves.flower({direction: this.spin[n], plane: this.plane[n], petals: 1});
 	} else if (txt=="2pif") {
-		move = moves.flower({direction: this.handDir[n], petals: 2});
+		move = moves.flower({direction: this.spin[n], plane: this.plane[n], petals: 2});
 	} else if (txt=="4pif") {
-		move = moves.flower({direction: this.handDir[n]});
+		move = moves.flower({direction: this.spin[n], plane: this.plane[n]});
 	} else if (txt=="3paf") {
-		move = move = moves.flower({direction: this.handDir[n], spin: ANTISPIN, petals: 3});
+		move = move = moves.flower({direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN, petals: 3});
 	} else if (txt=="4paf") {
-		move = move = moves.flower({direction: this.handDir[n], spin: ANTISPIN});
+		move = move = moves.flower({direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
 	} else if (txt=="hcap") {
-		move = moves.ccap({direction: this.handDir[n]});
+		move = moves.ccap({direction: this.spin[n], plane: this.plane[n]});
 	} else if (txt=="vcap") {
-		move = moves.ccap({direction: this.handDir[n]});
+		move = moves.ccap({direction: this.spin[n], plane: this.plane[n]});
 		move.changePhase(1);
 	} else if (txt=="hcpo") {
-		move = moves.ccap({direction: -this.handDir[n]});
+		move = moves.ccap({direction: -this.spin[n], plane: this.plane[n]});
 		move.changePhase(2);
 	} else if (txt=="vcpo") {
-		move = moves.ccap({direction: -this.handDir[n]});
+		move = moves.ccap({direction: -this.spin[n], plane: this.plane[n]});
 		move.changePhase(3);
 	} else if (txt=="pend") {
-		move = moves.pendulum({direction: this.handDir[n]});
+		move = moves.pendulum({direction: this.spin[n], plane: this.plane[n]});
 	} else if (txt=="1pt5") {
-		move = moves.onepointfive({direction: this.handDir[n]});
+		move = moves.onepointfive({direction: this.spin[n], plane: this.plane[n]});
 	} else if (txt=="isol") {
-		move = moves.isolation({direction: this.handDir[n]});
+		move = moves.isolation({direction: this.spin[n], plane: this.plane[n]});
 	} else if (txt=="cate") {
-		move = moves.isolation({direction: this.handDir[n], spin: ANTISPIN});
+		move = moves.isolation({direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
 	} else if (txt=="hlex") {
-		move = moves.linex({direction: this.handDir[n], angle: this.handAng[n]+STAGGER});
+		move = moves.linex({direction: this.spin[n], plane: this.plane[n], angle: this.handAng[n]+STAGGER});
 	} else if (txt=="vlex") {
-		move = moves.linex({direction: this.handDir[n], angle: this.handAng[n]});
+		move = moves.linex({direction: this.spin[n], plane: this.plane[n], angle: this.handAng[n]});
 	} else if (txt=="2btw") {
-		move = moves.weave({direction: this.handDir[n]});
+		move = moves.weave({direction: this.spin[n], plane: this.plane[n]});
+		//move.align.prop.angle = this.hand[n];
 	} else if (txt=="3btw") {
-		move = moves.weave({beats: 3, direction: this.handDir[n]});
+		move = moves.weave({beats: 3, direction: this.spin[n], plane: this.plane[n]});
+		//move.align.prop.angle = this.hand[n];
 	} else if (txt=="e3bt") {
-		move = moves.weave({shape: "circular", extend: 1, beats: 3, direction: this.handDir[n]});
+		move = moves.weave({shape: "circular", extend: 1, beats: 3, direction: this.spin[n], plane: this.plane[n]});
+		//move.align.prop.angle = this.hand[n];
 	} else if (txt=="supr") {
-		move = moves.superman({direction: this.handDir[n]});
+		move = moves.superman({direction: this.spin[n], plane: this.plane[n]});
+		//move.align.prop.angle = this.hand[n];
 	} else if (txt=="esup") {
-		move = moves.superman({shape: "circular", extend: 1, direction: this.handDir[n]});
+		move = moves.superman({shape: "circular", extend: 1, direction: this.spin[n], plane: this.plane[n]});
+		//move.align.prop.angle = this.hand[n];
 	} else if (txt=="isob") {
-		move = moves.isobend({direction: this.handDir[n]});
+		move = moves.isobend({direction: this.spin[n], plane: this.plane[n]});
 	} else if (txt=="antb") {
-		move = moves.antibend({direction: this.handDir[n]});
+		move = moves.antibend({direction: this.spin[n], plane: this.plane[n]});
 	}
 	return move;
 }
@@ -339,59 +342,75 @@ Hand Relations:
 </td>
 <form></form>
 <td>
-	<select id="2hands" onchange="controller.updateParameters()">
-		<option value="same" selected="selected">Same</option>
-		<option value="splt">Split</option>
-		<option value="qrtr">Quarter</option>
-		<option value="sqrt">SpltQrtr</option>
+	<select id="1planes" onchange="controller.updateParameters()">
+		<option value="wall" selected="selected">Wall</option>
+		<option value="wheel">Wheel</option>
+		<option value="floor">Floor</option>
 	</select>
 </td>
 <form></form>
 <td>
-	<select id="3hands" onchange="controller.updateParameters()">
-		<option value="same" selected="selected">Same</option>
-		<option value="splt">Split</option>
-		<option value="qrtr">Quarter</option>
-		<option value="sqrt">SpltQrtr</option>
+	<select id="2planes" onchange="controller.updateParameters()">
+		<option value="wall" selected="selected">Wall</option>
+		<option value="wheel">Wheel</option>
+		<option value="floor">Floor</option>
 	</select>
 </td>
 <form></form>
 <td>
-	<select id="4hands" onchange="controller.updateParameters()">
-		<option value="same" selected="selected">Same</option>
-		<option value="splt">Split</option>
-		<option value="qrtr">Quarter</option>
-		<option value="sqrt">SpltQrtr</option>
+	<select id="3planes" onchange="controller.updateParameters()">
+		<option value="wall" selected="selected">Wall</option>
+		<option value="wheel">Wheel</option>
+		<option value="floor">Floor</option>
+	</select>
+</td>
+<form></form>
+<td>
+	<select id="4planes" onchange="controller.updateParameters()">
+		<option value="wall" selected="selected">Wall</option>
+		<option value="wheel">Wheel</option>
+		<option value="floor">Floor</option>
 	</select>
 </td>
 </tr>
 <tr>
 <td>
-Prop Relations:
+Hand Relations:
 </td>
 <form></form>
 <td>
-	<select id="2props" onchange="controller.updateParameters()">
-		<option value="same" selected="selected">Same</option>
-		<option value="splt">Split</option>
-		<option value="qrtr">Quarter</option>
-		<option value="sqrt">SpltQrtr</option>
+	<select id="1hands" onchange="controller.updateParameters()">
+		<option value="twelve" selected="selected">Up</option>
+		<option value="six">Down</option>
+		<option value="three">Right</option>
+		<option value="nine">Left</option>
 	</select>
 </td>
+<form></form>
 <td>
-	<select id="3props" onchange="controller.updateParameters()">
-		<option value="same" selected="selected">Same</option>
-		<option value="splt">Split</option>https://github.com/infiniteperplexity/visual-spinner-3d
-		<option value="qrtr">Quarter</option>
-		<option value="sqrt">SpltQrtr</option>
+	<select id="2hands" onchange="controller.updateParameters()">
+		<option value="twelve" selected="selected">Up</option>
+		<option value="six">Down</option>
+		<option value="three">Right</option>
+		<option value="nine">Left</option>
 	</select>
 </td>
+<form></form>
 <td>
-	<select id="4props" onchange="controller.updateParameters()">
-		<option value="same" selected="selected">Same</option>
-		<option value="splt">Split</option>
-		<option value="qrtr">Quarter</option>
-		<option value="sqrt">SpltQrtr</option>
+	<select id="3hands" onchange="controller.updateParameters()">
+		<option value="twelve" selected="selected">Up</option>
+		<option value="six">Down</option>
+		<option value="three">Right</option>
+		<option value="nine">Left</option>
+	</select>
+</td>
+<form></form>
+<td>
+	<select id="4hands" onchange="controller.updateParameters()">
+		<option value="twelve" selected="selected">Up</option>
+		<option value="six">Down</option>
+		<option value="three">Right</option>
+		<option value="nine">Left</option>
 	</select>
 </td>
 </tr>
@@ -401,21 +420,27 @@ Spin Directions:
 </td>
 <form></form>
 <td>
+	<select id="1spins" onchange="controller.updateParameters()">
+		<option value="cw" selected="selected">Clockwise</option>
+		<option value="ccw">Counterclockwise</option>
+	</select>
+</td>
+<td>
 	<select id="2spins" onchange="controller.updateParameters()">
-		<option value="same">Same</option>
-		<option value="opps" selected="selected">Opposite</option>
+		<option value="cw">Clockwise</option>
+		<option value="ccw" selected="selected">Counterclockwise</option>
 	</select>
 </td>
 <td>
 	<select id="3spins" onchange="controller.updateParameters()">
-		<option value="same" selected="selected">Same</option>
-		<option value="opps">Opposite</option>
+		<option value="cw" selected="selected">Clockwise</option>
+		<option value="ccw">Counterclockwise</option>
 	</select>
 </td>
 <td>
 	<select id="4spins" onchange="controller.updateParameters()">
-		<option value="same">Same</option>
-		<option value="opps" selected="selected">Opposite</option>
+		<option value="cw">Clockwise</option>
+		<option value="ccw" selected="selected">Counterclockwise</option>
 	</select>
 </td>
 <td></td>
