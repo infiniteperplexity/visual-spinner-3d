@@ -1,7 +1,7 @@
 <!--Distributed under GNU Public License version 3-->
 <html><head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>VisualSpinner3D v. 1.1, by Glenn Wright</title>
+<title>VisualSpinner3D v. 1.2, by Glenn Wright</title>
 <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
 <script src="scripts/gl-matrix-min.js"></script>
 <script src="scripts/phoria-min.js"></script>
@@ -32,15 +32,14 @@ function init() {
 	ctx=document.getElementById('canvas').getContext('2d');
 	// optionally, pull parameters from URL
 	var params = [	"1prop","2prop","3prop","4prop",
-					"1plane","2plane","3plane",4plane",
+					"1plane","2plane","3plane","4plane",
 					"1hand","2hand","3hand","4hand",
-					"1spin","2spin","3spin","4spin"
+					"1spin","2spin","3spin","4spin",
 					"1move","2move","3move","4move"];
 	var defaults = ["poi","poi","poi","poi",
-					"wall","wall","wall","wall"
+					"wall","wall","wall","wall",
 					"twelve","twelve","twelve","twelve",
-					"cw","same","same",
-					"ccw","cw","ccw",
+					"cw","ccw","cw","ccw",
 					"xtsn","xtsn","3paf","3paf"];
 	for (var i = 0; i<params.length; i++) {
 		var txt = $.urlParam(params[i]);
@@ -203,7 +202,7 @@ Controller.prototype.updateParameters = function() {
 	var params = [	"1prop","2prop","3prop","4prop",
 					"1plane","2plane","3plane","4plane",
 					"1hand","2hand","3hand","4hand",
-					"1spin","2spin","3spin","4spin"
+					"1spin","2spin","3spin","4spin",
 					"1move","2move","3move","4move"];
 	for (var i = 0; i<params.length; i++) {
 		if (i==0) {
@@ -254,24 +253,19 @@ Controller.prototype.generateMove = function(n, txt) {
 	} else if (txt=="cate") {
 		move = moves.isolation({direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
 	} else if (txt=="hlex") {
-		move = moves.linex({direction: this.spin[n], plane: this.plane[n], angle: this.handAng[n]+STAGGER});
+		move = moves.linex({direction: this.spin[n], plane: this.plane[n], angle: this.hand[n]+STAGGER});
 	} else if (txt=="vlex") {
-		move = moves.linex({direction: this.spin[n], plane: this.plane[n], angle: this.handAng[n]});
+		move = moves.linex({direction: this.spin[n], plane: this.plane[n], angle: this.hand[n]});
 	} else if (txt=="2btw") {
 		move = moves.weave({direction: this.spin[n], plane: this.plane[n]});
-		//move.align.prop.angle = this.hand[n];
 	} else if (txt=="3btw") {
 		move = moves.weave({beats: 3, direction: this.spin[n], plane: this.plane[n]});
-		//move.align.prop.angle = this.hand[n];
 	} else if (txt=="e3bt") {
 		move = moves.weave({shape: "circular", extend: 1, beats: 3, direction: this.spin[n], plane: this.plane[n]});
-		//move.align.prop.angle = this.hand[n];
 	} else if (txt=="supr") {
-		move = moves.superman({direction: this.spin[n], plane: this.plane[n]});
-		//move.align.prop.angle = this.hand[n];
+		move = moves.superman({direction: this.spin[n], hand_plane: this.plane[n]});
 	} else if (txt=="esup") {
-		move = moves.superman({shape: "circular", extend: 1, direction: this.spin[n], plane: this.plane[n]});
-		//move.align.prop.angle = this.hand[n];
+		move = moves.superman({shape: "circular", extend: 1, direction: this.spin[n], hand_plane: this.plane[n]});
 	} else if (txt=="isob") {
 		move = moves.isobend({direction: this.spin[n], plane: this.plane[n]});
 	} else if (txt=="antb") {
@@ -280,7 +274,6 @@ Controller.prototype.generateMove = function(n, txt) {
 	return move;
 }
 </script>
-<script>try {  for(var lastpass_iter=0; lastpass_iter < document.forms.length; lastpass_iter++){    var lastpass_f = document.forms[lastpass_iter];    if(typeof(lastpass_f.lpsubmitorig)=="undefined"){      if (typeof(lastpass_f.submit) == "function") {        lastpass_f.lpsubmitorig = lastpass_f.submit;        lastpass_f.submit = function(){          var form = this;          try {            if (document.documentElement && 'createEvent' in document)            {              var forms = document.getElementsByTagName('form');              for (var i=0 ; i<forms.length ; ++i)                if (forms[i]==form)                {                  var element = document.createElement('lpformsubmitdataelement');                  element.setAttribute('formnum',i);                  element.setAttribute('from','submithook');                  document.documentElement.appendChild(element);                  var evt = document.createEvent('Events');                  evt.initEvent('lpformsubmit',true,false);                  element.dispatchEvent(evt);                  break;                }            }          } catch (e) {}          try {            form.lpsubmitorig();          } catch (e) {}        }      }    }  }} catch (e) {}</script></head>
 <body onload="init();">
 <table>
 <tbody><tr>

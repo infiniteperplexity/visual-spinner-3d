@@ -90,6 +90,8 @@ MoveFactory.prototype.antibend = function(options) {
 	for (var i = 0; i<nlobes; i++) {
 		segment = new SimpleMove();
 		segment.options = options;
+		segment.hand.plane = options.plane;
+		segment.align.hand.plane = options.plane;
 		segment.prop.radius = 1;
 		segment.hand.radius = 1/Math.tan(UNIT/(2*options.lobes));
 		segment.hand.speed = 0;
@@ -122,6 +124,8 @@ MoveFactory.prototype.isobend = function(options) {
 	for (var i = 0; i<options.lobes; i++) {
 		segment = new SimpleMove();
 		segment.options = options;
+		segment.hand.plane = options.plane;
+		segment.align.hand.plane = options.plane;
 		segment.prop.radius = 1;
 		segment.hand.radius = 1;
 		segment.hand.speed = 0;
@@ -296,6 +300,7 @@ MoveFactory.prototype.staticspin = function(options) {
 	myMove.prop.speed = options.direction*options.speed;
 	myMove.prop.plane = options.plane;
 	myMove.beats = options.duration;
+	myMove.align.prop.offset = 0;
 	return myMove;
 }
 
@@ -314,6 +319,10 @@ MoveFactory.prototype.linex = function(options) {
 	var two = new SimpleLinear();
 	one.beats = options.duration/2;
 	two.beats = options.duration/2;
+	one.hand.plane = options.plane;
+	two.hand.plane = options.plane;
+	one.prop.plane = options.plane;
+	two.prop.plane = options.plane;
 	one.prop.speed = options.loops*options.direction*options.speed;
 	two.prop.speed = options.loops*options.direction*options.speed;
 	one.hand.begin_speed = 8*options.speed;
@@ -334,15 +343,13 @@ MoveFactory.prototype.linex = function(options) {
 
 MoveFactory.prototype.weave = function(options) {
         options = this.defaults(options,{
-		//could use spin instead of direction
                 direction: CLOCKWISE,
 		spin: FORWARD,
                 beats: 2,
                 duration: 1,
                 speed: 1,
                 extend: 0.5,
-                hand_plane: WALL,
-                prop_plane: WHEEL,
+                plane: WHEEL,
                 bendiness: 0,
                 shape: "linear",
 		bendiness: 0
@@ -354,10 +361,16 @@ MoveFactory.prototype.weave = function(options) {
         if (options.shape=="linear") {
                 one = new SimpleLinear();
                 two = new SimpleLinear();
-                one.hand.angle = THREE;
+		if (options.plane==FLOOR) {
+			one.hand.angle = TWELVE;
+			two.hand.angle = SIX;
+		} else {
+			one.hand.angle = THREE;
+			two.hand.angle = NINE ;
+		}
                 one.hand.begin_speed = 8*options.extend*options.direction*options.speed;
                 one.hand.end_speed = -8*options.extend*options.direction*options.speed;
-                two.hand.angle = NINE ;
+               
                 two.hand.begin_speed = 8*options.extend*options.direction*options.speed;
                 two.hand.end_speed = -8*options.extend*options.direction*options.speed;
                 myMove.align.hand.radius = 0;
@@ -371,10 +384,16 @@ MoveFactory.prototype.weave = function(options) {
         }
         one.beats = options.duration/2;
         two.beats = options.duration/2;
-        one.hand.plane = options.hand_plane;
-        two.hand.plane = options.hand_plane;
-        one.prop.plane = options.prop_plane;
-        two.prop.plane = options.prop_plane;
+	one.prop.plane = options.plane;
+	two.prop.plane = options.plane;
+	one.align.prop.offset = 0;
+	if (options.plane==WALL || options.plane==FLOOR){
+		one.hand.plane = WHEEL;
+		two.hand.plane = WHEEL;
+	} else if (options.plane==WHEEL) {
+		one.hand.plane = WALL;
+		two.hand.plane = WALL;
+	}
         one.prop.speed = options.beats*options.spin*options.speed;
         two.prop.speed = options.beats*options.spin*options.speed;
         myMove.addMove(one);
@@ -389,7 +408,7 @@ MoveFactory.prototype.superman = function(options) {
                 extend: 0.5,
                 duration: 1,
                 speed: 1,
-                hand_plane: WALL,
+                hand_plane: FLOOR,
                 prop_plane: FLOOR,
                 shape: "linear"
         });
