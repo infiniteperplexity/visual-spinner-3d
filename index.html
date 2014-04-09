@@ -156,7 +156,7 @@ Controller.prototype.updateParameters = function() {
 	}			
 	//Update  hand and prop positions
 	for (var i = 1; i<=myProps.length; i++) {
-		list = document.getElementById(i+"planes");
+		list = document.getElementById(i+"plane");
 		txt = list.options[list.selectedIndex].value;
 		if (txt=="wall") {
 			this.plane[i-1] = WALL;
@@ -165,7 +165,7 @@ Controller.prototype.updateParameters = function() {
 		} else if (txt=="floor") {
 			this.plane[i-1] = FLOOR;
 		}
-		list = document.getElementById(i+"hands");
+		list = document.getElementById(i+"hand");
 		txt = list.options[list.selectedIndex].value;
 		if (txt=="twelve") {
 			this.hand[i-1] = TWELVE;
@@ -176,7 +176,7 @@ Controller.prototype.updateParameters = function() {
 		} else if (txt=="nine") {
 			this.hand[i-1] = NINE;
 		}
-		list = document.getElementById(i+"spins");
+		list = document.getElementById(i+"spin");
 		txt = list.options[list.selectedIndex].value;
 		if (txt=="cw") {
 			this.spin[i-1] = CLOCKWISE;
@@ -335,7 +335,7 @@ Hand Relations:
 </td>
 <form></form>
 <td>
-	<select id="1planes" onchange="controller.updateParameters()">
+	<select id="1plane" onchange="controller.updateParameters()">
 		<option value="wall" selected="selected">Wall</option>
 		<option value="wheel">Wheel</option>
 		<option value="floor">Floor</option>
@@ -343,7 +343,7 @@ Hand Relations:
 </td>
 <form></form>
 <td>
-	<select id="2planes" onchange="controller.updateParameters()">
+	<select id="2plane" onchange="controller.updateParameters()">
 		<option value="wall" selected="selected">Wall</option>
 		<option value="wheel">Wheel</option>
 		<option value="floor">Floor</option>
@@ -351,7 +351,7 @@ Hand Relations:
 </td>
 <form></form>
 <td>
-	<select id="3planes" onchange="controller.updateParameters()">
+	<select id="3plane" onchange="controller.updateParameters()">
 		<option value="wall" selected="selected">Wall</option>
 		<option value="wheel">Wheel</option>
 		<option value="floor">Floor</option>
@@ -359,7 +359,7 @@ Hand Relations:
 </td>
 <form></form>
 <td>
-	<select id="4planes" onchange="controller.updateParameters()">
+	<select id="4plane" onchange="controller.updateParameters()">
 		<option value="wall" selected="selected">Wall</option>
 		<option value="wheel">Wheel</option>
 		<option value="floor">Floor</option>
@@ -372,7 +372,7 @@ Hand Relations:
 </td>
 <form></form>
 <td>
-	<select id="1hands" onchange="controller.updateParameters()">
+	<select id="1hand" onchange="controller.updateParameters()">
 		<option value="twelve" selected="selected">Up</option>
 		<option value="six">Down</option>
 		<option value="three">Right</option>
@@ -381,7 +381,7 @@ Hand Relations:
 </td>
 <form></form>
 <td>
-	<select id="2hands" onchange="controller.updateParameters()">
+	<select id="2hand" onchange="controller.updateParameters()">
 		<option value="twelve" selected="selected">Up</option>
 		<option value="six">Down</option>
 		<option value="three">Right</option>
@@ -390,7 +390,7 @@ Hand Relations:
 </td>
 <form></form>
 <td>
-	<select id="3hands" onchange="controller.updateParameters()">
+	<select id="3hand" onchange="controller.updateParameters()">
 		<option value="twelve" selected="selected">Up</option>
 		<option value="six">Down</option>
 		<option value="three">Right</option>
@@ -399,7 +399,7 @@ Hand Relations:
 </td>
 <form></form>
 <td>
-	<select id="4hands" onchange="controller.updateParameters()">
+	<select id="4hand" onchange="controller.updateParameters()">
 		<option value="twelve" selected="selected">Up</option>
 		<option value="six">Down</option>
 		<option value="three">Right</option>
@@ -413,25 +413,25 @@ Spin Directions:
 </td>
 <form></form>
 <td>
-	<select id="1spins" onchange="controller.updateParameters()">
+	<select id="1spin" onchange="controller.updateParameters()">
 		<option value="cw" selected="selected">Clockwise</option>
 		<option value="ccw">Counterclockwise</option>
 	</select>
 </td>
 <td>
-	<select id="2spins" onchange="controller.updateParameters()">
+	<select id="2spin" onchange="controller.updateParameters()">
 		<option value="cw">Clockwise</option>
 		<option value="ccw" selected="selected">Counterclockwise</option>
 	</select>
 </td>
 <td>
-	<select id="3spins" onchange="controller.updateParameters()">
+	<select id="3spin" onchange="controller.updateParameters()">
 		<option value="cw" selected="selected">Clockwise</option>
 		<option value="ccw">Counterclockwise</option>
 	</select>
 </td>
 <td>
-	<select id="4spins" onchange="controller.updateParameters()">
+	<select id="4spin" onchange="controller.updateParameters()">
 		<option value="cw">Clockwise</option>
 		<option value="ccw" selected="selected">Counterclockwise</option>
 	</select>
@@ -580,7 +580,7 @@ Fourth Move:
 
 <p></p>
 Pasteable link to these settings:
-<p id="myLink">http://infiniteperplexity.github.io/visual-spinner-3d/?1prop=poi&amp;2prop=poi&amp;3prop=poi&amp;4prop=poi&amp;2hands=same&amp;3hands=same&amp;4hands=same&amp;2props=same&amp;3props=same&amp;4props=same&amp;2spins=opps&amp;3spins=same&amp;4spins=opps&amp;1move=xtsn&amp;2move=xtsn&amp;3move=3paf&amp;4move=3paf</p><p></p>
+<p id="myLink"></p>
 <p>Source: https://github.com/infiniteperplexity/visual-spinner-3d</p>
 <p>Questions, comments, and suggestions: infinite DOT perplexity AT gmail DOT com</p>
 
