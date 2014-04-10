@@ -8,8 +8,11 @@ var CLOCKWISE = 1;
 var COUNTERCLOCKWISE = -1;
 var INSPIN = 1;
 var ANTISPIN = -1;
-var FORWARD = CLOCKWISE;
-var BACKWARD = COUNTERCLOCKWISE;
+var FORWARD = 1;
+var BACKWARD = -1;
+var ISOBEND = 1;
+var ANTIBEND = -1;
+var PROBEND = 3; 
 var NOSPIN = 0;
 var STATIC = 0;
 var TWELVE = 1.5*Math.PI;
@@ -212,17 +215,18 @@ Prop.prototype.translateProp = function(distance, angle, plane) {this.translateE
 Prop.prototype.translateGrip = function(distance, angle, plane) {this.translateElement("grip", distance, angle, plane);}
 // Get an element's angle in a certain plane
 Prop.prototype.getElementAngle = function(element, plane) {
-	if (plane === undefined) {plane = WALL;}
-	var ref = plane.reference();
-	var projected = this[element].unitize().vectorize().project(plane);
-	var angle = ref.between(projected);
-	var tiny = ref.rotate(0.0001,plane).between(projected);
-	if (angle >= tiny) {
-		return unwind(angle);
-	} else {
-		return unwind(-angle);
-	}
-}
+        if (this[element].radius==0) {return 0;}
+        if (plane === undefined) {plane = WALL;}
+        var ref = plane.reference();
+        var projected = this[element].unitize().vectorize().project(plane);
+        var angle = ref.between(projected);
+        var tiny = ref.rotate(0.0001,plane).between(projected);
+        if (angle >= tiny) {
+                return unwind(angle);
+        } else {
+                return unwind(-angle);
+        }
+} 
 Prop.prototype.getHomeAngle = function(plane) {return this.getElementAngle("home", plane);}
 Prop.prototype.getPivotAngle = function(plane) {return this.getElementAngle("pivot", plane);}
 Prop.prototype.getHandAngle = function(plane) {return this.getElementAngle("hand", plane);}
@@ -383,32 +387,42 @@ SimpleMove.prototype.spin = function(myProp) {
 }
 
 function SpinElement(parent, element) {
-	this.parent = parent;
-	this.element = element;
-	this.plane = WALL;
-	this.begin_radius;
-	this.end_radius;
-	this.radius = 0;
-	this.begin_speed;
-	this.end_speed;
-	this.speed = 1;
+        this.parent = parent;
+        this.element = element;
+        this.plane = WALL;
+        this.begin_radius;
+        this.end_radius;
+        this.radius = 0;
+        this.begin_speed;
+        this.end_speed;
+        this.speed = 1;
+        this.begin_bend;
+        this.end_bend;
+        this.bend;
+        this.bend_plane;
 }
 SpinElement.prototype.go = function(myProp) {
-	this.spin(myProp);
-	this.extend(myProp);
+        this.spin(myProp);
+        this.extend(myProp);
 }
 SpinElement.prototype.spin = function(myProp) {
-	if (this.begin_speed!==undefined) {
-		this.speed = this.begin_speed + this.parent.getPosition()*(this.end_speed - this.begin_speed);
-	}
-	myProp.rotateElement(this.element,this.speed*SPEED,this.plane);
+        if (this.begin_speed!==undefined) {
+                this.speed = this.begin_speed + this.parent.getPosition()*(this.end_speed - this.begin_speed);
+        }
+        if (this.begin_bend!==undefined) {
+                this.bend = this.begin_bend + this.parent.getPosition()*(this.end_bend - this.begin_bend);
+        }
+        if (this.bend !==undefined) {
+                this.plane = this.plane.rotate(this.bend*SPEED,this.bend_plane);
+        }
+        myProp.rotateElement(this.element,this.speed*SPEED,this.plane);
 }
 SpinElement.prototype.extend = function(myProp) {
-	if (this.begin_radius!==undefined) {
-		this.radius = this.begin_radius + this.parent.getPosition()*(this.end_radius - this.begin_radius);
-	}
-	myProp[this.element].radius = this.radius;
-}
+        if (this.begin_radius!==undefined) {
+                this.radius = this.begin_radius + this.parent.getPosition()*(this.end_radius - this.begin_radius);
+        }
+        myProp[this.element].radius = this.radius;
+} 
 function LinearElement(parent, element) {
 	this.parent = parent;
 	this.element = element;
@@ -448,6 +462,12 @@ CompositeMove.prototype.setup = function(myProp) {
 function setup(myProp) {
 	var hand_plane;
 	var prop_plane;
+	if (this.align.hand.radius !== undefined) {
+		myProp.hand.radius = this.align.hand.radius;
+	}
+	if (this.align.prop.radius !== undefined) {
+		myProp.prop.radius = this.align.prop.radius;
+	}
 	if (this.align.hand.plane === undefined) {
 		hand_plane = this.hand.plane;
 	} else {
@@ -466,12 +486,6 @@ function setup(myProp) {
 	}
 	if (this.align.prop.offset!==undefined) {
 		myProp.setPropAngle(myProp.getHandAngle(hand_plane)+this.align.prop.offset, hand_plane);
-	}
-	if (this.align.hand.radius !== undefined) {
-		myProp.hand.radius = this.align.hand.radius;
-	}
-	if (this.align.prop.radius !== undefined) {
-		myProp.prop.radius = this.align.prop.radius;
 	}
 	if (this.align.prop.tilt !== undefined) {
 		this.prop.plane = myProp.hand.unitize().vectorize().rotate(this.align.prop.tilt, hand_plane);
@@ -495,6 +509,12 @@ function setup(myProp) {
 		}
 	}
 	if (lookup !== undefined) {
+		if (this.align[lookup].hand !== undefined && this.align[lookup].hand.radius !== undefined) {
+			myProp.hand.radius = this.align[lookup].hand.radius;
+		}
+		if (this.align[lookup].prop !== undefined && this.align[lookup].prop.radius !== undefined) {
+			myProp.prop.radius = this.align[lookup].prop.radius;
+		}
 		if (this.align[lookup].hand === undefined || this.align[lookup].hand.plane === undefined) {
 			hand_plane = this.hand.plane;
 		} else {
@@ -513,12 +533,6 @@ function setup(myProp) {
 		}
 		if (this.align[lookup].prop !== undefined && this.align[lookup].prop.offset!==undefined) {
 			myProp.setPropAngle(myProp.getHandAngle(hand_plane)+this.align[lookup].prop.offset, hand_plane);
-		}
-		if (this.align[lookup].hand !== undefined && this.align[lookup].hand.radius !== undefined) {
-			myProp.hand.radius = this.align[lookup].hand.radius;
-		}
-		if (this.align[lookup].prop !== undefined && this.align[lookup].prop.radius !== undefined) {
-			myProp.prop.radius = this.align[lookup].prop.radius;
 		}
 		if (this.align[lookup].phase !== undefined) {
 			this.changePhase(this.align[lookup].phase);

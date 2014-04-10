@@ -16,6 +16,7 @@ MoveFactory.prototype.flower = function(options) {
 	} else {
 		myMove.prop.speed = (options.petals-1)*options.spin*options.direction*options.speed;
 	}
+	myMove.align.hand.radius = options.extend;
 	myMove.hand.radius = options.extend;
 	myMove.hand.speed = options.direction*options.speed;
 	myMove.beats = options.duration;
@@ -456,3 +457,89 @@ MoveFactory.prototype.superman = function(options) {
 	//myMove.align.prop.angle = TWELVE;
         return myMove;
 } 
+
+MoveFactory.prototype.toroid = function(options) {
+        options = this.defaults(options,{
+                direction: CLOCKWISE,
+                spin: INSPIN,
+                lobes: 4,
+                extend: 1,
+                duration: 1,
+                speed: 1,
+                mode: DIAMOND,
+                plane: WALL,
+                bend: ISOBEND
+        });
+        var myMove = new SimpleMove();
+        myMove.options = options;
+        myMove.hand.radius = options.extend;
+        myMove.hand.speed = options.direction*options.speed;
+        myMove.prop.speed = options.lobes*options.direction*options.speed;
+        myMove.beats = options.duration;
+        myMove.align.prop.tilt = -QUARTER;
+        myMove.hand.plane = options.plane;
+        myMove.prop.bend = options.bend*options.direction*options.speed;
+        myMove.prop.bend_plane = options.plane;
+        myMove.align.prop.offset = options.mode;
+        return myMove;
+}
+
+
+//MoveFactory.prototype.weave = function(options) {
+//        options = this.defaults(options,{
+//                direction: CLOCKWISE,
+//                spin: FORWARD,
+//                beats: 2,
+//                duration: 1,
+//                extend: 1,
+//                speed: 1,
+//                plane: WHEEL,
+//                bendiness: 0
+//        });
+//        var myMove = new CompositeMove();
+//        myMove.options = options;
+//        var segment;
+//        for (var i = 0; i<4; i++) {
+//                segment = new SimpleLinear();
+//                if (options.plane==FLOOR) {
+//                        segment.hand.angle = TWELVE;
+//                        segment.hand.plane = WHEEL;
+//                        segment.prop.bend_plane = WHEEL;
+//                } else if (options.plane==WALL) {
+//                        segment.hand.angle = THREE;
+//                        segment.hand.plane = WHEEL;
+//                        segment.prop.bend_plane = WHEEL;
+//                } else if (options.plane==WHEEL) {
+//                        segment.hand.angle = THREE;
+//                        segment.hand.plane = WALL;
+//                        segment.prop.bend_plane = WALL;
+//                }
+//                if (i==0) {
+//                        segment.hand.begin_speed = 8*options.extend*options.direction*options.speed;
+//                        segment.hand.end_speed = 0;
+//                        myMove.align.hand.angle = segment.hand.angle;
+//                        segment.prop.bend = -0.5;
+//                } else if (i==1) {
+//                        segment.hand.begin_speed = 0;
+//                        segment.hand.end_speed = -8*options.extend*options.direction*options.speed;
+//                        segment.prop.bend = 0.5;
+//                } else if (i==2) {
+//                        segment.hand.begin_speed = -8*options.extend*options.direction*options.speed;
+//                        segment.hand.end_speed = 0;
+//                        segment.prop.bend = 0.5;
+//                } else if (i==3) {
+//	                segment.hand.begin_speed = 0;
+//                        segment.hand.end_speed = 8*options.extend*options.direction*options.speed;
+//                        segment.prop.bend = -0.5;
+//                }
+//                segment.beats = options.duration/4;
+//                segment.prop.speed = options.beats*options.spin*options.speed;
+//                segment.prop.plane = options.plane;
+//                segment.align.hand.plane = segment.hand.plane;
+//                myMove.addMove(segment);
+//        }
+//        myMove.align.prop.plane = options.plane;
+//        myMove.align.prop.offset = 0;
+//        return myMove;
+//}
+

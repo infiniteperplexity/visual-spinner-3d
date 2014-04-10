@@ -17,7 +17,6 @@ var ORIGINX = WIDTH/2;
 var ORIGINY = HEIGHT/2;
 var BACKGROUND = "black";
 
-
 var myProps = new Array(); 
 var controller = new Controller();
 var moves = new MoveFactory();
@@ -92,6 +91,9 @@ function canvasSetup() {
 	var propTwo = new Prop(new Poi());
 	var propThree = new Prop(new Poi());
 	var propFour = new Prop(new Poi());
+	propTwo.renderer.head_color = "blue";
+	propThree.renderer.head_color = "yellow";
+	propFour.renderer.head_color = "green";
 	propTwo.renderer.head_color_3d = [0,0,255];
 	propThree.renderer.head_color_3d = [255,255,0];
 	propFour.renderer.head_color_3d = [0,255,0];
@@ -144,10 +146,13 @@ Controller.prototype.updateParameters = function() {
 			this.prop[i-1]=txt;
 			if (txt=="poi") {
 				renderer = new Poi();
+			} else if (txt=="fpoi") {
+				renderer = new FirePoi();
 			} else if (txt=="none") {
 				renderer = new NoProp();
 			}
-			renderer.head_color_3d = myProps[i-1].renderer.head_color_3d;			
+			renderer.head_color_3d = myProps[i-1].renderer.head_color_3d;		
+			renderer.head_color = myProps[i-1].renderer.head_color;
 			myProps[i-1].renderer.deactivate();
 			myProps[i-1].renderer = renderer;
 			renderer.prop = myProps[i-1];
@@ -258,18 +263,14 @@ Controller.prototype.generateMove = function(n, txt) {
 		move = moves.linex({direction: this.spin[n], plane: this.plane[n], angle: this.hand[n]});
 	} else if (txt=="2btw") {
 		move = moves.weave({direction: this.spin[n], plane: this.plane[n]});
-	} else if (txt=="3btw") {
-		move = moves.weave({beats: 3, direction: this.spin[n], plane: this.plane[n]});
-	} else if (txt=="e3bt") {
-		move = moves.weave({shape: "circular", extend: 1, beats: 3, direction: this.spin[n], plane: this.plane[n]});
 	} else if (txt=="supr") {
 		move = moves.superman({direction: this.spin[n], hand_plane: this.plane[n]});
-	} else if (txt=="esup") {
-		move = moves.superman({shape: "circular", extend: 1, direction: this.spin[n], hand_plane: this.plane[n]});
 	} else if (txt=="isob") {
-		move = moves.isobend({direction: this.spin[n], plane: this.plane[n]});
+		move = moves.toroid({lobes: 4, direction: this.spin[n], bend: ISOBEND, plane: this.plane[n]});
 	} else if (txt=="antb") {
-		move = moves.antibend({direction: this.spin[n], plane: this.plane[n]});
+		move = moves.toroid({lobes: 4, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
+	} else if (txt=="prob") {
+		move = moves.toroid({lobes: 4, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
 	}
 	return move;
 }
@@ -289,6 +290,7 @@ First Prop:
 <td>
 	<select id="1prop" onchange="controller.updateParameters()">
 		<option value="poi" selected="selected">Poi</option>
+		<option value="fpoi">Fire Poi</option>
 		<option value="none">None</option>
 	</select>
 
@@ -301,6 +303,7 @@ Third Prop:
 <td>
 	<select id="3prop" onchange="controller.updateParameters()">
 		<option value="poi" selected="selected">Poi</option>
+		<option value="fpoi">Fire Poi</option>
 		<option value="none">None</option>
 	</select>
 </td>
@@ -314,6 +317,7 @@ Second Prop:
 <td>
 	<select id="2prop" onchange="controller.updateParameters()">
 		<option value="poi" selected="selected">Poi</option>
+		<option value="fpoi">Fire Poi</option>
 		<option value="none">None</option>
 	</select>
 </td>
@@ -325,6 +329,7 @@ Fourth Prop:
 <td>
 	<select id="4prop" onchange="controller.updateParameters()">
 		<option value="poi" selected="selected">Poi</option>
+		<option value="fpoi">Fire Poi</option>
 		<option value="none">None</option>
 	</select>
 </td>
@@ -464,12 +469,10 @@ First Move:
 		<option value="hlex">Horizontal Linear Extension</option>
 		<option value="vlex">Vertical Linear Extension</option>
 		<option value="2btw">Two-Beat Weave</option>
-		<option value="3btw">Three-Beat Weave</option>
-		<option value="e3bt">Three-Beat Extension</option>
 		<option value="supr">Superman</option>
-		<option value="esup">Extended Superman</option>
 		<option value="isob">Four-Lobe Iso-bend Toroid</option>
 		<option value="antb">Four-Lobe Anti-bend Toroid</option>
+		<option value="prob">Four-Lobe Pro-bend Toroid</option>
 	</select>
 </td>
 
@@ -499,12 +502,10 @@ Second Move:
 		<option value="hlex">Horizontal Linear Extension</option>
 		<option value="vlex">Vertical Linear Extension</option>
 		<option value="2btw">Two-Beat Weave</option>
-		<option value="3btw">Three-Beat Weave</option>
-		<option value="e3bt">Three-Beat Extension</option>
 		<option value="supr">Superman</option>
-		<option value="esup">Extended Superman</option>
 		<option value="isob">Four-Lobe Iso-bend Toroid</option>
 		<option value="antb">Four-Lobe Anti-bend Toroid</option>
+		<option value="prob">Four-Lobe Pro-bend Toroid</option>
 	</select>
 </td>
 </tr>
@@ -533,12 +534,10 @@ Third Move:
 		<option value="hlex">Horizontal Linear Extension</option>
 		<option value="vlex">Vertical Linear Extension</option>
 		<option value="2btw">Two-Beat Weave</option>
-		<option value="3btw">Three-Beat Weave</option>
-		<option value="e3bt">Three-Beat Extension</option>
 		<option value="supr">Superman</option>
-		<option value="esup">Extended Superman</option>
 		<option value="isob">Four-Lobe Iso-bend Toroid</option>
 		<option value="antb">Four-Lobe Anti-bend Toroid</option>
+		<option value="prob">Four-Lobe Pro-bend Toroid</option>
 	</select>
 </td>
 </tr>
@@ -560,19 +559,17 @@ Fourth Move:
 		<option value="hcpo">Horizontal C-CAP (offset)</option>
 		<option value="vcap">Vertical C-CAP</option>
 		<option value="vcpo">Vertical C-CAP (offset)</option>
-		<option value="pend">Pendulum</option>
+		<option value="pend">Pendulum</option>uments/projects/visual-spinner-3d/index.html
 		<option value="1pt5">1.5</option>
 		<option value="isol">Isolation</option>
 		<option value="cate">Cat-Eye</option>
 		<option value="hlex">Horizontal Linear Extension</option>
 		<option value="vlex">Vertical Linear Extension</option>
 		<option value="2btw">Two-Beat Weave</option>
-		<option value="3btw">Three-Beat Weave</option>
-		<option value="e3bt">Three-Beat Extension</option>
 		<option value="supr">Superman</option>
-		<option value="esup">Extended Superman</option>
 		<option value="isob">Four-Lobe Iso-bend Toroid</option>
 		<option value="antb">Four-Lobe Anti-bend Toroid</option>
+		<option value="prob">Four-Lobe Pro-bend Toroid</option>
 	</select>
 </td>
 </tr>

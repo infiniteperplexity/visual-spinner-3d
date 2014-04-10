@@ -36,55 +36,57 @@ function PropRenderer() {
 	this.tether_thickness = 1;
 	this.head_color_3d = [255,0,0];
 }
+PropRenderer.prototype.activate = function() {
+	for (var i = 0; i<this.shapes.length; i++) {
+		scene.graph.push(this.shapes[i]);
+	}
+}
+PropRenderer.prototype.deactivate = function() {
+	for (var i = 0; i<this.shapes.length; i++) {
+		if (scene.graph.indexOf(this.shapes[i])!==-1) {
+			scene.graph.splice(scene.graph.indexOf(this.shapes[i]),1);
+		}
+	}
+}
 
 function Poi() {
-	var c = Phoria.Util.generateCylinder(0.001,1,8);
-	this.cylinder = Phoria.Entity.create({
+	this.shapes = [];
+	var c = Phoria.Util.generateCylinder(0.001,1,3);
+	var cylinder = Phoria.Entity.create({
 		points: c.points,
 		edges: c.edges,
 		polygons: c.polygons
 	});
-	var s = Phoria.Util.generateSphere(0.2,12,12);
-	this.sphere = Phoria.Entity.create({
+	this.shapes.push(cylinder);
+	var s = Phoria.Util.generateSphere(0.2,6,6);
+	var sphere = Phoria.Entity.create({
 			points: s.points,
 			edges: s.edges,
 			polygons: s.polygons
-		});
+	});
+	this.shapes.push(sphere);
 }
 Poi.prototype = new PropRenderer();
-Poi.prototype.activate = function() {
-	scene.graph.push(this.sphere);
-	scene.graph.push(this.cylinder);
-}
-Poi.prototype.deactivate = function() {
-	if (scene.graph.indexOf(this.sphere)!==-1) {
-		scene.graph.splice(scene.graph.indexOf(this.sphere),1);
-	}
-	if (scene.graph.indexOf(this.cylinder)!==-1) {
-		scene.graph.splice(scene.graph.indexOf(this.cylinder),1);
-	}
-}
 Poi.prototype.render2D = function() {	
 	ctx.save();
+	
 	ctx.beginPath();
 	ctx.moveTo(0, 0);
 	ctx.lineTo(this.pixels,0);
 	ctx.lineWidth = this.tether_thickness;
 	ctx.strokeStyle = this.tether_color;
 	ctx.stroke();
-	
 	ctx.beginPath();
 	ctx.arc(0, 0, this.handle_size, 0, UNIT);
 	ctx.fillStyle = this.handle_color;
 	ctx.fill();
 	ctx.stroke();
-	
 	ctx.beginPath();
 	ctx.arc(this.pixels, 0, this.head_size, 0, UNIT);
 	ctx.fillStyle = this.head_color;
 	ctx.fill();
 	ctx.stroke();
-			
+		
 	ctx.restore();
 };
 Poi.prototype.render3D = function(mat) {
@@ -92,16 +94,78 @@ Poi.prototype.render3D = function(mat) {
 	var tmat = mat4.clone(mat);
 	mat4.translate(tmat, tmat, [0,0,0.5*this.prop.prop.radius]);
 	mat4.rotate(tmat, tmat, STAGGER, XAXIS3);
-	this.cylinder.matrix = tmat;
+	this.shapes[0].matrix = tmat;
 	// translate to prop head
 	mat4.translate(mat, mat, [0,0,this.prop.prop.radius]);
-	this.sphere.matrix = mat;
-	this.sphere.style.color = this.head_color_3d;
+	this.shapes[1].matrix = mat;
+	this.shapes[1].style.color = this.head_color_3d;
 }
 
-function NoProp() {}
+function NoProp() {this.shapes = []}
 NoProp.prototype = new PropRenderer();
 NoProp.prototype.render2D = function() {}
 NoProp.prototype.render3D = function(mat) {}
-NoProp.prototype.activate = function() {}
-NoProp.prototype.deactivate = function() {}
+	
+	
+function FirePoi() {
+	this.shapes = [];
+	var c = Phoria.Util.generateCylinder(0.01,1,3);
+	var cylinder = Phoria.Entity.create({
+		points: c.points,
+		edges: c.edges,
+		polygons: c.polygons
+	});
+	this.shapes.push(cylinder);
+	
+	var s = Phoria.Util.generateSphere(0.15,4,4);
+	var sphere = Phoria.Entity.create({
+			points: s.points,
+			edges: s.edges,
+			polygons: s.polygons
+	});
+	this.shapes.push(sphere);
+	
+	var texture = Phoria.Util.generateRadialGradientBitmap(32, "rgba(128,64,32,1)", "rgba(128,64,32,0)");
+	var flame = Phoria.EmitterEntity.create({
+		position: {x:0, y:0, z:0},
+		positionRnd: {x:0.1, y:0.1, z:0.1},
+		rate: 25,
+		velocity: {x:0, y:0.025, z:0},
+		velocityRnd: {x:0.025, y:0.025, z:0.025},
+		lifetime: 500,
+		lifetimeRnd: 50,
+		gravity: false,
+		style: {
+			compositeOperation: "lighter",
+			shademode: "sprite",
+			linewidth: 7,
+			objectsortmode: "front",
+			sprite: 0
+		}
+	});
+	flame.textures[0] = texture;
+	//flame.textures.push(texture);
+	this.shapes.push(flame);
+	var s = Phoria.Util.generateSphere(0.2,6,6);
+}
+FirePoi.prototype = new PropRenderer() ;
+FirePoi.prototype.render3D = function(mat) {
+	// create the handle
+	var tmat = mat4.clone(mat);
+	mat4.translate(tmat, tmat, [0,0,0.5*this.prop.prop.radius]);
+	mat4.rotate(tmat, tmat, STAGGER, XAXIS3);
+	this.shapes[0].matrix = tmat;
+	// translate to prop head
+	mat4.translate(mat, mat, [0,0,this.prop.prop.radius]);
+	this.shapes[1].matrix = mat;
+	this.shapes[2].matrix = mat;
+	this.shapes[1].style.color = [128,64,32];
+}
+
+
+	
+	       
+
+           
+    
+
