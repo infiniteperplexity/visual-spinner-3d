@@ -153,14 +153,13 @@ function nearly(n1,n2) {
 	else {return false;}
 }
 // A prop handles the geometry for a number of spherical coordinates, a renderer, and a move queue
-function Prop(renderer) {
+function Prop() {
 	this.home = new Spherical(0,QUARTER,0);
 	this.pivot = new Spherical(0,QUARTER,0);
 	this.hand = new Spherical(0,QUARTER,0);
 	this.prop = new Spherical(1,QUARTER,0);
 	this.grip = new Spherical(0.5,QUARTER,0);
-	this.renderer = renderer;
-	renderer.prop = this;
+	this.renderer = undefined;
 }
 // Set an element to a particular spherical angle
 Prop.prototype.setElementAngle = function(element, angle, plane) {
@@ -241,10 +240,11 @@ Prop.prototype.spin = function() {
 		this.myMoveQueue.myProp = this;
 	}
 	if (this.myMoveQueue.mySubMoves.length==0) {
-		controller.queueIsEmpty();
+		this.queueIsEmpty();
 	}
 	this.myMoveQueue.spin(this);
 }
+Prop.prototype.queueIsEmpty = undefined;//should be overridden by controller
 Prop.prototype.addMove = function(myMove) {
 	if (this.myMoveQueue === undefined) {
 		this.myMoveQueue = new CompositeMove();
@@ -263,7 +263,9 @@ Prop.prototype.addPartneredMove = function(otherProp, myMove) {
 	this.addMove(myMove.getFirstMove());
 	otherProp.addMove(myMove.getSecondMove());
 }
-
+Prop.prototype.render = function() {
+	this.renderer.render(this);
+}
 
 
 function CompositeMove() {
@@ -573,4 +575,15 @@ function SimpleLinear() {
 	var myMove = new SimpleMove();
 	myMove.hand = new LinearElement(myMove,"hand");
 	return myMove;
+}
+
+function PropFactory() {}
+PropFactory.prototype.defaults = function(options, defaults) {
+	if (options===undefined) {options = {};}
+	for (var option in defaults) {
+		if (options[option]===undefined) {
+			options[option] = defaults[option];
+		}
+	}
+	return options;
 }

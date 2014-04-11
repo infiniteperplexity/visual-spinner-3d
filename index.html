@@ -20,6 +20,7 @@ var BACKGROUND = "black";
 var myProps = new Array(); 
 var controller = new Controller();
 var moves = new MoveFactory();
+var props = new PropFactory();
 
 $.urlParam = function(name){
 	var results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(window.location.href);
@@ -87,16 +88,10 @@ function canvasSetup() {
 	light.direction.z = 0;
 	scene.graph.push(light);
 	// set up props
-	var propOne = new Prop(new Poi());
-	var propTwo = new Prop(new Poi());
-	var propThree = new Prop(new Poi());
-	var propFour = new Prop(new Poi());
-	propTwo.renderer.head_color = "blue";
-	propThree.renderer.head_color = "yellow";
-	propFour.renderer.head_color = "green";
-	propTwo.renderer.head_color_3d = [0,0,255];
-	propThree.renderer.head_color_3d = [255,255,0];
-	propFour.renderer.head_color_3d = [0,255,0];
+	var propOne = props.poi({head_color: "red", flame_color: "red", scene: scene});
+	var propTwo = props.poi({head_color: "blue", flame_color: "blue", scene: scene});
+	var propThree = props.poi({head_color: "yellow", flame_color: "yellow", scene: scene});
+	var propFour = props.poi({head_color: "green", flame_color: "green", scene: scene});
 	myProps.push(propOne);
 	myProps.push(propTwo);
 	myProps.push(propThree);
@@ -112,7 +107,7 @@ function canvasLoop() {
 		redraw();
 		for (var i = 0; i < myProps.length; i++) {
 			myProps[i].spin();
-			myProps[i].render3D();
+			myProps[i].render();
 		}
 	},1000/BEAT);
 }
@@ -127,8 +122,8 @@ function Controller() {
 	this.hand = [];
 	this.spin = [];
 }
-Controller.prototype.queueIsEmpty = function() {
-	this.updateParameters();
+Prop.prototype.queueIsEmpty = function() {
+	controller.updateParameters();
 }
 Controller.prototype.updateParameters = function() {
 	var list;
@@ -136,6 +131,8 @@ Controller.prototype.updateParameters = function() {
 	var renderer;
 	var move;
 	var propn;
+	var pcolor;
+	var fcolor;
 	
 	//Update prop types
 	for(var i = 1; i<=myProps.length; i++) {
@@ -144,21 +141,24 @@ Controller.prototype.updateParameters = function() {
 		//if this is undefined will it throw an error?
 		if (this.prop[i-1]!==txt) {
 			this.prop[i-1]=txt;
+			pcolor = myProps[i-1].renderer.options.head_color;
+			fcolor = myProps[i-1].renderer.options.flame_color;
 			if (txt=="poi") {
-				renderer = new Poi();
+				renderer = props.poirender({head_color: pcolor, flame_color: fcolor, scene: scene});
 			} else if (txt=="fpoi") {
-				renderer = new FirePoi();
+				renderer = props.poirender({head_color: pcolor, flame_color: fcolor, fire: true, scene: scene});
+			} else if (txt=="staff") {
+				renderer = props.staffrender({head_color: pcolor, flame_color: fcolor, scene: scene});
+			} else if (txt=="fstaff") {
+				renderer = props.staffrender({head_color: pcolor, flame_color: fcolor, fire: true, scene: scene});
 			} else if (txt=="none") {
-				renderer = new NoProp();
+				renderer = props.noproprender({head_color: pcolor, flame_color: fcolor, scene: scene});
 			}
-			renderer.head_color_3d = myProps[i-1].renderer.head_color_3d;		
-			renderer.head_color = myProps[i-1].renderer.head_color;
 			myProps[i-1].renderer.deactivate();
 			myProps[i-1].renderer = renderer;
-			renderer.prop = myProps[i-1];
 			renderer.activate();
 		}
-	}			
+	}
 	//Update  hand and prop positions
 	for (var i = 1; i<=myProps.length; i++) {
 		list = document.getElementById(i+"plane");
@@ -291,6 +291,8 @@ First Prop:
 	<select id="1prop" onchange="controller.updateParameters()">
 		<option value="poi" selected="selected">Poi</option>
 		<option value="fpoi">Fire Poi</option>
+		<option value="staff">Staff</option>
+		<option value="fstaff">Fire Staff</option>
 		<option value="none">None</option>
 	</select>
 
@@ -304,6 +306,8 @@ Third Prop:
 	<select id="3prop" onchange="controller.updateParameters()">
 		<option value="poi" selected="selected">Poi</option>
 		<option value="fpoi">Fire Poi</option>
+		<option value="staff">Staff</option>
+		<option value="fstaff">Fire Staff</option>
 		<option value="none">None</option>
 	</select>
 </td>
@@ -318,6 +322,8 @@ Second Prop:
 	<select id="2prop" onchange="controller.updateParameters()">
 		<option value="poi" selected="selected">Poi</option>
 		<option value="fpoi">Fire Poi</option>
+		<option value="staff">Staff</option>
+		<option value="fstaff">Fire Staff</option>
 		<option value="none">None</option>
 	</select>
 </td>
@@ -330,6 +336,8 @@ Fourth Prop:
 	<select id="4prop" onchange="controller.updateParameters()">
 		<option value="poi" selected="selected">Poi</option>
 		<option value="fpoi">Fire Poi</option>
+		<option value="staff">Staff</option>
+		<option value="fstaff">Fire Staff</option>
 		<option value="none">None</option>
 	</select>
 </td>
