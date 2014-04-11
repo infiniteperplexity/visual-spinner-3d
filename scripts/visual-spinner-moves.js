@@ -31,7 +31,8 @@ MoveFactory.prototype.ccap = function(options) {
 		inspin_petals: 0,
 		antispin_petals: 4, 
 		extend: 1,
-		speed: 1
+		speed: 1,
+		plane: WALL
 	});
 	var myMove = new CompositeMove();
 	myMove.options = options;
@@ -41,7 +42,8 @@ MoveFactory.prototype.ccap = function(options) {
 		petals: options.inspin_petals,
 		extend: options.extend,
 		speed: options.speed,
-		duration: 0.25/options.speed
+		duration: 0.25/options.speed,
+		plane: options.plane
 	}));
 	myMove.addMove(this.flower({
 		direction: options.direction,
@@ -49,7 +51,8 @@ MoveFactory.prototype.ccap = function(options) {
 		petals: options.inspin_petals,
 		extend: options.extend,
 		speed: options.speed,
-		duration: 0.25/options.speed
+		duration: 0.25/options.speed,
+		plane: options.plane
 	}));
 	myMove.addMove(this.flower({
 		direction: -options.direction,
@@ -57,7 +60,8 @@ MoveFactory.prototype.ccap = function(options) {
 		petals: options.antispin_petals,
 		extend: options.extend,
 		speed: options.speed,
-		duration: 0.25/options.speed
+		duration: 0.25/options.speed,
+		plane: options.plane
 	}));
 	myMove.addMove(this.flower({
 		direction: -options.direction,
@@ -65,7 +69,8 @@ MoveFactory.prototype.ccap = function(options) {
 		petals: options.antispin_petals,
 		extend: options.extend,
 		speed: options.speed,
-		duration: 0.25/options.speed
+		duration: 0.25/options.speed,
+		plane: options.plane
 	}));
 	myMove.align.prop.offset = 0;
 	return myMove;
