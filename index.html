@@ -253,16 +253,26 @@ Controller.prototype.generateMove = function(n, txt) {
 		move = moves.pendulum({direction: this.spin[n], plane: this.plane[n]});
 	} else if (txt=="1pt5") {
 		move = moves.onepointfive({direction: this.spin[n], plane: this.plane[n]});
+	} else if (txt=="ucex") {
+		move = moves.isolation({offset: 0, direction: this.spin[n], plane: this.plane[n]});
+	} else if (txt=="ocat") {
+		move = moves.isolation({offset: 0, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
 	} else if (txt=="isol") {
 		move = moves.isolation({direction: this.spin[n], plane: this.plane[n]});
 	} else if (txt=="cate") {
 		move = moves.isolation({direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
 	} else if (txt=="hlex") {
-		move = moves.linex({direction: this.spin[n], plane: this.plane[n], angle: this.hand[n]+STAGGER});
+		move = moves.linex({direction: this.spin[n], plane: this.plane[n], angle: THREE});
 	} else if (txt=="vlex") {
-		move = moves.linex({direction: this.spin[n], plane: this.plane[n], angle: this.hand[n]});
+		move = moves.linex({direction: this.spin[n], plane: this.plane[n], angle: TWELVE});
+	} else if (txt=="hlis") {
+		move = moves.linex({loops: 2, direction: this.spin[n], plane: this.plane[n], angle: THREE});
+	} else if (txt=="vlis") {
+		move = moves.linex({loops: 2, direction: this.spin[n], plane: this.plane[n], angle: TWELVE})
 	} else if (txt=="2btw") {
-		move = moves.weave({direction: this.spin[n], plane: this.plane[n]});
+		move =moves.weave({direction: this.spin[n], spin: this.spin[n], plane: this.plane[n]});
+		//move = moves.staticspin({speed: 2, direction: this.spin[n], plane: this.plane[n]});
+		move.align.prop.angle = this.hand[n];
 	} else if (txt=="supr") {
 		move = moves.superman({direction: this.spin[n], hand_plane: this.plane[n]});
 	} else if (txt=="isob") {
@@ -472,10 +482,14 @@ First Move:
 		<option value="vcpo">Vertical C-CAP (offset)</option>
 		<option value="pend">Pendulum</option>
 		<option value="1pt5">1.5</option>
+		<option value="ucex">Unit Circle Extension</option>
 		<option value="isol">Isolation</option>
 		<option value="cate">Cat-Eye</option>
+		<option value="ocat">Cat-Eye (offset)</option>
 		<option value="hlex">Horizontal Linear Extension</option>
 		<option value="vlex">Vertical Linear Extension</option>
+		<option value="hlis">Horizontal Linear Isolation</option>
+		<option value="vlis">Vertical Linear Isolation</option>
 		<option value="2btw">Two-Beat Weave</option>
 		<option value="supr">Superman</option>
 		<option value="isob">Four-Lobe Iso-bend Toroid</option>
@@ -505,10 +519,14 @@ Second Move:
 		<option value="vcpo">Vertical C-CAP (offset)</option>
 		<option value="pend">Pendulum</option>
 		<option value="1pt5">1.5</option>
+		<option value="ucex">Unit Circle Extension</option>
 		<option value="isol">Isolation</option>
 		<option value="cate">Cat-Eye</option>
+		<option value="ocat">Cat-Eye (offset)</option>
 		<option value="hlex">Horizontal Linear Extension</option>
 		<option value="vlex">Vertical Linear Extension</option>
+		<option value="hlis">Horizontal Linear Isolation</option>
+		<option value="vlis">Vertical Linear Isolation</option>
 		<option value="2btw">Two-Beat Weave</option>
 		<option value="supr">Superman</option>
 		<option value="isob">Four-Lobe Iso-bend Toroid</option>
@@ -537,10 +555,14 @@ Third Move:
 		<option value="vcpo">Vertical C-CAP (offset)</option>
 		<option value="pend">Pendulum</option>
 		<option value="1pt5">1.5</option>
+		<option value="ucex">Unit Circle Extension</option>
 		<option value="isol">Isolation</option>
 		<option value="cate">Cat-Eye</option>
+		<option value="ocat">Cat-Eye (offset)</option>
 		<option value="hlex">Horizontal Linear Extension</option>
 		<option value="vlex">Vertical Linear Extension</option>
+		<option value="hlis">Horizontal Linear Isolation</option>
+		<option value="vlis">Vertical Linear Isolation</option>
 		<option value="2btw">Two-Beat Weave</option>
 		<option value="supr">Superman</option>
 		<option value="isob">Four-Lobe Iso-bend Toroid</option>
@@ -569,10 +591,14 @@ Fourth Move:
 		<option value="vcpo">Vertical C-CAP (offset)</option>
 		<option value="pend">Pendulum</option>uments/projects/visual-spinner-3d/index.html
 		<option value="1pt5">1.5</option>
+		<option value="ucex">Unit Circle Extension</option>
 		<option value="isol">Isolation</option>
 		<option value="cate">Cat-Eye</option>
+		<option value="ocat">Cat-Eye (offset)</option>
 		<option value="hlex">Horizontal Linear Extension</option>
 		<option value="vlex">Vertical Linear Extension</option>
+		<option value="hlis">Horizontal Linear Isolation</option>
+		<option value="vlis">Vertical Linear Isolation</option>
 		<option value="2btw">Two-Beat Weave</option>
 		<option value="supr">Superman</option>
 		<option value="isob">Four-Lobe Iso-bend Toroid</option>

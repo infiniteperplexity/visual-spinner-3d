@@ -73,6 +73,8 @@ MoveFactory.prototype.ccap = function(options) {
 		plane: options.plane
 	}));
 	myMove.align.prop.offset = 0;
+	myMove.hand.plane = options.plane;
+	myMove.prop.plane = options.plane;
 	return myMove;
 }
 
@@ -306,7 +308,7 @@ MoveFactory.prototype.staticspin = function(options) {
 	myMove.prop.speed = options.direction*options.speed;
 	myMove.prop.plane = options.plane;
 	myMove.beats = options.duration;
-	myMove.align.prop.offset = 0;
+	//myMove.align.prop.offset = 0;
 	return myMove;
 }
 
@@ -321,29 +323,56 @@ MoveFactory.prototype.linex = function(options) {
 	});
 	var myMove = new CompositeMove();
 	myMove.options = options;
-	var one = new SimpleLinear();
-	var two = new SimpleLinear();
-	one.beats = options.duration/2;
-	two.beats = options.duration/2;
-	one.hand.plane = options.plane;
-	two.hand.plane = options.plane;
-	one.prop.plane = options.plane;
-	two.prop.plane = options.plane;
-	one.prop.speed = options.loops*options.direction*options.speed;
-	two.prop.speed = options.loops*options.direction*options.speed;
-	one.hand.begin_speed = 8*options.speed;
-	one.hand.end_speed = -8*options.speed;
-	one.hand.angle = options.angle;
-	two.hand.begin_speed = 8*options.speed;
-	two.hand.end_speed = -8*options.speed;
-	two.hand.angle = options.angle + OFFSET;
-	myMove.addMove(one);
-	myMove.addMove(two);
-	myMove.align.hand.radius = 0;
-	myMove.align.prop.angle = options.angle-options.direction*QUARTER;
+	var segment;
+	for (var i=0; i<4; i++) {
+		segment = new SimpleLinear();
+		segment.hand.angle = options.angle,
+		segment.beats = options.duration/4;
+		segment.hand.plane = options.plane;
+		segment.prop.plane = options.plane;
+		segment.prop.speed = options.loops*options.direction*options.speed;
+		if (i==0) {
+			segment.align.hand.radius = 0;
+			segment.hand.begin_speed = 8*options.direction*options.speed;
+			segment.hand.end_speed = 0;
+		} else if (i==1) {
+			segment.align.hand.radius = 1;
+			segment.hand.begin_speed = 0;
+			segment.hand.end_speed = -8*options.direction*options.speed;
+		} else if (i==2) {
+			segment.align.hand.radius = 0;
+			segment.hand.begin_speed = -8*options.direction*options.speed;
+			segment.hand.end_speed = 0;
+		} else if (i==3) {
+			segment.align.hand.radius = 1;
+			segment.hand.begin_speed = 0;
+			segment.hand.end_speed = 8*options.direction*options.speed;
+		}
+		myMove.addMove(segment);
+	}
+	//okay...so "direction" refers to the direction of the spin...
+	var phases = []
+	if (options.direction==CLOCKWISE) {
+		phases = [0,1,2,3];
+	} else {
+		phases = [0,3,2,1];
+	}
+	if (options.angle==THREE || options.angle==NINE) {
+		myMove.align.TWELVE = {phase: phases[0]};
+		myMove.align.THREE = {phase: phases[1]};
+		myMove.align.SIX = {phase: phases[2]};
+		myMove.align.NINE = {phase: phases[3]};
+	} else if (options.angle==TWELVE || options.angle==SIX) {
+		myMove.align.TWELVE = {phase: phases[1]};
+		myMove.align.THREE = {phase: phases[2]};
+		myMove.align.SIX = {phase: phases[3]};
+		myMove.align.NINE = {phase: phases[0]};
+	}
+	myMove.prop.plane = options.plane;
+	myMove.hand.plane = options.plane;
+	myMove.align.prop.offset = 0;
 	return myMove;
 }
-
 
 
 
@@ -392,18 +421,20 @@ MoveFactory.prototype.weave = function(options) {
         two.beats = options.duration/2;
 	one.prop.plane = options.plane;
 	two.prop.plane = options.plane;
-	one.align.prop.offset = 0;
 	if (options.plane==WALL || options.plane==FLOOR){
 		one.hand.plane = WHEEL;
 		two.hand.plane = WHEEL;
+		myMove.hand.plane = WHEEL;
 	} else if (options.plane==WHEEL) {
 		one.hand.plane = WALL;
 		two.hand.plane = WALL;
+		myMove.hand.plane = WALL;
 	}
         one.prop.speed = options.beats*options.spin*options.speed;
         two.prop.speed = options.beats*options.spin*options.speed;
         myMove.addMove(one);
         myMove.addMove(two);
+	//myMove.align.prop.offset = 0;
         return myMove;
 }
 

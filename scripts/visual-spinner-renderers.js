@@ -110,6 +110,32 @@ PropFactory.prototype.colorflame = function(s) {
 	}	
 }
 
+PropFactory.prototype.trail = function(size, color) {
+	if (size===undefined) {size = 7;}
+	if (color===undefined) {color = [32, "rgba(128,64,32,1)", "rgba(128,64,32,0)"];}
+	var texture = Phoria.Util.generateRadialGradientBitmap(color[0],color[1],color[2]);
+	var f = Phoria.EmitterEntity.create({
+		position: {x:0, y:0, z:0},
+		positionRnd: {x:0, y:0, z:0},
+		rate: 25,
+		velocity: {x:0, y:0, z:0},
+		velocityRnd: {x:0.1, y:0.1, z:0.1},
+		lifetime: 2500,
+		lifetimeRnd: 500,
+		gravity: false,
+		style: {
+			compositeOperation: "lighter",
+			shademode: "sprite",
+			linewidth: size,
+			objectsortmode: "front",
+			sprite: 0
+		}
+	});
+	f.textures[0] = texture;
+	return f;
+}
+
+
 PropFactory.prototype.flame = function(size, color) {
 	if (size===undefined) {size = 7;}
 	if (color===undefined) {color = [32, "rgba(128,64,32,1)", "rgba(128,64,32,0)"];}
@@ -191,6 +217,7 @@ PropFactory.prototype.poirender = function(options) {
 	if (options.fire==true) {
 		ball.style.color = this.colormap(options.handle_color);
 		flame = this.flame(35*options.head_size, this.colorflame(options.flame_color));
+		//flame = this.trail(35*options.head_size, this.colorflame(options.flame_color));
 		this.translatePoints(flame,[0,0,1]);
 		r.shapes.push(flame);
 	} else {
@@ -245,4 +272,5 @@ PropFactory.prototype.noproprender = function(options) {
 	r.options = options;
 	return r;
 }
+
 
