@@ -17,6 +17,9 @@ var ORIGINX = WIDTH/2;
 var ORIGINY = HEIGHT/2;
 var BACKGROUND = "black";
 
+var view2d = false;
+view2d = true;
+
 var myProps = new Array(); 
 var controller = new Controller();
 var moves = new MoveFactory();
@@ -45,11 +48,21 @@ function init() {
 		var txt = $.urlParam(params[i]);
 		if (txt==0) {txt = defaults[i];}
 		$("#"+params[i]).val(txt);
-	}		
+	}
+	if( 	navigator.userAgent.match(/Android/i)
+		|| navigator.userAgent.match(/webOS/i)
+		|| navigator.userAgent.match(/iPhone/i)
+		|| navigator.userAgent.match(/iPad/i)
+		|| navigator.userAgent.match(/iPod/i)
+		|| navigator.userAgent.match(/BlackBerry/i)
+		|| navigator.userAgent.match(/Windows Phone/i)) {
+		$("#2d3d").val("2d");
+	} else {
+		$("#2d3d").val("3d");
+	}
 	canvasSetup();
 	canvasLoop();
 }
-
 
 var scene;
 var renderer;
@@ -112,8 +125,15 @@ function canvasLoop() {
 	},1000/BEAT);
 }
 function redraw() {
-	scene.modelView();
-	renderer.render(scene);
+	if (view2d == true) {
+		ctx.fillStyle = "rgba(0,0,0,0.1)";
+		ctx.strokeStyle=BACKGROUND;
+		ctx.fillRect(0,0,WIDTH,HEIGHT);
+	}
+	else {
+		scene.modelView();
+		renderer.render(scene);
+	}
 }
 
 function Controller() {
@@ -121,6 +141,7 @@ function Controller() {
 	this.plane = [];
 	this.hand = [];
 	this.spin = [];
+	this.view2d = false;
 }
 Prop.prototype.queueIsEmpty = function() {
 	controller.updateParameters();
@@ -134,31 +155,53 @@ Controller.prototype.updateParameters = function() {
 	var pcolor;
 	var fcolor;
 	
+	//Check 2D vs. 3D
+	list = document.getElementById("2d3d");
+	txt = list.options[list.selectedIndex].value;
+	if (txt=="2d") {view2d = true;}
+	else if (txt=="3d") {view2d = false;}
+			
 	//Update prop types
 	for(var i = 1; i<=myProps.length; i++) {
 		list = document.getElementById(i+"prop");
 		txt = list.options[list.selectedIndex].value;
 		//if this is undefined will it throw an error?
-		if (this.prop[i-1]!==txt) {
+		if (this.prop[i-1]!==txt || this.view2d !== view2d) {
 			this.prop[i-1]=txt;
 			pcolor = myProps[i-1].renderer.options.head_color;
 			fcolor = myProps[i-1].renderer.options.flame_color;
-			if (txt=="poi") {
-				renderer = props.poirender({head_color: pcolor, flame_color: fcolor, scene: scene});
-			} else if (txt=="fpoi") {
-				renderer = props.poirender({head_color: pcolor, flame_color: fcolor, fire: true, scene: scene});
-			} else if (txt=="staff") {
-				renderer = props.staffrender({head_color: pcolor, flame_color: fcolor, scene: scene});
-			} else if (txt=="fstaff") {
-				renderer = props.staffrender({head_color: pcolor, flame_color: fcolor, fire: true, scene: scene});
-			} else if (txt=="none") {
-				renderer = props.noproprender({head_color: pcolor, flame_color: fcolor, scene: scene});
+			if (view2d==true) {
+				if (txt=="poi") {
+					renderer = props.poirender2d({head_color: pcolor, flame_color: fcolor, canvas: canvas});
+				} else if (txt=="fpoi") {
+					renderer = props.poirender2d({head_color: pcolor, flame_color: fcolor, fire: true, canvas: canvas});
+				} else if (txt=="staff") {
+					renderer = props.staffrender2d({head_color: pcolor, flame_color: fcolor, scene: scene});
+				} else if (txt=="fstaff") {
+					renderer = props.staffrender2d({head_color: pcolor, flame_color: fcolor, fire: true, canvas: canvas});
+				} else if (txt=="none") {
+					renderer = props.noproprender2d({head_color: pcolor, flame_color: fcolor, canvas: canvas});
+				}
+			} else {
+				if (txt=="poi") {
+					renderer = props.poirender({head_color: pcolor, flame_color: fcolor, scene: scene});
+				} else if (txt=="fpoi") {
+					renderer = props.poirender({head_color: pcolor, flame_color: fcolor, fire: true, scene: scene});
+				} else if (txt=="staff") {
+					renderer = props.staffrender({head_color: pcolor, flame_color: fcolor, scene: scene});
+				} else if (txt=="fstaff") {
+					renderer = props.staffrender({head_color: pcolor, flame_color: fcolor, fire: true, scene: scene});
+				} else if (txt=="none") {
+					renderer = props.noproprender({head_color: pcolor, flame_color: fcolor, scene: scene});
+				}
 			}
 			myProps[i-1].renderer.deactivate();
 			myProps[i-1].renderer = renderer;
 			renderer.activate();
 		}
 	}
+	this.view2d = view2d;
+	
 	//Update  hand and prop positions
 	for (var i = 1; i<=myProps.length; i++) {
 		list = document.getElementById(i+"plane");
@@ -438,25 +481,25 @@ Spin Directions:
 <td>
 	<select id="1spin" onchange="controller.updateParameters()">
 		<option value="cw" selected="selected">Clockwise</option>
-		<option value="ccw">Counterclockwise</option>
+		<option value="ccw">Counter</option>
 	</select>
 </td>
 <td>
 	<select id="2spin" onchange="controller.updateParameters()">
 		<option value="cw">Clockwise</option>
-		<option value="ccw" selected="selected">Counterclockwise</option>
+		<option value="ccw" selected="selected">Counter</option>
 	</select>
 </td>
 <td>
 	<select id="3spin" onchange="controller.updateParameters()">
 		<option value="cw" selected="selected">Clockwise</option>
-		<option value="ccw">Counterclockwise</option>
+		<option value="ccw">Counter</option>
 	</select>
 </td>
 <td>
 	<select id="4spin" onchange="controller.updateParameters()">
 		<option value="cw">Clockwise</option>
-		<option value="ccw" selected="selected">Counterclockwise</option>
+		<option value="ccw" selected="selected">Counter</option>
 	</select>
 </td>
 <td></td>
@@ -605,6 +648,17 @@ Fourth Move:
 		<option value="antb">Four-Lobe Anti-bend Toroid</option>
 		<option value="prob">Four-Lobe Pro-bend Toroid</option>
 	</select>
+</td>
+</tr>
+<tr>
+<td>
+View in...
+</td>
+<form></form>
+<td>
+	<select id="2d3d" onchange="controller.updateParameters()">
+		<option value="3d" selected="selected">3D</option>
+		<option value="2d" >2D</option>
 </td>
 </tr>
 </tbody></table>

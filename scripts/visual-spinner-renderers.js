@@ -272,5 +272,167 @@ PropFactory.prototype.noproprender = function(options) {
 	r.options = options;
 	return r;
 }
+PropFactory.prototype.noprop2d = function(options) {
+	var p = new Prop();
+	p.renderer = this.noproprender2d(options);
+	return p;
+}
+PropFactory.prototype.noproprender2d= function(options) {
+	var r = new PhoriaPropRenderer();
+	r.options = options;
+	return r;
+}
 
+function CanvasPropRenderer(canvas) {
+	this.context =document.getElementById('canvas').getContext('2d');
+	this.shapes = [];
+	this.options = {};
+	this.pixels = 60;
+}
+CanvasPropRenderer.prototype.render = function(myProp) {
+	this.context.save();
+	this.context.translate(ORIGINX, ORIGINY);
+	var elements = ["home","pivot","hand"];
+	for (i = 0; i<elements.length; i++) {
+		this.context.rotate(myProp[elements[i]].azimuth);
+		this.context.translate(Math.sin(myProp[elements[i]].zenith)*myProp[elements[i]].radius*this.pixels,0);
+		this.context.rotate(-myProp[elements[i]].azimuth);
+	}
+	this.context.rotate(myProp.prop.azimuth);
+	var scale = Math.sin(myProp.prop.zenith);
+	for (var i=0; i<this.shapes.length; i++) {
+		this.shapes[i].draw(this.context, scale);
+	}
+	this.context.restore();
+}
+CanvasPropRenderer.prototype.activate = function(scene) {}
+CanvasPropRenderer.prototype.deactivate = function(scene) {}
 
+PropFactory.prototype.poi2d= function(options) {
+	var p = new Prop();
+	p.renderer = this.poirender2d(options);
+	return p;
+}
+PropFactory.prototype.poirender2d = function(options) {
+    options = this.defaults(options,{
+	canvas: undefined,
+        fire: false,
+        handle_color: "gray",
+        head_color: "red",
+        flame_color: "fire",
+        tether_size: 1,
+        handle_size: 3,
+        head_size: 12,
+        pixels: 60
+    });
+    var r = new CanvasPropRenderer(options.canvas);
+    r.options = options;
+    var handle = new canvasCircle(0,0,options.handle_size, options.handle_color, options.handle_color);
+    var tether = new canvasLine(0,0,options.pixels, 0, options.tether_size, options.handle_color);
+    tether.scalesby = r;
+    var ball = new canvasCircle(options.pixels, 0, options.head_size, options.head_color, options.handle_color);
+    r.shapes.push(handle);
+    r.shapes.push(tether);
+    r.shapes.push(ball);
+    var flame;
+    if (options.fire==true) {
+        flame = new canvasFlame(options.pixels, 0, options.head_size);
+        r.shapes.push(flame);
+        ball.radius = options.handle_size;
+	ball.color = options.handle_color;
+    }
+    return r;
+}
+
+function canvasLine(x1,y1,x2,y2,thickness,color) {
+    this.x1 = x1;
+    this.x2 = x2;
+    this.y1 = y1;
+    this.y2 = y2;
+    this.thickness = thickness;
+    this.color = color;
+}
+canvasLine.prototype.draw = function(context, scale) {
+    context.save();
+    context.beginPath();
+    context.moveTo(this.x1*scale, this.y1*scale);
+    context.lineTo(this.x2*scale, this.y2*scale);
+    context.lineWidth = this.thickness;
+    context.strokeStyle = this.color;
+    context.stroke();
+    context.restore();
+}
+function canvasCircle(x, y, r, color, linecolor) {
+    this.x = x;
+    this.y = y;
+    this.radius = r;
+    this.color = color;
+    this.linecolor = linecolor;
+}
+canvasCircle.prototype.draw = function(context, scale) {
+    context.save();
+    context.beginPath();
+    context.arc(this.x*scale, this.y*scale, this.radius, 0, 2*Math.PI);
+    context.fillStyle = this.color;
+    context.fill();
+    context.strokeStyle = this.linecolor;
+    context.stroke();
+    context.restore();
+}
+
+PropFactory.prototype.staff2d = function(options) {
+	var p = new Prop();
+	p.renderer = this.staffrender2s(options);
+	return p;
+}
+PropFactory.prototype.staffrender2d = function(options) {
+	options = this.defaults(options,{
+		canvas: undefined,
+		fire: false,
+		handle_color: "gray",
+		head_color: "red",
+		flame_color: "fire",
+		tether_size: 1,
+		handle_size: 3,
+		head_size: 10,
+		pixels: 60
+	});
+	var r = new CanvasPropRenderer(options.canvas);
+	r.options = options;
+	var staff= new canvasLine(-options.pixels,0,options.pixels,0,options.handle_size,options.head_color);
+	r.shapes.push(staff);
+	var handle = new canvasLine(-options.handle_size, 0, options.handle_size, 0, options.handle_size, options.handle_color);
+	r.shapes.push(handle);
+	var flame1;
+	var flame2;
+	if (options.fire==true) {
+		flame1 = new canvasFlame(options.pixels,0,options.head_size);
+		flame2 = new canvasFlame(options.pixels,0,options.head_size);
+		r.shapes.push(flame1);
+		r.shapes.push(flame2);
+	}
+	return r;
+}
+
+function canvasFlame(x, y, r) {
+	this.x = x;
+	this.y = y;
+	this.radius = r;
+	this.fire_density = 10;
+	this.mote_size = 0.5;
+}
+canvasFlame.prototype.draw = function(context, scale) {
+	context.save();
+	context.translate(this.x*scale,this.y*scale);
+	for (var i = 0; i < this.fire_density; i++) {
+		context.save();
+		context.rotate(Math.random()*2*Math.PI);
+		yellow = Math.round(Math.random()*255);
+		context.fillStyle = 'rgba(255,'+ yellow + ',0,0.5)';
+		context.beginPath();
+		context.arc(Math.random()*2*this.radius-Math.random()*2*this.radius, 0, this.mote_size*this.radius, 0, 2*Math.PI);
+		context.fill();
+		context.restore();	
+	}
+	context.restore();
+}
