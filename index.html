@@ -183,6 +183,10 @@ Controller.prototype.updateParameters = function() {
 					renderer = props.staffrender2d({head_color: pcolor, flame_color: fcolor, scene: scene});
 				} else if (txt=="fstaff") {
 					renderer = props.staffrender2d({head_color: pcolor, flame_color: fcolor, fire: true, canvas: canvas});
+				} else if (txt=="hoop") {
+					renderer = props.hooprender2d({head_color: pcolor, flame_color: fcolor, scene: scene});
+				} else if (txt=="fhoop") {
+					renderer = props.hooprender2d({head_color: pcolor, flame_color: fcolor, fire: true, canvas: canvas});
 				} else if (txt=="none") {
 					renderer = props.noproprender2d({head_color: pcolor, flame_color: fcolor, canvas: canvas});
 				}
@@ -195,6 +199,10 @@ Controller.prototype.updateParameters = function() {
 					renderer = props.staffrender({head_color: pcolor, flame_color: fcolor, scene: scene});
 				} else if (txt=="fstaff") {
 					renderer = props.staffrender({head_color: pcolor, flame_color: fcolor, fire: true, scene: scene});
+				} else if (txt=="hoop") {
+					renderer = props.hooprender({head_color: pcolor, flame_color: fcolor, scene: scene});
+				} else if (txt=="fhoop") {
+					renderer = props.hooprender({head_color: pcolor, flame_color: fcolor, fire: true, scene: scene});
 				} else if (txt=="none") {
 					renderer = props.noproprender({head_color: pcolor, flame_color: fcolor, scene: scene});
 				}
@@ -350,6 +358,8 @@ First Prop:
 		<option value="fpoi">Fire Poi</option>
 		<option value="staff">Staff</option>
 		<option value="fstaff">Fire Staff</option>
+		<option value="hoop">Hoop</option>
+		<option value="fhoop">Fire Hoop</option>
 		<option value="none">None</option>
 	</select>
 
@@ -365,6 +375,8 @@ Third Prop:
 		<option value="fpoi">Fire Poi</option>
 		<option value="staff">Staff</option>
 		<option value="fstaff">Fire Staff</option>
+		<option value="hoop">Hoop</option>
+		<option value="fhoop">Fire Hoop</option>
 		<option value="none">None</option>
 	</select>
 </td>
@@ -381,6 +393,8 @@ Second Prop:
 		<option value="fpoi">Fire Poi</option>
 		<option value="staff">Staff</option>
 		<option value="fstaff">Fire Staff</option>
+		<option value="hoop">Hoop</option>
+		<option value="fhoop">Fire Hoop</option>
 		<option value="none">None</option>
 	</select>
 </td>
@@ -395,6 +409,8 @@ Fourth Prop:
 		<option value="fpoi">Fire Poi</option>
 		<option value="staff">Staff</option>
 		<option value="fstaff">Fire Staff</option>
+		<option value="hoop">Hoop</option>
+		<option value="fhoop">Fire Hoop</option>
 		<option value="none">None</option>
 	</select>
 </td>
