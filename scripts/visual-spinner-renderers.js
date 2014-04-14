@@ -419,39 +419,6 @@ canvasRing.prototype.draw = function(context, scalex, scaley) {
 	context.restore();
 }
 
-PropFactory.prototype.staff2d = function(options) {
-	var p = new Prop();
-	p.renderer = this.staffrender2s(options);
-	return p;
-}
-PropFactory.prototype.staffrender2d = function(options) {
-	options = this.defaults(options,{
-		canvas: undefined,
-		fire: false,
-		handle_color: "gray",
-		head_color: "red",
-		flame_color: "fire",
-		tether_size: 1,
-		handle_size: 3,
-		head_size: 10,
-		pixels: 60
-	});
-	var r = new CanvasPropRenderer(options.canvas);
-	r.options = options;
-	var staff= new canvasLine(-options.pixels,0,options.pixels,0,options.handle_size,options.head_color);
-	r.shapes.push(staff);
-	var handle = new canvasLine(-options.handle_size, 0, options.handle_size, 0, options.handle_size, options.handle_color);
-	r.shapes.push(handle);
-	var flame1;
-	var flame2;
-	if (options.fire==true) {
-		flame1 = new canvasFlame(options.pixels,0,options.head_size);
-		flame2 = new canvasFlame(options.pixels,0,options.head_size);
-		r.shapes.push(flame1);
-		r.shapes.push(flame2);
-	}
-	return r;
-}
 
 function canvasFlame(x, y, r) {
 	this.x = x;
@@ -503,7 +470,7 @@ PropFactory.prototype.staffrender2d = function(options) {
 	var flame2;
 	if (options.fire==true) {
 		flame1 = new canvasFlame(options.pixels,0,options.head_size);
-		flame2 = new canvasFlame(options.pixels,0,options.head_size);
+		flame2 = new canvasFlame(-options.pixels,0,options.head_size);
 		r.shapes.push(flame1);
 		r.shapes.push(flame2);
 	}
