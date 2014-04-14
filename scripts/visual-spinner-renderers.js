@@ -445,7 +445,7 @@ canvasFlame.prototype.draw = function(context, scalex, scaley) {
 
 PropFactory.prototype.staff2d = function(options) {
 	var p = new Prop();
-	p.renderer = this.staffrender2s(options);
+	p.renderer = this.staffrender2d(options);
 	return p;
 }
 PropFactory.prototype.staffrender2d = function(options) {
