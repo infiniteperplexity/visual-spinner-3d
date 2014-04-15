@@ -159,6 +159,7 @@ function Prop() {
 	this.hand = new Spherical(0,QUARTER,0);
 	this.prop = new Spherical(1,QUARTER,0);
 	this.grip = new Spherical(0.5,QUARTER,0);
+	this.roll = 0;
 	this.renderer = undefined;
 }
 // Set an element to a particular spherical angle
@@ -492,6 +493,19 @@ function setup(myProp) {
 	if (this.align.prop.tilt !== undefined) {
 		this.prop.plane = myProp.hand.unitize().vectorize().rotate(this.align.prop.tilt, hand_plane);
 	}
+	//this is a first pass at setting grip roll automatically
+	if (prop_plane===undefined) {
+		prop_plane = hand_plane;
+		if (prop_plane===undefined) {
+			prop_plane = WALL;
+		}
+	}
+	if (prop_plane===WALL) {
+		myProp.roll = 0;
+	} else {
+		myProp.roll = STAGGER;
+	}
+	//so I might need to change it....
 	if (this.align.phase !== undefined) {
 		this.changePhase(this.align.phase);
 	}

@@ -301,9 +301,10 @@ CanvasPropRenderer.prototype.render = function(myProp) {
 	this.context.rotate(myProp.prop.azimuth);
 	var scalex = Math.sin(myProp.prop.zenith);
 	//var scaley = Math.cos(myProp.prop.zenith);
+	var angle = 0;
 	var scaley = 1;
 	for (var i=0; i<this.shapes.length; i++) {
-		this.shapes[i].draw(this.context, scalex, scaley);
+		this.shapes[i].draw(this.context, scalex, scaley, angle);
 	}
 	this.context.restore();
 }
@@ -383,40 +384,55 @@ canvasBall.prototype.draw = function(context, scalex, scaley) {
 	context.restore();
 }
 
-function canvasRing(x, y, r, thickness, color) {
+function canvasRing(x, y, r, detail, thickness, color) {
 	this.x = x;
 	this.y = y;
 	this.radius = r;
+	this.detail = detail;
 	this.thickness = thickness;
 	this.color = color;
 }
 
-canvasRing.prototype.draw = function(context, scalex, scaley) {
-	var kappa = 0.5522848;
-	var x = (this.x-this.radius)*scalex;
-	var y = (this.y-this.radius)*scaley;
-	var w = 2*this.radius*scalex;
-	var h = 2*this.radius*scaley;
-	var ox = (w / 2) * kappa; // control point offset horizontal
-	var oy = (h / 2) * kappa; // control point offset vertical
-	var xe = x + w;           // x-end
-	var ye = y + h;           // y-end
-	var xm = x + w / 2;       // x-middle
-	var ym = y + h / 2;       // y-middle
+canvasRing.prototype.draw = function(context, scalex, scaley, angle) {
+	var x = this.x;
+	var y = this.y;
+	var w = this.radius;
+	var h = this.radius;	
+	var xx;
+	var yy;
 	context.save();
-	//context.scale(scalex,scaley);
 	context.beginPath();
-	context.moveTo(x,0);
-	//context.arc(this.x*scalex, this.y*scaley, this.radius, 0, 2*Math.PI);
-	context.bezierCurveTo(x, ym - oy, xm - ox, y, xm, y);
-	context.bezierCurveTo(xm + ox, y, xe, ym - oy, xe, ym);
-	context.bezierCurveTo(xe, ym + oy, xm + ox, ye, xm, ye);
-	context.bezierCurveTo(xm - ox, ye, x, ym + oy, x, ym);
+	for (var i = 0 * Math.PI; i <= 2*Math.PI+(1/this.detail); i+=(1/this.detail)) {
+    	xx = x - (w * Math.sin(i)) * Math.sin(angle * Math.PI) + (h* Math.cos(i)) * Math.cos(angle * Math.PI);
+    	yy = y + (h * Math.cos(i)) * Math.sin(angle * Math.PI) + (w * Math.sin(i)) * Math.cos(angle * Math.PI);
+	    if (i == 0) {
+	    	context.moveTo(scalex*xx, scaley*yy);
+	    } else {
+	    	context.lineTo(scalex*xx, scaley*yy);
+	    }
+	}
 	context.fill();
 	context.lineWidth = this.thickness;
 	context.strokeStyle = this.color;
 	context.stroke();
 	context.restore();
+	//this way never worked all that well
+	//var kappa = 0.5522848;
+	//var x = (this.x-this.radius)*scalex;
+	//var y = (this.y-this.radius)*scaley;
+	//var w = 2*this.radius*scalex;
+	//var h = 2*this.radius*scaley;
+	//var ox = (w / 2) * kappa; // control point offset horizontal
+	//var oy = (h / 2) * kappa; // control point offset vertical
+	//var xe = x + w;           // x-end
+	//var ye = y + h;           // y-end
+	//var xm = x + w / 2;       // x-middle
+	//var ym = y + h / 2;       // y-middle
+	//context.moveTo(x,0);
+	//context.bezierCurveTo(x, ym - oy, xm - ox, y, xm, y);
+	//context.bezierCurveTo(xm + ox, y, xe, ym - oy, xe, ym);
+	//context.bezierCurveTo(xe, ym + oy, xm + ox, ye, xm, ye);
+	//context.bezierCurveTo(xm - ox, ye, x, ym + oy, x, ym);
 }
 
 
@@ -575,18 +591,18 @@ PropFactory.prototype.hooprender2d = function(options) {
 		handle_color: "gray",
 		head_color: "red",
 		flame_color: "fire",
-		sections: 12,
 		radius: 0.5,
 		wicks: 4,
 		wick_length: 25,
 		wick_thickness: 1,
 		handle_size: 2,
 		head_size: 10,
-		pixels: 40
+		pixels: 40,
+		handle_detail: 50
 	});
 	var r = new CanvasPropRenderer(options.canvas);
 	r.options = options;
-	var hoop = new canvasRing(options.pixels, 0, options.pixels, options.handle_size, options.head_color);
+	var hoop = new canvasRing(options.pixels, 0, options.pixels, options.handle_detail, options.handle_size, options.head_color);
 	r.shapes.push(hoop);
 	var handle = new canvasBall(0,0,options.handle_size, options.handle_color, options.handle_color);
 	r.shapes.push(handle);
