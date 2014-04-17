@@ -16,6 +16,7 @@ PhoriaPropRenderer.prototype.render = function(myProp) {
 	}
 	mat4.rotate(mat, mat, myProp.prop.azimuth, ZAXIS3);
 	mat4.rotate(mat, mat, myProp.prop.zenith, YAXIS3);
+	mat4.rotate(mat, mat, myProp.grip, ZAXIS3);
 	for (var i=0; i<this.shapes.length; i++) {
 		this.shapes[i].matrix = mat;
 	}
@@ -299,12 +300,8 @@ CanvasPropRenderer.prototype.render = function(myProp) {
 		this.context.rotate(-myProp[elements[i]].azimuth);
 	}
 	this.context.rotate(myProp.prop.azimuth);
-	var scalex = Math.sin(myProp.prop.zenith);
-	//var scaley = Math.cos(myProp.prop.zenith);
-	var angle = 0;
-	var scaley = 1;
 	for (var i=0; i<this.shapes.length; i++) {
-		this.shapes[i].draw(this.context, scalex, scaley, angle);
+		this.shapes[i].draw(this.context, myProp.prop.zenith, myProp.grip);
 	}
 	this.context.restore();
 }
@@ -355,7 +352,9 @@ function canvasLine(x1,y1,x2,y2,thickness,color) {
 	this.thickness = thickness;
 	this.color = color;
 }
-canvasLine.prototype.draw = function(context, scalex, scaley) {
+canvasLine.prototype.draw = function(context, zenith, roll) {
+	var scalex = Math.sin(zenith);
+	var scaley = 1;
 	context.save();
 	context.beginPath();
 	context.moveTo(this.x1*scalex, this.y1*scaley);
@@ -372,7 +371,9 @@ function canvasBall(x, y, r, color, linecolor) {
 	this.color = color;
 	this.linecolor = linecolor;
 }
-canvasBall.prototype.draw = function(context, scalex, scaley) {
+canvasBall.prototype.draw = function(context, zenith, roll) {
+	var scalex = Math.sin(zenith);
+	var scaley = 1;
 	context.save();
 	context.beginPath();
 	context.arc(this.x*scalex, this.y*scaley, this.radius, 0, 2*Math.PI);
@@ -393,22 +394,26 @@ function canvasRing(x, y, r, detail, thickness, color) {
 	this.color = color;
 }
 
-canvasRing.prototype.draw = function(context, scalex, scaley, angle) {
-	var x = this.x;
-	var y = this.y;
-	var w = this.radius;
-	var h = this.radius;	
+canvasRing.prototype.draw = function(context, zenith, roll) {
+	//this seems close to correct, but not quite, especially when roll==STAGGER/2
+	var x = Math.sin(zenith);
+	var y = 1;
+	var h = Math.sin(zenith);
+	var w = 1;
+	var a = 1;
+	var b = Math.cos(roll);
+	var angle = Math.cos(zenith)*roll/4;
 	var xx;
 	var yy;
 	context.save();
 	context.beginPath();
 	for (var i = 0 * Math.PI; i <= 2*Math.PI+(1/this.detail); i+=(1/this.detail)) {
-    	xx = x - (w * Math.sin(i)) * Math.sin(angle * Math.PI) + (h* Math.cos(i)) * Math.cos(angle * Math.PI);
-    	yy = y + (h * Math.cos(i)) * Math.sin(angle * Math.PI) + (w * Math.sin(i)) * Math.cos(angle * Math.PI);
+    	xx = this.x*x-(this.radius*w * Math.sin(i)) * Math.sin(angle * Math.PI) + (this.radius*h* Math.cos(i)) * Math.cos(angle * Math.PI);
+    	yy = this.y*y+(this.radius*h * Math.cos(i)) * Math.sin(angle * Math.PI) + (this.radius*w* Math.sin(i)) * Math.cos(angle * Math.PI);
 	    if (i == 0) {
-	    	context.moveTo(scalex*xx, scaley*yy);
+	    	context.moveTo(a*xx, b*yy);
 	    } else {
-	    	context.lineTo(scalex*xx, scaley*yy);
+	    	context.lineTo(a*xx, b*yy);
 	    }
 	}
 	context.fill();
@@ -416,23 +421,6 @@ canvasRing.prototype.draw = function(context, scalex, scaley, angle) {
 	context.strokeStyle = this.color;
 	context.stroke();
 	context.restore();
-	//this way never worked all that well
-	//var kappa = 0.5522848;
-	//var x = (this.x-this.radius)*scalex;
-	//var y = (this.y-this.radius)*scaley;
-	//var w = 2*this.radius*scalex;
-	//var h = 2*this.radius*scaley;
-	//var ox = (w / 2) * kappa; // control point offset horizontal
-	//var oy = (h / 2) * kappa; // control point offset vertical
-	//var xe = x + w;           // x-end
-	//var ye = y + h;           // y-end
-	//var xm = x + w / 2;       // x-middle
-	//var ym = y + h / 2;       // y-middle
-	//context.moveTo(x,0);
-	//context.bezierCurveTo(x, ym - oy, xm - ox, y, xm, y);
-	//context.bezierCurveTo(xm + ox, y, xe, ym - oy, xe, ym);
-	//context.bezierCurveTo(xe, ym + oy, xm + ox, ye, xm, ye);
-	//context.bezierCurveTo(xm - ox, ye, x, ym + oy, x, ym);
 }
 
 
@@ -443,7 +431,9 @@ function canvasFlame(x, y, r) {
 	this.fire_density = 10;
 	this.mote_size = 0.5;
 }
-canvasFlame.prototype.draw = function(context, scalex, scaley) {
+canvasFlame.prototype.draw = function(context, zenith, roll) {
+	var scalex = Math.sin(zenith);
+	var scaley = 1;
 	context.save();
 	context.translate(this.x*scalex,this.y*scaley);
 	for (var i = 0; i < this.fire_density; i++) {

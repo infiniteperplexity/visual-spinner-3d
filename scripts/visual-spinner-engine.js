@@ -41,6 +41,7 @@ var NWHEEL = new Vector(1,0,0);
 var NFLOOR = new Vector(0,-1,0);
 var BEAT = 360;
 var SPEED = UNIT/BEAT;
+var TINY = 0.0001;
 
 // A Vector can represent either a point or a plane, in 3D Cartesian coordinates
 function Vector(x,y,z) {
@@ -113,6 +114,8 @@ Vector.prototype.reference = function() {
 	}
 }
 Vector.prototype.between = function(v) {
+	//returns the angle between two vectors
+	//tends to have rounding errors
 	var cx = this.y*v.z - this.z*v.y;
 	var cy = this.z*v.x - this.x*v.z;
 	var cz = this.x*v.y - this.y*v.x;
@@ -122,6 +125,17 @@ Vector.prototype.between = function(v) {
 }
 Vector.prototype.toArray = function() {
 	return [this.x,this.y,this.z];
+}
+Vector.prototype.nearly = function(vector) {
+	//checks to see whether two vectors or planes are nearly the same
+	if (	Math.abs(Math.abs(this.x)-Math.abs(vector.x))<TINY
+		&&	Math.abs(Math.abs(this.y)-Math.abs(vector.y))<TINY
+		&&	Math.abs(Math.abs(this.z)-Math.abs(vector.z))<TINY) 
+	{
+		return true;
+	} else {
+		return false;
+	}		
 }
 
 // A Spherical represents the spherical coordinates of a point
@@ -149,16 +163,16 @@ function unwind(angle) {
 
 // Check whether two floating point values are almost equal
 function nearly(n1,n2) {
-	if (Math.abs(n1-n2)<0.001) {return true;}
+	if (Math.abs(n1-n2)<TINY) {return true;}
 	else {return false;}
 }
 // A prop handles the geometry for a number of spherical coordinates, a renderer, and a move queue
 function Prop() {
-	this.home = new Spherical(0,QUARTER,0);
-	this.pivot = new Spherical(0,QUARTER,0);
-	this.hand = new Spherical(0,QUARTER,0);
-	this.prop = new Spherical(1,QUARTER,0);
-	this.grip = new Spherical(0.5,QUARTER,0);
+	this.home = new Spherical(TINY,QUARTER,TINY);
+	this.pivot = new Spherical(TINY,QUARTER,TINY);
+	this.hand = new Spherical(TINY,QUARTER,TINY);
+	this.prop = new Spherical(1,QUARTER,TINY);
+	this.grip = new Spherical(0.5,QUARTER,TINY);
 	this.roll = 0;
 	this.renderer = undefined;
 }
@@ -177,15 +191,15 @@ Prop.prototype.setGripAngle = function(angle, plane) {this.setElementAngle("grip
 // Rotate an element by a particular angle in a particular plane
 Prop.prototype.rotateElement = function(element, angle, plane) {
 	// not a perfect fix
-	if (element=="hand" && this[element].radius==0) {this[element].radius=0.00001;}
+	if (element=="hand" && this[element].radius==0) {this[element].radius=TINY}
 	if (plane === undefined) {plane = WALL;}
 	//project the current vector onto the plane
 	var projected = this[element].vectorize().project(plane);
 	// not a perfect fix
 	if (element=="hand" && projected.isZero()) {
-		projected.x = 0.00001;
-		projected.y = 0.00001;
-		projected.z = 0.00001;
+		projected.x = TINY;
+		projected.y = TINY;
+		projected.z = TINY;
 	}
 	var v = projected.rotate(angle, plane).unitize();
 	this[element].zenith = unwind(Math.acos(v.z/Math.sqrt(v.x*v.x+v.y*v.y+v.z*v.z)));
@@ -220,7 +234,7 @@ Prop.prototype.getElementAngle = function(element, plane) {
         var ref = plane.reference();
         var projected = this[element].unitize().vectorize().project(plane);
         var angle = ref.between(projected);
-        var tiny = ref.rotate(0.0001,plane).between(projected);
+        var tiny = ref.rotate(TINY,plane).between(projected);
         if (angle >= tiny) {
                 return unwind(angle);
         } else {
@@ -492,20 +506,17 @@ function setup(myProp) {
 	}
 	if (this.align.prop.tilt !== undefined) {
 		this.prop.plane = myProp.hand.unitize().vectorize().rotate(this.align.prop.tilt, hand_plane);
+		prop_plane = this.prop.plane;
 	}
-	//this is a first pass at setting grip roll automatically
-	if (prop_plane===undefined) {
-		prop_plane = hand_plane;
-		if (prop_plane===undefined) {
-			prop_plane = WALL;
+	if (prop_plane !== undefined) {
+		if (prop_plane.nearly(WALL)) {
+			myProp.grip = 0;
+		} else if (prop_plane.nearly(WHEEL) || prop_plane.nearly(FLOOR)) {
+			myProp.grip = STAGGER;
+		} else {
+			myProp.grip = prop_plane.between(WALL);
 		}
 	}
-	if (prop_plane===WALL) {
-		myProp.roll = 0;
-	} else {
-		myProp.roll = STAGGER;
-	}
-	//so I might need to change it....
 	if (this.align.phase !== undefined) {
 		this.changePhase(this.align.phase);
 	}

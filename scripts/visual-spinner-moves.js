@@ -370,6 +370,7 @@ MoveFactory.prototype.linex = function(options) {
 	}
 	myMove.prop.plane = options.plane;
 	myMove.hand.plane = options.plane;
+	myMove.align.hand.radius = TINY;
 	myMove.align.prop.offset = 0;
 	return myMove;
 }

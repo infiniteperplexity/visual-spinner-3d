@@ -1,7 +1,7 @@
 <!--Distributed under GNU Public License version 3-->
 <html><head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>VisualSpinner3D v. 1.2, by Glenn Wright</title>
+<title>VisualSpinner3D v. 2.0, by Glenn Wright</title>
 <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
 <script src="scripts/gl-matrix-min.js"></script>
 <script src="scripts/phoria-min.js"></script>
@@ -43,7 +43,7 @@ function init() {
 					"wall","wall","wall","wall",
 					"twelve","twelve","twelve","twelve",
 					"cw","ccw","cw","ccw",
-					"xtsn","xtsn","3paf","3paf"];
+					"xtsn","3paf","3paf","xtsn"];
 	for (var i = 0; i<params.length; i++) {
 		var txt = $.urlParam(params[i]);
 		if (txt==0) {txt = defaults[i];}
@@ -57,10 +57,10 @@ function init() {
 		|| navigator.userAgent.match(/BlackBerry/i)
 		|| navigator.userAgent.match(/Windows Phone/i)) {
 		$("#2d3d").val("2d");
-		$("#2prop").val("none");
-		$("#3prop").val("none");
-		$("#4prop").val("none");
-		$("#1move").val("hcap");
+		if ($urlParam("2prop")==0) {$("#2prop").val("none");}
+		if ($urlParam("3prop")==0) {$("#3prop").val("none");}
+		if ($urlParam("4prop")==0) {$("#4prop").val("none");}
+		if ($urlParam("1move")==0) {$("#1move").val("hcap");}
 	} else {
 		$("#2d3d").val("3d");
 	}
@@ -74,7 +74,7 @@ function canvasSetup() {
 	canvas.height = HEIGHT;
 	canvas.width = WIDTH;
 	ctx.fillStyle = BACKGROUND;
-	ctx.strokeStyle=BACKGROUND;
+	ctx.strokeStyle = BACKGROUND;
 	ctx.fillRect(0,0,WIDTH,HEIGHT);
 	
 	// set up Phoria scene for 3D rendering
@@ -330,12 +330,24 @@ Controller.prototype.generateMove = function(n, txt) {
 		move.align.prop.angle = this.hand[n];
 	} else if (txt=="supr") {
 		move = moves.superman({direction: this.spin[n], hand_plane: this.plane[n]});
+	} else if (txt=="zbnd") {
+		move = moves.toroid({lobes: 4, direction: this.spin[n], bend: 0, plane: this.plane[n]});
 	} else if (txt=="isob") {
 		move = moves.toroid({lobes: 4, direction: this.spin[n], bend: ISOBEND, plane: this.plane[n]});
-	} else if (txt=="antb") {
+	} else if (txt=="2ant") {
+		move = moves.toroid({lobes: 2, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
+	} else if (txt=="4ant") {
 		move = moves.toroid({lobes: 4, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
-	} else if (txt=="prob") {
+	} else if (txt=="6ant") {
+		move = moves.toroid({lobes: 6, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
+	} else if (txt=="2pro") {
+		move = moves.toroid({lobes: 2, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
+	} else if (txt=="4pro") {
 		move = moves.toroid({lobes: 4, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
+	} else if (txt=="6pro") {
+		move = moves.toroid({lobes: 6, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
+	} else if (txt=="n3bd") {
+		move = moves.toroid({lobes: 2, direction: this.spin[n], bend: -3, plane: this.plane[n]});
 	}
 	return move;
 }
@@ -555,9 +567,15 @@ First Move:
 		<option value="vlis">Vertical Linear Isolation</option>
 		<option value="2btw">Two-Beat Weave</option>
 		<option value="supr">Superman</option>
+		<option value="zbnd">Zero-bend Pseudo-Toroid</option>
 		<option value="isob">Four-Lobe Iso-bend Toroid</option>
-		<option value="antb">Four-Lobe Anti-bend Toroid</option>
-		<option value="prob">Four-Lobe Pro-bend Toroid</option>
+		<option value="2ant">(2 Harmonic) Anti-Bend Toroid</option>
+		<option value="4ant">(4 Harmonic) Anti-Bend Toroid</option>
+		<option value="6ant">(6 Harmonic) Anti-Bend Toroid</option>
+		<option value="2pro">(2 Harmonic) Pro-Bend Toroid</option>
+		<option value="4pro">(4 Harmonic) Pro-Bend Toroid</option>
+		<option value="6pro">(6 Harmonic) Pro-Bend Toroid</option>
+		<option value="n3bd">(2 Harmonic) (-3)-Bend Toroid</option>
 	</select>
 </td>
 
@@ -592,9 +610,15 @@ Second Move:
 		<option value="vlis">Vertical Linear Isolation</option>
 		<option value="2btw">Two-Beat Weave</option>
 		<option value="supr">Superman</option>
+		<option value="zbnd">Zero-bend Pseudo-Toroid</option>
 		<option value="isob">Four-Lobe Iso-bend Toroid</option>
-		<option value="antb">Four-Lobe Anti-bend Toroid</option>
-		<option value="prob">Four-Lobe Pro-bend Toroid</option>
+		<option value="2ant">(2 Harmonic) Anti-Bend Toroid</option>
+		<option value="4ant">(4 Harmonic) Anti-Bend Toroid</option>
+		<option value="6ant">(6 Harmonic) Anti-Bend Toroid</option>
+		<option value="2pro">(2 Harmonic) Pro-Bend Toroid</option>
+		<option value="4pro">(4 Harmonic) Pro-Bend Toroid</option>
+		<option value="6pro">(6 Harmonic) Pro-Bend Toroid</option>
+		<option value="n3bd">(2 Harmonic) (-3)-Bend Toroid</option>
 	</select>
 </td>
 </tr>
@@ -628,9 +652,15 @@ Third Move:
 		<option value="vlis">Vertical Linear Isolation</option>
 		<option value="2btw">Two-Beat Weave</option>
 		<option value="supr">Superman</option>
+		<option value="zbnd">Zero-bend Pseudo-Toroid</option>
 		<option value="isob">Four-Lobe Iso-bend Toroid</option>
-		<option value="antb">Four-Lobe Anti-bend Toroid</option>
-		<option value="prob">Four-Lobe Pro-bend Toroid</option>
+		<option value="2ant">(2 Harmonic) Anti-Bend Toroid</option>
+		<option value="4ant">(4 Harmonic) Anti-Bend Toroid</option>
+		<option value="6ant">(6 Harmonic) Anti-Bend Toroid</option>
+		<option value="2pro">(2 Harmonic) Pro-Bend Toroid</option>
+		<option value="4pro">(4 Harmonic) Pro-Bend Toroid</option>
+		<option value="6pro">(6 Harmonic) Pro-Bend Toroid</option>
+		<option value="n3bd">(2 Harmonic) (-3)-Bend Toroid</option>
 	</select>
 </td>
 </tr>
@@ -664,9 +694,15 @@ Fourth Move:
 		<option value="vlis">Vertical Linear Isolation</option>
 		<option value="2btw">Two-Beat Weave</option>
 		<option value="supr">Superman</option>
+		<option value="zbnd">Zero-bend Pseudo-Toroid</option>
 		<option value="isob">Four-Lobe Iso-bend Toroid</option>
-		<option value="antb">Four-Lobe Anti-bend Toroid</option>
-		<option value="prob">Four-Lobe Pro-bend Toroid</option>
+		<option value="2ant">(2 Harmonic) Anti-Bend Toroid</option>
+		<option value="4ant">(4 Harmonic) Anti-Bend Toroid</option>
+		<option value="6ant">(6 Harmonic) Anti-Bend Toroid</option>
+		<option value="2pro">(2 Harmonic) Pro-Bend Toroid</option>
+		<option value="4pro">(4 Harmonic) Pro-Bend Toroid</option>
+		<option value="6pro">(6 Harmonic) Pro-Bend Toroid</option>
+		<option value="n3bd">(2 Harmonic) (-3)-Bend Toroid</option>
 	</select>
 </td>
 </tr>
@@ -688,7 +724,4 @@ Pasteable link to these settings:
 <p id="myLink"></p>
 <p>Source: https://github.com/infiniteperplexity/visual-spinner-3d</p>
 <p>Questions, comments, and suggestions: infinite DOT perplexity AT gmail DOT com</p>
-
-
-
 </body></html>
