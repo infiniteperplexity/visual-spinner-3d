@@ -57,10 +57,6 @@ function init() {
 		|| navigator.userAgent.match(/BlackBerry/i)
 		|| navigator.userAgent.match(/Windows Phone/i)) {
 		$("#2d3d").val("2d");
-		if ($urlParam("2prop")==0) {$("#2prop").val("none");}
-		if ($urlParam("3prop")==0) {$("#3prop").val("none");}
-		if ($urlParam("4prop")==0) {$("#4prop").val("none");}
-		if ($urlParam("1move")==0) {$("#1move").val("hcap");}
 	} else {
 		$("#2d3d").val("3d");
 	}
