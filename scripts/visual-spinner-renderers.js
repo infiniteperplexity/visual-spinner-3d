@@ -354,7 +354,7 @@ function canvasLine(x1,y1,x2,y2,thickness,color) {
 }
 canvasLine.prototype.draw = function(context, zenith, roll) {
 	var scalex = Math.sin(zenith);
-	var scaley = 1;
+	var scaley = Math.cos(roll);
 	context.save();
 	context.beginPath();
 	context.moveTo(this.x1*scalex, this.y1*scaley);
@@ -373,7 +373,7 @@ function canvasBall(x, y, r, color, linecolor) {
 }
 canvasBall.prototype.draw = function(context, zenith, roll) {
 	var scalex = Math.sin(zenith);
-	var scaley = 1;
+	var scaley = Math.cos(roll);
 	context.save();
 	context.beginPath();
 	context.arc(this.x*scalex, this.y*scaley, this.radius, 0, 2*Math.PI);
@@ -433,7 +433,7 @@ function canvasFlame(x, y, r) {
 }
 canvasFlame.prototype.draw = function(context, zenith, roll) {
 	var scalex = Math.sin(zenith);
-	var scaley = 1;
+	var scaley = Math.cos(roll);
 	context.save();
 	context.translate(this.x*scalex,this.y*scaley);
 	for (var i = 0; i < this.fire_density; i++) {
