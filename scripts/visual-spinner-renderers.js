@@ -8,15 +8,15 @@ PhoriaPropRenderer.prototype.render = function(myProp) {
 	var mat = mat4.create();
 	var elements = ["home","pivot","hand"];
 	for (i = 0; i<elements.length; i++) {
-		mat4.rotate(mat, mat, myProp[elements[i]].azimuth, ZAXIS3);
-		mat4.rotate(mat, mat, myProp[elements[i]].zenith, YAXIS3);
+		mat4.rotate(mat, mat, myProp[elements[i]].azimuth, ZAXIS);
+		mat4.rotate(mat, mat, myProp[elements[i]].zenith, YAXIS);
 		mat4.translate(mat, mat, [0,0,myProp[elements[i]].radius]);
-		mat4.rotate(mat, mat, -myProp[elements[i]].zenith, YAXIS3);
-		mat4.rotate(mat, mat, -myProp[elements[i]].azimuth, ZAXIS3);
+		mat4.rotate(mat, mat, -myProp[elements[i]].zenith, YAXIS);
+		mat4.rotate(mat, mat, -myProp[elements[i]].azimuth, ZAXIS);
 	}
-	mat4.rotate(mat, mat, myProp.prop.azimuth, ZAXIS3);
-	mat4.rotate(mat, mat, myProp.prop.zenith, YAXIS3);
-	mat4.rotate(mat, mat, myProp.grip, ZAXIS3);
+	mat4.rotate(mat, mat, myProp.prop.azimuth, ZAXIS);
+	mat4.rotate(mat, mat, myProp.prop.zenith, YAXIS);
+	mat4.rotate(mat, mat, myProp.roll, ZAXIS);
 	for (var i=0; i<this.shapes.length; i++) {
 		this.shapes[i].matrix = mat;
 	}
