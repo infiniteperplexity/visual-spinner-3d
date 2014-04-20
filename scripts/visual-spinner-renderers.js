@@ -301,7 +301,7 @@ CanvasPropRenderer.prototype.render = function(myProp) {
 	}
 	this.context.rotate(myProp.prop.azimuth);
 	for (var i=0; i<this.shapes.length; i++) {
-		this.shapes[i].draw(this.context, myProp.prop.zenith, myProp.grip);
+		this.shapes[i].draw(this.context, myProp.prop.zenith, myProp.roll);
 	}
 	this.context.restore();
 }
