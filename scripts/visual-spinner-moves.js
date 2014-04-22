@@ -172,46 +172,6 @@ MoveFactory.prototype.onepointfive = function(options) {
 	move.tail().prop.acc = 24*options.speed*options.spin;
 }
 
-MoveFactory.prototype.scap = function(options) {
-	options = this.defaults(options,{
-		plane: WALL,
-		orient: THREE,
-		direction: CLOCKWISE,
-		inpetals: 0,
-		antipetals: 3, 
-		extend: 1,
-		speed: 2,
-	});
-	segment = new MoveLink();
-	segment.duration = 0.25;
-	segment.hand.radius = options.extend;
-	segment.hand.plane = options.plane;
-	segment.prop.plane = options.plane;
-	segment.hand.angle = options.orient;
-	segment.prop.angle = options.orient;
-	segment.pivot.radius = options.extend;
-	move = new MoveChain();
-	move.add(segment);
-	move.tail().hand.speed = options.speed*options.direction;
-	move.tail().prop.speed = (options.inpetals+1)*options.speed*options.direction;
-	move.tail().pivot.angle = options.orient;
-	move.extend();
-	move.tail().hand.speed = -options.speed*options.direction;
-	move.tail().prop.speed = (options.antipetals-1)*options.speed*options.direction;
-	move.tail().pivot.angle = options.orient+OFFSET;
-	move.tail().hand.angle = options.orient;
-	move.extend();
-	move.tail().hand.speed = options.speed*options.direction;
-	move.tail().prop.speed = (options.inpetals+1)*options.speed*options.direction;
-	move.tail().pivot.angle = options.orient+OFFSET;
-	move.extend();
-	move.tail().hand.speed = -options.speed*options.direction;
-	move.tail().prop.speed = (options.antipetals-1)*options.speed*options.direction;
-	move.tail().pivot.angle = options.orient;
-	move.tail().hand.angle = options.orient + OFFSET;
-	return move;
-}
-
 MoveFactory.prototype.linex = function(options) {
 	// A linex with harmonics = 1 is a linear extension.  harmonics = 2 is a linear isolation;
 	options = this.defaults(options,{
@@ -281,6 +241,7 @@ MoveFactory.prototype.toroid = function(options) {
 		orient: THREE,
 		plane: WALL,
 		direction: CLOCKWISE,
+		pitch: FORWARD,
 		spin: INSPIN,
 		bend: ISOBEND,
 		harmonics: 4,
@@ -292,7 +253,7 @@ MoveFactory.prototype.toroid = function(options) {
 	segment.duration = 0.25;
 	segment.hand.radius = options.extend;
 	segment.hand.speed = options.direction*options.speed;
-	segment.prop.speed = FORWARD*options.harmonics*options.speed;
+	segment.prop.speed = options.pitch*options.harmonics*options.speed;
 	segment.prop.bend = options.bend*options.direction*options.speed;
 	segment.prop.bend_plane = options.plane;
 	// this might fail if options.orient is changed from the default
@@ -306,5 +267,92 @@ MoveFactory.prototype.toroid = function(options) {
 	move.extend();
 	move.extend();
 	move.extend();
+	return move;
+}
+
+//***obscure moves***
+MoveFactory.prototype.fractal = function(options) {
+	options = this.defaults(options,{
+		orient: THREE,
+		plane: WALL,
+		direction: CLOCKWISE,
+		spin: INSPIN,
+		pivot_spin: ANTISPIN,
+		petals: 4,
+		pivot_petals: 4,
+		extend: 0.5,
+		pivot_extend: 0.5,
+		mode: DIAMOND,
+		pivot_mode: DIAMOND,
+		speed: 1
+	});
+	var segment = new MoveLink();
+	segment.duration = 0.25;
+	if (options.spin==INSPIN) {
+		segment.prop.speed = (options.petals+1)*options.spin*options.direction*options.speed;
+	} else {
+		segment.prop.speed = (options.petals-1)*options.spin*options.direction*options.speed;
+	}
+	if (options.pivot_spin==INSPIN) {
+		segment.hand.speed = (options.pivot_petals+1)*options.pivot_spin*options.direction*options.speed;
+	} else {
+		segment.hand.speed = (options.pivot_petals-1)*options.pivot_spin*options.direction*options.speed;
+	}
+	segment.pivot.radius = options.pivot_extend;
+	segment.hand.radius = options.extend;
+	segment.pivot.speed = options.direction*options.speed;
+	segment.prop.plane = options.plane;
+	segment.hand.plane = options.plane;
+	segment.pivot.plane = options.plane;
+	segment.pivot.angle = options.orient;
+	segment.hand.angle = options.orient + options.pivot_mode;
+	segment.prop.angle = options.orient + options.mode;
+	// this is a bit kludgy but we need it until we have a better system for phasing
+	var move = new MoveChain();
+	move.add(segment);
+	move.extend();
+	move.extend();
+	move.extend();
+	return move;
+}
+
+
+MoveFactory.prototype.scap = function(options) {
+	options = this.defaults(options,{
+		plane: WALL,
+		orient: THREE,
+		direction: CLOCKWISE,
+		inpetals: 0,
+		antipetals: 3, 
+		extend: 1,
+		speed: 2,
+	});
+	segment = new MoveLink();
+	segment.duration = 0.25;
+	segment.hand.radius = options.extend;
+	segment.hand.plane = options.plane;
+	segment.prop.plane = options.plane;
+	segment.hand.angle = options.orient;
+	segment.prop.angle = options.orient;
+	segment.pivot.radius = options.extend;
+	move = new MoveChain();
+	move.add(segment);
+	move.tail().hand.speed = options.speed*options.direction;
+	move.tail().prop.speed = (options.inpetals+1)*options.speed*options.direction;
+	move.tail().pivot.angle = options.orient;
+	move.extend();
+	move.tail().hand.speed = -options.speed*options.direction;
+	move.tail().prop.speed = (options.antipetals-1)*options.speed*options.direction;
+	move.tail().pivot.angle = options.orient+OFFSET;
+	move.tail().hand.angle = options.orient;
+	move.extend();
+	move.tail().hand.speed = options.speed*options.direction;
+	move.tail().prop.speed = (options.inpetals+1)*options.speed*options.direction;
+	move.tail().pivot.angle = options.orient+OFFSET;
+	move.extend();
+	move.tail().hand.speed = -options.speed*options.direction;
+	move.tail().prop.speed = (options.antipetals-1)*options.speed*options.direction;
+	move.tail().pivot.angle = options.orient;
+	move.tail().hand.angle = options.orient + OFFSET;
 	return move;
 }

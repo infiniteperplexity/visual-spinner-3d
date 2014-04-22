@@ -126,7 +126,7 @@ function canvasLoop() {
 }
 function redraw() {
 	if (view2d == true) {
-		ctx.fillStyle = "rgba(0,0,0,0.1)";
+		ctx.fillStyle = "rgba(0,0,0,0.01)";
 		ctx.strokeStyle=BACKGROUND;
 		ctx.fillRect(0,0,WIDTH,HEIGHT);
 	}
@@ -273,8 +273,9 @@ Controller.prototype.updateParameters = function() {
 Controller.prototype.generateMove = function(n, txt) {
 	var move;
 	if (txt=="stat") {
-		move = moves.staticspin({direction: this.spin[n], plane: this.plane[n]});
-		move.align("prop",this.align[n]);
+		move = moves.fractal();
+		//move = moves.staticspin({direction: this.spin[n], plane: this.plane[n]});
+		//move.align("prop",this.align[n]);
 	} else if (txt=="xtsn") {
 		move = moves.flower({direction: this.spin[n], plane: this.plane[n], petals: 0});
 		move.align("hand",this.align[n]);
@@ -373,6 +374,12 @@ Controller.prototype.generateMove = function(n, txt) {
 	} else if (txt=="isob") {
 		move = moves.toroid({harmonics: 4, direction: this.spin[n], bend: ISOBEND, plane: this.plane[n]});
 		move.align("hand",this.align[n]);
+	} else if (txt=="biso") {
+		move = moves.toroid({pitch: BACKWARD, harmonics: 4, direction: this.spin[n], bend: ISOBEND, plane: this.plane[n]});
+		move.align("hand",this.align[n]);
+	} else if (txt=="bant") {
+		move = moves.toroid({pitch: BACKWARD, harmonics: 2, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
+		move.align("hand",this.align[n]);
 	} else if (txt=="2ant") {
 		move = moves.toroid({harmonics: 2, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
 		move.align("hand",this.align[n]);
@@ -384,6 +391,9 @@ Controller.prototype.generateMove = function(n, txt) {
 		move.align("hand",this.align[n]);
 	} else if (txt=="2pro") {
 		move = moves.toroid({harmonics: 2, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
+		move.align("hand",this.align[n]);
+	} else if (txt=="bpro") {
+		move = moves.toroid({pitch: BACKWARD, harmonics: 2, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
 		move.align("hand",this.align[n]);
 	} else if (txt=="4pro") {
 		move = moves.toroid({harmonics: 4, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
@@ -617,10 +627,13 @@ First Move:
 		<option value="supr">Superman</option>
 		<option value="zbnd">Zero-bend Pseudo-Toroid</option>
 		<option selected="selected" value="isob">Four-Lobe Iso-bend Toroid</option>
+		<option value="biso">Backwards Iso-bend Toroid</option>
 		<option value="2ant">(2 Harmonic) Anti-Bend Toroid</option>
+		<option value="bant">Backward Anti-Bend Toroid</option>
 		<option value="4ant">(4 Harmonic) Anti-Bend Toroid</option>
 		<option value="6ant">(6 Harmonic) Anti-Bend Toroid</option>
 		<option value="2pro">(2 Harmonic) Pro-Bend Toroid</option>
+		<option value="bpro">Backward Pro-Bend Toroid</option>
 		<option value="4pro">(4 Harmonic) Pro-Bend Toroid</option>
 		<option value="6pro">(6 Harmonic) Pro-Bend Toroid</option>
 		<option value="n3bd">(2 Harmonic) (-3)-Bend Toroid</option>
@@ -660,14 +673,16 @@ Second Move:
 		<option value="vlis">Vertical Linear Isolation</option>
 		<option value="zbnd">Zero-bend Pseudo-Toroid</option>
 		<option selected="selected" value="isob">Four-Lobe Iso-bend Toroid</option>
+		<option value="biso">Backwards Iso-bend Toroid</option>
 		<option value="2ant">(2 Harmonic) Anti-Bend Toroid</option>
+		<option value="bant">Backward Anti-Bend Toroid</option>
 		<option value="4ant">(4 Harmonic) Anti-Bend Toroid</option>
 		<option value="6ant">(6 Harmonic) Anti-Bend Toroid</option>
 		<option value="2pro">(2 Harmonic) Pro-Bend Toroid</option>
+		<option value="bpro">Backward Pro-Bend Toroid</option>
 		<option value="4pro">(4 Harmonic) Pro-Bend Toroid</option>
 		<option value="6pro">(6 Harmonic) Pro-Bend Toroid</option>
 		<option value="n3bd">(2 Harmonic) (-3)-Bend Toroid</option>
-	</select>
 </td>
 </tr>
 <tr>
@@ -702,10 +717,13 @@ Third Move:
 		<option value="vlis">Vertical Linear Isolation</option>
 		<option value="zbnd">Zero-bend Pseudo-Toroid</option>
 		<option value="isob">Four-Lobe Iso-bend Toroid</option>
+		<option value="biso">Backwards Iso-bend Toroid</option>
 		<option selected="selected" value="2ant">(2 Harmonic) Anti-Bend Toroid</option>
+		<option value="bant">Backward Anti-Bend Toroid</option>
 		<option value="4ant">(4 Harmonic) Anti-Bend Toroid</option>
 		<option value="6ant">(6 Harmonic) Anti-Bend Toroid</option>
 		<option value="2pro">(2 Harmonic) Pro-Bend Toroid</option>
+		<option value="bpro">Backward Pro-Bend Toroid</option>
 		<option value="4pro">(4 Harmonic) Pro-Bend Toroid</option>
 		<option value="6pro">(6 Harmonic) Pro-Bend Toroid</option>
 		<option value="n3bd">(2 Harmonic) (-3)-Bend Toroid</option>
@@ -744,10 +762,13 @@ Fourth Move:
 		<option value="vlis">Vertical Linear Isolation</option>
 		<option value="zbnd">Zero-bend Pseudo-Toroid</option>
 		<option value="isob">Four-Lobe Iso-bend Toroid</option>
+		<option value="biso">Backwards Iso-bend Toroid</option>
 		<option selected="selected" value="2ant">(2 Harmonic) Anti-Bend Toroid</option>
+		<option value="bant">Backward Anti-Bend Toroid</option>
 		<option value="4ant">(4 Harmonic) Anti-Bend Toroid</option>
 		<option value="6ant">(6 Harmonic) Anti-Bend Toroid</option>
 		<option value="2pro">(2 Harmonic) Pro-Bend Toroid</option>
+		<option value="bpro">Backward Pro-Bend Toroid</option>
 		<option value="4pro">(4 Harmonic) Pro-Bend Toroid</option>
 		<option value="6pro">(6 Harmonic) Pro-Bend Toroid</option>
 		<option value="n3bd">(2 Harmonic) (-3)-Bend Toroid</option>
