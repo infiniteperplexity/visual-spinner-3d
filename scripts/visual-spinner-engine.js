@@ -375,7 +375,7 @@ MoveChain.prototype.alignprop = function(prop) {
 MoveChain.prototype.angleto = function(element, target) {
 	//first we try this the easy way...
 	for (var i = 0; i<this.submoves.length; i++) {
-		if (nearly(this.head()[element].angle, target)) {
+		if (nearly(this.head()[element].angle, target,0.01)) {
 			return this;
 		} else {
 			this.phaseby(1);

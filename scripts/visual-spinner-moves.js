@@ -6,15 +6,11 @@ MoveFactory.prototype.staticspin= function(options) {
 		speed: 1,
 	});
 	var segment = new MoveLink();
-	segment.duration = 0.125;
 	segment.prop.angle = options.orient;
 	segment.prop.plane = options.plane;
 	segment.prop.speed = options.direction*options.speed;
 	var move = new MoveChain();
 	move.add(segment);
-	move.extend();
-	move.extend();
-	move.extend();
 	return move;
 }
 
@@ -69,12 +65,12 @@ MoveFactory.prototype.flower = function(options) {
 	segment.hand.plane = options.plane;
 	segment.hand.angle = options.orient;
 	segment.prop.angle = options.orient + options.mode;
-	// this is a bit kludgy but we need it until we have a better system for phasing
+	segment.duration = 1 / options.petals;
 	var move = new MoveChain();
 	move.add(segment);
-	move.extend();
-	move.extend();
-	move.extend();
+	for (var i=1; i<options.petals; i++) {
+		move.extend();
+	}
 	return move;
 }
 
@@ -219,7 +215,6 @@ MoveFactory.prototype.isolation = function(options) {
 		speed: 1
 	});
 	var segment = new MoveLink();
-	segment.duration = 0.25;
 	segment.hand.radius = 0.5;
 	segment.hand.speed = options.direction*options.speed;
 	segment.prop.speed = options.spin*options.direction*options.speed;
@@ -227,12 +222,8 @@ MoveFactory.prototype.isolation = function(options) {
 	segment.hand.plane = options.plane;
 	segment.hand.angle = options.orient;
 	segment.prop.angle = options.orient + options.offset;
-	// this is lame and kludgy
 	var move = new MoveChain();
 	move.add(segment);
-	move.extend();
-	move.extend();
-	move.extend();
 	return move;
 }
 
@@ -250,7 +241,6 @@ MoveFactory.prototype.toroid = function(options) {
 		mode: DIAMOND
 	});
 	var segment = new MoveLink();
-	segment.duration = 0.25;
 	segment.hand.radius = options.extend;
 	segment.hand.speed = options.direction*options.speed;
 	segment.prop.speed = options.pitch*options.harmonics*options.speed;
@@ -258,15 +248,15 @@ MoveFactory.prototype.toroid = function(options) {
 	segment.prop.bend_plane = options.plane;
 	// this might fail if options.orient is changed from the default
 	segment.prop.plane = options.plane.reference().rotate(options.orient-QUARTER, options.plane);
-	//segment.prop.plane = options.plane.reference().rotate(options.orient-QUARTER, options.plane);
 	segment.hand.plane = options.plane;
 	segment.hand.angle = options.orient;
 	segment.prop.angle = options.orient + options.mode + QUARTER;
+	segment.duration = 1/options.harmonics;
 	var move = new MoveChain();
 	move.add(segment);
-	move.extend();
-	move.extend();
-	move.extend();
+	for (var i = 1; i<options.harmonics; i++) {
+		move.extend();
+	}
 	return move;
 }
 
@@ -287,7 +277,6 @@ MoveFactory.prototype.fractal = function(options) {
 		speed: 1
 	});
 	var segment = new MoveLink();
-	segment.duration = 0.25;
 	if (options.spin==INSPIN) {
 		segment.prop.speed = (options.petals+1)*options.spin*options.direction*options.speed;
 	} else {
@@ -307,12 +296,12 @@ MoveFactory.prototype.fractal = function(options) {
 	segment.pivot.angle = options.orient;
 	segment.hand.angle = options.orient + options.pivot_mode;
 	segment.prop.angle = options.orient + options.mode;
-	// this is a bit kludgy but we need it until we have a better system for phasing
+	segment.duration = 1/(options.petals*options.pivot_petals);
 	var move = new MoveChain();
 	move.add(segment);
-	move.extend();
-	move.extend();
-	move.extend();
+	for (var i = 1; i<options.petals*options.pivot_petals; i++) {
+		move.extend();
+	}
 	return move;
 }
 
