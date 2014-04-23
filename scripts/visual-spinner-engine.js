@@ -449,7 +449,7 @@ MoveChain.prototype.split = function(t) {
 	var chain2 = new MoveChain();
 	var halves;
 	for (var i=0; i<this.submoves.length; i++) {
-		if (tally > t) {
+		if (tally >= t) {
 			chain2.add(this.submoves[i]);
 		} else if (tally+this.submoves[i].getDuration()*BEAT > t) {
 			halves = this.submoves[i].split(t-tally);
