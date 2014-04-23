@@ -65,7 +65,11 @@ MoveFactory.prototype.flower = function(options) {
 	segment.hand.plane = options.plane;
 	segment.hand.angle = options.orient;
 	segment.prop.angle = options.orient + options.mode;
-	segment.duration = 1 / options.petals;
+	if (options.petals==0) {
+		segment.duration = 1;
+	} else {
+		segment.duration = 1 / options.petals;
+	}
 	var move = new MoveChain();
 	move.add(segment);
 	for (var i=1; i<options.petals; i++) {
@@ -251,7 +255,11 @@ MoveFactory.prototype.toroid = function(options) {
 	segment.hand.plane = options.plane;
 	segment.hand.angle = options.orient;
 	segment.prop.angle = options.orient + options.mode + QUARTER;
-	segment.duration = 1/options.harmonics;
+	if (options.harmonics==0) {
+		segment.duration = 1;
+	} else {
+		segment.duration = 1 / options.harmonics;
+	}
 	var move = new MoveChain();
 	move.add(segment);
 	for (var i = 1; i<options.harmonics; i++) {
@@ -296,7 +304,11 @@ MoveFactory.prototype.fractal = function(options) {
 	segment.pivot.angle = options.orient;
 	segment.hand.angle = options.orient + options.pivot_mode;
 	segment.prop.angle = options.orient + options.mode;
-	segment.duration = 1/(options.petals*options.pivot_petals);
+	if ((options.petals*options.pivot_petals)==0) {
+		segment.duration = 1;
+	} else {
+		segment.duration = 1/(options.petals*options.pivot_petals);
+	}
 	var move = new MoveChain();
 	move.add(segment);
 	for (var i = 1; i<options.petals*options.pivot_petals; i++) {
