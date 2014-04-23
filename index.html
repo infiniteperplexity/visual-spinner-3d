@@ -43,7 +43,7 @@ function init() {
 					"twelve","twelve","twelve","twelve",
 					//"three","three","three","three",
 					"cw","ccw","cw","ccw",
-					"isob","isob","2ant","2ant"];
+					"isob","isob","4paf","4paf"];
 	for (var i = 0; i<params.length; i++) {
 		var txt = $.urlParam(params[i]);
 		if (txt==0) {txt = defaults[i];}
@@ -273,41 +273,40 @@ Controller.prototype.updateParameters = function() {
 Controller.prototype.generateMove = function(n, txt) {
 	var move;
 	if (txt=="stat") {
-		move = moves.fractal();
-		//move = moves.staticspin({direction: this.spin[n], plane: this.plane[n]});
-		//move.align("prop",this.align[n]);
+		move = moves.staticspin({direction: this.spin[n], plane: this.plane[n]});
+		move.angleto("prop",this.align[n]);
 	} else if (txt=="xtsn") {
 		move = moves.flower({direction: this.spin[n], plane: this.plane[n], petals: 0});
-		move.align("hand",this.align[n]);
+		move.angleto("hand",this.align[n]);
 	} else if (txt=="1pif") {
 		move = moves.flower({orient: this.align[n], direction: this.spin[n], plane: this.plane[n], petals: 1});
-		move.align("hand",this.align[n]);
+		move.angleto("hand",this.align[n]);
 	} else if (txt=="2pif") {
 		move = moves.flower({orient: this.align[n],direction: this.spin[n], plane: this.plane[n], petals: 2});
-		move.align("hand",this.align[n]);
+		move.angleto("hand",this.align[n]);
 	} else if (txt=="4pif") {
 		move = moves.flower({orient: this.align[n],direction: this.spin[n], plane: this.plane[n]});
-		move.align("hand",this.align[n]);
+		move.angleto("hand",this.align[n]);
 	} else if (txt=="3paf") {
 		move = move = moves.flower({orient: this.align[n],direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN, petals: 3});
-		move.align("hand",this.align[n]);
+		move.angleto("hand",this.align[n]);
 	} else if (txt=="4paf") {
 		move = move = moves.flower({orient: this.align[n],direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
-		move.align("hand",this.align[n]);
+		move.angleto("hand",this.align[n]);
 	} else if (txt=="hcap") {
 		if (this.align[n] == TWELVE || this.align[n] == SIX) {
 			move = moves.ccap({orient: this.align[n]+this.spin[n]*QUARTER, direction: this.spin[n], plane: this.plane[n]});
 		} else {
 			move = moves.ccap({orient: this.align[n], direction: this.spin[n], plane: this.plane[n]});
 		}
-		move.align("hand",this.align[n]);
+		move.angleto("hand",this.align[n]);
 	} else if (txt=="vcap") {
 		if (this.align[n] == THREE || this.align[n] == NINE) {
 			move = moves.ccap({orient: this.align[n]+this.spin[n]*QUARTER, direction: this.spin[n], plane: this.plane[n]});
 		} else {
 			move = moves.ccap({orient: this.align[n], direction: this.spin[n], plane: this.plane[n]});
 		}
-		move.align("hand",this.align[n]);
+		move.angleto("hand",this.align[n]);
 	} else if (txt=="hcpo") {
 		if (this.align[n] == TWELVE || this.align[n] == SIX) {
 			move = moves.ccap({orient: this.align[n]-this.spin[n]*QUARTER, direction: this.spin[n], plane: this.plane[n]});
@@ -315,7 +314,7 @@ Controller.prototype.generateMove = function(n, txt) {
 			move = moves.ccap({orient: this.align[n], direction: this.spin[n], plane: this.plane[n]});
 			move.phaseby(2);
 		}
-		move.align("hand",this.align[n]);
+		move.angleto("hand",this.align[n]);
 	} else if (txt=="vcpo") {
 		if (this.align[n] == THREE || this.align[n] == NINE) {
 			move = moves.ccap({orient: this.align[n]-this.spin[n]*QUARTER, direction: this.spin[n], plane: this.plane[n]});
@@ -323,31 +322,31 @@ Controller.prototype.generateMove = function(n, txt) {
 			move = moves.ccap({orient: this.align[n], direction: this.spin[n], plane: this.plane[n]});
 			move.phaseby(2);
 		}
-		move.align("hand",this.align[n]);
+		move.angleto("hand",this.align[n]);
 	} else if (txt=="pend") {
 		move = moves.pendulum({direction: this.spin[n], plane: this.plane[n]});
-		move.align("hand",this.align[n]);
+		move.angleto("hand",this.align[n]);
 	} else if (txt=="1pt5") {
 		move = moves.onepointfive({direction: this.spin[n], plane: this.plane[n]});
-		move.align("hand",this.align[n]);
+		move.angleto("hand",this.align[n]);
 	} else if (txt=="ucex") {
 		move = moves.isolation({offset: 0, direction: this.spin[n], plane: this.plane[n]});
-		move.align("prop",this.align[n]);
+		move.angleto("prop",this.align[n]);
 	} else if (txt=="vcat") {
 		move = moves.isolation({orient: TWELVE, offset: 0, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
-		move.align("prop",this.align[n]);
+		move.angleto("prop",this.align[n]);
 	} else if (txt=="hcat") {
 		move = moves.isolation({direction: this.spin[n], offset: 0, plane: this.plane[n], spin: ANTISPIN});
-		move.align("prop",this.align[n]);
+		move.angleto("prop",this.align[n]);
 	} else if (txt=="isol") {
 		move = moves.isolation({direction: this.spin[n], plane: this.plane[n]});
-		move.align("prop",this.align[n]);
+		move.angleto("prop",this.align[n]);
 	} else if (txt=="hlex") {
 		move = moves.linex({direction: this.spin[n], plane: this.plane[n], orient: THREE});
-		move.align("prop",this.align[n]);
+		move.angleto("prop",this.align[n]);
 	} else if (txt=="vlex") {
 		move = moves.linex({direction: this.spin[n], plane: this.plane[n], orient: TWELVE});
-		move.align("prop",this.align[n]);
+		move.angleto("prop",this.align[n]);
 	} else if (txt=="hlis") {
 		move = moves.linex({harmonics: 2, direction: this.spin[n], plane: this.plane[n], orient: THREE});
 		if ((this.align[n]==TWELVE || this.align[n]==SIX) && this.spin[n] == COUNTERCLOCKWISE) {
@@ -364,46 +363,46 @@ Controller.prototype.generateMove = function(n, txt) {
 		}
 	} else if (txt=="2btw") {
 		move = moves.staticspin({orient: this.align[n], speed: 2, direction: this.spin[n], plane: this.plane[n]});
-		move.align("prop",this.align[n]);
+		move.angleto("prop",this.align[n]);
 	} else if (txt=="supr") {
 		move = moves.superman({orient: this.align[n], direction: this.spin[n], hand_plane: this.plane[n]});
-		move.align("prop",this.align[n]);
+		move.angleto("prop",this.align[n]);
 	} else if (txt=="zbnd") {
 		move = moves.toroid({orient: this.align[n], harmonics: 4, direction: this.spin[n], bend: 0, plane: this.plane[n]});
-		move.align("hand",this.align[n]);
+		move.angleto("hand",this.align[n]);
 	} else if (txt=="isob") {
 		move = moves.toroid({harmonics: 4, direction: this.spin[n], bend: ISOBEND, plane: this.plane[n]});
-		move.align("hand",this.align[n]);
+		move.angleto("hand",this.align[n]);
 	} else if (txt=="biso") {
 		move = moves.toroid({pitch: BACKWARD, harmonics: 4, direction: this.spin[n], bend: ISOBEND, plane: this.plane[n]});
-		move.align("hand",this.align[n]);
+		move.angleto("hand",this.align[n]);
 	} else if (txt=="bant") {
 		move = moves.toroid({pitch: BACKWARD, harmonics: 2, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
-		move.align("hand",this.align[n]);
+		move.angleto("hand",this.align[n]);
 	} else if (txt=="2ant") {
 		move = moves.toroid({harmonics: 2, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
-		move.align("hand",this.align[n]);
+		move.angleto("hand",this.align[n]);
 	} else if (txt=="4ant") {
 		move = moves.toroid({harmonics: 4, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
-		move.align("hand",this.align[n]);
+		move.angleto("hand",this.align[n]);
 	} else if (txt=="6ant") {
 		move = moves.toroid({harmonics: 6, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
-		move.align("hand",this.align[n]);
+		move.angleto("hand",this.align[n]);
 	} else if (txt=="2pro") {
 		move = moves.toroid({harmonics: 2, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
-		move.align("hand",this.align[n]);
+		move.angleto("hand",this.align[n]);
 	} else if (txt=="bpro") {
 		move = moves.toroid({pitch: BACKWARD, harmonics: 2, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
-		move.align("hand",this.align[n]);
+		move.angleto("hand",this.align[n]);
 	} else if (txt=="4pro") {
 		move = moves.toroid({harmonics: 4, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
-		move.align("hand",this.align[n]);
+		move.angleto("hand",this.align[n]);
 	} else if (txt=="6pro") {
 		move = moves.toroid({harmonics: 6, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
-		move.align("hand",this.align[n]);
+		move.angleto("hand",this.align[n]);
 	} else if (txt=="n3bd") {
 		move = moves.toroid({harmonics: 2, direction: this.spin[n], bend: -3, plane: this.plane[n]});
-		move.align("hand",this.align[n]);
+		move.angleto("hand",this.align[n]);
 	}
 	return move;
 }
@@ -422,7 +421,7 @@ First Prop:
 <form></form>
 <td>
 	<select id="1prop" onchange="controller.updateParameters()">
-		<option value="poi" selected="selected">Poi</option>
+		<option value="poi">Poi</option>
 		<option value="fpoi">Fire Poi</option>
 		<option value="staff">Staff</option>
 		<option value="fstaff">Fire Staff</option>
@@ -439,7 +438,7 @@ Third Prop:
 <form></form>
 <td>
 	<select id="3prop" onchange="controller.updateParameters()">
-		<option value="poi" selected="selected">Poi</option>
+		<option value="poi">Poi</option>
 		<option value="fpoi">Fire Poi</option>
 		<option value="staff">Staff</option>
 		<option value="fstaff">Fire Staff</option>
@@ -457,7 +456,7 @@ Second Prop:
 <form></form>
 <td>
 	<select id="2prop" onchange="controller.updateParameters()">
-		<option value="poi" selected="selected">Poi</option>
+		<option value="poi">Poi</option>
 		<option value="fpoi">Fire Poi</option>
 		<option value="staff">Staff</option>
 		<option value="fstaff">Fire Staff</option>
@@ -473,7 +472,7 @@ Fourth Prop:
 <form></form>
 <td>
 	<select id="4prop" onchange="controller.updateParameters()">
-		<option value="poi" selected="selected">Poi</option>
+		<option value="poi">Poi</option>
 		<option value="fpoi">Fire Poi</option>
 		<option value="staff">Staff</option>
 		<option value="fstaff">Fire Staff</option>
@@ -490,7 +489,7 @@ Planes:
 <form></form>
 <td>
 	<select id="1plane" onchange="controller.updateParameters()">
-		<option value="wall" selected="selected">Wall</option>
+		<option value="wall">Wall</option>
 		<option value="wheel">Wheel</option>
 		<option value="floor">Floor</option>
 	</select>
@@ -498,7 +497,7 @@ Planes:
 <form></form>
 <td>
 	<select id="2plane" onchange="controller.updateParameters()">
-		<option value="wall" selected="selected">Wall</option>
+		<option value="wall">Wall</option>
 		<option value="wheel">Wheel</option>
 		<option value="floor">Floor</option>
 	</select>
@@ -506,7 +505,7 @@ Planes:
 <form></form>
 <td>
 	<select id="3plane" onchange="controller.updateParameters()">
-		<option value="wall" selected="selected">Wall</option>
+		<option value="wall">Wall</option>
 		<option value="wheel">Wheel</option>
 		<option value="floor">Floor</option>
 	</select>
@@ -514,7 +513,7 @@ Planes:
 <form></form>
 <td>
 	<select id="4plane" onchange="controller.updateParameters()">
-		<option value="wall" selected="selected">Wall</option>
+		<option value="wall">Wall</option>
 		<option value="wheel">Wheel</option>
 		<option value="floor">Floor</option>
 	</select>
@@ -527,7 +526,7 @@ Alignment:
 <form></form>
 <td>
 	<select id="1align" onchange="controller.updateParameters()">
-		<option value="twelve" selected="selected">Up</option>
+		<option value="twelve">Up</option>
 		<option value="six">Down</option>
 		<option value="three">Right</option>
 		<option value="nine">Left</option>
@@ -536,7 +535,7 @@ Alignment:
 <form></form>
 <td>
 	<select id="2align" onchange="controller.updateParameters()">
-		<option value="twelve" selected="selected">Up</option>
+		<option value="twelve">Up</option>
 		<option value="six">Down</option>
 		<option value="three">Right</option>
 		<option value="nine">Left</option>
@@ -545,7 +544,7 @@ Alignment:
 <form></form>
 <td>
 	<select id="3align" onchange="controller.updateParameters()">
-		<option value="twelve" selected="selected">Up</option>
+		<option value="twelve">Up</option>
 		<option value="six">Down</option>
 		<option value="three">Right</option>
 		<option value="nine">Left</option>
@@ -554,7 +553,7 @@ Alignment:
 <form></form>
 <td>
 	<select id="4align" onchange="controller.updateParameters()">
-		<option value="twelve" selected="selected">Up</option>
+		<option value="twelve">Up</option>
 		<option value="six">Down</option>
 		<option value="three">Right</option>
 		<option value="nine">Left</option>
@@ -568,26 +567,26 @@ Spin:
 <form></form>
 <td>
 	<select id="1spin" onchange="controller.updateParameters()">
-		<option value="cw" selected="selected">Clockwise</option>
+		<option value="cw">Clockwise</option>
 		<option value="ccw">Counter</option>
 	</select>
 </td>
 <td>
 	<select id="2spin" onchange="controller.updateParameters()">
 		<option value="cw">Clockwise</option>
-		<option value="ccw" selected="selected">Counter</option>
+		<option value="ccw">Counter</option>
 	</select>
 </td>
 <td>
 	<select id="3spin" onchange="controller.updateParameters()">
-		<option value="cw" selected="selected">Clockwise</option>
+		<option value="cw">Clockwise</option>
 		<option value="ccw">Counter</option>
 	</select>
 </td>
 <td>
 	<select id="4spin" onchange="controller.updateParameters()">
 		<option value="cw">Clockwise</option>
-		<option value="ccw" selected="selected">Counter</option>
+		<option value="ccw">Counter</option>
 	</select>
 </td>
 <td></td>
@@ -626,7 +625,7 @@ First Move:
 		<option value="2btw">Two-Beat Static Spin</option>
 		<option value="supr">Superman</option>
 		<option value="zbnd">Zero-bend Pseudo-Toroid</option>
-		<option selected="selected" value="isob">Four-Lobe Iso-bend Toroid</option>
+		<option value="isob">Four-Lobe Iso-bend Toroid</option>
 		<option value="biso">Backwards Iso-bend Toroid</option>
 		<option value="2ant">(2 Harmonic) Anti-Bend Toroid</option>
 		<option value="bant">Backward Anti-Bend Toroid</option>
@@ -672,7 +671,7 @@ Second Move:
 		<option value="hlis">Horizontal Linear Isolation</option>
 		<option value="vlis">Vertical Linear Isolation</option>
 		<option value="zbnd">Zero-bend Pseudo-Toroid</option>
-		<option selected="selected" value="isob">Four-Lobe Iso-bend Toroid</option>
+		<option value="isob">Four-Lobe Iso-bend Toroid</option>
 		<option value="biso">Backwards Iso-bend Toroid</option>
 		<option value="2ant">(2 Harmonic) Anti-Bend Toroid</option>
 		<option value="bant">Backward Anti-Bend Toroid</option>
@@ -718,7 +717,7 @@ Third Move:
 		<option value="zbnd">Zero-bend Pseudo-Toroid</option>
 		<option value="isob">Four-Lobe Iso-bend Toroid</option>
 		<option value="biso">Backwards Iso-bend Toroid</option>
-		<option selected="selected" value="2ant">(2 Harmonic) Anti-Bend Toroid</option>
+		<option value="2ant">(2 Harmonic) Anti-Bend Toroid</option>
 		<option value="bant">Backward Anti-Bend Toroid</option>
 		<option value="4ant">(4 Harmonic) Anti-Bend Toroid</option>
 		<option value="6ant">(6 Harmonic) Anti-Bend Toroid</option>
@@ -763,7 +762,7 @@ Fourth Move:
 		<option value="zbnd">Zero-bend Pseudo-Toroid</option>
 		<option value="isob">Four-Lobe Iso-bend Toroid</option>
 		<option value="biso">Backwards Iso-bend Toroid</option>
-		<option selected="selected" value="2ant">(2 Harmonic) Anti-Bend Toroid</option>
+		<option value="2ant">(2 Harmonic) Anti-Bend Toroid</option>
 		<option value="bant">Backward Anti-Bend Toroid</option>
 		<option value="4ant">(4 Harmonic) Anti-Bend Toroid</option>
 		<option value="6ant">(6 Harmonic) Anti-Bend Toroid</option>

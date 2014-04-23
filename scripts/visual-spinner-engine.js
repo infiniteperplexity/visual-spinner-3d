@@ -126,11 +126,14 @@ Vector.prototype.between = function(v) {
 Vector.prototype.toArray = function() {
 	return [this.x,this.y,this.z];
 }
-Vector.prototype.nearly = function(vector) {
+Vector.prototype.nearly = function(vector, delta) {
+	if (delta===undefined) {
+		delta = TINY;
+	}
 	//checks to see whether two vectors or planes are nearly the same
-	if (	Math.abs(Math.abs(this.x)-Math.abs(vector.x))<TINY
-		&&	Math.abs(Math.abs(this.y)-Math.abs(vector.y))<TINY
-		&&	Math.abs(Math.abs(this.z)-Math.abs(vector.z))<TINY) 
+	if (	Math.abs(Math.abs(this.x)-Math.abs(vector.x))<delta
+		&&	Math.abs(Math.abs(this.y)-Math.abs(vector.y))<delta
+		&&	Math.abs(Math.abs(this.z)-Math.abs(vector.z))<delta) 
 	{
 		return true;
 	} else {
@@ -162,11 +165,14 @@ function unwind(angle) {
 }
 
 // Check whether two floating point values are almost equal
-function nearly(n1,n2) {
+function nearly(n1,n2, delta) {
+	if (delta===undefined) {
+		delta = TINY;
+	}
 	n1 = unwind(n1);
 	n2 = unwind(n2);
-	if (Math.abs(n1-n2)<TINY) {return true;}
-	else if (Math.abs(Math.abs(n1-n2)-2*Math.PI)<TINY) {return true;}
+	if (Math.abs(n1-n2)<delta) {return true;}
+	else if (Math.abs(Math.abs(n1-n2)-2*Math.PI)<delta) {return true;}
 	else {return false;}
 }
 // A prop handles the geometry for a number of spherical coordinates, a renderer, and a move queue
@@ -298,37 +304,57 @@ MoveFactory.prototype.defaults = function(options, defaults) {
 
 
 function MoveChain() {
+	this.p = 0;
+	this.oneshot = false;
 	this.started = false;
 	this.finished = false;
-	this.oneshot = false;
 	this.submoves = [];
 }
-MoveChain.prototype.spin = function(prop) {
+MoveChain.prototype.spin = function(prop, dummy) {
+	if (dummy===undefined) {dummy = false;}
 	this.started = true;
 	this.finished = false;
-	if (this.submoves.length == 0) {return;}
-	var next = this.submoves[0];
-	next.spin(prop);
-	if(next.finished==true) {
-		if (next.oneshot==true) {
-			this.submoves.shift();
+	if (this.submoves.length == 0) {
+		this.reset();
+		this.finished = true;
+		return;
+	}
+	this.submoves[this.p].spin(prop, dummy);
+	if (this.submoves[this.p].finished) {
+		if (this.submoves[this.p].oneshot && dummy==false) {
+			this.submoves.splice(this.p,1);
 		} else {
-			this.submoves.push(this.submoves.shift());
+			this.p+=1;
 		}
-		if (this.submoves.length==0 || this.submoves[0].finished == true) {
+		if (this.p>=this.submoves.length) {
 			this.reset();
 			this.finished = true;
 		}
 	}
 }
+
 MoveChain.prototype.add = function(move) {
 	force_align = false;
-	if (force_align == true || this.submoves.length==0 || this.tail().fits(move.head)) {
+	if (force_align == true || this.submoves.length==0 || this.tail().fits(move.head())) {
 		this.submoves.push(move);
 	}
 }
-MoveChain.prototype.head = function() {return this.submoves[0];}
-MoveChain.prototype.tail = function() {return this.submoves[this.submoves.length-1];}
+MoveChain.prototype.append = function(move) {
+	for (var i=0; i<move.submoves.length; i++) {
+		this.submoves.push(move.submoves[i]);
+	}
+	return this;
+}
+MoveChain.prototype.head = function() {return this.submoves[0].head();}
+MoveChain.prototype.tail = function() {return this.submoves[this.submoves.length-1].tail();}
+MoveChain.prototype.current = function() {return this.submoves[this.p].current();}
+MoveChain.prototype.getDuration = function() {
+	var tally = 0;
+	for (var i = 0; i<this.submoves.length; i++) {
+		tally+=this.submoves[i].getDuration();
+	}
+	return tally;
+}
 MoveChain.prototype.phaseby = function(phase) {
 	//this currently trusts that the head and tail sockets fit
 	if (phase===undefined) {phase = 1;}
@@ -343,19 +369,42 @@ MoveChain.prototype.phaseby = function(phase) {
 	}
 	return this;
 }
-MoveChain.prototype.align = function(element, target) {
-	//right now only handles angles...
+MoveChain.prototype.alignprop = function(prop) {
+	return this.head().alignprop(prop);
+}
+MoveChain.prototype.angleto = function(element, target) {
+	//first we try this the easy way...
 	for (var i = 0; i<this.submoves.length; i++) {
 		if (nearly(this.head()[element].angle, target)) {
-			break;
+			return this;
 		} else {
-			this.phaseby(1);;
+			this.phaseby(1);
 		}
-		if (i == this.submoves.length-1) {alert("alignment fail!");}
 	}
+	//...then we try it the hard way...
+	var dummy = new Prop();
+	var d = this.getDuration()*BEAT;
+	var ts = [];
+	for (var i =0; i<d; i++) {
+		this.spin(dummy, true);
+		if (nearly(dummy.getElementAngle(element,this.current()[element].plane),target,0.01)) {
+			ts.push(i);
+		}
+	}
+	this.reset();
+	var halves;
+	if (ts.length>0) {
+		halves = this.split(ts[0]);
+		halves[1].append(halves[0]);
+		this.submoves = halves[1].submoves;
+		return this;
+	}
+	//...and if that doesn't work we just give up.
+	alert("alignment failed.");
 	return this;
 }
 MoveChain.prototype.reset = function() {
+	this.p = 0;
 	this.finished = false;
 	this.started = false;
 	for(var i=0;i<this.submoves.length;i++) {
@@ -371,28 +420,48 @@ MoveChain.prototype.clone = function() {
 	return chain;
 }
 MoveChain.prototype.fits = function(move) {
-	// this will eventually be a complex check
-	return true;
+	return this.head().fits(move.tail());
 }
 MoveChain.prototype.tailsocket = function() {
 	return this.submoves[this.submoves.length-1].tailsocket();
 }
 MoveChain.prototype.fitsocket = function(socket) {
 	submoves[0].fitsocket(socket);
-	this.refit();
+	//this.refit();
 }
-MoveChain.prototype.refit = function() {
-	for (var i = 1; i<submoves.length; i++) {
-		this.submoves[i].fitsocket(this.submoves[i-1].tailsocket());
-	}
-}
+//MoveChain.prototype.refit = function() {
+//	for (var i = 1; i<submoves.length; i++) {
+//		this.submoves[i].fitsocket(this.submoves[i-1].tailsocket());
+//	}
+//}
 MoveChain.prototype.extend = function() {
 	newlink = this.tail().clone();
 	newlink.fitsocket(this.tailsocket());
 	this.add(newlink);
 	return newlink;
 }
-
+MoveChain.prototype.split = function(t) {
+	if (t<=0) {return [this,undefined];}
+	if (t>=this.getDuration()*BEAT) {return [this,undefined];}
+	var tally = 0;
+	var found = false;
+	var chain1 = new MoveChain();
+	var chain2 = new MoveChain();
+	var halves;
+	for (var i=0; i<this.submoves.length; i++) {
+		if (tally > t) {
+			chain2.add(this.submoves[i]);
+		} else if (tally+this.submoves[i].getDuration()*BEAT > t) {
+			halves = this.submoves[i].split(t-tally);
+			chain1.add(halves[0]);
+			chain2.add(halves[1]);			
+		} else {
+			chain1.add(this.submoves[i]);
+		}
+		tally+=this.submoves[i].getDuration()*BEAT;
+	}
+	return [chain1, chain2];
+}
 
 
 function MoveLink() {
@@ -418,6 +487,10 @@ function MoveLink() {
 	this.finished = false;
 	this.started = false;
 }
+MoveLink.prototype.head = function() {return this;}
+MoveLink.prototype.tail = function() {return this;}
+MoveLink.prototype.current = function() {return this;}
+MoveLink.prototype.getDuration = function() {return this.duration;}
 MoveLink.prototype.spin = function(prop) {
 	if (this.started == false) {
 		for (var i = 0; i<this.elements.length; i++) {
@@ -503,15 +576,26 @@ MoveLink.prototype.clone = function() {
 	return newlink;
 }
 MoveLink.prototype.fits = function(move) {
+	// this will eventually be a complex check
 	return true;
 }
-MoveLink.prototype.split = function(fraction) {
+MoveLink.prototype.split = function(t) {
 	if (t<=0) {return [this,undefined];}
-	if (t>=1) {return [undefined,this];}
+	if (t>=this.duration*BEAT) {return [this,undefined];}
         one = this.clone();
         two = this.clone();
-        one.duration = this.duration*fraction;
-	two.duration = this.duration*(1-fraction);
-        two.fitsocket(one);
+        one.duration = t/BEAT;
+	two.duration = this.duration-one.duration;
+        two.fitsocket(one.tailsocket());
         return [one, two];
+}
+MoveLink.prototype.alignprop = function(prop) {
+	for (var i=0; i<this.elements.length; i++) {
+		prop.setElementAngle(this.elements[i], this[this.elements[i]].angle, this[this.elements[i]].plane);
+		prop.radius = this.elements[i].radius;
+	}
+	return prop;
+}
+MoveLink.prototype.angleto = function(element, target) {
+	this[element] = target;
 }
