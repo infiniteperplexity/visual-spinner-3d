@@ -1,11 +1,16 @@
 MoveFactory.prototype.staticspin= function(options) {
 	options = this.defaults(options,{
 		orient: THREE,
+		extend: TINY,
 		plane: WALL,
 		direction: CLOCKWISE,
 		speed: 1,
 	});
 	var segment = new MoveLink();
+	segment.hand.angle = options.angle;
+	segment.hand.plane = options.plane;
+	segment.hand.radius = options.extend;
+	segment.hand.speed = 0;
 	segment.prop.angle = options.orient;
 	segment.prop.plane = options.plane;
 	segment.prop.speed = options.direction*options.speed;
@@ -19,7 +24,7 @@ MoveFactory.prototype.superman= function(options) {
 		orient: THREE,
 		plane: FLOOR,
 		direction: CLOCKWISE,
-		speed: 1,
+		speed: 1
 	});
 	var segment = new MoveLink();
 	segment.duration = 0.25;
@@ -50,7 +55,8 @@ MoveFactory.prototype.flower = function(options) {
 		petals: 4,
 		extend: 1,
 		speed: 1,
-		mode: DIAMOND
+		mode: DIAMOND,
+		pivot: undefined
 	});
 	var segment = new MoveLink();
 	segment.duration = 0.25;
@@ -58,6 +64,12 @@ MoveFactory.prototype.flower = function(options) {
 		segment.prop.speed = (options.petals+1)*options.spin*options.direction*options.speed;
 	} else {
 		segment.prop.speed = (options.petals-1)*options.spin*options.direction*options.speed;
+	}
+	if (options.pivot!==undefined) {
+		segment.pivot.angle = options.pivot;
+		segment.pivot.radius = 0.5;
+		segment.pivot.plane = options.plane;
+		segment.pivot.speed = 0;
 	}
 	segment.hand.radius = options.extend;
 	segment.hand.speed = options.direction*options.speed;
@@ -68,7 +80,7 @@ MoveFactory.prototype.flower = function(options) {
 	if (options.petals==0) {
 		segment.duration = 1;
 	} else {
-		segment.duration = 1 / options.petals;
+		segment.duration = 1/options.petals;
 	}
 	var move = new MoveChain();
 	move.add(segment);
@@ -119,9 +131,16 @@ MoveFactory.prototype.pendulum = function(options) {
 		direction: CLOCKWISE,
 		extend: 1, 
 		spin: INSPIN,
-		speed: 1
+		speed: 1,
+		pivot: undefined
 	});
 	var segment = new MoveLink();
+	if (options.pivot!==undefined) {
+		segment.pivot.angle = options.pivot;
+		segment.pivot.radius = 0.5;
+		segment.pivot.plane = options.plane;
+		segment.pivot.speed = 0;
+	}
 	segment.duration = 0.25;
 	segment.hand.speed = options.speed*options.direction;
 	segment.prop.speed = 2*options.speed*options.direction;
@@ -132,13 +151,13 @@ MoveFactory.prototype.pendulum = function(options) {
 	segment.prop.angle = options.orient;
 	var move = new MoveChain();
 	move.add(segment);
-	move.tail().prop.acc = -8*options.speed*options.spin;
+	move.tail().prop.acc = -8*options.direction*options.speed*options.spin;
 	move.extend();
-	move.tail().prop.acc = -8*options.speed*options.spin;
+	move.tail().prop.acc = -8*options.direction*options.speed*options.spin;
 	move.extend();
-	move.tail().prop.acc = 8*options.speed*options.spin;
+	move.tail().prop.acc = 8*options.direction*options.speed*options.spin;
 	move.extend();
-	move.tail().prop.acc = 8*options.speed*options.spin;
+	move.tail().prop.acc = 8*options.direction*options.speed*options.spin;
 	return move;
 }
 
@@ -150,9 +169,16 @@ MoveFactory.prototype.onepointfive = function(options) {
 		direction: CLOCKWISE,
 		extend: 1, 
 		spin: INSPIN,
-		speed: 1
+		speed: 1,
+		pivot: undefined
 	});
 	var segment = new MoveLink();
+	if (options.pivot!==undefined) {
+		segment.pivot.angle = options.pivot;
+		segment.pivot.radius = 0.5;
+		segment.pivot.plane = options.plane;
+		segment.pivot.speed = 0;
+	}
 	segment.duration = 0.25;
 	segment.hand.speed = options.speed*options.direction;
 	segment.prop.speed = 6*options.speed*options.direction;
@@ -163,13 +189,14 @@ MoveFactory.prototype.onepointfive = function(options) {
 	segment.prop.angle = options.orient + OFFSET;
 	var move = new MoveChain();
 	move.add(segment);
-	move.tail().prop.acc = -24*options.speed*options.spin;
+	move.tail().prop.acc = -24*options.direction*options.speed*options.spin;
 	move.extend();
-	move.tail().prop.acc = -8*options.speed*options.spin;
+	move.tail().prop.acc = -8*options.direction*options.speed*options.spin;
 	move.extend();
-	move.tail().prop.acc = 8*options.speed*options.spin;
+	move.tail().prop.acc = 8*options.direction*options.speed*options.spin;
 	move.extend();
-	move.tail().prop.acc = 24*options.speed*options.spin;
+	move.tail().prop.acc = 24*options.direction*options.speed*options.spin;
+	return move;
 }
 
 MoveFactory.prototype.linex = function(options) {
@@ -182,9 +209,16 @@ MoveFactory.prototype.linex = function(options) {
 		speed: 1,
 		plane: WALL,
 		extend: 1,
-		offset: 0
+		offset: 0,
+		pivot: undefined
 	});
 	segment = new MoveLink();
+	if (options.pivot!==undefined) {
+		segment.pivot.angle = options.pivot;
+		segment.pivot.radius = 0.5;
+		segment.pivot.plane = options.plane;
+		segment.pivot.speed = 0;
+	}
 	segment.duration = 0.25;
 	segment.hand.linear_angle = options.orient;
 	segment.hand.linear_speed = 0;
@@ -216,9 +250,16 @@ MoveFactory.prototype.isolation = function(options) {
 		direction: CLOCKWISE,
 		spin: INSPIN,
 		offset: OFFSET,
-		speed: 1
+		speed: 1,
+		pivot: undefined
 	});
 	var segment = new MoveLink();
+	if (options.pivot!==undefined) {
+		segment.pivot.angle = options.pivot;
+		segment.pivot.radius = 0.5;
+		segment.pivot.plane = options.plane;
+		segment.pivot.speed = 0;
+	}
 	segment.hand.radius = 0.5;
 	segment.hand.speed = options.direction*options.speed;
 	segment.prop.speed = options.spin*options.direction*options.speed;
@@ -242,9 +283,16 @@ MoveFactory.prototype.toroid = function(options) {
 		harmonics: 4,
 		extend: 1,
 		speed: 1,
-		mode: DIAMOND
+		mode: DIAMOND,
+		pivot: undefined
 	});
 	var segment = new MoveLink();
+	if (options.pivot!==undefined) {
+		segment.pivot.angle = options.pivot;
+		segment.pivot.radius = 0.5;
+		segment.pivot.plane = options.plane;
+		segment.pivot.speed = 0;
+	}
 	segment.hand.radius = options.extend;
 	segment.hand.speed = options.direction*options.speed;
 	segment.prop.speed = options.pitch*options.harmonics*options.speed;
@@ -258,7 +306,7 @@ MoveFactory.prototype.toroid = function(options) {
 	if (options.harmonics==0) {
 		segment.duration = 1;
 	} else {
-		segment.duration = 1 / options.harmonics;
+		segment.duration = 1/options.harmonics;
 	}
 	var move = new MoveChain();
 	move.add(segment);

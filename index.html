@@ -341,6 +341,27 @@ Controller.prototype.generateMove = function(n, txt) {
 	} else if (txt=="isol") {
 		move = moves.isolation({direction: this.spin[n], plane: this.plane[n]});
 		move.angleto("prop",this.align[n]);
+	} else if (txt=="pext") {
+		move = moves.isolation({pivot: this.align[n], offset: 0, direction: this.spin[n], plane: this.plane[n]});
+		move.angleto("prop",this.align[n]);
+	} else if (txt=="piso") {
+		move = moves.isolation({pivot: this.align[n], direction: this.spin[n], plane: this.plane[n]});
+		move.angleto("prop",this.align[n]);
+	} else if (txt=="pcat") {
+		move = moves.isolation({pivot: this.align[n], orient: TWELVE, offset: 0, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
+		move.angleto("prop",this.align[n]);
+	} else if (txt=="pflo") {
+		move = moves.flower({pivot: this.align[n], extend: 0.5,  orient: this.align[n],direction: this.spin[n], plane: this.plane[n], petals: 2});
+		move.angleto("hand",this.align[n]);
+	} else if (txt=="ptri") {
+		move = moves.flower({pivot: this.align[n], extend: 0.5, orient: this.align[n],direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN, petals: 3});
+		move.angleto("hand",this.align[n]);
+	} else if (txt=="pant") {
+		move = moves.flower({pivot: this.align[n], extend: 0.5, orient: this.align[n],direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
+		move.angleto("hand",this.align[n]);
+	} else if (txt=="ppen") {
+		move = moves.pendulum({pivot: this.align[n], extend: 0.5, direction: this.spin[n], plane: this.plane[n]});
+		move.angleto("hand",this.align[n]);
 	} else if (txt=="hlex") {
 		move = moves.linex({direction: this.spin[n], plane: this.plane[n], orient: THREE});
 		move.angleto("prop",this.align[n]);
@@ -618,6 +639,13 @@ First Move:
 		<option value="isol">Isolation</option>
 		<option value="vcat">Vertical Cat-Eye</option>
 		<option value="hcat">Horizontal Cat-Eye</option>
+		<option value="pext">Pivot Extension</option>
+		<option value="piso">Pivot Isolation</option>
+		<option value="pcat">Pivot Cat-Eye</option>
+		<option value="pflo">Pivot Flower</option>
+		<option value="ptri">Pivot Triquetra</option>
+		<option value="pant">Pivot Antispin</option>
+		<option value="ppen">Pivot Pendulum</option>
 		<option value="hlex">Horizontal Linear Extension</option>
 		<option value="vlex">Vertical Linear Extension</option>
 		<option value="hlis">Horizontal Linear Isolation</option>
@@ -666,6 +694,13 @@ Second Move:
 		<option value="isol">Isolation</option>
 		<option value="vcat">Vertical Cat-Eye</option>
 		<option value="hcat">Horizontal Cat-Eye</option>
+		<option value="pext">Pivot Extension</option>
+		<option value="piso">Pivot Isolation</option>
+		<option value="pcat">Pivot Cat-Eye</option>
+		<option value="pflo">Pivot Flower</option>
+		<option value="ptri">Pivot Triquetra</option>
+		<option value="pant">Pivot Antispin</option>
+		<option value="ppen">Pivot Pendulum</option>
 		<option value="hlex">Horizontal Linear Extension</option>
 		<option value="vlex">Vertical Linear Extension</option>
 		<option value="hlis">Horizontal Linear Isolation</option>
@@ -710,6 +745,13 @@ Third Move:
 		<option value="isol">Isolation</option>
 		<option value="vcat">Vertical Cat-Eye</option>
 		<option value="hcat">Horizontal Cat-Eye</option>
+		<option value="pext">Pivot Extension</option>
+		<option value="piso">Pivot Isolation</option>
+		<option value="pcat">Pivot Cat-Eye</option>
+		<option value="pflo">Pivot Flower</option>
+		<option value="ptri">Pivot Triquetra</option>
+		<option value="pant">Pivot Antispin</option>
+		<option value="ppen">Pivot Pendulum</option>
 		<option value="hlex">Horizontal Linear Extension</option>
 		<option value="vlex">Vertical Linear Extension</option>
 		<option value="hlis">Horizontal Linear Isolation</option>
@@ -755,6 +797,13 @@ Fourth Move:
 		<option value="isol">Isolation</option>
 		<option value="vcat">Vertical Cat-Eye</option>
 		<option value="hcat">Horizontal Cat-Eye</option>
+		<option value="pext">Pivot Extension</option>
+		<option value="piso">Pivot Isolation</option>
+		<option value="pcat">Pivot Cat-Eye</option>
+		<option value="pflo">Pivot Flower</option>
+		<option value="ptri">Pivot Triquetra</option>
+		<option value="pant">Pivot Antispin</option>
+		<option value="ppen">Pivot Pendulum</option>
 		<option value="hlex">Horizontal Linear Extension</option>
 		<option value="vlex">Vertical Linear Extension</option>
 		<option value="hlis">Horizontal Linear Isolation</option>
