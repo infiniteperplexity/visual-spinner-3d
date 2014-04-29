@@ -7,7 +7,7 @@ MoveFactory.prototype.staticspin= function(options) {
 		speed: 1,
 	});
 	var segment = new MoveLink();
-	segment.hand.angle = options.angle;
+	segment.hand.angle = options.orient;
 	segment.hand.plane = options.plane;
 	segment.hand.radius = options.extend;
 	segment.hand.speed = 0;
@@ -405,3 +405,92 @@ MoveFactory.prototype.scap = function(options) {
 	move.tail().hand.angle = options.orient + OFFSET;
 	return move;
 }
+
+
+MoveFactory.prototype.isopop = function(options) {
+	// An isopop with options.pop: ANTISPIN is an isobreak
+	options = this.defaults(options,{
+		orient: THREE,
+		plane: WALL,
+		direction: CLOCKWISE,
+		spin: INSPIN,
+		pop: INSPIN,
+		offset: OFFSET,
+		speed: 1,
+		pivot: undefined
+	});
+	var segment = new MoveLink();
+	if (options.pivot!==undefined) {
+		segment.pivot.angle = options.pivot;
+		segment.pivot.radius = 0.5;
+		segment.pivot.plane = options.plane;
+		segment.pivot.speed = 0;
+	}
+	segment.hand.radius = 0.5;
+	segment.hand.speed = options.direction*options.speed;
+	segment.prop.speed = options.spin*options.direction*options.speed;
+	segment.prop.plane = options.plane;
+	segment.hand.plane = options.plane;
+	segment.hand.angle = options.orient;
+	segment.prop.angle = options.orient + options.offset;
+	var move = new MoveChain();
+	move.add(segment);
+	move.extend();
+	move.tail().hand.speed = 0;
+	move.tail().prop.speed = options.spin*options.direction*options.speed*options.pop;
+	return move;
+}
+
+MoveFactory.prototype.diamond = function(options) {
+	options = this.defaults(options,{
+		orient: THREE,
+		plane: WALL,
+		direction: CLOCKWISE,
+		spin: INSPIN,
+		speed: 1,
+		extend: 1,
+		pivot: undefined
+	});
+	var segment = new MoveLink();
+	segment.duration = 0.125;
+	segment.hand.plane = options.plane;
+	segment.prop.plane = options.plane;
+	segment.hand.angle = options.orient;
+	segment.hand.radius = options.extend;
+	segment.prop.angle = options.orient;
+	var move = new MoveChain();
+	move.add(segment);
+	move.tail().hand.linear_angle = options.orient + options.direction*OFFSET;
+	move.tail().hand.linear_speed = 16*options.extend*options.speed;
+	move.tail().prop.speed = 4*options.speed*options.direction*options.spin;
+	move.extend();
+	move.tail().hand.linear_angle = options.orient - options.direction*STAGGER/2;
+	move.tail().hand.linear_speed = 8*Math.sqrt(2)*options.extend*options.speed;
+	move.tail().prop.speed = ((-2*options.spin)+4)*options.spin*options.speed*options.direction;
+	move.extend();
+	move.tail().hand.linear_angle = options.orient + options.direction*STAGGER;
+	move.tail().hand.linear_speed = 16*options.extend*options.speed;
+	move.tail().prop.speed = 4*options.speed*options.direction*options.spin;
+	move.extend();
+	move.tail().hand.linear_angle = options.orient - options.direction*STAGGER/2;
+	move.tail().hand.linear_speed = 8*Math.sqrt(2)*options.extend*options.speed;
+	move.tail().prop.speed = ((2*options.spin)+4)*options.spin*options.speed*options.direction;
+	move.extend();
+	move.tail().hand.linear_angle = options.orient + options.direction*OFFSET;
+	move.tail().hand.linear_speed = 16*options.extend*options.speed;
+	move.tail().prop.speed = 4*options.speed*options.direction*options.spin;
+	move.extend();
+	move.tail().hand.linear_angle = options.orient + options.direction*STAGGER/2;
+	move.tail().hand.linear_speed = 8*Math.sqrt(2)*options.extend*options.speed;
+	move.tail().prop.speed = ((2*options.spin)+4)*options.spin*options.speed*options.direction;
+	move.extend();
+	move.tail().hand.linear_angle = options.orient - + options.direction*STAGGER;
+	move.tail().hand.linear_speed = 16*options.extend*options.speed;
+	move.tail().prop.speed = 4*options.speed*options.direction*options.spin;
+	move.extend();
+	move.tail().hand.linear_angle = options.orient + options.direction*STAGGER/2;
+	move.tail().hand.linear_speed = 8*Math.sqrt(2)*options.extend*options.speed;
+	move.tail().prop.speed = ((-2*options.spin)+4)*options.spin*options.speed*options.direction;
+	return move;
+}
+

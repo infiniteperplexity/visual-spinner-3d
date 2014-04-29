@@ -41,9 +41,8 @@ function init() {
 	var defaults = ["poi","poi","poi","poi",
 					"wall","wall","wall","wall",
 					"twelve","twelve","twelve","twelve",
-					//"three","three","three","three",
 					"cw","ccw","cw","ccw",
-					"isob","isob","4paf","4paf"];
+					"idia","idia","adia","adia"];
 	for (var i = 0; i<params.length; i++) {
 		var txt = $.urlParam(params[i]);
 		if (txt==0) {txt = defaults[i];}
@@ -424,9 +423,25 @@ Controller.prototype.generateMove = function(n, txt) {
 	} else if (txt=="n3bd") {
 		move = moves.toroid({harmonics: 2, direction: this.spin[n], bend: -3, plane: this.plane[n]});
 		move.angleto("hand",this.align[n]);
+	} else if (txt=="idia") {
+		move = moves.diamond({orient: this.align[n], direction: this.spin[n], spin: INSPIN, plane: this.plane[n]});
+	} else if (txt=="adia") {
+		move = moves.diamond({orient: this.align[n], direction: this.spin[n], spin: ANTISPIN, plane: this.plane[n]});
 	}
 	return move;
 }
+
+Controller.prototype.shuffle = function() {
+        var params = ["spin","move"];
+        var options;
+        for (var i=1; i<=4; i++) {
+                for (var j=0; j<=1; j++) {
+                        options = $("#"+i+params[j]+ " > option");
+                        $("#"+i+params[j]+ " > option").attr('selected',false).eq(Math.floor(options.length*(Math.random()%1))).attr('selected',true);
+                }
+        }
+        this.updateParameters();
+} 
 </script>
 <body onload="init();">
 <table>
@@ -664,6 +679,8 @@ First Move:
 		<option value="4pro">(4 Harmonic) Pro-Bend Toroid</option>
 		<option value="6pro">(6 Harmonic) Pro-Bend Toroid</option>
 		<option value="n3bd">(2 Harmonic) (-3)-Bend Toroid</option>
+		<option value="idia">Zan's Diamond (In-Spin)</option>
+		<option value="adia">Zan's Diamond (Anti-Spin)</option>
 	</select>
 </td>
 
@@ -717,6 +734,8 @@ Second Move:
 		<option value="4pro">(4 Harmonic) Pro-Bend Toroid</option>
 		<option value="6pro">(6 Harmonic) Pro-Bend Toroid</option>
 		<option value="n3bd">(2 Harmonic) (-3)-Bend Toroid</option>
+		<option value="idia">Zan's Diamond (In-Spin)</option>
+		<option value="adia">Zan's Diamond (Anti-Spin)</option>
 </td>
 </tr>
 <tr>
@@ -768,6 +787,8 @@ Third Move:
 		<option value="4pro">(4 Harmonic) Pro-Bend Toroid</option>
 		<option value="6pro">(6 Harmonic) Pro-Bend Toroid</option>
 		<option value="n3bd">(2 Harmonic) (-3)-Bend Toroid</option>
+		<option value="idia">Zan's Diamond (In-Spin)</option>
+		<option value="adia">Zan's Diamond (Anti-Spin)</option>
 	</select>
 </td>
 </tr>
@@ -820,6 +841,8 @@ Fourth Move:
 		<option value="4pro">(4 Harmonic) Pro-Bend Toroid</option>
 		<option value="6pro">(6 Harmonic) Pro-Bend Toroid</option>
 		<option value="n3bd">(2 Harmonic) (-3)-Bend Toroid</option>
+		<option value="idia">Zan's Diamond (In-Spin)</option>
+		<option value="adia">Zan's Diamond (Anti-Spin)</option>
 	</select>
 </td>
 </tr>
@@ -832,6 +855,9 @@ View in...
 	<select id="2d3d" onchange="controller.updateParameters()">
 		<option value="3d" selected="selected">3D</option>
 		<option value="2d" >2D</option>
+</td>
+<td>
+        <button type="button" onclick="controller.shuffle()">Shuffle Moves</button>       
 </td>
 </tr>
 </tbody></table>
