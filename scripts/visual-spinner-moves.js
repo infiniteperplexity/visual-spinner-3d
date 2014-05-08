@@ -303,16 +303,16 @@ MoveFactory.prototype.toroid = function(options) {
 	segment.hand.plane = options.plane;
 	segment.hand.angle = options.orient;
 	segment.prop.angle = options.orient + options.mode + QUARTER;
-	if (options.harmonics==0) {
+	//if (options.harmonics==0) {
 		segment.duration = 1;
-	} else {
-		segment.duration = 1/options.harmonics;
-	}
+	//} else {
+	//	segment.duration = 1/options.harmonics;
+	//}
 	var move = new MoveChain();
 	move.add(segment);
-	for (var i = 1; i<options.harmonics; i++) {
-		move.extend();
-	}
+	//for (var i = 1; i<options.harmonics; i++) {
+	//	move.extend();
+	//}
 	return move;
 }
 

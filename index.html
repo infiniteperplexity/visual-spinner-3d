@@ -42,7 +42,7 @@ function init() {
 					"wall","wall","wall","wall",
 					"twelve","twelve","twelve","twelve",
 					"cw","ccw","cw","ccw",
-					"idia","idia","adia","adia"];
+					"2pif","o2if","4paf","b4af"];
 	for (var i = 0; i<params.length; i++) {
 		var txt = $.urlParam(params[i]);
 		if (txt==0) {txt = defaults[i];}
@@ -280,17 +280,32 @@ Controller.prototype.generateMove = function(n, txt) {
 	} else if (txt=="1pif") {
 		move = moves.flower({orient: this.align[n], direction: this.spin[n], plane: this.plane[n], petals: 1});
 		move.angleto("hand",this.align[n]);
+	} else if (txt=="o1if") {
+		move = moves.flower({orient: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n], petals: 1});
+		move.angleto("hand",this.align[n]);
 	} else if (txt=="2pif") {
 		move = moves.flower({orient: this.align[n],direction: this.spin[n], plane: this.plane[n], petals: 2});
+		move.angleto("hand",this.align[n]);
+	} else if (txt=="o2if") {
+		move = moves.flower({orient: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n], petals: 2});
 		move.angleto("hand",this.align[n]);
 	} else if (txt=="4pif") {
 		move = moves.flower({orient: this.align[n],direction: this.spin[n], plane: this.plane[n]});
 		move.angleto("hand",this.align[n]);
+	} else if (txt=="b4if") {
+		move = moves.flower({orient: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n]});
+		move.angleto("hand",this.align[n]);
 	} else if (txt=="3paf") {
-		move = move = moves.flower({orient: this.align[n],direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN, petals: 3});
+		move = moves.flower({orient: this.align[n],direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN, petals: 3});
+		move.angleto("hand",this.align[n]);
+	} else if (txt=="o3af") {
+		move = moves.flower({orient: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN, petals: 3});
 		move.angleto("hand",this.align[n]);
 	} else if (txt=="4paf") {
-		move = move = moves.flower({orient: this.align[n],direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
+		move = moves.flower({orient: this.align[n],direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
+		move.angleto("hand",this.align[n]);
+	} else if (txt=="b4af") {
+		move = moves.flower({orient: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
 		move.angleto("hand",this.align[n]);
 	} else if (txt=="hcap") {
 		if (this.align[n] == TWELVE || this.align[n] == SIX) {
@@ -391,38 +406,27 @@ Controller.prototype.generateMove = function(n, txt) {
 		move = moves.toroid({orient: this.align[n], harmonics: 4, direction: this.spin[n], bend: 0, plane: this.plane[n]});
 		move.angleto("hand",this.align[n]);
 	} else if (txt=="isob") {
-		move = moves.toroid({harmonics: 4, direction: this.spin[n], bend: ISOBEND, plane: this.plane[n]});
-		move.angleto("hand",this.align[n]);
+		move = moves.toroid({orient: this.align[n], harmonics: 4, direction: this.spin[n], bend: ISOBEND, plane: this.plane[n]});
 	} else if (txt=="biso") {
-		move = moves.toroid({pitch: BACKWARD, harmonics: 4, direction: this.spin[n], bend: ISOBEND, plane: this.plane[n]});
-		move.angleto("hand",this.align[n]);
+		move = moves.toroid({orient: this.align[n], pitch: BACKWARD, harmonics: 4, direction: this.spin[n], bend: ISOBEND, plane: this.plane[n]});
 	} else if (txt=="bant") {
-		move = moves.toroid({pitch: BACKWARD, harmonics: 2, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
-		move.angleto("hand",this.align[n]);
+		move = moves.toroid({orient: this.align[n], pitch: BACKWARD, harmonics: 2, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
 	} else if (txt=="2ant") {
-		move = moves.toroid({harmonics: 2, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
-		move.angleto("hand",this.align[n]);
+		move = moves.toroid({orient: this.align[n], harmonics: 2, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
 	} else if (txt=="4ant") {
-		move = moves.toroid({harmonics: 4, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
-		move.angleto("hand",this.align[n]);
+		move = moves.toroid({orient: this.align[n], harmonics: 4, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
 	} else if (txt=="6ant") {
-		move = moves.toroid({harmonics: 6, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
-		move.angleto("hand",this.align[n]);
+		move = moves.toroid({orient: this.align[n], harmonics: 6, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
 	} else if (txt=="2pro") {
-		move = moves.toroid({harmonics: 2, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
-		move.angleto("hand",this.align[n]);
+		move = moves.toroid({orient: this.align[n], harmonics: 2, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
 	} else if (txt=="bpro") {
-		move = moves.toroid({pitch: BACKWARD, harmonics: 2, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
-		move.angleto("hand",this.align[n]);
+		move = moves.toroid({orient: this.align[n], pitch: BACKWARD, harmonics: 2, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
 	} else if (txt=="4pro") {
-		move = moves.toroid({harmonics: 4, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
-		move.angleto("hand",this.align[n]);
+		move = moves.toroid({orient: this.align[n], harmonics: 4, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
 	} else if (txt=="6pro") {
-		move = moves.toroid({harmonics: 6, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
-		move.angleto("hand",this.align[n]);
+		move = moves.toroid({orient: this.align[n], harmonics: 6, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
 	} else if (txt=="n3bd") {
-		move = moves.toroid({harmonics: 2, direction: this.spin[n], bend: -3, plane: this.plane[n]});
-		move.angleto("hand",this.align[n]);
+		move = moves.toroid({orient: this.align[n], harmonics: 2, direction: this.spin[n], bend: -3, plane: this.plane[n]});
 	} else if (txt=="idia") {
 		move = moves.diamond({orient: this.align[n], direction: this.spin[n], spin: INSPIN, plane: this.plane[n]});
 	} else if (txt=="adia") {
@@ -640,10 +644,15 @@ First Move:
 		<option value="supr">Superman</option>
 		<option value="xtsn">Extension</option>
 		<option value="1pif">One-Petal In-Spin Flower</option>
+		<option value="o1if">Offset One-Petal In-Spin Flower</option>
 		<option value="2pif">Two-Petal In-Spin Flower</option>
+		<option value="o2if">Offset Two-Petal In-Spin Flower</option>
 		<option value="4pif">Four-Petal In-Spin Flower</option>
+		<option value="b4if">Box Mode In-Spin Flower</option>
 		<option value="3paf">Three-Petal Anti-Spin Flower</option>
+		<option value="o3af">Offset Three-Petal Anti-Spin Flower</option>
 		<option value="4paf">Four-Petal Anti-Spin Flower</option>
+		<option value="b4af">Box Mode Anti-Spin Flower</option>
 		<option value="hcap">Horizontal C-CAP (from inspin)</option>
 		<option value="hcpo">Horizontal C-CAP (from antispin)</option>
 		<option value="vcap">Vertical C-CAP (from inspin)</option>
@@ -697,10 +706,15 @@ Second Move:
 		<option value="supr">Superman</option>
 		<option value="xtsn">Extension</option>
 		<option value="1pif">One-Petal In-Spin Flower</option>
+		<option value="o1if">Offset One-Petal In-Spin Flower</option>
 		<option value="2pif">Two-Petal In-Spin Flower</option>
+		<option value="o2if">Offset Two-Petal In-Spin Flower</option>
 		<option value="4pif">Four-Petal In-Spin Flower</option>
+		<option value="b4if">Box Mode In-Spin Flower</option>
 		<option value="3paf">Three-Petal Anti-Spin Flower</option>
+		<option value="o3af">Offset Three-Petal Anti-Spin Flower</option>
 		<option value="4paf">Four-Petal Anti-Spin Flower</option>
+		<option value="b4af">Box Mode Anti-Spin Flower</option>
 		<option value="hcap">Horizontal C-CAP (from inspin)</option>
 		<option value="hcpo">Horizontal C-CAP (from antispin)</option>
 		<option value="vcap">Vertical C-CAP (from inspin)</option>
@@ -750,10 +764,15 @@ Third Move:
 		<option value="supr">Superman</option>
 		<option value="xtsn">Extension</option>
 		<option value="1pif">One-Petal In-Spin Flower</option>
+		<option value="o1if">Offset One-Petal In-Spin Flower</option>
 		<option value="2pif">Two-Petal In-Spin Flower</option>
+		<option value="o2if">Offset Two-Petal In-Spin Flower</option>
 		<option value="4pif">Four-Petal In-Spin Flower</option>
+		<option value="b4if">Box Mode In-Spin Flower</option>
 		<option value="3paf">Three-Petal Anti-Spin Flower</option>
+		<option value="o3af">Offset Three-Petal Anti-Spin Flower</option>
 		<option value="4paf">Four-Petal Anti-Spin Flower</option>
+		<option value="b4af">Box Mode Anti-Spin Flower</option>
 		<option value="hcap">Horizontal C-CAP (from inspin)</option>
 		<option value="hcpo">Horizontal C-CAP (from antispin)</option>
 		<option value="vcap">Vertical C-CAP (from inspin)</option>
@@ -804,10 +823,15 @@ Fourth Move:
 		<option value="supr">Superman</option>
 		<option value="xtsn">Extension</option>
 		<option value="1pif">One-Petal In-Spin Flower</option>
+		<option value="o1if">Offset One-Petal In-Spin Flower</option>
 		<option value="2pif">Two-Petal In-Spin Flower</option>
+		<option value="o2if">Offset Two-Petal In-Spin Flower</option>
 		<option value="4pif">Four-Petal In-Spin Flower</option>
+		<option value="b4if">Box Mode In-Spin Flower</option>
 		<option value="3paf">Three-Petal Anti-Spin Flower</option>
+		<option value="o3af">Offset Three-Petal Anti-Spin Flower</option>
 		<option value="4paf">Four-Petal Anti-Spin Flower</option>
+		<option value="b4af">Box Mode Anti-Spin Flower</option>
 		<option value="hcap">Horizontal C-CAP (from inspin)</option>
 		<option value="hcpo">Horizontal C-CAP (from antispin)</option>
 		<option value="vcap">Vertical C-CAP (from inspin)</option>
