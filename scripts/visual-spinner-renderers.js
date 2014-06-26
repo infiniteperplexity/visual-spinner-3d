@@ -186,6 +186,7 @@ PropFactory.prototype.sphere = function(size, facets) {
 PropFactory.prototype.poi = function(options) {
 	var p = new Prop();
 	p.renderer = this.poirender(options);
+	p.renderer.activate();
 	return p;
 }
 PropFactory.prototype.poirender = function(options) {
@@ -230,6 +231,7 @@ PropFactory.prototype.poirender = function(options) {
 PropFactory.prototype.staff = function(options) {
 	var p = new Prop();
 	p.renderer = this.staffrender(options);
+	p.renderer.activate();
 	return p;
 }
 PropFactory.prototype.staffrender = function(options) {
@@ -266,6 +268,7 @@ PropFactory.prototype.staffrender = function(options) {
 PropFactory.prototype.noprop = function(options) {
 	var p = new Prop();
 	p.renderer = this.noproprender(options);
+	p.renderer.activate();
 	return p;
 }
 PropFactory.prototype.noproprender = function(options) {
@@ -311,6 +314,7 @@ CanvasPropRenderer.prototype.deactivate = function(scene) {}
 PropFactory.prototype.poi2d= function(options) {
 	var p = new Prop();
 	p.renderer = this.poirender2d(options);
+	p.renderer.activate();
 	return p;
 }
 PropFactory.prototype.poirender2d = function(options) {
@@ -452,6 +456,7 @@ canvasFlame.prototype.draw = function(context, zenith, roll) {
 PropFactory.prototype.staff2d = function(options) {
 	var p = new Prop();
 	p.renderer = this.staffrender2d(options);
+	p.renderer.activate();
 	return p;
 }
 PropFactory.prototype.staffrender2d = function(options) {
@@ -564,14 +569,11 @@ PropFactory.prototype.rotatePoints = function(shape, angle, a, b) {
 	return shape;
 }
 
-PropFactory.prototype.hoop2d= function(options) {
-	var p = new Prop();
-	p.renderer = this.hoop2d(options);
-	return p;
-}
+
 PropFactory.prototype.hoop2d = function(options) {
 	var p = new Prop();
 	p.renderer = this.hooprender2d(options);
+	p.renderer.activate();
 	return p;
 }
 PropFactory.prototype.hooprender2d = function(options) {

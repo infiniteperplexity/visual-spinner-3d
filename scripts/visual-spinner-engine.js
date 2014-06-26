@@ -73,7 +73,7 @@ Vector.prototype.spherify = function() {
 	return (new Spherical(r,theta,phi));
 }
 Vector.prototype.rotate = function(angle, axis) {
-	if (axis===undefined) {
+	if (axis==undefined) {
 		axis = WALL;
 	}
 	var x = this.x;
@@ -93,6 +93,9 @@ Vector.prototype.rotate = function(angle, axis) {
 	return (new Vector(a,b,c));
 }
 Vector.prototype.project = function(axis) {
+	if (axis==undefined) {
+		axis = WALL;
+	}
 	var dot = this.x*axis.x + this.y*axis.y + this.z*axis.z;
 	var x = this.x-dot*axis.x;
 	var y = this.y-dot*axis.y;
@@ -182,6 +185,7 @@ function Prop() {
 	this.hand = new Spherical(TINY,QUARTER,TINY);
 	this.prop = new Spherical(1,QUARTER,TINY);
 	this.grip = new Spherical(0.5,QUARTER,TINY);
+	this.elements = ["home","pivot","hand","prop","grip"];
 	this.roll = 0;
 	this.renderer = undefined;
 	this.move = new MoveChain();
@@ -260,6 +264,11 @@ Prop.prototype.getHandAngle = function(plane) {return this.getElementAngle("hand
 Prop.prototype.getPropAngle = function(plane) {return this.getElementAngle("prop", plane);}
 Prop.prototype.getGripAngle = function(plane) {return this.getElementAngle("grip", plane);}
 
+Prop.prototype.nudge = function(x,y,z) {
+        var v = new Vector(x,y,z);
+        var s = v.spherify();
+        this.home = s;
+}
 
 // Functions relating to the move queue
 Prop.prototype.spin = function() {
@@ -267,6 +276,12 @@ Prop.prototype.spin = function() {
 }
 Prop.prototype.addMove = function(myMove) {
 	this.move.add(myMove);
+}
+Prop.prototype.head = function() {
+	return this.move.head();
+}
+Prop.prototype.tail = function() {
+	return this.move.tail();
 }
 Prop.prototype.addPartneredMove = function(otherProp, myMove) {
 	this.addMove(myMove.getFirstMove());
@@ -309,6 +324,13 @@ function MoveChain() {
 	this.started = false;
 	this.finished = false;
 	this.submoves = [];
+}
+MoveChain.prototype.takesubs = function(from, to) {
+	var newMove = new MoveChain();
+	for (var i = from; i < to; i++) {
+		newMove.add(this.submoves[i].clone());
+	}
+	return newMove;
 }
 MoveChain.prototype.spin = function(prop, dummy) {
 	if (dummy===undefined) {dummy = false;}
@@ -363,7 +385,7 @@ MoveChain.prototype.phaseby = function(phase) {
 			this.submoves.push(this.submoves.shift());
 		}
 	} else if (phase<0) {
-		for (var i = 0; i<phase; i++) {
+		for (var i = 0; i>phase; i--) {
 			this.submoves.unshift(this.submoves.pop());
 		}
 	}
@@ -422,18 +444,21 @@ MoveChain.prototype.clone = function() {
 MoveChain.prototype.fits = function(move) {
 	return this.head().fits(move.tail());
 }
+MoveChain.prototype.headsocket =function() {
+	return this.submoves[0].headsocket();
+}
 MoveChain.prototype.tailsocket = function() {
 	return this.submoves[this.submoves.length-1].tailsocket();
 }
 MoveChain.prototype.fitsocket = function(socket) {
-	submoves[0].fitsocket(socket);
-	//this.refit();
+	this.submoves[0].fitsocket(socket);
+	this.refit();
 }
-//MoveChain.prototype.refit = function() {
-//	for (var i = 1; i<submoves.length; i++) {
-//		this.submoves[i].fitsocket(this.submoves[i-1].tailsocket());
-//	}
-//}
+MoveChain.prototype.refit = function() {
+	for (var i = 1; i<this.submoves.length; i++) {
+		this.submoves[i].fitsocket(this.submoves[i-1].tailsocket());
+	}
+}
 MoveChain.prototype.extend = function() {
 	newlink = this.tail().clone();
 	newlink.fitsocket(this.tailsocket());
@@ -467,18 +492,30 @@ MoveChain.prototype.split = function(t) {
 function MoveLink() {
 	this.elements = ["home","pivot","hand","prop","grip"];
 	for (var i = 0; i<this.elements.length; i++) {
-		this[this.elements[i]] = {
-			plane: WALL,
-			radius: 0,
-			speed: 0,
-			acc: 0,
-			angle: THREE,
-			bend: 0,
-			bend_plane: WALL,
-			linear_angle: THREE,
-			linear_speed: 0,
-			linear_acc: 0
-		};
+		if (this.elements[i]=="home" || this.elements[i]=="grip") {
+			this[this.elements[i]] = {
+				speed: 0,
+				acc: 0,
+				bend: 0,
+				bend_plane: WALL,
+				linear_angle: THREE,
+				linear_speed: 0,
+				linear_acc: 0
+			};
+		} else {
+			this[this.elements[i]] = {
+				plane: WALL,
+				radius: 0,
+				angle: THREE,
+				speed: 0,
+				acc: 0,
+				bend: 0,
+				bend_plane: WALL,
+				linear_angle: THREE,
+				linear_speed: 0,
+				linear_acc: 0
+			};
+		}
 	}
 	this.roll = undefined;
 	this.prop.radius = 1;
@@ -494,8 +531,12 @@ MoveLink.prototype.getDuration = function() {return this.duration;}
 MoveLink.prototype.spin = function(prop) {
 	if (this.started == false) {
 		for (var i = 0; i<this.elements.length; i++) {
-			prop.setElementAngle(this.elements[i], this[this.elements[i]].angle, this[this.elements[i]].plane);
-			prop[this.elements[i]].radius = this[this.elements[i]].radius;
+			if (this[this.elements[i]].angle !== undefined && this[this.elements[i]].plane !== undefined) {
+				prop.setElementAngle(this.elements[i], this[this.elements[i]].angle, this[this.elements[i]].plane);
+			}
+			if (this[this.elements[i]].radius !== undefined) {
+				prop[this.elements[i]].radius = this[this.elements[i]].radius;
+			}
 		}
 		if (this.roll === undefined) {
 			if (this.prop.plane.nearly(WALL)) {
@@ -512,11 +553,13 @@ MoveLink.prototype.spin = function(prop) {
 	var v;
 	var p;
 	for (var i = 0; i<this.elements.length; i++) {
-		p = this[this.elements[i]].plane.rotate(this[this.elements[i]].bend*this.t*SPEED, this[this.elements[i]].bend_plane);
-		v = this[this.elements[i]].linear_speed + this[this.elements[i]].linear_acc*this.t/BEAT;
-		prop.translateElement(this.elements[i], v/BEAT, this[this.elements[i]].linear_angle, p);
-		v = this[this.elements[i]].speed + this[this.elements[i]].acc*this.t/BEAT;
-		prop.rotateElement(this.elements[i], v*SPEED, p);
+		if (this[this.elements[i]].plane !== undefined) {
+			p = this[this.elements[i]].plane.rotate(this[this.elements[i]].bend*this.t*SPEED, this[this.elements[i]].bend_plane);
+			v = this[this.elements[i]].linear_speed + this[this.elements[i]].linear_acc*this.t/BEAT;
+			prop.translateElement(this.elements[i], v/BEAT, this[this.elements[i]].linear_angle, p);
+			v = this[this.elements[i]].speed + this[this.elements[i]].acc*this.t/BEAT;
+			prop.rotateElement(this.elements[i], v*SPEED, p);
+		}
 	}
 	this.t+=1;
 	if (this.t >= this.duration*BEAT) {
@@ -530,11 +573,16 @@ MoveLink.prototype.reset = function() {
 	this.finished = false;
 }
 
+
 MoveLink.prototype.tailsocket = function() {
 	var dummy = new Prop();
 	for (var i=0; i<this.elements.length; i++) {
-		dummy.setElementAngle(this.elements[i], this[this.elements[i]].angle, this[this.elements[i]].plane);
-		dummy.radius = this.elements[i].radius;
+		if (this[this.elements[i]].angle !== undefined && this[this.elements[i]].plane !== undefined) {
+			dummy.setElementAngle(this.elements[i], this[this.elements[i]].angle, this[this.elements[i]].plane);
+		}
+		if (this[this.elements[i]].radius !== undefined) {
+			dummy.radius = this.elements[i].radius;
+		}
 	}
 	for (var i=0; i<this.duration*BEAT; i++) {
 		this.spin(dummy);
@@ -543,16 +591,35 @@ MoveLink.prototype.tailsocket = function() {
 	var socket = {};
 	var p;
 	for (var i=0; i<this.elements.length; i++) {
+		
 		socket[this.elements[i]] = {};
-		socket[this.elements[i]].radius = dummy[this.elements[i]].radius;
+		if (this[this.elements[i]].radius !== undefined) {
+			socket[this.elements[i]].radius = dummy[this.elements[i]].radius;
+		}
 		socket[this.elements[i]].speed = this[this.elements[i]].speed+this.duration*this[this.elements[i]].acc;
 		socket[this.elements[i]].linear_speed = this[this.elements[i]].linear_speed+this.duration*this[this.elements[i]].linear_acc;
-		p = this[this.elements[i]].plane.rotate(this[this.elements[i]].bend*this.duration*UNIT, this[this.elements[i]].bend_plane);
-		socket[this.elements[i]].angle = dummy.getElementAngle(this.elements[i], p);
-		socket[this.elements[i]].plane = p;
+		if (this[this.elements[i]].plane !== undefined) {
+			p = this[this.elements[i]].plane.rotate(this[this.elements[i]].bend*this.duration*UNIT, this[this.elements[i]].bend_plane);
+			socket[this.elements[i]].angle = dummy.getElementAngle(this.elements[i], p);
+			socket[this.elements[i]].plane = p;
+		}
+		//should I have a socket for the angle?
 	}
 	return socket;
 }
+
+MoveLink.prototype.headsocket = function() {
+	var socket = {};
+	var properties = ["plane", "radius", "speed", "acc", "angle", "bend", "bend_plane", "linear_angle", "linear_speed", "linear_acc"];
+	for (var i = 0; i<this.elements.length; i++) {
+		socket[this.elements[i]] = {};
+		for (var j = 0; j<properties.length; j++) {
+			socket[this.elements[i]][properties[j]] = this[this.elements[i]][properties[j]];
+		}
+	}
+	return socket;
+}
+
 
 MoveLink.prototype.fitsocket = function(socket) {
 	var properties = ["plane","radius","speed","angle","linear_speed"];

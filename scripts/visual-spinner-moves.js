@@ -59,7 +59,6 @@ MoveFactory.prototype.flower = function(options) {
 		pivot: undefined
 	});
 	var segment = new MoveLink();
-	segment.duration = 0.25;
 	if (options.spin==INSPIN) {
 		segment.prop.speed = (options.petals+1)*options.spin*options.direction*options.speed;
 	} else {
@@ -88,6 +87,49 @@ MoveFactory.prototype.flower = function(options) {
 		move.extend();
 	}
 	return move;
+}
+
+MoveFactory.prototype.petal = function(options) {
+	options = this.defaults(options,{
+		orient: THREE,
+		plane: WALL,
+		direction: CLOCKWISE,
+		spin: INSPIN,
+		petals: 4,
+		extend: 1,
+		speed: 1,
+		mode: DIAMOND,
+		pivot: undefined,
+		duration: undefined
+	});
+	var segment = new MoveLink();
+	if (options.spin==INSPIN) {
+		segment.prop.speed = (options.petals+1)*options.spin*options.direction*options.speed;
+	} else {
+		segment.prop.speed = (options.petals-1)*options.spin*options.direction*options.speed;
+	}
+	if (options.pivot!==undefined) {
+		segment.pivot.angle = options.pivot;
+		segment.pivot.radius = 0.5;
+		segment.pivot.plane = options.plane;
+		segment.pivot.speed = 0;
+	}
+	segment.hand.radius = options.extend;
+	segment.hand.speed = options.direction*options.speed;
+	segment.prop.plane = options.plane;
+	segment.hand.plane = options.plane;
+	segment.hand.angle = options.orient;
+	segment.prop.angle = options.orient + options.mode;
+	if (options.duration==undefined) {
+		if (options.petals==0) {
+			segment.duration = options.duration;
+		} else {
+			segment.duration = 1/options.petals;
+		}
+	} else {
+		segment.duration = options.duration;
+	}
+	return segment;
 }
 
 MoveFactory.prototype.ccap = function(options) {
