@@ -66,25 +66,32 @@ function canvasSetup() {
 	light.direction.z = 0;
 	scene.graph.push(light);
 	// set up props
-	var propOne = props.poi({head_color: "red", flame_color: "red", scene: scene});
-	var propTwo = props.poi({head_color: "blue", flame_color: "blue", scene: scene});
-	propOne.nudge(0,0,-.5);
-	propTwo.nudge(0,0,.5);
+	var propOne = props.poi({head_color: "red", scene: scene});
+	var propTwo = props.poi({head_color: "blue", scene: scene});
+	propOne.nudge(0,0,-.25);
+	propTwo.nudge(0,0,.25);
+	propOne.setHandAngle(TWELVE);
+	propOne.setPropAngle(TWELVE);
+	propTwo.setHandAngle(TWELVE);
+	propTwo.setPropAngle(TWELVE);
+	propOne.hand.radius = 1;
+	propTwo.hand.radius = 1;
 	myProps.push(propOne);
 	myProps.push(propTwo);
-	
-	var o1 = [TWELVE, THREE, SIX, NINE];
-	var o2 = [SIX, NINE, TWELVE, THREE];
-	var d1 = [CLOCKWISE, COUNTERCLOCKWISE, COUNTERCLOCKWISE, CLOCKWISE];
-	var d2 = [CLOCKWISE, CLOCKWISE, COUNTERCLOCKWISE, COUNTERCLOCKWISE];
-	
-	for (var i = 0; i<4; i++) {
+	var dir1 = [CLOCKWISE, CLOCKWISE, COUNTERCLOCKWISE, COUNTERCLOCKWISE];
+	var dir2 = [CLOCKWISE, COUNTERCLOCKWISE, COUNTERCLOCKWISE, CLOCKWISE]; 
+	for (var i = 0; i<2; i++) {
 		for (var j = 0; j<4; j++) {
-			propOne.addMove(moves.flower({orient: o1[i], direction: d1[j], spin: ANTISPIN}));
-			propTwo.addMove(moves.flower({orient: o2[i], direction: d2[j], spin: ANTISPIN}));
+			for (var k = 0; k<4; k++) {
+					propOne.chainMove(moves.petal({direction: dir1[j], spin: ANTISPIN, duration: 2}));
+					propTwo.chainMove(moves.petal({direction: dir2[j], spin: ANTISPIN, duration: 1}));
+					propTwo.chainMove(moves.petal({direction: -dir2[j], spin: INSPIN, duration: 3/8, petals: 0}));
+					propTwo.chainMove(moves.petal({direction: dir2[j], spin: ANTISPIN, duration: 1/8, petals: 4}));
+					propTwo.chainMove(moves.petal({direction: dir2[j], spin: ANTISPIN, duration: 1/2, petals: 3}));
+			}
 		}
-		propOne.addMove(moves.petal({orient: o1[i], direction: d1[0], spin: ANTISPIN}));
-		propTwo.addMove(moves.petal({orient: o2[i], direction: d2[0], spin: ANTISPIN}));
+		propOne.chainMove(moves.petal({direction: -dir1[j], spin: INSPIN, duration: 3/8, petals: 0}));
+		propTwo.chainMove(moves.petal({direction: -dir2[j], spin: INSPIN, duration: 3/8, petals: 0}));
 	}
 }
 	

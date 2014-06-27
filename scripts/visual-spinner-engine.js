@@ -277,6 +277,26 @@ Prop.prototype.spin = function() {
 Prop.prototype.addMove = function(myMove) {
 	this.move.add(myMove);
 }
+Prop.prototype.chainMove = function(myMove) {
+        var tail = this.tail();
+        if (tail == undefined) {
+                tail = {};
+                for (var i = 0; i < this.elements.length; i++) {
+                        tail[this.elements[i]] = {};
+                        tail[this.elements[i]].plane = myMove.head()[this.elements[i]].plane;
+                }
+        } else {
+                tail = tail.tailsocket();
+        }
+        var head = myMove.head();
+        for (var i = 0; i < this.elements.length; i++) {
+                head[this.elements[i]].radius = undefined;
+                head[this.elements[i]].angle = undefined;
+                head[this.elements[i]].plane = tail[this.elements[i]].plane;        
+        }        
+        myMove.refit();
+        this.move.add(myMove);
+} 
 Prop.prototype.head = function() {
 	return this.move.head();
 }
@@ -368,7 +388,12 @@ MoveChain.prototype.append = function(move) {
 	return this;
 }
 MoveChain.prototype.head = function() {return this.submoves[0].head();}
-MoveChain.prototype.tail = function() {return this.submoves[this.submoves.length-1].tail();}
+MoveChain.prototype.tail = function() {
+	if (this.submoves.length == 0) {
+                return undefined;
+        } 
+	return this.submoves[this.submoves.length-1].tail();
+}
 MoveChain.prototype.current = function() {return this.submoves[this.p].current();}
 MoveChain.prototype.getDuration = function() {
 	var tally = 0;
@@ -539,12 +564,14 @@ MoveLink.prototype.spin = function(prop) {
 			}
 		}
 		if (this.roll === undefined) {
-			if (this.prop.plane.nearly(WALL)) {
-				this.roll = 0;
-			} else if (this.prop.plane.nearly(WHEEL)  || this.prop.plane.nearly(FLOOR)) {
-				this.roll = STAGGER;
-			}
-		}
+                        if (this.prop.plane === undefined) {
+                                this.roll = 0;
+                        } else if (this.prop.plane.nearly(WALL)) {
+                                this.roll = 0;
+                        } else if (this.prop.plane.nearly(WHEEL)  || this.prop.plane.nearly(FLOOR)) {
+                                this.roll = STAGGER;
+                        }
+                } 
 		prop.roll = this.roll;
 		this.started = true;
 	}
@@ -620,6 +647,9 @@ MoveLink.prototype.headsocket = function() {
 	return socket;
 }
 
+MoveLink.prototype.refit = function() {
+        //do nothing but don't fail
+}
 
 MoveLink.prototype.fitsocket = function(socket) {
 	var properties = ["plane","radius","speed","angle","linear_speed"];
