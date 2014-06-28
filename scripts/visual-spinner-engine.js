@@ -180,6 +180,7 @@ function nearly(n1,n2, delta) {
 }
 // A prop handles the geometry for a number of spherical coordinates, a renderer, and a move queue
 function Prop() {
+	this.name = undefined;
 	this.home = new Spherical(TINY,QUARTER,TINY);
 	this.pivot = new Spherical(TINY,QUARTER,TINY);
 	this.hand = new Spherical(TINY,QUARTER,TINY);
@@ -339,6 +340,7 @@ MoveFactory.prototype.defaults = function(options, defaults) {
 
 
 function MoveChain() {
+	this.name = undefined;
 	this.p = 0;
 	this.oneshot = false;
 	this.started = false;
@@ -515,6 +517,7 @@ MoveChain.prototype.split = function(t) {
 
 
 function MoveLink() {
+	this.name = undefined;
 	this.elements = ["home","pivot","hand","prop","grip"];
 	for (var i = 0; i<this.elements.length; i++) {
 		if (this.elements[i]=="home" || this.elements[i]=="grip") {

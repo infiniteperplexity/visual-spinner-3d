@@ -16,6 +16,7 @@ MoveFactory.prototype.staticspin= function(options) {
 	segment.prop.speed = options.direction*options.speed;
 	var move = new MoveChain();
 	move.add(segment);
+	move.name = "static spin";
 	return move;
 }
 
@@ -44,6 +45,7 @@ MoveFactory.prototype.superman= function(options) {
 	move.tail().prop.speed = 2*options.speed*options.direction;
 	//move.tail().prop.acc = 16*options.speed*options.direction;
 	return move;
+	move.name = "superman";
 }
 
 MoveFactory.prototype.flower = function(options) {
@@ -86,6 +88,7 @@ MoveFactory.prototype.flower = function(options) {
 	for (var i=1; i<options.petals; i++) {
 		move.extend();
 	}
+	move.name = "flower";
 	return move;
 }
 
@@ -120,7 +123,7 @@ MoveFactory.prototype.petal = function(options) {
 	segment.hand.plane = options.plane;
 	segment.hand.angle = options.orient;
 	segment.prop.angle = options.orient + options.mode;
-	if (options.duration==undefined) {
+	if (options.duration===undefined) {
 		if (options.petals==0) {
 			segment.duration = options.duration;
 		} else {
@@ -129,8 +132,60 @@ MoveFactory.prototype.petal = function(options) {
 	} else {
 		segment.duration = options.duration;
 	}
+	segment.name = "petal";
 	return segment;
 }
+
+
+MoveFactory.prototype.twoPropFlower = function(options) {
+	options = this.defaults(options,{
+		timing: SPLIT,
+		mode:  TOGETHER,
+		direction: CLOCKWISE,
+		orient: THREE,
+		plane: WALL,
+		spin: INSPIN,
+		petals: 4,
+		extend: 1,
+		speed: 1,
+		mode: DIAMOND,
+		duration: 1
+	});
+	var move1 = this.petal({
+		orient: options.orient,
+		direction: options.direction,
+		plane: options.plane,
+		spin: options.spin,
+		petals: options.petals,
+		extend: options.extend,
+		speed: options.speed,
+		mode: options.mode,
+		duration: options.duration
+	});
+	var orient2 = options.orient + options.timing;
+	var direction2;
+	if (options.mode==TOGETHER) {
+		direction2 = options.direction;
+	} else if (options.mode==OPPOSITE) {
+		direction2 = -options.direction;
+	}
+	var move2 = this.petal({
+		orient: orient2,
+		direction: direction2,
+		plane: options.plane,
+		spin: options.spin,
+		petals: options.petals,
+		extend: options.extend,
+		speed: options.speed,
+		mode: options.mode,
+		duration: options.duration
+	});
+	var move = [move1, move2];
+	//var name_petals = ["zero","one","two","three","four","five","six"][petals];
+	//var name_timing = (options.timing==SPLIT)?:";
+	return move;
+}
+
 
 MoveFactory.prototype.ccap = function(options) {
 	options = this.defaults(options,{
@@ -631,3 +686,5 @@ MoveFactory.prototype.stallchaser = function(options) {
 	move.phaseby(options.phase);
         return move;
 }
+
+

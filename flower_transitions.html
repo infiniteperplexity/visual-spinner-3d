@@ -1,7 +1,7 @@
 <!--Distributed under GNU Public License version 3-->
 <html><head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>VisualSpinner3D v. 3.0, by Glenn Wright</title>
+<title>Four-Petal Anti-Spin Flower Transitions Demo (using the VisualSpinner Engine)</title>
 <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
 <script src="scripts/gl-matrix-min.js"></script>
 <script src="scripts/phoria-min.js"></script>
@@ -11,12 +11,12 @@
 <script src="scripts/visual-spinner-renderers.js"></script><script>
 // set parameters
 var HEIGHT = 400;
-var WIDTH = 400;
+var WIDTH = 800;
 var ORIGINX = WIDTH/2;
 var ORIGINY = HEIGHT/2;
 var BACKGROUND = "black";
 
-var view2d = false;
+var view2d = true;
 
 var myProps = new Array(); 
 var moves = new MoveFactory();
@@ -66,32 +66,32 @@ function canvasSetup() {
 	light.direction.z = 0;
 	scene.graph.push(light);
 	// set up props
-	var propOne = props.poi({head_color: "red", scene: scene});
-	var propTwo = props.poi({head_color: "blue", scene: scene});
-	propOne.nudge(0,0,-.25);
-	propTwo.nudge(0,0,.25);
-	propOne.setHandAngle(TWELVE);
-	propOne.setPropAngle(TWELVE);
-	propTwo.setHandAngle(TWELVE);
-	propTwo.setPropAngle(TWELVE);
+	var propOne = props.poi2d({head_color: "red", scene: scene});
+	var propTwo = props.poi2d({head_color: "blue", scene: scene});
+	propOne.nudge(3,0,0);
+	propTwo.nudge(3.1,0,0);
 	propOne.hand.radius = 1;
 	propTwo.hand.radius = 1;
 	myProps.push(propOne);
 	myProps.push(propTwo);
-	var dir1 = [CLOCKWISE, CLOCKWISE, COUNTERCLOCKWISE, COUNTERCLOCKWISE];
-	var dir2 = [CLOCKWISE, COUNTERCLOCKWISE, COUNTERCLOCKWISE, CLOCKWISE]; 
-	for (var i = 0; i<2; i++) {
-		for (var j = 0; j<4; j++) {
-			for (var k = 0; k<4; k++) {
-					propOne.chainMove(moves.petal({direction: dir1[j], spin: ANTISPIN, duration: 2}));
-					propTwo.chainMove(moves.petal({direction: dir2[j], spin: ANTISPIN, duration: 1}));
-					propTwo.chainMove(moves.petal({direction: -dir2[j], spin: INSPIN, duration: 3/8, petals: 0}));
-					propTwo.chainMove(moves.petal({direction: dir2[j], spin: ANTISPIN, duration: 1/8, petals: 4}));
-					propTwo.chainMove(moves.petal({direction: dir2[j], spin: ANTISPIN, duration: 1/2, petals: 3}));
-			}
-		}
-		propOne.chainMove(moves.petal({direction: -dir1[j], spin: INSPIN, duration: 3/8, petals: 0}));
-		propTwo.chainMove(moves.petal({direction: -dir2[j], spin: INSPIN, duration: 3/8, petals: 0}));
+	var propThree = props.poi2d({head_color: "yellow", scene: scene});
+	var propFour = props.poi2d({head_color: "green", scene: scene});
+	propThree.nudge(-3,0,0);
+	propFour.nudge(-3.1,0,0);
+	propThree.hand.angle = NINE;
+	propThree.prop.angle = NINE;
+	propFour.hand.angle = NINE;
+	propFour.prop.angle = NINE;
+	propThree.hand.radius = 1;
+	propFour.hand.radius = 1;
+	myProps.push(propThree);
+	myProps.push(propFour);
+	var doublemove;
+	for (var i = 0; i<8; i++) {
+		doublemove = moves.twoPropFlower({mode: (i%2)*SPLIT , direction: CLOCKWISE, spin: ANTISPIN, duration: (i==4) ? 1 : 1.25});
+		propOne.chainMove(doublemove[0]); propTwo.chainMove(doublemove[1]);
+		doublemove = moves.twoPropFlower({mode: (i%2)*SPLIT , direction: COUNTERCLOCKWISE, spin: ANTISPIN, duration: (i==4) ? 1 : 1.25});
+		propThree.chainMove(doublemove[0]); propFour.chainMove(doublemove[1]);
 	}
 }
 	
@@ -108,7 +108,7 @@ function canvasLoop() {
 }
 function redraw() {
 	if (view2d == true) {
-		ctx.fillStyle = "rgba(0,0,0,0.01)";
+		ctx.fillStyle = "rgba(0,0,0,0.03)";
 		ctx.strokeStyle=BACKGROUND;
 		ctx.fillRect(0,0,WIDTH,HEIGHT);
 	}
@@ -129,4 +129,13 @@ function redraw() {
 </td>
 </tr>
 </tbody></table>
+<p>Using the VisualSpinner Engine, someone with basic programming knowledge can easily create complex patterns.</p>
+<p>Here is the code that drives the entire pattern:</p>
+<p></p>
+<p>for (var i = 0; i<8; i++) {</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;doublemove = moves.twoPropFlower({mode: (i%2)*SPLIT , direction: CLOCKWISE, spin: ANTISPIN, duration: (i==4) ? 1 : 1.25});</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;propOne.chainMove(doublemove[0]); propTwo.chainMove(doublemove[1]);</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;doublemove = moves.twoPropFlower({mode: (i%2)*SPLIT , direction: COUNTERCLOCKWISE, spin: ANTISPIN, duration: (i==4) ? 1 : 1.25});</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;propThree.chainMove(doublemove[0]); propFour.chainMove(doublemove[1]);</p>
+<p>}</p>
 </body></html>
