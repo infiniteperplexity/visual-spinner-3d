@@ -1,0 +1,221 @@
+<!--Distributed under GNU Public License version 3-->
+<!DOCTYPE html>
+<html><head>
+<style>
+body {margin: 0; padding: 0; background-color: #679}
+h1, h2, header p {text-align: center}
+header {width: 820px; height: 100px}
+#content {width: 830px; height: 410px;}
+section {margin: 0; padding: 0}
+header, section div {vertical-align: top; padding: 2.5px; border: 5px solid gray; margin: -2.5px; display: inline-block;}
+#display {width: 400px; height: 400px;}
+#queue, #menu {width: 200px; height: 400px; float: right}
+canvas {width: 400px; height: 400px; background-color: #000;}
+#queue h2, #menu h2 {height: 25px; text-decoration: underline}
+#queue select, #menu select {width: 200px; height: 330px;}
+
+
+</style>
+
+
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>VisualSpinner3D v. 3.0, by Glenn Wright</title>
+<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="scripts/jquery.sortable.min.js"></script>
+<script src="scripts/gl-matrix-min.js"></script>
+<script src="scripts/phoria-min.js"></script>
+<script src="scripts/requestAnimationFrame.js"></script>
+<script src="scripts/visual-spinner-engine.js"></script>
+<script src="scripts/visual-spinner-moves.js"></script>
+<script src="scripts/visual-spinner-renderers.js"></script><script>
+// set parameters
+$('.sortable').sortable();
+var movenames = {
+"xtsn" : "Extension",
+"2pif" : "2-Petal In-Spin Flower",
+"4pif" : "4-Petal In-Spin Flower",
+"3paf" : "3-Petal Anti-Spin Flower",
+"4paf" : "4-Petal Anti-Spin Flower",
+"pend" : "Pendulum",
+"1pt5" : "One Point Five"
+}
+function allowDrop(event) {event.preventDefault();}
+function drag(event) {
+	event.dataTransfer.setData("Text",event.target.value);
+}
+function drop(event) {
+	event.preventDefault();
+	var parent = event.dataTransfer.getData("Text");
+	var child = document.createElement("option");
+	child.value = parent;
+	child.text = movenames[parent];
+	event.target.appendChild(child);
+}
+    
+var HEIGHT = 400;
+var WIDTH = 400;
+var ORIGINX = WIDTH/2;
+var ORIGINY = HEIGHT/2;
+var BACKGROUND = "black";
+
+var view2d = false;
+
+var myProps = new Array(); 
+//var controller = new Controller();
+var moves = new MoveFactory();
+var props = new PropFactory();
+var movemap = {
+	"xtsn" : function() {return moves.flower({direction: CLOCKWISE, spin: INSPIN, petals: 0});},
+	"2pif" :function() {return moves.flower({direction: CLOCKWISE, spin: INSPIN, petals: 2});},
+	"4pif" : function() {return moves.flower({direction: CLOCKWISE, spin: INSPIN, petals: 4});},
+	"3paf" : function() {return  moves.flower({direction: CLOCKWISE, spin: ANTISPIN, petals: 3});},
+	"4paf" : function() {return moves.flower({direction: CLOCKWISE, spin: ANTISPIN, petals: 4});},
+	"1pt5" : function() {return moves.onepointfive({direction: CLOCKWISE}).angleto("hand", THREE);},
+	"pend" : function() {return moves.pendulum({direction: CLOCKWISE}).angleto("hand", THREE);}
+}
+
+
+function init() {
+	ctx=document.getElementById('canvas').getContext('2d');
+	if( 	navigator.userAgent.match(/Android/i)
+		|| navigator.userAgent.match(/webOS/i)
+		|| navigator.userAgent.match(/iPhone/i)
+		|| navigator.userAgent.match(/iPad/i)
+		|| navigator.userAgent.match(/iPod/i)
+		|| navigator.userAgent.match(/BlackBerry/i)
+		|| navigator.userAgent.match(/Windows Phone/i)) {
+		$("#2d3d").val("2d");
+	} else {
+		$("#2d3d").val("3d");
+	}
+	populateMenu();
+	canvasSetup();
+	canvasLoop();
+}
+
+function populateMenu() {
+	var menu = $("#menu").children("select");
+	var options = [
+		"xtsn",
+		"2pif",
+		"4pif",
+		"3paf",
+		"4paf",
+		"pend",
+		"1pt5"
+	];
+	for (var i = 0; i<options.length; i++) {
+		menu.append('<option value = '.concat(options[i],
+			' draggable="true" ondragstart="drag(event)">',
+			movenames[options[i]],
+			"</option"));
+	}
+	$("#queue").children("select").append("<option value = 'xtsn'>Extension</option>");
+}
+
+Prop.prototype.spinfail = function() {
+	var q = $("#queue").children("select").children("option");
+	if (q.length>1) {
+		s = $("#queue").children("select");
+		s[0].removeChild(q[0]);
+		q.splice(0,1);
+	}
+	q[0].setAttribute('selected', true);
+	this.addMove(movemap[q[0].value]().setOneShot(true));
+	this.spin();
+}
+var scene;
+var renderer;
+function canvasSetup() {
+	canvas.height = HEIGHT;
+	canvas.width = WIDTH;
+	ctx.fillStyle = BACKGROUND;
+	ctx.strokeStyle = BACKGROUND;
+	ctx.fillRect(0,0,WIDTH,HEIGHT);
+	
+	// set up Phoria scene for 3D rendering
+	scene = new Phoria.Scene();
+	scene.camera.position = {x:0.0, y:1.0, z:10.0};
+	scene.perspective.aspect = canvas.width / canvas.height;
+	scene.viewport.width = canvas.width;
+	scene.viewport.height = canvas.height;
+	renderer = new Phoria.CanvasRenderer(canvas);
+	var plane = Phoria.Util.generateTesselatedPlane(8,8,0,20);
+	scene.graph.push(Phoria.Entity.create({
+		points: plane.points,
+		edges: plane.edges,
+		polygons: plane.polygons,
+		style: {
+				 drawmode: "wireframe",
+				 shademode: "plain",
+				 linewidth: 0.5,
+				 objectsortmode: "back"
+			}}));
+	scene.graph.push(new Phoria.DistantLight());
+	var light = new Phoria.DistantLight();
+	light.direction.x = 1;
+	light.direction.z = 0;
+	scene.graph.push(light);
+	light = new Phoria.DistantLight();
+	light.direction.y = 1;
+	light.direction.z = 0;
+	scene.graph.push(light);
+	// set up props
+	var propOne = props.poi({head_color: "red", flame_color: "red", scene: scene});
+	myProps.push(propOne);
+}
+	
+// animation loop
+function canvasLoop() {
+	setTimeout(function() {
+		requestAnimationFrame(canvasLoop);
+		redraw();
+		for (var i = 0; i < myProps.length; i++) {
+			myProps[i].spin();
+			myProps[i].render();
+		}
+	},1000/BEAT);
+}
+function redraw() {
+	if (view2d == true) {
+		ctx.fillStyle = "rgba(0,0,0,0.01)";
+		ctx.strokeStyle=BACKGROUND;
+		ctx.fillRect(0,0,WIDTH,HEIGHT);
+	}
+	else {
+		scene.modelView();
+		renderer.render(scene);
+	}
+}
+</script>
+</head>
+<body onload="init();">
+<header>
+	<h1>Welcome to VisualSpinner3d. </h1>
+	
+	</h1>
+	<p>(drag moves from the menu to the queue)</p>
+</header>
+	
+<div id="content">
+	<section>
+		<div id="display" >
+			<canvas id="canvas">
+				Your browser doesn't support the HTML5 element canvas.
+			</canvas>
+		</div>
+		
+		<div id="menu">
+			<h2>Menu</h2>
+			<select size=2></select>
+		</div>
+	
+		<div id="queue">
+			<h2>Queue</h2>
+			<select size=2 ondrop="drop(event)" ondragover="allowDrop(event)">></select>
+		</div>	
+
+	</section>
+</div>
+
+</body></html>

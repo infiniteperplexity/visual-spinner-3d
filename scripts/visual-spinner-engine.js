@@ -273,7 +273,14 @@ Prop.prototype.nudge = function(x,y,z) {
 
 // Functions relating to the move queue
 Prop.prototype.spin = function() {
-	this.move.spin(this);
+	if (this.move.submoves.length==0) {
+		this.spinfail();
+	} else {
+		this.move.spin(this);
+	}
+}
+Prop.prototype.spinfail = function() {
+	//user should override
 }
 Prop.prototype.addMove = function(myMove) {
 	this.move.add(myMove);
@@ -459,6 +466,7 @@ MoveChain.prototype.reset = function() {
 	for(var i=0;i<this.submoves.length;i++) {
 		this.submoves[i].reset();
 	}
+	return this;
 }
 MoveChain.prototype.clone = function() {
 	chain = new MoveChain();
@@ -480,11 +488,13 @@ MoveChain.prototype.tailsocket = function() {
 MoveChain.prototype.fitsocket = function(socket) {
 	this.submoves[0].fitsocket(socket);
 	this.refit();
+	return this;
 }
 MoveChain.prototype.refit = function() {
 	for (var i = 1; i<this.submoves.length; i++) {
 		this.submoves[i].fitsocket(this.submoves[i-1].tailsocket());
 	}
+	return this;
 }
 MoveChain.prototype.extend = function() {
 	newlink = this.tail().clone();
@@ -513,6 +523,10 @@ MoveChain.prototype.split = function(t) {
 		tally+=this.submoves[i].getDuration()*BEAT;
 	}
 	return [chain1, chain2];
+}
+MoveChain.prototype.setOneShot = function(tf) {
+	this.oneshot = tf;
+	return this;
 }
 
 
@@ -551,6 +565,7 @@ function MoveLink() {
 	this.t = 0;
 	this.finished = false;
 	this.started = false;
+	this.oneshot = false;
 }
 MoveLink.prototype.head = function() {return this;}
 MoveLink.prototype.tail = function() {return this;}
@@ -601,6 +616,7 @@ MoveLink.prototype.spin = function(prop) {
 MoveLink.prototype.reset = function() {
 	this.started = false;
 	this.finished = false;
+	return this;
 }
 
 
@@ -651,7 +667,7 @@ MoveLink.prototype.headsocket = function() {
 }
 
 MoveLink.prototype.refit = function() {
-        //do nothing but don't fail
+	return this;
 }
 
 MoveLink.prototype.fitsocket = function(socket) {
@@ -660,7 +676,8 @@ MoveLink.prototype.fitsocket = function(socket) {
 		for (var j = 0; j<properties.length; j++) {
 			this[this.elements[i]][properties[j]] = socket[this.elements[i]][properties[j]];
 		}
-	}	
+	}
+	return this;
 }
 
 MoveLink.prototype.clone = function() {
@@ -698,4 +715,9 @@ MoveLink.prototype.alignprop = function(prop) {
 }
 MoveLink.prototype.angleto = function(element, target) {
 	this[element] = target;
+	return this;
+}
+MoveLink.prototype.setOneShot = function(tf) {
+	this.oneshot = tf;
+	return this;
 }
