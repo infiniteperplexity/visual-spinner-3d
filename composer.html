@@ -1,0 +1,417 @@
+<!--Distributed under GNU Public License version 3-->
+<!DOCTYPE html>
+<html><head>
+<style>
+body {margin: 0; padding: 0; background-color: #679}
+h1, h2, header p {text-align: center}
+header {width: 1240px; height: 100px}
+#content {width: 1250px; height: 510px;}
+section {margin: 0; padding: 0}
+header, section div {vertical-align: top; padding: 2.5px; border: 5px solid gray; margin: -2.5px; display: inline-block;}
+#display {width: 400px; height: 400px; float: left}
+#control {position: absolute; top: 520px; left: 0; height: 90px; width: 400px;}
+.queue, #menu, #options {width: 200px; height: 500px; float: left}
+canvas {width: 400px; height: 400px; background-color: #000;}
+.queue h2, #menu h2, #options h2 {height: 25px; text-decoration: underline}
+.queue select {width: 200px; height: 230px;}
+#menu select {width: 200px; height: 430px;}
+table {position: relative; top: -20px;}
+
+
+</style>
+
+
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>VisualSpinner3D Composer, by Glenn Wright</title>
+<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="scripts/jquery.sortable.min.js"></script>
+<script src="scripts/gl-matrix-min.js"></script>
+<script src="scripts/phoria-min.js"></script>
+<script src="scripts/requestAnimationFrame.js"></script>
+<script src="scripts/visual-spinner-engine.js"></script>
+<script src="scripts/visual-spinner-moves.js"></script>
+<script src="scripts/visual-spinner-renderers.js"></script><script>// set parameters
+$('.sortable').sortable();
+var movenames = {
+"xtsn" : "Extension",
+"2pif" : "2-Petal In-Spin Flower",
+"4pif" : "4-Petal In-Spin Flower",
+"3paf" : "3-Petal Anti-Spin Flower",
+"4paf" : "4-Petal Anti-Spin Flower",
+"pend" : "Pendulum",
+"1pt5" : "One Point Five"
+}
+function allowDrop(event) {event.preventDefault();}
+function drag(event) {
+	event.dataTransfer.setData("Text",event.target.value);
+}
+function drop(event) {
+	event.preventDefault();
+	var parent = event.dataTransfer.getData("Text");
+	var child = document.createElement("option");
+	child.value = parent;
+	child.text = movenames[parent];
+	event.target.appendChild(child);
+}
+    
+var HEIGHT = 400;
+var WIDTH = 400;
+var ORIGINX = WIDTH/2;
+var ORIGINY = HEIGHT/2;
+var BACKGROUND = "black";
+
+var view2d = false;
+
+var myProps = new Array(); 
+//var controller = new Controller();
+var moves = new MoveFactory();
+var props = new PropFactory();
+var movemap = {
+	"xtsn" : function() {return moves.flower({direction: CLOCKWISE, spin: INSPIN, petals: 0});},
+	"2pif" :function() {return moves.flower({direction: CLOCKWISE, spin: INSPIN, petals: 2});},
+	"4pif" : function() {return moves.flower({direction: CLOCKWISE, spin: INSPIN, petals: 4});},
+	"3paf" : function() {return  moves.flower({direction: CLOCKWISE, spin: ANTISPIN, petals: 3});},
+	"4paf" : function() {return moves.flower({direction: CLOCKWISE, spin: ANTISPIN, petals: 4});},
+	"1pt5" : function() {return moves.onepointfive({direction: CLOCKWISE}).angleto("hand", THREE);},
+	"pend" : function() {return moves.pendulum({direction: CLOCKWISE}).angleto("hand", THREE);}
+}
+
+
+function init() {
+	ctx=document.getElementById('canvas').getContext('2d');
+	if( 	navigator.userAgent.match(/Android/i)
+		|| navigator.userAgent.match(/webOS/i)
+		|| navigator.userAgent.match(/iPhone/i)
+		|| navigator.userAgent.match(/iPad/i)
+		|| navigator.userAgent.match(/iPod/i)
+		|| navigator.userAgent.match(/BlackBerry/i)
+		|| navigator.userAgent.match(/Windows Phone/i)) {
+		$("#2d3d").val("2d");
+	} else {
+		$("#2d3d").val("3d");
+	}
+	populateMenu();
+	canvasSetup();
+	//canvasLoop();
+}
+
+function alignProps() {
+	var val;
+	val = $('input[name=hand1]:checked').val();
+	switch(val) {
+		case "up": propOne.setHandAngle(TWELVE); break;
+		case "down": propOne.setHandAngle(SIX); break;
+		case "left": propOne.setHandAngle(NINE); break;
+		case "right": propOne.setHandAngle(THREE); break;
+	}
+	val = $('input[name=hand2]:checked').val();
+	switch(val) {
+		case "up": propTwo.setHandAngle(TWELVE); break;
+		case "down": propTwo.setHandAngle(SIX); break;
+		case "left": propTwo.setHandAngle(NINE); break;
+		case "right": propTwo.setHandAngle(THREE); break;
+	}
+	val = $('input[name=prop1]:checked').val();
+	switch(val) {
+		case "up": propOne.setPropAngle(TWELVE); break;
+		case "down": propOne.setPropAngle(SIX); break;
+		case "left": propOne.setPropAngle(NINE); break;
+		case "right": propOne.setPropAngle(THREE); break;
+	}
+	val = $('input[name=prop2]:checked').val();
+	switch(val) {
+		case "up": propTwo.setPropAngle(TWELVE); break;
+		case "down": propTwo.setPropAngle(SIX); break;
+		case "left": propTwo.setPropAngle(NINE); break;
+		case "right": propTwo.setPropAngle(THREE); break;
+	}
+	for (var i = 0; i < myProps.length; i++) {
+		myProps[i].render();
+	}
+	redraw();
+}
+function populateMenu() {
+	var menu = $("#menu").children("select");
+	var options = [
+		"xtsn",
+		"2pif",
+		"4pif",
+		"3paf",
+		"4paf",
+		"pend",
+		"1pt5"
+	];
+	for (var i = 0; i<options.length; i++) {
+		menu.append('<option value = '.concat(options[i],
+			' draggable="true" ondragstart="drag(event)">',
+			movenames[options[i]],
+			"</option"));
+	}
+}
+
+var scene = new Phoria.Scene();
+var renderer;
+var propOne = props.poi({head_color: "red", flame_color: "red", scene: scene});
+var propTwo = props.poi({head_color: "blue", flame_color: "blue", scene: scene});
+function canvasSetup() {
+	canvas.height = HEIGHT;
+	canvas.width = WIDTH;
+	ctx.fillStyle = BACKGROUND;
+	ctx.strokeStyle = BACKGROUND;
+	ctx.fillRect(0,0,WIDTH,HEIGHT);
+	
+	// set up Phoria scene for 3D rendering
+	scene.camera.position = {x:0.0, y:1.0, z:10.0};
+	scene.perspective.aspect = canvas.width / canvas.height;
+	scene.viewport.width = canvas.width;
+	scene.viewport.height = canvas.height;
+	renderer = new Phoria.CanvasRenderer(canvas);
+	var plane = Phoria.Util.generateTesselatedPlane(8,8,0,20);
+	scene.graph.push(Phoria.Entity.create({
+		points: plane.points,
+		edges: plane.edges,
+		polygons: plane.polygons,
+		style: {
+				 drawmode: "wireframe",
+				 shademode: "plain",
+				 linewidth: 0.5,
+				 objectsortmode: "back"
+			}}));
+	scene.graph.push(new Phoria.DistantLight());
+	var light = new Phoria.DistantLight();
+	light.direction.x = 1;
+	light.direction.z = 0;
+	scene.graph.push(light);
+	light = new Phoria.DistantLight();
+	light.direction.y = 1;
+	light.direction.z = 0;
+	scene.graph.push(light);
+	// set up props
+	propOne.hand.radius = 1;
+	propTwo.hand.radius = 1;
+	propTwo.rotateHand(SPLIT);
+	propTwo.rotateProp(SPLIT);
+	myProps.push(propOne);
+	myProps.push(propTwo);
+	for (var i = 0; i < myProps.length; i++) {
+		myProps[i].render();
+	}
+	redraw();
+}
+
+
+propOne.spinfail = function() {
+	if (this.cursor === undefined) {
+		this.cursor = -1;
+	}
+	var q = $("#queue1").children("select").children("option");
+	if (q.length==0) {
+		//alert("empty queue");
+	} else {
+		this.cursor = (this.cursor + 1)%q.length;
+		this.chainMove(movemap[q[this.cursor].value]().setOneShot(true));
+		this.spin();
+	}
+}
+
+propTwo.spinfail = function() {
+	if (this.cursor === undefined) {
+		this.cursor = -1;
+	}
+	var q = $("#queue2").children("select").children("option");
+	if (q.length==0) {
+		//alert("empty queue");
+	} else {
+		this.cursor = (this.cursor + 1)%q.length;
+		this.chainMove(movemap[q[this.cursor].value]().setOneShot(true));
+		this.spin();
+	}
+}
+
+// animation loop
+function canvasLoop() {
+	setTimeout(function() {
+		requestAnimationFrame(canvasLoop);
+		redraw();
+		for (var i = 0; i < myProps.length; i++) {
+			myProps[i].spin();
+			myProps[i].render();
+		}
+	},1000/BEAT);
+}
+function redraw() {
+	if (view2d == true) {
+		ctx.fillStyle = "rgba(0,0,0,0.01)";
+		ctx.strokeStyle=BACKGROUND;
+		ctx.fillRect(0,0,WIDTH,HEIGHT);
+	}
+	else {
+		scene.modelView();
+		renderer.render(scene);
+	}
+}
+function nothing() {
+	alert("not yet implemented");
+}
+</script>
+</head>
+<body onload="init();">
+<header>
+	<h1>Welcome to VisualSpinner3d. </h1>
+	
+	
+	<p>(Select options, drag several moves from the menu to the prop queues, then click "Start spinning!")</p>
+</header>
+	
+<div id="content">
+	<section>
+		<div id="display">
+			<canvas width="400" height="400" id="canvas">
+				Your browser doesn't support the HTML5 element canvas.
+			</canvas>
+		</div>
+		<div id="control">
+			<button type="button" onclick="canvasLoop();">Start spinning!</button>
+			<button type="button" onclick="nothing();">Reset props</button>
+			<button type="button" onclick="nothing();">Export to JSON</button>
+			<button type="button" onclick="nothing();">Import from JSON</button>
+		</div>
+		<div id="queue1" class = "queue">
+			<h2>Red Prop</h2>
+			<select size="2" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="alert('reorder and delete not yet implemented');"></select>
+			<p>
+				Hand:
+				<table>
+					<tr>
+						<td></td>
+						<td><input onclick="alignProps();" type="radio" name="hand1" value="up">Up</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td><input onclick="alignProps();" checked type="radio" name="hand1" value="left">Left</td>
+						<td></td>
+						<td><input onclick="alignProps();" type="radio" name="hand1" value="right">Right</td>
+					</tr>	
+					<tr>
+						<td></td>
+						<td><input onclick="alignProps();" type="radio" name="hand1" value="down">Down</td>
+						<td></td>
+					</tr>	
+				</table>	
+				Prop:
+				<table>
+					<tr>
+						<td></td>
+						<td><input onclick="alignProps();" type="radio" name="prop1" value="up">Up</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td><input onclick="alignProps();" checked type="radio" name="prop1" value="left">Left</td>
+						<td></td>
+						<td><input onclick="alignProps();" type="radio" name="prop1" value="right">Right</td>
+					</tr>	
+					<tr>
+						<td></td>
+						<td><input onclick="alignProps();" type="radio" name="prop1" value="down">Down</td>
+						<td></td>
+					</tr>	
+				</table>	
+			</p>
+		</div>	
+
+		<div id="queue2" class = "queue">
+			<h2>Blue Prop</h2>
+			<select size="2" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="alert('reorder and delete not yet implemented');"></select>
+			<p>
+				Align:
+				<table>
+					<tr>
+						<td></td>
+						<td><input onclick="alignProps();" type="radio" name="hand2" value="up">Up</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td><input onclick="alignProps();" type="radio" name="hand2" value="left">Left</td>
+						<td></td>
+						<td><input onclick="alignProps();" checked type="radio" name="hand2" value="right">Right</td>
+					</tr>	
+					<tr>
+						<td></td>
+						<td><input onclick="alignProps();" type="radio" name="hand2" value="down">Down</td>
+						<td></td>
+					</tr>	
+				</table>	
+				Prop:
+				<table>
+					<tr>
+						<td></td>
+						<td><input onclick="alignProps();" type="radio" name="prop2" value="up">Up</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td><input onclick="alignProps();" type="radio" name="prop2" value="left">Left</td>
+						<td></td>
+						<td><input onclick="alignProps();" checked type="radio" name="prop2" value="right">Right</td>
+					</tr>	
+					<tr>
+						<td></td>
+						<td><input onclick="alignProps();" type="radio" name="prop2" value="down">Down</td>
+						<td></td>
+					</tr>	
+				</table>	
+			</p>
+		</div>
+		
+		<div id="menu">
+			<h2>Menu</h2>
+			<select size="2"></select>
+		</div>				
+			
+		<div id="options">
+			<h2>Options</h2>
+			<p>
+				Direction:<br>
+				<input onclick="nothing();" checked type="radio" name="direction" value="cw">Clockwise<br>
+				<input onclick="nothing();" type="radio" name="direction" value="ccw">Counter<br>
+			</p>
+			<p>
+				Plane:<br>
+				<input onclick="nothing();" checked type="radio" name="plane" value="wall">Wall<br>
+				<input onclick="nothing();" type="radio" name="plane" value="wheel">Wheel<br>
+				<input onclick="nothing();" type="radio" name="plane" value="floor">Floor<br>
+			</p>
+			<p>
+				Duration:<br>
+				<input onclick="nothing();" checked type="radio" name="duration" value=1>Full Beat<br>
+				<input onclick="nothing();" type="radio" name="duration" value=0.5>Half Beat<br>
+				<input onclick="nothing();" type="radio" name="duration" value=0.25>Quarter Beat<br>
+			</p>
+			<p>
+				Pitch (3D moves only):<br>
+				<input onclick="nothing();" checked type="radio" name="pitch" value="forward">Forward<br>
+				<input onclick="nothing();" type="radio" name="pitch" value="backward">Backward<br>
+			</p>
+			<p>
+				Pivot:
+				<table>
+					<tr>
+						<td></td>
+						<td><input onclick="nothing();" type="radio" name="pivot" value="up">Up</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td><input onclick="nothing();" type="radio" name="pivot" value="left">Left</td>
+						<td><input onclick="nothing();" checked type="radio" name="pivot" value="none">None</td>
+						<td><input onclick="nothing();" type="radio" name="pivot" value="right">Right</td>
+					</tr>	
+					<tr>
+						<td></td>
+						<td><input onclick="nothing();" type="radio" name="pivot" value="down">Down</td>
+						<td></td>
+					</tr>	
+				</table>	
+			</p>	
+		</div>
+	</section>
+</div>
+</body></html>

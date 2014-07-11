@@ -302,7 +302,7 @@ Prop.prototype.chainMove = function(myMove) {
                 head[this.elements[i]].angle = undefined;
                 head[this.elements[i]].plane = tail[this.elements[i]].plane;        
         }        
-        myMove.refit();
+        myMove.defit();
         this.move.add(myMove);
 } 
 Prop.prototype.head = function() {
@@ -496,6 +496,12 @@ MoveChain.prototype.refit = function() {
 	}
 	return this;
 }
+MoveChain.prototype.defit = function() {
+	for (var i = 1; i<this.submoves.length; i++) {
+		this.submoves[i].defit();
+	}
+	return this;
+}
 MoveChain.prototype.extend = function() {
 	newlink = this.tail().clone();
 	newlink.fitsocket(this.tailsocket());
@@ -622,6 +628,7 @@ MoveLink.prototype.reset = function() {
 
 MoveLink.prototype.tailsocket = function() {
 	var dummy = new Prop();
+	//this actually doesn't work right...I think it fails to propagate undefined angles
 	for (var i=0; i<this.elements.length; i++) {
 		if (this[this.elements[i]].angle !== undefined && this[this.elements[i]].plane !== undefined) {
 			dummy.setElementAngle(this.elements[i], this[this.elements[i]].angle, this[this.elements[i]].plane);
@@ -712,6 +719,12 @@ MoveLink.prototype.alignprop = function(prop) {
 		prop.radius = this.elements[i].radius;
 	}
 	return prop;
+}
+MoveLink.prototype.defit = function() {
+	for (var i = 0; i<this.elements.length; i++) {
+		this[this.elements[i]].radius = undefined;
+		this[this.elements[i]].angle = undefined;
+	}
 }
 MoveLink.prototype.angleto = function(element, target) {
 	this[element] = target;
