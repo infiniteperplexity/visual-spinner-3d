@@ -40,9 +40,9 @@ function init() {
 					"1move","2move","3move","4move"];
 	var defaults = ["poi","poi","poi","poi",
 					"wall","wall","wall","wall",
-					"twelve","twelve","twelve","twelve",
+					"twelve","twelve","twelve","six",
 					"cw","ccw","cw","ccw",
-					"2pif","o2if","4paf","b4af"];
+					"isop","vcat","hcat","unip"];
 	for (var i = 0; i<params.length; i++) {
 		var txt = $.urlParam(params[i]);
 		if (txt==0) {txt = defaults[i];}
@@ -355,6 +355,12 @@ Controller.prototype.generateMove = function(n, txt) {
 	} else if (txt=="isol") {
 		move = moves.isolation({direction: this.spin[n], plane: this.plane[n]});
 		move.reorient("prop",this.align[n]);
+	} else if (txt=="unip") {
+		move = moves.pendulum({direction: this.spin[n], plane: this.plane[n], extend: 0.5});
+		move.reorient("hand",this.align[n]);
+	} else if (txt=="isop") {
+		move = moves.pendulum({direction: this.spin[n], spin: ANTISPIN, plane: this.plane[n], extend: 0.5});
+		move.reorient("hand",this.align[n]);
 	} else if (txt=="pext") {
 		move = moves.isolation({pivot: this.align[n], offset: 0, direction: this.spin[n], plane: this.plane[n]});
 		move.reorient("prop",this.align[n]);
@@ -663,31 +669,18 @@ First Move:
 		<option value="isol">Isolation</option>
 		<option value="vcat">Vertical Cat-Eye</option>
 		<option value="hcat">Horizontal Cat-Eye</option>
-		<option value="pext">Pivot Extension</option>
-		<option value="piso">Pivot Isolation</option>
-		<option value="pcat">Pivot Cat-Eye</option>
-		<option value="pflo">Pivot Flower</option>
-		<option value="ptri">Pivot Triquetra</option>
-		<option value="pant">Pivot Antispin</option>
-		<option value="ppen">Pivot Pendulum</option>
+		<option value="unip">Unit Pendulum</option>
+		<option value="isop">Iso-Pendulum</option>
 		<option value="hlex">Horizontal Linear Extension</option>
 		<option value="vlex">Vertical Linear Extension</option>
 		<option value="hlis">Horizontal Linear Isolation</option>
 		<option value="vlis">Vertical Linear Isolation</option>
-		<option value="2btw">Two-Beat Static Spin</option>
-		<option value="supr">Superman</option>
-		<option value="zbnd">Zero-bend Pseudo-Toroid</option>
 		<option value="isob">Four-Lobe Iso-bend Toroid</option>
 		<option value="biso">Backward Iso-bend Toroid</option>
 		<option value="2ant">(2 Harmonic) Anti-Bend Toroid</option>
 		<option value="bant">Backward Anti-Bend Toroid</option>
-		<option value="4ant">(4 Harmonic) Anti-Bend Toroid</option>
-		<option value="6ant">(6 Harmonic) Anti-Bend Toroid</option>
 		<option value="2pro">(2 Harmonic) Pro-Bend Toroid</option>
 		<option value="bpro">Backward Pro-Bend Toroid</option>
-		<option value="4pro">(4 Harmonic) Pro-Bend Toroid</option>
-		<option value="6pro">(6 Harmonic) Pro-Bend Toroid</option>
-		<option value="n3bd">(2 Harmonic) (-3)-Bend Toroid</option>
 		<option value="idia">Zan's Diamond (In-Spin)</option>
 		<option value="adia">Zan's Diamond (Anti-Spin)</option>
 	</select>
@@ -725,29 +718,18 @@ Second Move:
 		<option value="isol">Isolation</option>
 		<option value="vcat">Vertical Cat-Eye</option>
 		<option value="hcat">Horizontal Cat-Eye</option>
-		<option value="pext">Pivot Extension</option>
-		<option value="piso">Pivot Isolation</option>
-		<option value="pcat">Pivot Cat-Eye</option>
-		<option value="pflo">Pivot Flower</option>
-		<option value="ptri">Pivot Triquetra</option>
-		<option value="pant">Pivot Antispin</option>
-		<option value="ppen">Pivot Pendulum</option>
+		<option value="unip">Unit Pendulum</option>
+		<option value="isop">Iso-Pendulum</option>
 		<option value="hlex">Horizontal Linear Extension</option>
 		<option value="vlex">Vertical Linear Extension</option>
 		<option value="hlis">Horizontal Linear Isolation</option>
 		<option value="vlis">Vertical Linear Isolation</option>
-		<option value="zbnd">Zero-bend Pseudo-Toroid</option>
 		<option value="isob">Four-Lobe Iso-bend Toroid</option>
 		<option value="biso">Backward Iso-bend Toroid</option>
 		<option value="2ant">(2 Harmonic) Anti-Bend Toroid</option>
 		<option value="bant">Backward Anti-Bend Toroid</option>
-		<option value="4ant">(4 Harmonic) Anti-Bend Toroid</option>
-		<option value="6ant">(6 Harmonic) Anti-Bend Toroid</option>
 		<option value="2pro">(2 Harmonic) Pro-Bend Toroid</option>
 		<option value="bpro">Backward Pro-Bend Toroid</option>
-		<option value="4pro">(4 Harmonic) Pro-Bend Toroid</option>
-		<option value="6pro">(6 Harmonic) Pro-Bend Toroid</option>
-		<option value="n3bd">(2 Harmonic) (-3)-Bend Toroid</option>
 		<option value="idia">Zan's Diamond (In-Spin)</option>
 		<option value="adia">Zan's Diamond (Anti-Spin)</option>
 </td>
@@ -783,29 +765,18 @@ Third Move:
 		<option value="isol">Isolation</option>
 		<option value="vcat">Vertical Cat-Eye</option>
 		<option value="hcat">Horizontal Cat-Eye</option>
-		<option value="pext">Pivot Extension</option>
-		<option value="piso">Pivot Isolation</option>
-		<option value="pcat">Pivot Cat-Eye</option>
-		<option value="pflo">Pivot Flower</option>
-		<option value="ptri">Pivot Triquetra</option>
-		<option value="pant">Pivot Antispin</option>
-		<option value="ppen">Pivot Pendulum</option>
+		<option value="unip">Unit Pendulum</option>
+		<option value="isop">Iso-Pendulum</option>
 		<option value="hlex">Horizontal Linear Extension</option>
 		<option value="vlex">Vertical Linear Extension</option>
 		<option value="hlis">Horizontal Linear Isolation</option>
 		<option value="vlis">Vertical Linear Isolation</option>
-		<option value="zbnd">Zero-bend Pseudo-Toroid</option>
 		<option value="isob">Four-Lobe Iso-bend Toroid</option>
 		<option value="biso">Backward Iso-bend Toroid</option>
 		<option value="2ant">(2 Harmonic) Anti-Bend Toroid</option>
 		<option value="bant">Backward Anti-Bend Toroid</option>
-		<option value="4ant">(4 Harmonic) Anti-Bend Toroid</option>
-		<option value="6ant">(6 Harmonic) Anti-Bend Toroid</option>
 		<option value="2pro">(2 Harmonic) Pro-Bend Toroid</option>
 		<option value="bpro">Backward Pro-Bend Toroid</option>
-		<option value="4pro">(4 Harmonic) Pro-Bend Toroid</option>
-		<option value="6pro">(6 Harmonic) Pro-Bend Toroid</option>
-		<option value="n3bd">(2 Harmonic) (-3)-Bend Toroid</option>
 		<option value="idia">Zan's Diamond (In-Spin)</option>
 		<option value="adia">Zan's Diamond (Anti-Spin)</option>
 	</select>
@@ -842,29 +813,18 @@ Fourth Move:
 		<option value="isol">Isolation</option>
 		<option value="vcat">Vertical Cat-Eye</option>
 		<option value="hcat">Horizontal Cat-Eye</option>
-		<option value="pext">Pivot Extension</option>
-		<option value="piso">Pivot Isolation</option>
-		<option value="pcat">Pivot Cat-Eye</option>
-		<option value="pflo">Pivot Flower</option>
-		<option value="ptri">Pivot Triquetra</option>
-		<option value="pant">Pivot Antispin</option>
-		<option value="ppen">Pivot Pendulum</option>
+		<option value="unip">Unit Pendulum</option>
+		<option value="isop">Iso-Pendulum</option>
 		<option value="hlex">Horizontal Linear Extension</option>
 		<option value="vlex">Vertical Linear Extension</option>
 		<option value="hlis">Horizontal Linear Isolation</option>
 		<option value="vlis">Vertical Linear Isolation</option>
-		<option value="zbnd">Zero-bend Pseudo-Toroid</option>
 		<option value="isob">Four-Lobe Iso-bend Toroid</option>
 		<option value="biso">Backward Iso-bend Toroid</option>
 		<option value="2ant">(2 Harmonic) Anti-Bend Toroid</option>
 		<option value="bant">Backward Anti-Bend Toroid</option>
-		<option value="4ant">(4 Harmonic) Anti-Bend Toroid</option>
-		<option value="6ant">(6 Harmonic) Anti-Bend Toroid</option>
 		<option value="2pro">(2 Harmonic) Pro-Bend Toroid</option>
 		<option value="bpro">Backward Pro-Bend Toroid</option>
-		<option value="4pro">(4 Harmonic) Pro-Bend Toroid</option>
-		<option value="6pro">(6 Harmonic) Pro-Bend Toroid</option>
-		<option value="n3bd">(2 Harmonic) (-3)-Bend Toroid</option>
 		<option value="idia">Zan's Diamond (In-Spin)</option>
 		<option value="adia">Zan's Diamond (Anti-Spin)</option>
 	</select>

@@ -240,7 +240,7 @@ MoveFactory.prototype.pendulum = function(options) {
 	}
 	segment.duration = 0.25;
 	segment.hand.speed = options.speed*options.direction;
-	segment.prop.speed = 2*options.speed*options.direction;
+	segment.prop.speed = 2*options.speed*options.direction*options.spin;
 	segment.hand.radius = options.extend;
 	segment.hand.plane = options.plane;
 	segment.prop.plane = options.plane;
