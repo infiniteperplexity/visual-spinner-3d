@@ -72,8 +72,8 @@ var movemap = {
 	"4pif" : function() {return moves.flower({direction: CLOCKWISE, spin: INSPIN, petals: 4});},
 	"3paf" : function() {return  moves.flower({direction: CLOCKWISE, spin: ANTISPIN, petals: 3});},
 	"4paf" : function() {return moves.flower({direction: CLOCKWISE, spin: ANTISPIN, petals: 4});},
-	"1pt5" : function() {return moves.onepointfive({direction: CLOCKWISE}).angleto("hand", THREE);},
-	"pend" : function() {return moves.pendulum({direction: CLOCKWISE}).angleto("hand", THREE);}
+	"1pt5" : function() {return moves.onepointfive({direction: CLOCKWISE}).reorient("hand", THREE);},
+	"pend" : function() {return moves.pendulum({direction: CLOCKWISE}).reorient("hand", THREE);}
 }
 
 
@@ -209,7 +209,7 @@ propOne.spinfail = function() {
 		//alert("empty queue");
 	} else {
 		this.cursor = (this.cursor + 1)%q.length;
-		this.chainMove(movemap[q[this.cursor].value]().setOneShot(true));
+		this.addMove(movemap[q[this.cursor].value]().setOneShot(true), true);
 		this.spin();
 	}
 }
@@ -223,7 +223,7 @@ propTwo.spinfail = function() {
 		//alert("empty queue");
 	} else {
 		this.cursor = (this.cursor + 1)%q.length;
-		this.chainMove(movemap[q[this.cursor].value]().setOneShot(true));
+		this.addMove(movemap[q[this.cursor].value]().setOneShot(true), true);
 		this.spin();
 	}
 }
