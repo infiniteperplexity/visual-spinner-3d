@@ -317,6 +317,15 @@ Prop.prototype.getPivotAngle = function(plane) {return this.getElementAngle("piv
 Prop.prototype.getHandAngle = function(plane) {return this.getElementAngle("hand", plane);}
 Prop.prototype.getPropAngle = function(plane) {return this.getElementAngle("prop", plane);}
 Prop.prototype.getGripAngle = function(plane) {return this.getElementAngle("grip", plane);}
+//
+Prop.prototype.orientToProp = function(prop) {
+	for (var i = 0; i < this.elements.length; i++) {
+		this.elements[i].radius = prop.elements[i].radius;
+		this.elements[i].zenith = prop.elements[i].zenith;
+		this.elements[i].azimuth = prop.elements[i].azimuth;
+	}
+}
+
 // Move the home coordinate of the prop using vector coordinates
 Prop.prototype.nudge = function(x,y,z) {
         var v = new Vector(x,y,z);
@@ -334,6 +343,17 @@ Prop.prototype.spin = function() {
 		this.move.spin(this);
 	}
 }
+//  Predict where the prop will be when the entire queue has been spun
+//  As usual we run into a difficult thing with spherical vs. spinner's coordiantes
+Prop.prototype.predict = function() {
+	var dummy = new Prop();
+	dummy.orientToProp(this);
+	while (!this.move.finished) {
+		this.move.spindummy(dummy);
+	}
+	this.move.reset();
+	return dummy;
+}
 // Trying to spin with an empty queue might produce different results in different implementations, e.g. populating with a default move
 Prop.prototype.spinfail = function() {
 	alert("please override spinfail()");
@@ -345,10 +365,15 @@ Prop.prototype.render = function() {
 }
 // The optional "defit" parameter allows you to choose whether the Prop respects the Move's starting position
 Prop.prototype.addMove = function(myMove, defit) {
-	if (defit===true) {
+	if (defit===true || defit==="defit" || defit==="defitted") {
 		myMove.defit();
 	}
 	this.move.add(myMove);
+}
+Prop.prototype.emptyMoves = function() {
+	while(this.move.submoves.length>0) {
+		this.move.submoves.pop();
+	}
 }
 // Drill down to the first move on the queue
 Prop.prototype.head = function() {
@@ -362,12 +387,12 @@ Prop.prototype.tail = function() {
 // argument is an array of moves
 Prop.prototype.addPartnership = function(partneredMove, otherPropsWithCommas, defit) {
 	var tf = false;
-	if (arguments[arguments.length-1] === true) {
+	if (arguments[arguments.length-1] === true || arguments[arguments.length-1] === "defit" || arguments[arguments.length-1] === "defitted") {
 		tf = true;
 	}
 	this.addMove(partneredMove[0], tf);
 	for (var i = 1; i < arguments.length; i++) {
-		if (typeof arguments[i] !== "boolean") {
+		if (typeof arguments[i] !== "boolean" && arguments[i] !== "defit" && arguments[i] !== "defitted") {
 			arguments[i].addMove(partneredMove[i], tf);
 		}
 	}
@@ -415,7 +440,7 @@ function MoveLink() {
 	this.oneshot = false;
 }
 // A MoveLink is responsible for directly spinning a Prop
-MoveLink.prototype.spin = function(prop) {
+MoveLink.prototype.spin = function(prop, dummy) {
 	// When you start spinning, reposition the Prop to the starting position of the MoveLink
 	if (this.started == false) {
 		// If the MoveLink has no starting position, adopt the Prop's current position
@@ -465,10 +490,7 @@ MoveLink.prototype.spin = function(prop) {
 }
 // Cycle through the move but do not remove it for being a oneshot
 MoveLink.prototype.spindummy = function(dprop) {
-	var buffer = this.oneshot;
-	this.oneshot = false;
-	this.spin(dprop);
-	this.oneshot = buffer;
+	this.spin(dprop, "dummy");
 }
 
 // Reset the MoveLink
@@ -498,6 +520,40 @@ MoveLink.prototype.orientElement = function(element, target) {
 	this[element] = target;
 	return this;
 }
+// Attempt to rotate this move to match a certain starting position
+// !!!! This is one of the shadiest, most difficult methods in the entire engine
+// For now the single-argument version is perhaps excessively stringent
+MoveLink.prototype.reorient = function(target) {
+	var socket;
+	var element;
+	// In this case, we assume we were passed an element name and an angle
+	if (target.constructor.name === "Array" && target.length===2) {
+		element = target[0];
+		target = target[1];
+	// If a prop was passed
+	} else if (target.constructor.name === "Prop") {
+		socket = {elements: []};
+		for (var i = 0; i < this.elements.length; i++) {
+			socket.elements[i] = target.elements[i];
+		}
+		socket.home = socket.elements[0];
+		socket.pivot = socket.elements[1];
+		socket.hand = socket.elements[2];
+		socket.prop = socket.elements[3];
+		socket.grip = socket.elements[4];
+	// In this case, assume a socket was passed
+	} else if (target.constructor.name === "Object" && target.elements) {
+		socket = target;
+	}
+	if (!socket) {
+		this[element].angle = target;
+	} else {
+		for (var i = 0; i < this.elements.length; i++) {
+			this.elements[i].angle = target.elements[i].angle;
+		}
+	}
+	return this;
+}
 // Returns a "socket" that predicts the finishing position of the MoveLink
 // ???? Do sockets  handle plane-bending correctly?
 MoveLink.prototype.tailSocket = function() {
@@ -519,8 +575,7 @@ MoveLink.prototype.tailSocket = function() {
 	// Reset the MoveLink so it's ready for the real Prop
 	this.reset();
 	// Create a "socket" to return
-	var socket = {home: {}, pivot: {}, hand: {}, prop: {}, grip: {}};
-	socket.elements = [socket.home, socket.pivot, socket.hand, socket.prop, socket.grip];
+	var socket = {elements: [{},{},{},{},{}]};
 	var p;
 	// Set the position and speed of the "socket" to the final position of the dummy Prop
 	for (var i=0; i<this.elements.length; i++) {
@@ -699,7 +754,7 @@ function MoveChain() {
 // Spinning a MoveChain sequentially spins the entire nested structure it contains
 //????//!!!! What are the issues here?  Well...at what point do we orient a pendulum?  When we call chainMove?  When we call spin() the first time?
 // !!!! My feeling is that generally, this should orient when you add it, not when it spins.
-MoveChain.prototype.spin = function(prop) {
+MoveChain.prototype.spin = function(prop, dummy) {
 	// Initialize the MoveChain
 	this.started = true;
 	this.finished = false;
@@ -712,8 +767,8 @@ MoveChain.prototype.spin = function(prop) {
 -	this.submoves[this.p].spin(prop);
 	// Clean up after spinning the current submove
 	if (this.submoves[this.p].finished) {
-		// if this was a one-shot, remove it from the parent queue
-		if (this.submoves[this.p].oneshot) {
+		// if this was a one-shot, remove it from the parent queue unless this is a dummyspin
+		if (this.submoves[this.p].oneshot && !this.dummy) {
 			this.submoves.splice(this.p,1);
 		} else {
 			this.p+=1;
@@ -726,10 +781,7 @@ MoveChain.prototype.spin = function(prop) {
 }
 // Cycle through the move but do not remove it for being a oneshot
 MoveChain.prototype.spindummy = function(dprop) {
-	var buffer = this.oneshot;
-	this.oneshot = false;
-	this.spin(dprop);
-	this.oneshot = buffer;
+	this.spin(dprop, "dummy");
 }
 
 // Will this move remove itself from the parent move queue after spinning?
@@ -803,21 +855,38 @@ MoveChain.prototype.phaseBy = function(phase) {
 // Attempt to rotate this move to match a certain starting position
 // !!!! This is one of the shadiest, most difficult methods in the entire engine
 // For now the single-argument version is perhaps excessively stringent
-MoveChain.prototype.reorient = function(element, target) {
-	var full_socket;
-	if (arguments.length===1) {
-		alert("don't test this yet!");
-		full_socket = true;
-	} else if (arguments.length===2) {
-		full_socket = false;
+MoveChain.prototype.reorient = function(target) {
+	var socket;
+	var element;
+	// In this case, we assume we were passed an element name and an angle
+	if (target.constructor.name === "Array" && target.length===2) {
+		element = target[0];
+		target = target[1];
+	// If a Prop was passed, generate a socket from the Prop
+	} else if (target.constructor.name === "Prop") {
+		socket = {elements: [{},{},{},{},{}]};
+		for (var i = 0; i < this.elements.length; i++) {
+			socket.elements[i].radius = target.elements[i].radius;
+			// this will need to change at some point...perhaps use the plane from this.head()?
+			socket.elements[i].angle = target.getElementAngle(i, WALL);
+		}
+		socket.home = socket.elements[0];
+		socket.pivot = socket.elements[1];
+		socket.hand = socket.elements[2];
+		socket.prop = socket.elements[3];
+		socket.grip = socket.elements[4];
+	// In this case, assume a socket was passed
+	} else if (target.constructor.name === "Object" && target.elements) {
+		socket = target;
 	}
 	//first we try this the easy way...
 	for (var i = 0; i<this.submoves.length; i++) {
-		if (nearly(this.head()[element].angle, target,0.01)) {
+		if (!socket && nearly(this.head()[element].angle, target,0.01)) {
+			return this;
+		} else if (socket && dummy.socket().fits(socket,0.01)) {
 			return this;
 		} else {
 			this.phaseBy(1);
-			
 		}
 	}
 	//...then we try it the hard way...
@@ -826,9 +895,9 @@ MoveChain.prototype.reorient = function(element, target) {
 	var ts = [];
 	for (var i =0; i<d; i++) {
 		this.spindummy(dummy);
-		if (full_socket===false && nearly(dummy.getElementAngle(element,this.current()[element].plane),target,0.01)) {
+		if (!socket && nearly(dummy.getElementAngle(element,this.current()[element].plane),target,0.01)) {
 			ts.push(i);
-		} else if (full_socket===true &&  dummy.socket().fits(socket,0.01)) {
+		} else if (socket &&  dummy.socket().fits(socket,0.01)) {
 			ts.push(i);
 		}
 	}
@@ -844,17 +913,6 @@ MoveChain.prototype.reorient = function(element, target) {
 	//...and if that doesn't work we just give up.
 	alert("alignment failed.");
 	return this;
-}
-
-// !!!! an untested method
-MoveChain.prototype.predict = function(prop) {
-	var dummy = new Prop();
-	dummy.alignto(prop);
-	while (!this.finished()) {
-		this.spindummy(dummy);
-	}
-	this.reset();
-	return dummy;
 }
 // This convenience method clones the last MoveLink on the queue and adds it to the tail end of the MoveChain
 MoveChain.prototype.extend = function() {

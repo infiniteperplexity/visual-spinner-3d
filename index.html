@@ -273,54 +273,54 @@ Controller.prototype.generateMove = function(n, txt) {
 	var move;
 	if (txt=="stat") {
 		move = moves.staticspin({direction: this.spin[n], plane: this.plane[n]});
-		move.reorient("prop",this.align[n]);
+		move.reorient(["prop",this.align[n]]);
 	} else if (txt=="xtsn") {
 		move = moves.flower({direction: this.spin[n], plane: this.plane[n], petals: 0});
-		move.reorient("hand",this.align[n]);
+		move.reorient(["hand",this.align[n]]);
 	} else if (txt=="1pif") {
 		move = moves.flower({orient: this.align[n], direction: this.spin[n], plane: this.plane[n], petals: 1});
-		move.reorient("hand",this.align[n]);
+		move.reorient(["hand",this.align[n]]);
 	} else if (txt=="o1if") {
 		move = moves.flower({orient: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n], petals: 1});
-		move.reorient("hand",this.align[n]);
+		move.reorient(["hand",this.align[n]]);
 	} else if (txt=="2pif") {
 		move = moves.flower({orient: this.align[n],direction: this.spin[n], plane: this.plane[n], petals: 2});
-		move.reorient("hand",this.align[n]);
+		move.reorient(["hand",this.align[n]]);
 	} else if (txt=="o2if") {
 		move = moves.flower({orient: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n], petals: 2});
-		move.reorient("hand",this.align[n]);
+		move.reorient(["hand",this.align[n]]);
 	} else if (txt=="4pif") {
 		move = moves.flower({orient: this.align[n],direction: this.spin[n], plane: this.plane[n]});
-		move.reorient("hand",this.align[n]);
+		move.reorient(["hand",this.align[n]]);
 	} else if (txt=="b4if") {
 		move = moves.flower({orient: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n]});
-		move.reorient("hand",this.align[n]);
+		move.reorient(["hand",this.align[n]]);
 	} else if (txt=="3paf") {
 		move = moves.flower({orient: this.align[n],direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN, petals: 3});
-		move.reorient("hand",this.align[n]);
+		move.reorient(["hand",this.align[n]]);
 	} else if (txt=="o3af") {
 		move = moves.flower({orient: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN, petals: 3});
-		move.reorient("hand",this.align[n]);
+		move.reorient(["hand",this.align[n]]);
 	} else if (txt=="4paf") {
 		move = moves.flower({orient: this.align[n],direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
-		move.reorient("hand",this.align[n]);
+		move.reorient(["hand",this.align[n]]);
 	} else if (txt=="b4af") {
 		move = moves.flower({orient: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
-		move.reorient("hand",this.align[n]);
+		move.reorient(["hand",this.align[n]]);
 	} else if (txt=="hcap") {
 		if (this.align[n] == TWELVE || this.align[n] == SIX) {
 			move = moves.ccap({orient: this.align[n]+this.spin[n]*QUARTER, direction: this.spin[n], plane: this.plane[n]});
 		} else {
 			move = moves.ccap({orient: this.align[n], direction: this.spin[n], plane: this.plane[n]});
 		}
-		move.reorient("hand",this.align[n]);
+		move.reorient(["hand",this.align[n]]);
 	} else if (txt=="vcap") {
 		if (this.align[n] == THREE || this.align[n] == NINE) {
 			move = moves.ccap({orient: this.align[n]+this.spin[n]*QUARTER, direction: this.spin[n], plane: this.plane[n]});
 		} else {
 			move = moves.ccap({orient: this.align[n], direction: this.spin[n], plane: this.plane[n]});
 		}
-		move.reorient("hand",this.align[n]);
+		move.reorient(["hand",this.align[n]]);
 	} else if (txt=="hcpo") {
 		if (this.align[n] == TWELVE || this.align[n] == SIX) {
 			move = moves.ccap({orient: this.align[n]-this.spin[n]*QUARTER, direction: this.spin[n], plane: this.plane[n]});
@@ -328,7 +328,7 @@ Controller.prototype.generateMove = function(n, txt) {
 			move = moves.ccap({orient: this.align[n], direction: this.spin[n], plane: this.plane[n]});
 			move.phaseBy(2);
 		}
-		move.reorient("hand",this.align[n]);
+		move.reorient(["hand",this.align[n]]);
 	} else if (txt=="vcpo") {
 		if (this.align[n] == THREE || this.align[n] == NINE) {
 			move = moves.ccap({orient: this.align[n]-this.spin[n]*QUARTER, direction: this.spin[n], plane: this.plane[n]});
@@ -336,58 +336,58 @@ Controller.prototype.generateMove = function(n, txt) {
 			move = moves.ccap({orient: this.align[n], direction: this.spin[n], plane: this.plane[n]});
 			move.phaseBy(2);
 		}
-		move.reorient("hand",this.align[n]);
+		move.reorient(["hand",this.align[n]]);
 	} else if (txt=="pend") {
 		move = moves.pendulum({direction: this.spin[n], plane: this.plane[n]});
-		move.reorient("hand",this.align[n]);
+		move.reorient(["hand",this.align[n]]);
 	} else if (txt=="1pt5") {
 		move = moves.onepointfive({direction: this.spin[n], plane: this.plane[n]});
-		move.reorient("hand",this.align[n]);
+		move.reorient(["hand",this.align[n]]);
 	} else if (txt=="ucex") {
 		move = moves.isolation({offset: 0, direction: this.spin[n], plane: this.plane[n]});
-		move.reorient("prop",this.align[n]);
+		move.reorient(["prop",this.align[n]]);
 	} else if (txt=="vcat") {
 		move = moves.isolation({orient: TWELVE, offset: 0, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
-		move.reorient("prop",this.align[n]);
+		move.reorient(["prop",this.align[n]]);
 	} else if (txt=="hcat") {
 		move = moves.isolation({direction: this.spin[n], offset: 0, plane: this.plane[n], spin: ANTISPIN});
-		move.reorient("prop",this.align[n]);
+		move.reorient(["prop",this.align[n]]);
 	} else if (txt=="isol") {
 		move = moves.isolation({direction: this.spin[n], plane: this.plane[n]});
-		move.reorient("prop",this.align[n]);
+		move.reorient(["prop",this.align[n]]);
 	} else if (txt=="unip") {
 		move = moves.pendulum({direction: this.spin[n], plane: this.plane[n], extend: 0.5});
-		move.reorient("hand",this.align[n]);
+		move.reorient(["hand",this.align[n]]);
 	} else if (txt=="isop") {
 		move = moves.pendulum({direction: this.spin[n], spin: ANTISPIN, plane: this.plane[n], extend: 0.5});
-		move.reorient("hand",this.align[n]);
+		move.reorient(["hand",this.align[n]]);
 	} else if (txt=="pext") {
 		move = moves.isolation({pivot: this.align[n], offset: 0, direction: this.spin[n], plane: this.plane[n]});
-		move.reorient("prop",this.align[n]);
+		move.reorient(["prop",this.align[n]]);
 	} else if (txt=="piso") {
 		move = moves.isolation({pivot: this.align[n], direction: this.spin[n], plane: this.plane[n]});
-		move.reorient("prop",this.align[n]);
+		move.reorient(["prop",this.align[n]]);
 	} else if (txt=="pcat") {
 		move = moves.isolation({pivot: this.align[n], orient: TWELVE, offset: 0, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
-		move.reorient("prop",this.align[n]);
+		move.reorient(["prop",this.align[n]]);
 	} else if (txt=="pflo") {
 		move = moves.flower({pivot: this.align[n], extend: 0.5,  orient: this.align[n],direction: this.spin[n], plane: this.plane[n], petals: 2});
-		move.reorient("hand",this.align[n]);
+		move.reorient(["hand",this.align[n]]);
 	} else if (txt=="ptri") {
 		move = moves.flower({pivot: this.align[n], extend: 0.5, orient: this.align[n],direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN, petals: 3});
-		move.reorient("hand",this.align[n]);
+		move.reorient(["hand",this.align[n]]);
 	} else if (txt=="pant") {
 		move = moves.flower({pivot: this.align[n], extend: 0.5, orient: this.align[n],direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
-		move.reorient("hand",this.align[n]);
+		move.reorient(["hand",this.align[n]]);
 	} else if (txt=="ppen") {
 		move = moves.pendulum({pivot: this.align[n], extend: 0.5, direction: this.spin[n], plane: this.plane[n]});
-		move.reorient("hand",this.align[n]);
+		move.reorient(["hand",this.align[n]]);
 	} else if (txt=="hlex") {
 		move = moves.linex({direction: this.spin[n], plane: this.plane[n], orient: THREE});
-		move.reorient("prop",this.align[n]);
+		move.reorient(["prop",this.align[n]]);
 	} else if (txt=="vlex") {
 		move = moves.linex({direction: this.spin[n], plane: this.plane[n], orient: TWELVE});
-		move.reorient("prop",this.align[n]);
+		move.reorient(["prop",this.align[n]]);
 	} else if (txt=="hlis") {
 		move = moves.linex({harmonics: 2, direction: this.spin[n], plane: this.plane[n], orient: THREE});
 		if ((this.align[n]==TWELVE || this.align[n]==SIX) && this.spin[n] == COUNTERCLOCKWISE) {
@@ -404,13 +404,13 @@ Controller.prototype.generateMove = function(n, txt) {
 		}
 	} else if (txt=="2btw") {
 		move = moves.staticspin({orient: this.align[n], speed: 2, direction: this.spin[n], plane: this.plane[n]});
-		move.reorient("prop",this.align[n]);
+		move.reorient(["prop",this.align[n]]);
 	} else if (txt=="supr") {
 		move = moves.superman({orient: this.align[n], direction: this.spin[n], hand_plane: this.plane[n]});
-		move.reorient("prop",this.align[n]);
+		move.reorient(["prop",this.align[n]]);
 	} else if (txt=="zbnd") {
 		move = moves.toroid({orient: this.align[n], harmonics: 4, direction: this.spin[n], bend: 0, plane: this.plane[n]});
-		move.reorient("hand",this.align[n]);
+		move.reorient(["hand",this.align[n]]);
 	} else if (txt=="isob") {
 		move = moves.toroid({orient: this.align[n], harmonics: 4, direction: this.spin[n], bend: ISOBEND, plane: this.plane[n]});
 	} else if (txt=="biso") {
@@ -454,6 +454,8 @@ Controller.prototype.shuffle = function() {
 } 
 </script>
 <body onload="init();">
+<a href="http://infiniteperplexity.github.io/visual-spinner-3d/flower_transitions.html">See a demo of anti-spin flower transitions</a><br>
+<a href="http://infiniteperplexity.github.io/visual-spinner-3d/composer.html">See the (buggy, incomplete) working draft of the new composer interface</a>
 <table>
 <tbody><tr>
 <td rowspan="9" colspan="2">

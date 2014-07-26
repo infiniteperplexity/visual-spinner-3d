@@ -30,28 +30,46 @@ table {position: relative; top: -20px;}
 <script src="scripts/requestAnimationFrame.js"></script>
 <script src="scripts/visual-spinner-engine.js"></script>
 <script src="scripts/visual-spinner-moves.js"></script>
-<script src="scripts/visual-spinner-renderers.js"></script><script>// set parameters
+<script src="scripts/visual-spinner-renderers.js"></script>
+<script>
+// set parameters
 $('.sortable').sortable();
 var movenames = {
 "xtsn" : "Extension",
+"1pif" : "1-Petal In-Spin Flower",
 "2pif" : "2-Petal In-Spin Flower",
 "4pif" : "4-Petal In-Spin Flower",
 "3paf" : "3-Petal Anti-Spin Flower",
-"4paf" : "4-Petal Anti-Spin Flower",
-"pend" : "Pendulum",
-"1pt5" : "One Point Five"
+"4paf" : "4-Petal Anti-Spin Flower"
 }
 function allowDrop(event) {event.preventDefault();}
 function drag(event) {
 	event.dataTransfer.setData("Text",event.target.value);
 }
-function drop(event) {
+function drop1(event) {
 	event.preventDefault();
 	var parent = event.dataTransfer.getData("Text");
+	var def = defineMove(propOne, parent);
 	var child = document.createElement("option");
+	// need to attach the "def" to it somehow
 	child.value = parent;
 	child.text = movenames[parent];
+	child.def = def;
 	event.target.appendChild(child);
+	rebuildQueues();
+}
+function drop2(event) {
+	event.preventDefault();
+	var parent = event.dataTransfer.getData("Text");
+	// how do we get this? maybe drop1 and drop2?
+	var def = defineMove(propTwo, parent);
+	var child = document.createElement("option");
+	// need to attach the "def" to it somehow
+	child.value = parent;
+	child.text = movenames[parent];
+	child.def = def;
+	event.target.appendChild(child);
+	rebuildQueues();
 }
     
 var HEIGHT = 400;
@@ -66,16 +84,6 @@ var myProps = new Array();
 //var controller = new Controller();
 var moves = new MoveFactory();
 var props = new PropFactory();
-var movemap = {
-	"xtsn" : function() {return moves.flower({direction: CLOCKWISE, spin: INSPIN, petals: 0});},
-	"2pif" :function() {return moves.flower({direction: CLOCKWISE, spin: INSPIN, petals: 2});},
-	"4pif" : function() {return moves.flower({direction: CLOCKWISE, spin: INSPIN, petals: 4});},
-	"3paf" : function() {return  moves.flower({direction: CLOCKWISE, spin: ANTISPIN, petals: 3});},
-	"4paf" : function() {return moves.flower({direction: CLOCKWISE, spin: ANTISPIN, petals: 4});},
-	"1pt5" : function() {return moves.onepointfive({direction: CLOCKWISE}).reorient("hand", THREE);},
-	"pend" : function() {return moves.pendulum({direction: CLOCKWISE}).reorient("hand", THREE);}
-}
-
 
 function init() {
 	ctx=document.getElementById('canvas').getContext('2d');
@@ -95,51 +103,143 @@ function init() {
 	//canvasLoop();
 }
 
-function alignProps() {
+function alignElement(prop, element, box) {
+	var val = $('input[name=' + box + ']:checked').val();
+	switch(val) {
+		case "up": prop.setElementAngle(element, TWELVE, WALL); break;
+		case "down": prop.setElementAngle(element, SIX, WALL); break;
+		case "left": prop.setElementAngle(element, NINE, WALL); break;
+		case "right": prop.setElementAngle(element, THREE, WALL); break;
+	}
+}
+function buildQueue(prop, queue) {
+	var items = $("#"+queue + " select option");
+	//method does not yet exist
+	prop.emptyMoves();
+	for (var i = 0; i<items.length; i++) {
+		prop.addMove(buildMove(prop, items[i].def), "defitted");	
+	}
+}
+function buildMove(prop, def) {
+	var move;
+	var predict = prop.predict();
+	switch(def.move) {
+		case "flower":
+			move = moves.petal(def);
+			move.reorient(predict);
+		break;
+	}
+	return move;
+}
+function defineMove(prop, movename) {
+	var def = {};
 	var val;
-	val = $('input[name=hand1]:checked').val();
+	val = $('input[name=direction]:checked').val();
+	var mydir;
 	switch(val) {
-		case "up": propOne.setHandAngle(TWELVE); break;
-		case "down": propOne.setHandAngle(SIX); break;
-		case "left": propOne.setHandAngle(NINE); break;
-		case "right": propOne.setHandAngle(THREE); break;
+		case "cw": mydir = CLOCKWISE; break;
+		case "ccw": mydir = COUNTERCLOCKWISE; break;
 	}
-	val = $('input[name=hand2]:checked').val();
+	val = $('input[name=plane]:checked').val();
+	var myplane;
 	switch(val) {
-		case "up": propTwo.setHandAngle(TWELVE); break;
-		case "down": propTwo.setHandAngle(SIX); break;
-		case "left": propTwo.setHandAngle(NINE); break;
-		case "right": propTwo.setHandAngle(THREE); break;
+		case "wall": myplane = WALL; break;
+		case "wheel": myplane = WHEEL; break;
+		case "floor": myplane = FLOOR; break;
 	}
-	val = $('input[name=prop1]:checked').val();
+	val = $('input[name=duration]:checked').val();
+	var mydur;
 	switch(val) {
-		case "up": propOne.setPropAngle(TWELVE); break;
-		case "down": propOne.setPropAngle(SIX); break;
-		case "left": propOne.setPropAngle(NINE); break;
-		case "right": propOne.setPropAngle(THREE); break;
+		case "full": mydur = 1; break;
+		case "half": mydur = 0.5; break;
+		case "quarter": mydur = 0.25; break;
 	}
-	val = $('input[name=prop2]:checked').val();
+	val = $('input[name=pitch]:checked').val();
+	var mypitch;
 	switch(val) {
-		case "up": propTwo.setPropAngle(TWELVE); break;
-		case "down": propTwo.setPropAngle(SIX); break;
-		case "left": propTwo.setPropAngle(NINE); break;
-		case "right": propTwo.setPropAngle(THREE); break;
+		case "forward": mypitch = FORWARD; break;
+		case "backward": mypitch = BACKWARD; break;
 	}
+	val = $('input[name=pivot]:checked').val();
+	var mypivot;
+	switch(val) {
+		case "up": mypivot = TWELVE; break;
+		case "down": mypivot = SIX; break;
+		case "right": mypivot = THREE; break;
+		case "left": mypivot = NINE; break;
+		case "none": mypivot = undefined; break; 
+	}
+	switch(movename) {
+		case "xtsn":
+			if (mypivot===undefined) {
+				def = {move: "flower", direction: mydir, plane: myplane, petals: 0, spin: INSPIN, duration: mydur};
+			} else {
+				def = {move: "flower", direction: mydir, plane: myplane, petals: 0, spin: INSPIN, duration: mydur, orient: mypivot, pivot: 1};
+			}
+		break;
+		case "1pif":
+			if (mypivot===undefined) {
+				def = {move: "flower", direction: mydir, plane: myplane, petals: 1, spin: INSPIN, duration: mydur};
+			} else {
+				def = {move: "flower", direction: mydir, plane: myplane, petals: 1, spin: INSPIN, duration: mydur, orient: mypivot, pivot: 1};
+			}
+		break;
+		case "2pif":
+			if (mypivot===undefined) {
+				def = {move: "flower", direction: mydir, plane: myplane, petals: 2, spin: INSPIN, duration: mydur};
+			} else {
+				def = {move: "flower", direction: mydir, plane: myplane, petals: 2, spin: INSPIN, duration: mydur, orient: mypivot, pivot: 1};
+			}
+		break;
+		case "4pif":
+			if (mypivot===undefined) {
+				def = {move: "flower", direction: mydir, plane: myplane, petals: 4, spin: INSPIN, duration: mydur};
+			} else {
+				def = {move: "flower", direction: mydir, plane: myplane, petals: 4, spin: INSPIN, duration: mydur, orient: mypivot, pivot: 1};
+			}
+		break;
+		case "3paf":
+			if (mypivot===undefined) {
+				def = {move: "flower", direction: mydir, plane: myplane, petals: 4, spin: ANTISPIN, duration: mydur};
+			} else {
+				def = {move: "flower", direction: mydir, plane: myplane, petals: 4, spin: ANTISPIN, duration: mydur, orient: mypivot, pivot: 1};
+			}
+		break;
+		case "4paf":
+			if (mypivot===undefined) {
+				def = {move: "flower", direction: mydir, plane: myplane, petals: 4, spin: ANTISPIN, duration: mydur};
+			} else {
+				def = {move: "flower", direction: mydir, plane: myplane, petals: 4, spin: ANTISPIN, duration: mydur, orient: mypivot, pivot: 1};
+			}
+		break;
+	}
+	return def;
+}
+
+//This function gets triggered any time someone touches the prop alignment checkboxes or alters a move queue
+function rebuildQueues() {
+	//Align all the props according to checkboxes
+	alignElement(propOne, "hand", "hand1");
+	alignElement(propOne, "prop", "prop1");
+	alignElement(propTwo, "hand", "hand2");
+	alignElement(propTwo, "prop", "prop2");
+	buildQueue(propOne, "queue1");
+	buildQueue(propTwo, "queue2");
 	for (var i = 0; i < myProps.length; i++) {
 		myProps[i].render();
 	}
 	redraw();
 }
+
 function populateMenu() {
 	var menu = $("#menu").children("select");
 	var options = [
 		"xtsn",
+		"1pif",
 		"2pif",
 		"4pif",
 		"3paf",
 		"4paf",
-		"pend",
-		"1pt5"
 	];
 	for (var i = 0; i<options.length; i++) {
 		menu.append('<option value = '.concat(options[i],
@@ -154,6 +254,9 @@ var renderer;
 var propOne = props.poi({head_color: "red", flame_color: "red", scene: scene});
 var propTwo = props.poi({head_color: "blue", flame_color: "blue", scene: scene});
 function canvasSetup() {
+	var prop = new Prop();
+	var link = new MoveLink();
+	var angle = SIX;
 	canvas.height = HEIGHT;
 	canvas.width = WIDTH;
 	ctx.fillStyle = BACKGROUND;
@@ -193,39 +296,12 @@ function canvasSetup() {
 	propTwo.rotateProp(SPLIT);
 	myProps.push(propOne);
 	myProps.push(propTwo);
-	for (var i = 0; i < myProps.length; i++) {
-		myProps[i].render();
-	}
+	
 	redraw();
 }
 
-
-propOne.spinfail = function() {
-	if (this.cursor === undefined) {
-		this.cursor = -1;
-	}
-	var q = $("#queue1").children("select").children("option");
-	if (q.length==0) {
-		//alert("empty queue");
-	} else {
-		this.cursor = (this.cursor + 1)%q.length;
-		this.addMove(movemap[q[this.cursor].value]().setOneShot(true), true);
-		this.spin();
-	}
-}
-
-propTwo.spinfail = function() {
-	if (this.cursor === undefined) {
-		this.cursor = -1;
-	}
-	var q = $("#queue2").children("select").children("option");
-	if (q.length==0) {
-		//alert("empty queue");
-	} else {
-		this.cursor = (this.cursor + 1)%q.length;
-		this.addMove(movemap[q[this.cursor].value]().setOneShot(true), true);
-		this.spin();
-	}
+Prop.prototype.spinfail = function() {
+	alert("can't spin with an empty queue");
 }
 
 // animation loop
@@ -240,6 +316,9 @@ function canvasLoop() {
 	},1000/BEAT);
 }
 function redraw() {
+	for (var i = 0; i < myProps.length; i++) {
+		myProps[i].render();
+	}
 	if (view2d == true) {
 		ctx.fillStyle = "rgba(0,0,0,0.01)";
 		ctx.strokeStyle=BACKGROUND;
@@ -276,90 +355,90 @@ function nothing() {
 			<button type="button" onclick="nothing();">Export to JSON</button>
 			<button type="button" onclick="nothing();">Import from JSON</button>
 		</div>
-		<div id="queue1" class = "queue">
+		<div id="queue1" class="queue">
 			<h2>Red Prop</h2>
-			<select size="2" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="alert('reorder and delete not yet implemented');"></select>
+			<select size="2" ondrop="drop1(event)" ondragover="allowDrop(event)" onclick="alert('reorder and delete not yet implemented');"></select>
 			<p>
 				Hand:
-				<table>
-					<tr>
+				</p><table>
+					<tbody><tr>
 						<td></td>
-						<td><input onclick="alignProps();" type="radio" name="hand1" value="up">Up</td>
+						<td><input onclick="rebuildQueues();" name="hand1" value="up" type="radio">Up</td>
 						<td></td>
 					</tr>
 					<tr>
-						<td><input onclick="alignProps();" checked type="radio" name="hand1" value="left">Left</td>
+						<td><input onclick="rebuildQueues();" checked="checked" name="hand1" value="left" type="radio">Left</td>
 						<td></td>
-						<td><input onclick="alignProps();" type="radio" name="hand1" value="right">Right</td>
+						<td><input onclick="rebuildQueues();" name="hand1" value="right" type="radio">Right</td>
 					</tr>	
 					<tr>
 						<td></td>
-						<td><input onclick="alignProps();" type="radio" name="hand1" value="down">Down</td>
+						<td><input onclick="rebuildQueues();" name="hand1" value="down" type="radio">Down</td>
 						<td></td>
 					</tr>	
-				</table>	
+				</tbody></table>	
 				Prop:
 				<table>
-					<tr>
+					<tbody><tr>
 						<td></td>
-						<td><input onclick="alignProps();" type="radio" name="prop1" value="up">Up</td>
+						<td><input onclick="rebuildQueues();" name="prop1" value="up" type="radio">Up</td>
 						<td></td>
 					</tr>
 					<tr>
-						<td><input onclick="alignProps();" checked type="radio" name="prop1" value="left">Left</td>
+						<td><input onclick="rebuildQueues();" checked="checked" name="prop1" value="left" type="radio">Left</td>
 						<td></td>
-						<td><input onclick="alignProps();" type="radio" name="prop1" value="right">Right</td>
+						<td><input onclick="rebuildQueues();" name="prop1" value="right" type="radio">Right</td>
 					</tr>	
 					<tr>
 						<td></td>
-						<td><input onclick="alignProps();" type="radio" name="prop1" value="down">Down</td>
+						<td><input onclick="rebuildQueues();" name="prop1" value="down" type="radio">Down</td>
 						<td></td>
 					</tr>	
-				</table>	
-			</p>
+				</tbody></table>	
+			<p></p>
 		</div>	
 
-		<div id="queue2" class = "queue">
+		<div id="queue2" class="queue">
 			<h2>Blue Prop</h2>
-			<select size="2" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="alert('reorder and delete not yet implemented');"></select>
+			<select size="2" ondrop="drop2(event)" ondragover="allowDrop(event)" onclick="alert('reorder and delete not yet implemented');"></select>
 			<p>
 				Align:
-				<table>
-					<tr>
+				</p><table>
+					<tbody><tr>
 						<td></td>
-						<td><input onclick="alignProps();" type="radio" name="hand2" value="up">Up</td>
+						<td><input onclick="rebuildQueues();" name="hand2" value="up" type="radio">Up</td>
 						<td></td>
 					</tr>
 					<tr>
-						<td><input onclick="alignProps();" type="radio" name="hand2" value="left">Left</td>
+						<td><input onclick="rebuildQueues();" name="hand2" value="left" type="radio">Left</td>
 						<td></td>
-						<td><input onclick="alignProps();" checked type="radio" name="hand2" value="right">Right</td>
+						<td><input onclick="rebuildQueues();" checked="checked" name="hand2" value="right" type="radio">Right</td>
 					</tr>	
 					<tr>
 						<td></td>
-						<td><input onclick="alignProps();" type="radio" name="hand2" value="down">Down</td>
+						<td><input onclick="rebuildQueues();" name="hand2" value="down" type="radio">Down</td>
 						<td></td>
 					</tr>	
-				</table>	
+				</tbody></table>	
 				Prop:
 				<table>
-					<tr>
+					<tbody><tr>
 						<td></td>
-						<td><input onclick="alignProps();" type="radio" name="prop2" value="up">Up</td>
+						<td><input onclick="rebuildQueues();" name="prop2" value="up" type="radio">Up</td>
 						<td></td>
 					</tr>
 					<tr>
-						<td><input onclick="alignProps();" type="radio" name="prop2" value="left">Left</td>
+						<td><input onclick="rebuildQueues();" name="prop2" value="left" type="radio">Left</td>
 						<td></td>
-						<td><input onclick="alignProps();" checked type="radio" name="prop2" value="right">Right</td>
+						<td><input onclick="rebuildQueues();" checked="checked" name="prop2" value="right" type="radio">Right</td>
 					</tr>	
 					<tr>
 						<td></td>
-						<td><input onclick="alignProps();" type="radio" name="prop2" value="down">Down</td>
+						<td><input onclick="rebuildQueues();" name="prop2" value="down" type="radio">Down</td>
 						<td></td>
 					</tr>	
-				</table>	
-			</p>
+				</tbody></table>	
+			<p></p>
 		</div>
 		
 		<div id="menu">
@@ -371,46 +450,46 @@ function nothing() {
 			<h2>Options</h2>
 			<p>
 				Direction:<br>
-				<input onclick="nothing();" checked type="radio" name="direction" value="cw">Clockwise<br>
-				<input onclick="nothing();" type="radio" name="direction" value="ccw">Counter<br>
+				<input checked="checked" name="direction" value="cw" type="radio">Clockwise<br>
+				<input name="direction" value="ccw" type="radio">Counter<br>
 			</p>
 			<p>
 				Plane:<br>
-				<input onclick="nothing();" checked type="radio" name="plane" value="wall">Wall<br>
-				<input onclick="nothing();" type="radio" name="plane" value="wheel">Wheel<br>
-				<input onclick="nothing();" type="radio" name="plane" value="floor">Floor<br>
+				<input checked="checked" name="plane" value="wall" type="radio">Wall<br>
+				<input name="plane" value="wheel" type="radio">Wheel<br>
+				<input name="plane" value="floor" type="radio">Floor<br>
 			</p>
 			<p>
 				Duration:<br>
-				<input onclick="nothing();" checked type="radio" name="duration" value=1>Full Beat<br>
-				<input onclick="nothing();" type="radio" name="duration" value=0.5>Half Beat<br>
-				<input onclick="nothing();" type="radio" name="duration" value=0.25>Quarter Beat<br>
+				<input checked="checked" name="duration" value="full" type="radio">Full Beat<br>
+				<input name="duration" value="half" type="radio">Half Beat<br>
+				<input name="duration" value="quarter" type="radio">Quarter Beat<br>
 			</p>
 			<p>
 				Pitch (3D moves only):<br>
-				<input onclick="nothing();" checked type="radio" name="pitch" value="forward">Forward<br>
-				<input onclick="nothing();" type="radio" name="pitch" value="backward">Backward<br>
+				<input checked="checked" name="pitch" value="forward" type="radio">Forward<br>
+				<input name="pitch" value="backward" type="radio">Backward<br>
 			</p>
 			<p>
 				Pivot:
-				<table>
-					<tr>
+				</p><table>
+					<tbody><tr>
 						<td></td>
-						<td><input onclick="nothing();" type="radio" name="pivot" value="up">Up</td>
+						<td><input name="pivot" value="up" type="radio">Up</td>
 						<td></td>
 					</tr>
 					<tr>
-						<td><input onclick="nothing();" type="radio" name="pivot" value="left">Left</td>
-						<td><input onclick="nothing();" checked type="radio" name="pivot" value="none">None</td>
-						<td><input onclick="nothing();" type="radio" name="pivot" value="right">Right</td>
+						<td><input name="pivot" value="left" type="radio">Left</td>
+						<td><input checked="checked" name="pivot" value="none" type="radio">None</td>
+						<td><input name="pivot" value="right" type="radio">Right</td>
 					</tr>	
 					<tr>
 						<td></td>
-						<td><input onclick="nothing();" type="radio" name="pivot" value="down">Down</td>
+						<td><input name="pivot" value="down" type="radio">Down</td>
 						<td></td>
 					</tr>	
-				</table>	
-			</p>	
+				</tbody></table>	
+			<p></p>	
 		</div>
 	</section>
 </div>

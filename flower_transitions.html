@@ -88,9 +88,9 @@ function canvasSetup() {
 	var doublemove;
 	for (var i = 0; i<8; i++) {
 		doublemove = moves.twoPropFlower({mode: (i%2)*SPLIT, direction: CLOCKWISE, spin: ANTISPIN, duration: (i==4) ? 1 : 1.25});
-		propOne.addPartnership(doublemove, propTwo, true);
+		propOne.addPartnership(doublemove, propTwo, "defit");
 		doublemove = moves.twoPropFlower({mode: (i%2)*SPLIT, direction: COUNTERCLOCKWISE, spin: ANTISPIN, duration: (i==4) ? 1 : 1.25});
-		propThree.addPartnership(doublemove, propFour, true);
+		propThree.addPartnership(doublemove, propFour, "defit");
 	}
 }
 	
@@ -133,8 +133,8 @@ function redraw() {
 <p></p>
 <p>for (var i = 0; i<8; i++) {</p>
 <p>&nbsp;&nbsp;&nbsp;&nbsp;doublemove = moves.twoPropFlower({mode: (i%2)*SPLIT , direction: CLOCKWISE, spin: ANTISPIN, duration: (i==4) ? 1 : 1.25});</p>
-<p>&nbsp;&nbsp;&nbsp;&nbsp;propOne.addPartnership(doublemove, propTwo, true);</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;propOne.addPartnership(doublemove, propTwo, "defit");</p>
 <p>&nbsp;&nbsp;&nbsp;&nbsp;doublemove = moves.twoPropFlower({mode: (i%2)*SPLIT , direction: COUNTERCLOCKWISE, spin: ANTISPIN, duration: (i==4) ? 1 : 1.25});</p>
-<p>&nbsp;&nbsp;&nbsp;&nbsp;propThree.addPartnership(doublemove, propFour, true);</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;propThree.addPartnership(doublemove, propFour, "defit");</p>
 <p>}</p>
 </body></html>
