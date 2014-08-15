@@ -42,6 +42,11 @@ var BEAT = 360;
 var SPEED = UNIT/BEAT;
 var TINY = 0.0001;
 
+var HOME = 0;
+var PIVOT = 1;
+var HAND = 2;
+var PROP = 3;
+var GRIP = 4;
 
 //// A Vector can represent either a point or a plane, in 3D Cartesian coordinates
 function Vector(x,y,z) {
@@ -317,6 +322,34 @@ Prop.prototype.getPivotAngle = function(plane) {return this.getElementAngle("piv
 Prop.prototype.getHandAngle = function(plane) {return this.getElementAngle("hand", plane);}
 Prop.prototype.getPropAngle = function(plane) {return this.getElementAngle("prop", plane);}
 Prop.prototype.getGripAngle = function(plane) {return this.getElementAngle("grip", plane);}
+// Generate a vector based on an element's cumulative position, skipping the HOME coordinates
+Prop.prototype.getVector = function(element) {
+	var x = 0;
+	var y = 0;
+	var z = 0;
+	var e;
+	var s;
+	var v;
+	for (var i = PIVOT; i<=element; i++) {
+		e = this.elements[i];
+		if (e.plane !== undefined) {
+			s = Spherical.fromAnglePlane(e.radius, e.angle, e.plane);
+			v = s.vectorize();
+			x += v.x;
+			y += v.y;
+			z += v.z;
+		}
+	}
+	return Vector(x,y,z);
+}
+Prop.prototype.handVector = function() {
+	return this.getVector(HAND);
+}
+Prop.prototype.propVector = function() {
+	return this.getVector(PROP);
+}
+
+
 //
 Prop.prototype.orientToProp = function(prop) {
 	for (var i = 0; i < this.elements.length; i++) {
@@ -643,6 +676,7 @@ MoveLink.prototype.fits = function(socket) {
 	}
 	return true;
 }
+///!!!! Deprecating this function and relocating functionality in handVector and propVector functions
 // This untested method checks to see whether two moves correspond acceptably in three-dimensional space
 MoveLink.prototype.vectorFits = function(socket) {
 	var x0 = 0;
@@ -735,6 +769,60 @@ MoveLink.prototype.defit = function() {
 	for (var i = 0; i<this.elements.length; i++) {
 		this.elements[i].radius = undefined;
 		this.elements[i].angle = undefined;
+	}
+}
+MoveLink.prototype.tailVector = function(element) {
+	// The most reliable way to predict the position is to do an actual run through a "dummy" Prop
+	var dummy = new Prop();
+	for (var i=HOME; i<=GRIP; i++) {
+		if (this.elements[i].angle !== undefined && this.elements[i].plane !== undefined) {
+			dummy.setElementAngle(i, this.elements[i].angle, this.elements[i].plane);
+		}
+		if (this.elements[i].radius !== undefined) {
+			dummy.radius = this.elements[i].radius;
+		}
+	}
+	for (var i=0; i<this.duration*BEAT; i++) {
+		this.spindummy(dummy);
+	}
+	// Reset the MoveLink so it's ready for the real Prop
+	this.reset();
+	// Return one of the Prop element's position vectors
+	return dummy.getVector(element);
+}
+MoveLink.prototype.tailHandVector = function() {
+	return this.tailVector(HAND);
+}
+MoveLink.prototype.tailPropVector = function() {
+	return this.tailVector(PROP);
+}
+// getVector defaults to tailVector, not headVector
+MoveLink.prototype.getVector = function(element) {
+	return this.tailVector(element);
+}
+MoveLink.prototype.handVector = function() {
+	return this.getVector(HAND);
+}
+MoveLink.prototype.propVector = function() {
+	return this.getVector(PROP);
+}
+
+MoveLink.prototype.fitTail = function(move) {
+	// The most reliable way to predict the position is to do an actual run through a "dummy" Prop
+	var dummy = new Prop();
+	for (var i=0; i<move.duration*BEAT; i++) {
+		move.spindummy(dummy);
+	}
+	// Reset the MoveLink so it's ready for the real Prop
+	move.reset();
+	//  Use the prop an
+	for (var i=HOME; i<GRIP; i++) {
+		this.elements[i].plane = move.elements[i].plane;
+		this.elements[i].radius = move.elements[i].radius;
+		this.elements[i].speed = move.elements[i].speed;
+		this.elements[i].angle = move.elements[i].angle;
+		this.elements[i].linear_speed = move.elements[i].linear_speed;
+		this.elements[i].linear_angle = move.elements[i].linear_angle;
 	}
 }
 
@@ -852,38 +940,11 @@ MoveChain.prototype.phaseBy = function(phase) {
 	return this;
 }
 
-// Attempt to rotate this move to match a certain starting position
-// !!!! This is one of the shadiest, most difficult methods in the entire engine
-// For now the single-argument version is perhaps excessively stringent
-MoveChain.prototype.reorient = function(target) {
-	var socket;
-	var element;
-	// In this case, we assume we were passed an element name and an angle
-	if (target.constructor.name === "Array" && target.length===2) {
-		element = target[0];
-		target = target[1];
-	// If a Prop was passed, generate a socket from the Prop
-	} else if (target.constructor.name === "Prop") {
-		socket = {elements: [{},{},{},{},{}]};
-		for (var i = 0; i < this.elements.length; i++) {
-			socket.elements[i].radius = target.elements[i].radius;
-			// this will need to change at some point...perhaps use the plane from this.head()?
-			socket.elements[i].angle = target.getElementAngle(i, WALL);
-		}
-		socket.home = socket.elements[0];
-		socket.pivot = socket.elements[1];
-		socket.hand = socket.elements[2];
-		socket.prop = socket.elements[3];
-		socket.grip = socket.elements[4];
-	// In this case, assume a socket was passed
-	} else if (target.constructor.name === "Object" && target.elements) {
-		socket = target;
-	}
+// Rotate the move until a specified element matches a specified angle
+MoveChain.prototype.reangle = function(element, angle) {
 	//first we try this the easy way...
-	for (var i = 0; i<this.submoves.length; i++) {
-		if (!socket && nearly(this.head()[element].angle, target,0.01)) {
-			return this;
-		} else if (socket && dummy.socket().fits(socket,0.01)) {
+	for (var i = HOME; i<GRIP; i++) {
+		if (nearly(this.head()[element].angle, angle, 0.01)) {
 			return this;
 		} else {
 			this.phaseBy(1);
@@ -895,9 +956,7 @@ MoveChain.prototype.reorient = function(target) {
 	var ts = [];
 	for (var i =0; i<d; i++) {
 		this.spindummy(dummy);
-		if (!socket && nearly(dummy.getElementAngle(element,this.current()[element].plane),target,0.01)) {
-			ts.push(i);
-		} else if (socket &&  dummy.socket().fits(socket,0.01)) {
+		if (nearly(dummy.getElementAngle(element,this.current()[element].plane), angle, 0.01)) {
 			ts.push(i);
 		}
 	}
@@ -909,11 +968,46 @@ MoveChain.prototype.reorient = function(target) {
 		this.submoves = halves[1].submoves;
 		return this;
 	}
-	//...at this point we might freak out and try to match up Vector coordinates with pivots and all that, but so far we don't
 	//...and if that doesn't work we just give up.
 	alert("alignment failed.");
 	return this;
 }
+
+// Rotate the move until it matches a target Move or Prop
+MoveChain.prototype.reorient = function(target) {
+	var hand = target.handVector();
+	var prop = target.propVector();
+	//first we try this the easy way...
+	for (var i = 0; i<this.submoves.length; i++) {
+		if (hand.nearly(this.handVector()) && prop.nearly(this.propVector())) {
+			return this;
+		} else {
+			this.phaseBy(1);
+		}
+	}
+	//...then we try it the hard way...
+	var dummy = new Prop();
+	var d = this.getDuration()*BEAT;
+	var ts = [];
+	for (var i =0; i<d; i++) {
+		this.spindummy(dummy);
+		if (hand.nearly(this.handVector()) && prop.nearly(this.propVector())) {
+			ts.push(i);
+		}
+	}
+	this.reset();
+	var halves;
+	if (ts.length>0) {
+		halves = this.split(ts[0]);
+		halves[1].concatenate(halves[0]);
+		this.submoves = halves[1].submoves;
+		return this;
+	}
+	//...and if that doesn't work we just give up.
+	alert("alignment failed.");
+	return this;
+}
+
 // This convenience method clones the last MoveLink on the queue and adds it to the tail end of the MoveChain
 MoveChain.prototype.extend = function() {
 	newlink = this.tail().clone();
@@ -935,6 +1029,9 @@ MoveChain.prototype.fitProp = function(prop) {
 	return this.head().fitProp(prop);
 }
 MoveChain.prototype.head = function() {
+	if (this.submoves.length==0) {
+		alert("Why zero length?!?");
+	}
 	return this.submoves[0].head();
 }
 MoveChain.prototype.tail = function() {
@@ -988,8 +1085,6 @@ MoveChain.prototype.defit = function() {
 	return this;
 }
 
-
-
 //// Factory functions to produce props and moves.  The user should either add methods or include a library of methods
 function PropFactory() {}
 PropFactory.prototype.defaults = function(options, defaults) {
@@ -1013,4 +1108,5 @@ MoveFactory.prototype.defaults = function(options, defaults) {
 	}
 	return options;
 }
+
 
