@@ -16,15 +16,14 @@ canvas {width: 400px; height: 400px; background-color: #000;}
 .queue select {width: 200px; height: 230px;}
 #menu select {width: 200px; height: 430px;}
 table {position: relative; top: -20px;}
-
-
+#popexport {position: fixed; z-index: 1; top: 150px; left: 50px;}
+#popimport {position: fixed; z-index: 1; top: 150px; left: 50px;}
 </style>
 
 
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>VisualSpinner3D Composer, by Glenn Wright</title>
 <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
-<script src="scripts/jquery.sortable.min.js"></script>
 <script src="scripts/gl-matrix-min.js"></script>
 <script src="scripts/phoria-min.js"></script>
 <script src="scripts/requestAnimationFrame.js"></script>
@@ -33,14 +32,15 @@ table {position: relative; top: -20px;}
 <script src="scripts/visual-spinner-renderers.js"></script>
 <script>
 // set parameters
-$('.sortable').sortable();
 var movenames = {
 "xtsn" : "Extension",
 "1pif" : "1-Petal In-Spin Flower",
 "2pif" : "2-Petal In-Spin Flower",
 "4pif" : "4-Petal In-Spin Flower",
 "3paf" : "3-Petal Anti-Spin Flower",
-"4paf" : "4-Petal Anti-Spin Flower"
+"4paf" : "4-Petal Anti-Spin Flower",
+"pend": "Pendulum",
+"1pt5" : "One Point Five"
 }
 function allowDrop(event) {event.preventDefault();}
 function drag(event) {
@@ -55,6 +55,8 @@ function drop1(event) {
 	child.value = parent;
 	child.text = movenames[parent];
 	child.def = def;
+	def["description"] = child.text;
+	def["identifier"] = child.value;
 	event.target.appendChild(child);
 	rebuildQueues();
 }
@@ -68,6 +70,8 @@ function drop2(event) {
 	child.value = parent;
 	child.text = movenames[parent];
 	child.def = def;
+	def["description"] = child.text;
+	def["identifier"] = child.value;
 	event.target.appendChild(child);
 	rebuildQueues();
 }
@@ -86,6 +90,8 @@ var moves = new MoveFactory();
 var props = new PropFactory();
 
 function init() {
+	$("#popexport").hide();
+	$("#popimport").hide();
 	ctx=document.getElementById('canvas').getContext('2d');
 	if( 	navigator.userAgent.match(/Android/i)
 		|| navigator.userAgent.match(/webOS/i)
@@ -114,7 +120,6 @@ function alignElement(prop, element, box) {
 }
 function buildQueue(prop, queue) {
 	var items = $("#"+queue + " select option");
-	//method does not yet exist
 	prop.emptyMoves();
 	for (var i = 0; i<items.length; i++) {
 		prop.addMove(buildMove(prop, items[i].def), "defitted");	
@@ -127,6 +132,16 @@ function buildMove(prop, def) {
 		case "flower":
 			move = moves.petal(def);
 			move.reorient(predict);
+		break;
+		case "pendulum":
+			move = moves.pendulum(def);
+			move.reorient(predict);
+			move = move.slice(0,def.phases-1);
+		break;
+		case "onepointfive":
+			move = moves.onepointfive(def);
+			move.reorient(predict);
+			move = move.slice(0,def.phases-1);
 		break;
 	}
 	return move;
@@ -169,6 +184,7 @@ function defineMove(prop, movename) {
 		case "left": mypivot = NINE; break;
 		case "none": mypivot = undefined; break; 
 	}
+	var nphases;
 	switch(movename) {
 		case "xtsn":
 			if (mypivot===undefined) {
@@ -212,8 +228,34 @@ function defineMove(prop, movename) {
 				def = {move: "flower", direction: mydir, plane: myplane, petals: 4, spin: ANTISPIN, duration: mydur, orient: mypivot, pivot: 1};
 			}
 		break;
+		case "pend":
+			if (mydur===1) {
+				nphases = 4;
+			} if (mydur===0.5) {
+				nphases = 2;
+			} if (mydur===0.25) {
+				nphases = 1;
+			}
+			def = {move: "pendulum", direction: mydir, plane: myplane, phases: nphases};
+		break;
+		case "1pt5":
+			if (mydur===1) {
+				nphases = 4;
+			} if (mydur===0.5) {
+				nphases = 2;
+			} if (mydur===0.25) {
+				nphases = 1;
+			}
+			def = {move: "onepointfove", direction: mydir, plane: myplane, phases: nphases};
+		break;
 	}
 	return def;
+}
+function emptyQueues() {
+	$("#queue1 select").empty();
+	$("#queue2 select").empty();
+	propOne.emptyMoves();
+	propTwo.emptyMoves();
 }
 
 //This function gets triggered any time someone touches the prop alignment checkboxes or alters a move queue
@@ -231,6 +273,53 @@ function rebuildQueues() {
 	redraw();
 }
 
+function popExport() {
+	$("#popimport").hide();
+	$("#popexport").toggle();
+	var reds = $.makeArray($("#queue1 select option"));
+	reds = reds.map(function(item) {return item.def;});
+	var blues = $.makeArray($("#queue2 select option"));
+	blues = blues.map(function(item) {return item.def;});
+	$("#popexport textarea").html(JSON.stringify({"red" : reds, "blue" : blues}));
+}
+function popImport() {
+	$("#popexport").hide();
+	$("#popimport").toggle();
+}
+function importSubmit() {
+	var imported = $("#popimport textarea").val();
+	imported = JSON.parse(imported);
+	emptyQueues();
+	var newoption;
+	var plane;
+	for (var i = 0; i < imported.red.length; i++) {
+		newoption = document.createElement("option");
+		newoption.def = imported.red[i];
+		newoption.value = newoption.def.identifier;
+		newoption.text = newoption.def.description;
+		if (newoption.def.plane !== undefined) {
+			plane = new Vector(newoption.def.plane.x,newoption.def.plane.y,newoption.def.plane.z);
+			newoption.def.plane = plane;
+		}
+		$("#queue1 select").append(newoption);
+
+	}
+	for (var i = 0; i < imported.blue.length; i++) {
+		newoption = document.createElement("option");
+		newoption.def = imported.blue[i];
+		newoption.value = newoption.def.identifier;
+		newoption.text = newoption.def.description;
+		if (newoption.def.plane !== undefined) {
+			plane = new Vector(newoption.def.plane.x,newoption.def.plane.y,newoption.def.plane.z);
+			newoption.def.plane = plane;
+		}
+		$("#queue2 select").append(newoption);
+
+	}
+	rebuildQueues();
+	$("#popimport").toggle();
+}
+
 function populateMenu() {
 	var menu = $("#menu").children("select");
 	var options = [
@@ -239,7 +328,7 @@ function populateMenu() {
 		"2pif",
 		"4pif",
 		"3paf",
-		"4paf",
+		"4paf"//,"pend","1pt5"
 	];
 	for (var i = 0; i<options.length; i++) {
 		menu.append('<option value = '.concat(options[i],
@@ -251,8 +340,8 @@ function populateMenu() {
 
 var scene = new Phoria.Scene();
 var renderer;
-var propOne = props.poi({head_color: "red", flame_color: "red", scene: scene});
-var propTwo = props.poi({head_color: "blue", flame_color: "blue", scene: scene});
+var propOne = props.poi({head_color: "blue", flame_color: "blue", scene: scene});
+var propTwo = props.poi({head_color: "red", flame_color: "red", scene: scene});
 function canvasSetup() {
 	var prop = new Prop();
 	var link = new MoveLink();
@@ -351,9 +440,9 @@ function nothing() {
 		</div>
 		<div id="control">
 			<button type="button" onclick="canvasLoop();">Start spinning!</button>
-			<button type="button" onclick="nothing();">Reset props</button>
-			<button type="button" onclick="nothing();">Export to JSON</button>
-			<button type="button" onclick="nothing();">Import from JSON</button>
+			<button type="button" onclick="emptyQueues();">Reset props</button>
+			<button type="button" onclick="popExport();">Export to JSON</button>
+			<button type="button" onclick="popImport();">Import from JSON</button>
 		</div>
 		<div id="queue1" class="queue">
 			<h2>Red Prop</h2>
@@ -475,22 +564,31 @@ function nothing() {
 				</p><table>
 					<tbody><tr>
 						<td></td>
-						<td><input name="pivot" value="up" type="radio">Up</td>
+						<td><input onclick="nothing();" name="pivot" value="up" type="radio">Up</td>
 						<td></td>
 					</tr>
 					<tr>
-						<td><input name="pivot" value="left" type="radio">Left</td>
-						<td><input checked="checked" name="pivot" value="none" type="radio">None</td>
-						<td><input name="pivot" value="right" type="radio">Right</td>
+						<td><input onclick="nothing();" name="pivot" value="left" type="radio">Left</td>
+						<td><input onclick="nothing();" checked="checked" name="pivot" value="none" type="radio">None</td>
+						<td><input onclick="nothing();" name="pivot" value="right" type="radio">Right</td>
 					</tr>	
 					<tr>
 						<td></td>
-						<td><input name="pivot" value="down" type="radio">Down</td>
+						<td><input onclick="nothing();" name="pivot" value="down" type="radio">Down</td>
 						<td></td>
 					</tr>	
 				</tbody></table>	
 			<p></p>	
 		</div>
 	</section>
+</div>
+<div id="popexport">
+	<textarea rows="4" cols="50"></textarea><br>
+	<button type="button" onclick="$('#popexport').toggle()">Done</button>
+</div>
+<div id="popimport">
+	<textarea rows="4" cols="50"></textarea><br>
+	<button type="button" onclick = "popImport();">Cancel</button>
+	<button type="button" onclick = "importSubmit();">Submit</button>
 </div>
 </body></html>
