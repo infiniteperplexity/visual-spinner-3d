@@ -755,6 +755,14 @@ MoveChain.prototype.split = function(t) {
 MoveChain.prototype.phaseBy = function(phase) {
 	//this currently trusts that the head and tail of the move fit together
 	if (phase===undefined) {phase = 1;}
+	if (this.definition !== undefined) {
+		if (this.definition.phase === undefined) {
+			this.definition.phase = 0;
+		} else {
+			// this might not be quite right.
+			this.definition.phase = (this.definition.phase + phase) % this.submoves.length;
+		}
+	}
 	if (phase>0) {
 		for (var i = 0; i<phase; i++) {
 			this.submoves.push(this.submoves.shift());
@@ -925,6 +933,27 @@ PropFactory.prototype.defaults = function(options, defaults) {
 	}
 	return options;
 }
+PropFactory.prototype.parse = function(json) {
+	var definition = JSON.parse(json);
+	return this[definition.prop](definition);
+}
+///these methods should not be on the factories
+PropFactory.prototype.stringify = function(prop) {
+	// This currently won't exist
+	var definition = {};
+	for (var i = HOME; i<=GRIP; i++) {
+		definition[elements[i]].radius = prop[elements[i]].radius;
+		definition[elements[i]].azimuth = prop[elements[i]].azimuth;
+		definition[elements[i]].zenith = prop[elements[i]].zenith;
+		//should this have roll?
+	}
+	definition.moves = [];
+	for (var i = 0; i<prop.move.submoves.length; i++) {
+		definition.moves[i] = MoveFactory.stringify(prop.move.submoves[i]);
+	}
+	return JSON.stringify(prop.definition);
+}
+
 function MoveFactory() {
 	this.options = {};
 }
@@ -937,5 +966,13 @@ MoveFactory.prototype.defaults = function(options, defaults) {
 	}
 	return options;
 }
+MoveFactory.prototype.parse = function(json) {
+	var definition = JSON.parse(json);
+	return this[definition.method](definition);
+}
 
-
+MoveFactory.prototype.stringify = function(move) {
+	if (move.definition !== undefined) {
+		return JSON.stringify(move.definition);
+	}
+}

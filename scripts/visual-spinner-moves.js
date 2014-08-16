@@ -1,5 +1,7 @@
 MoveFactory.prototype.staticspin= function(options) {
 	options = this.defaults(options,{
+		method: "staticspin",
+		name: "Static Spin",
 		orient: THREE,
 		extend: TINY,
 		plane: WALL,
@@ -17,11 +19,14 @@ MoveFactory.prototype.staticspin= function(options) {
 	var move = new MoveChain();
 	move.add(segment);
 	move.name = "static spin";
+	move.definition = options;
 	return move;
 }
 
 MoveFactory.prototype.superman= function(options) {
 	options = this.defaults(options,{
+		method: "superman",
+		name: "Superman",
 		orient: THREE,
 		plane: FLOOR,
 		direction: CLOCKWISE,
@@ -44,12 +49,14 @@ MoveFactory.prototype.superman= function(options) {
 	move.extend();
 	move.tail().prop.speed = 2*options.speed*options.direction;
 	//move.tail().prop.acc = 16*options.speed*options.direction;
+	move.definition = options;
 	return move;
-	move.name = "superman";
 }
 
 MoveFactory.prototype.flower = function(options) {
 	options = this.defaults(options,{
+		method: "flower",
+		name: "Flower",
 		orient: THREE,
 		plane: WALL,
 		direction: CLOCKWISE,
@@ -88,12 +95,14 @@ MoveFactory.prototype.flower = function(options) {
 	for (var i=1; i<options.petals; i++) {
 		move.extend();
 	}
-	move.name = "flower";
+	move.definition = options;
 	return move;
 }
 
 MoveFactory.prototype.petal = function(options) {
 	options = this.defaults(options,{
+		method: "petal",
+		name: "(flower)",
 		orient: THREE,
 		plane: WALL,
 		direction: CLOCKWISE,
@@ -132,7 +141,7 @@ MoveFactory.prototype.petal = function(options) {
 	} else {
 		segment.duration = options.duration;
 	}
-	segment.name = "petal";
+	segment.definition = options;
 	return segment;
 }
 
@@ -189,6 +198,8 @@ MoveFactory.prototype.twoPropFlower = function(options) {
 
 MoveFactory.prototype.ccap = function(options) {
 	options = this.defaults(options,{
+		method: "ccap",
+		name: "C-CAP",
 		plane: WALL,
 		orient: THREE,
 		direction: CLOCKWISE,
@@ -217,12 +228,15 @@ MoveFactory.prototype.ccap = function(options) {
 	move.extend();
 	move.tail().hand.speed = options.speed*options.direction;
 	move.tail().prop.speed = (options.inpetals+1)*options.speed*options.direction;
+	move.definition = options;
 	return move;
 }
 
 
 MoveFactory.prototype.pendulum = function(options) {
 	options = this.defaults(options,{
+		method: "pendulum",
+		name: "Pendulum",
 		orient: DOWN,
 		plane: WALL,
 		direction: CLOCKWISE,
@@ -255,12 +269,18 @@ MoveFactory.prototype.pendulum = function(options) {
 	move.tail().prop.acc = 8*options.direction*options.speed*options.spin;
 	move.extend();
 	move.tail().prop.acc = 8*options.direction*options.speed*options.spin;
+	move.definition = options;
+	if (options.spin == ANTISPIN) {
+		move.definition.name = "Iso-Pendulum";
+	}
 	return move;
 }
 
 
 MoveFactory.prototype.onepointfive = function(options) {
 	options = this.defaults(options,{
+		method: "onepointfive",
+		name: "1.5",
 		orient: DOWN,
 		plane: WALL,
 		direction: CLOCKWISE,
@@ -293,12 +313,15 @@ MoveFactory.prototype.onepointfive = function(options) {
 	move.tail().prop.acc = 8*options.direction*options.speed*options.spin;
 	move.extend();
 	move.tail().prop.acc = 24*options.direction*options.speed*options.spin;
+	move.definition = options;
 	return move;
 }
 
 MoveFactory.prototype.linex = function(options) {
 	// A linex with harmonics = 1 is a linear extension.  harmonics = 2 is a linear isolation;
 	options = this.defaults(options,{
+		method: "linex",
+		name: "Linear Extension",
 		orient: THREE,
 		direction: CLOCKWISE,
 		harmonics: 1,
@@ -335,6 +358,10 @@ MoveFactory.prototype.linex = function(options) {
 	move.tail().hand.linear_acc = 32*options.speed;
 	move.extend();
 	move.tail().hand.linear_acc = -32*options.speed;
+	move.definition = options;
+	if (options.harmonics == 2) {
+		move.definition.name = "Linear Isolation";
+	}
 	return move;
 }
 
@@ -342,6 +369,8 @@ MoveFactory.prototype.linex = function(options) {
 MoveFactory.prototype.isolation = function(options) {
 	// A no-offset isolation is a unit-circle extension. An anti-spin isolation is a cateye;
 	options = this.defaults(options,{
+		method: "isolation",
+		name: "Isolation",
 		orient: THREE,
 		plane: WALL,
 		direction: CLOCKWISE,
@@ -366,11 +395,19 @@ MoveFactory.prototype.isolation = function(options) {
 	segment.prop.angle = options.orient + options.offset;
 	var move = new MoveChain();
 	move.add(segment);
+	move.definition = options;
+	if (options.spin == ANTISPIN) {
+		move.definition.name = "Cat-Eye";
+	} else if (options.offset == NOOFFSET) {
+		move.definition.name = "Unit Circle Extension";
+	}
 	return move;
 }
 
 MoveFactory.prototype.toroid = function(options) {
 	options = this.defaults(options,{
+		method: "toroid",
+		name: "Toroid",
 		orient: THREE,
 		plane: WALL,
 		direction: CLOCKWISE,
@@ -410,6 +447,7 @@ MoveFactory.prototype.toroid = function(options) {
 	//for (var i = 1; i<options.harmonics; i++) {
 	//	move.extend();
 	//}
+	move.definition = options;
 	return move;
 }
 
