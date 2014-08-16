@@ -18,6 +18,7 @@ canvas {width: 400px; height: 400px; background-color: #000;}
 table {position: relative; top: -20px;}
 #popexport {position: fixed; z-index: 1; top: 150px; left: 50px;}
 #popimport {position: fixed; z-index: 1; top: 150px; left: 50px;}
+#radius1, #radius2 {width: 50px;}
 </style>
 
 
@@ -117,6 +118,10 @@ function alignElement(prop, element, box) {
 		case "left": prop.setElementAngle(element, NINE, WALL); break;
 		case "right": prop.setElementAngle(element, THREE, WALL); break;
 	}
+}
+function setRadius(prop, box) {
+	var val = $('input[id='+box+']').val();
+	prop.hand.radius = val;
 }
 function buildQueue(prop, queue) {
 	var items = $("#"+queue + " select option");
@@ -265,6 +270,8 @@ function rebuildQueues() {
 	alignElement(propOne, "prop", "prop1");
 	alignElement(propTwo, "hand", "hand2");
 	alignElement(propTwo, "prop", "prop2");
+	setRadius(propOne,"radius1");
+	setRadius(propTwo,"radius2");
 	buildQueue(propOne, "queue1");
 	buildQueue(propTwo, "queue2");
 	for (var i = 0; i < myProps.length; i++) {
@@ -383,8 +390,8 @@ function canvasSetup() {
 	// set up props
 	propOne.hand.radius = 1;
 	propTwo.hand.radius = 1;
-	propTwo.rotateHand(SPLIT);
-	propTwo.rotateProp(SPLIT);
+	propOne.rotateHand(SPLIT);
+	propOne.rotateProp(SPLIT);
 	myProps.push(propOne);
 	myProps.push(propTwo);
 	
@@ -447,7 +454,7 @@ function nothing() {
 			<button type="button" onclick="popImport();">Import from JSON</button>
 		</div>
 		<div id="queue1" class="queue">
-			<h2>Red Prop</h2>
+			<h2>Blue Prop</h2>
 			<select size="2" ondrop="drop1(event)" ondragover="allowDrop(event)" onclick="alert('reorder and delete not yet implemented');"></select>
 			<p>
 				Hand:
@@ -459,7 +466,7 @@ function nothing() {
 					</tr>
 					<tr>
 						<td><input onclick="rebuildQueues();" checked="checked" name="hand1" value="left" type="radio">Left</td>
-						<td></td>
+						<td><input onclick ="rebuildQueues();" type="number" id="radius1" min="0" max="1" step = "0.5" value="1"></td>
 						<td><input onclick="rebuildQueues();" name="hand1" value="right" type="radio">Right</td>
 					</tr>	
 					<tr>
@@ -490,10 +497,10 @@ function nothing() {
 		</div>	
 
 		<div id="queue2" class="queue">
-			<h2>Blue Prop</h2>
+			<h2>Red Prop</h2>
 			<select size="2" ondrop="drop2(event)" ondragover="allowDrop(event)" onclick="alert('reorder and delete not yet implemented');"></select>
 			<p>
-				Align:
+				Hand:
 				</p><table>
 					<tbody><tr>
 						<td></td>
@@ -502,7 +509,7 @@ function nothing() {
 					</tr>
 					<tr>
 						<td><input onclick="rebuildQueues();" name="hand2" value="left" type="radio">Left</td>
-						<td></td>
+						<td><input onclick ="rebuildQueues();" type="number" id="radius2" min="0" max="1" step = "0.5" value="1"></td>
 						<td><input onclick="rebuildQueues();" checked="checked" name="hand2" value="right" type="radio">Right</td>
 					</tr>	
 					<tr>
