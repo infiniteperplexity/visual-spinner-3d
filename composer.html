@@ -136,12 +136,12 @@ function buildMove(prop, def) {
 		case "pendulum":
 			move = moves.pendulum(def);
 			move.reorient(predict);
-			move = move.slice(0,def.phases-1);
+			//move = move.slice(0,def.phases);
 		break;
 		case "onepointfive":
 			move = moves.onepointfive(def);
 			move.reorient(predict);
-			move = move.slice(0,def.phases-1);
+			//move = move.slice(0,def.phases);
 		break;
 	}
 	return move;
@@ -246,7 +246,7 @@ function defineMove(prop, movename) {
 			} if (mydur===0.25) {
 				nphases = 1;
 			}
-			def = {move: "onepointfove", direction: mydir, plane: myplane, phases: nphases};
+			def = {move: "onepointfive", direction: mydir, plane: myplane, phases: nphases};
 		break;
 	}
 	return def;
@@ -328,7 +328,9 @@ function populateMenu() {
 		"2pif",
 		"4pif",
 		"3paf",
-		"4paf"//,"pend","1pt5"
+		"4paf",
+		"pend",
+		"1pt5"
 	];
 	for (var i = 0; i<options.length; i++) {
 		menu.append('<option value = '.concat(options[i],
