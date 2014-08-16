@@ -173,14 +173,13 @@ Spherical.prototype.unitize = function() {
 	return (new Spherical(1, this.zenith, this.azimuth));
 }
 // Build a Spherical from the coordinate system used by Moves
-Spherical.prototype.fromAnglePlane = function(radius, angle, plane) {
-	var s = new Spherical();
-	s.radius = radius;
+Spherical.prototype.setRadiusAnglePlane = function(radius, angle, plane) {
+	this.radius = radius;
 	if (plane === undefined) {plane = WALL;}
 	var v = plane.reference().rotate(angle,plane).unitize();
-	s.zenith = unwind(Math.acos(v.z/Math.sqrt(v.x*v.x+v.y*v.y+v.z*v.z)));
-	s.azimuth = unwind(Math.atan2(v.y,v.x));;
-	return s;
+	this.zenith = unwind(Math.acos(v.z/Math.sqrt(v.x*v.x+v.y*v.y+v.z*v.z)));
+	this.azimuth = unwind(Math.atan2(v.y,v.x));;
+	return this;
 }
 // Convert from Spherical coordinates to Vector coordinates
 Spherical.prototype.vectorize = function() {
@@ -564,9 +563,7 @@ MoveLink.prototype.reorient = function(target) {
 			}
 		}
 	} else if (target instanceof MoveChain || target instanceof MoveLink) {
-		// !!!This is a *seriously* kludgy way to get the final angle and plane...
-		var tail = target.tail().clone();
-		tail.fitTail(target.tail());
+		var tail = target.socket();
 		for (var i = HOME; i<=GRIP; i++) {
 			this.elements[i].plane = tail.elements[i].plane;
 			this.elements[i].angle = tail.elements[i].angle;
@@ -601,49 +598,26 @@ MoveLink.prototype.split = function(t) {
         two = this.clone();
         one.duration = t/BEAT;
 		two.duration = this.duration-one.duration;
-		two.fitTail(one);
+		two.fitTo(one.socket());
         return [one, two];
 }
-MoveLink.prototype.tailVector = function(element) {
-	// The most reliable way to predict the position is to do an actual run through a "dummy" Prop
-	var dummy = new Prop();
-	dummy.dummitize();
-	for (var i=0; i<this.duration*BEAT; i++) {
-		this.spindummy(dummy);
-	}
-	// Reset the MoveLink so it's ready for the real Prop
-	this.reset();
-	// Return one of the Prop element's position vectors
-	return dummy.getVector(element);
-}
-MoveLink.prototype.headVector = function(element) {
-	//this is a truly bizarre way to accomplish this task
-	var dummy = new Prop();
-	for (var i = PIVOT; i <= element; i++) {
-		if (this.elements[i].angle !== undefined && this.elements[i].plane !== undefined) {
-			dummy.setElementAngle(i, this.elements[i].angle, this.elements[i].plane);
-		}
-		if (this.elements[i].radius !== undefined) {
-			dummy.elements[i].radius = this.elements[i].radius;
-		}
-	}
-	return dummy.getVector(element);
-}
-MoveLink.prototype.headHandVector = function() {
-	return this.headVector(HAND);
-}
-MoveLink.prototype.headPropVector = function() {
-	return this.headVector(PROP);
-}
-MoveLink.prototype.tailHandVector = function() {
-	return this.tailVector(HAND);
-}
-MoveLink.prototype.tailPropVector = function() {
-	return this.tailVector(PROP);
-}
-// getVector defaults to tailVector, not headVector
 MoveLink.prototype.getVector = function(element) {
-	return this.tailVector(element);
+	var x = 0;
+	var y = 0;
+	var z = 0;
+	var e;
+	var v;
+	for (var i = PIVOT; i<=element; i++) {
+		e = new Spherical();
+		e.setRadiusAnglePlane(this.elements[i].radius, this.elements[i].angle, this.elements[i].plane);
+		if (e.radius !== undefined) {
+			v = e.vectorize();
+			x += v.x;
+			y += v.y;
+			z += v.z;
+		}
+	}
+	return (new Vector(x,y,z));
 }
 MoveLink.prototype.handVector = function() {
 	return this.getVector(HAND);
@@ -651,28 +625,36 @@ MoveLink.prototype.handVector = function() {
 MoveLink.prototype.propVector = function() {
 	return this.getVector(PROP);
 }
-MoveLink.prototype.fitTail = function(move) {
-	move = move.tail();
-	// The most reliable way to predict the position is to do an actual run through a "dummy" Prop
+MoveLink.prototype.fitTo = function(move) {
+	for (var i = HOME; i<=GRIP; i++) {
+		this.elements[i].plane = move.elements[i].plane;
+		this.elements[i].radius = move.elements[i].radius;
+		this.elements[i].angle = move.elements[i].angle;
+	}
+	return this;
+}
+MoveLink.prototype.socket = function() {
+	var socket = this.clone();
 	var dummy = new Prop();
 	dummy.dummitize();
-	for (var i=0; i<move.duration*BEAT; i++) {
-		move.spindummy(dummy);
+	for (var i=0; i<socket.duration*BEAT; i++) {
+		socket.spindummy(dummy);
 	}
 	// Reset the MoveLink so it's ready for the real Prop
-	move.reset();
+	socket.reset();
 	// Fit this move to the final position of the target move
 	for (var i=HOME; i<=GRIP; i++) {
-		this.elements[i].radius = dummy.elements[i].radius;
-		this.elements[i].speed = move.elements[i].speed + move.duration * move.elements[i].acc;
-		this.elements[i].linear_speed = move.elements[i].linear_speed + move.duration * move.elements[i].linear_acc;
-		this.elements[i].linear_angle = move.elements[i].linear_angle;
-		if (move.elements[i].plane !== undefined) {
-			p = move.elements[i].plane.rotate(move.elements[i].bend * move.duration*UNIT, move.elements[i].bend_plane);
-			this.elements[i].angle = dummy.getElementAngle(i, p);
-			this.elements[i].plane = p;
+		socket.elements[i].radius = dummy.elements[i].radius;
+		socket.elements[i].speed = this.elements[i].speed + this.duration * this.elements[i].acc;
+		socket.elements[i].linear_speed = this.elements[i].linear_speed + this.duration * this.elements[i].linear_acc;
+		socket.elements[i].linear_angle = this.elements[i].linear_angle;
+		if (this.elements[i].plane !== undefined) {
+			p = this.elements[i].plane.rotate(this.elements[i].bend * this.duration*UNIT, this.elements[i].bend_plane);
+			socket.elements[i].angle = dummy.getElementAngle(i, p);
+			socket.elements[i].plane = p;
 		}
 	}
+	return socket;
 }
 
 //// A "MoveChain" is a queued tree of MoveLinks and other, nested MoveChains
@@ -821,11 +803,20 @@ MoveChain.prototype.reangle = function(element, angle) {
 
 // Rotate the move until it matches a target Move or Prop
 MoveChain.prototype.reorient = function(target) {
-	var hand = target.handVector();
-	var prop = target.propVector();
+	var hand;
+	var prop;
+	if (target instanceof Prop) {
+		hand = target.handVector();
+		prop = target.propVector();
+	} else if (target instanceof MoveLink || target instanceof MoveChain) {
+		// we could add "socket()" to Prop so we can just hit it like that
+		hand = target.socket().handVector();
+		prop = target.socket().propVector();
+	}
+	
 	//first we try this the easy way...
 	for (var i = 0; i<this.submoves.length; i++) {
-		if (hand.nearly(this.headHandVector(),0.05) && prop.nearly(this.headPropVector(),0.1)) {
+		if (hand.nearly(this.handVector(),0.05) && prop.nearly(this.propVector(),0.1)) {
 			return this;
 		} else {
 			this.phaseBy(1);
@@ -839,7 +830,7 @@ MoveChain.prototype.reorient = function(target) {
 	var ts = [];
 	for (var i =0; i<d; i++) {
 		this.spindummy(dummy);
-		if (hand.nearly(this.headHandVector(),0.05) && prop.nearly(this.headPropVector(),0.1)) {
+		if (hand.nearly(this.handVector(),0.05) && prop.nearly(this.propVector(),0.1)) {
 			ts.push(i);
 		}
 	}
@@ -860,7 +851,7 @@ MoveChain.prototype.reorient = function(target) {
 // This convenience method clones the last MoveLink on the queue and adds it to the tail end of the MoveChain
 MoveChain.prototype.extend = function() {
 	newlink = this.tail().clone();
-	newlink.fitTail(this);
+	newlink.fitTo(this.socket());
 	this.add(newlink);
 	return newlink;
 }
@@ -886,6 +877,9 @@ MoveChain.prototype.tail = function() {
         } 
 	return this.submoves[this.submoves.length-1].tail();
 }
+MoveChain.prototype.socket = function() {
+	return this.tail().socket();
+}
 MoveChain.prototype.current = function() {
 	return this.submoves[this.p].current();
 }
@@ -904,28 +898,8 @@ MoveChain.prototype.clone = function() {
 	}
 	return chain;
 }
-MoveChain.prototype.tailVector = function(element) {
-	return this.tail().tailVector(element);
-}
-MoveChain.prototype.tailHandVector = function() {
-	return this.tailVector(HAND);
-}
-MoveChain.prototype.tailPropVector = function() {
-	return this.tailVector(PROP);
-}
-MoveChain.prototype.headVector = function(element) {
-	return this.head().headVector(element);
-}
-MoveChain.prototype.headHandVector = function() {
-	return this.headVector(HAND);
-}
-MoveChain.prototype.headPropVector = function() {
-	return this.headVector(PROP);
-}
-
-// getVector defaults to tailVector, not headVector
 MoveChain.prototype.getVector = function(element) {
-	return this.tailVector(element);
+	return this.head().getVector(element);
 }
 MoveChain.prototype.handVector = function() {
 	return this.getVector(HAND);
@@ -933,16 +907,10 @@ MoveChain.prototype.handVector = function() {
 MoveChain.prototype.propVector = function() {
 	return this.getVector(PROP);
 }
-MoveChain.prototype.fitTail = function(move) {
-	move = move.tail();
-	var head = this.head();
-	head.fitTail(move);
-	this.refit();
-}
 // I am no longer using this, but I will keep it around just in case
 MoveChain.prototype.refit = function() {
 	for (var i = 1; i<this.submoves.length; i++) {
-		this.submoves[i].fitTail(this.submoves[i-1]);
+		this.submoves[i].fitTo(this.submoves[i-1].socket());
 	}
 	return this;
 }
