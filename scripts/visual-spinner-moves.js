@@ -1,7 +1,7 @@
 MoveFactory.prototype.staticspin= function(options) {
 	options = this.defaults(options,{
-		method: "staticspin",
-		name: "Static Spin",
+		build: "staticspin",
+		movename: "Static Spin",
 		orient: THREE,
 		extend: TINY,
 		plane: WALL,
@@ -18,15 +18,15 @@ MoveFactory.prototype.staticspin= function(options) {
 	segment.prop.speed = options.direction*options.speed;
 	var move = new MoveChain();
 	move.add(segment);
-	move.name = "static spin";
+	move.movename = "static spin";
 	move.definition = options;
 	return move;
 }
 
 MoveFactory.prototype.superman= function(options) {
 	options = this.defaults(options,{
-		method: "superman",
-		name: "Superman",
+		build: "superman",
+		movename: "Superman",
 		orient: THREE,
 		plane: FLOOR,
 		direction: CLOCKWISE,
@@ -55,8 +55,8 @@ MoveFactory.prototype.superman= function(options) {
 
 MoveFactory.prototype.flower = function(options) {
 	options = this.defaults(options,{
-		method: "flower",
-		name: "Flower",
+		build: "flower",
+		movename: "Flower",
 		orient: THREE,
 		plane: WALL,
 		direction: CLOCKWISE,
@@ -85,24 +85,20 @@ MoveFactory.prototype.flower = function(options) {
 	segment.hand.plane = options.plane;
 	segment.hand.angle = options.orient;
 	segment.prop.angle = options.orient + options.mode;
-	if (options.petals==0) {
-		segment.duration = 1;
-	} else {
-		segment.duration = 1/options.petals;
-	}
+	segment.duration = 0.25;
 	var move = new MoveChain();
 	move.add(segment);
-	for (var i=1; i<options.petals; i++) {
-		move.extend();
-	}
+	move.extend();
+	move.extend();
+	move.extend();
 	move.definition = options;
 	return move;
 }
 
 MoveFactory.prototype.petal = function(options) {
 	options = this.defaults(options,{
-		method: "petal",
-		name: "(flower)",
+		build: "petal",
+		movename: "(flower)",
 		orient: THREE,
 		plane: WALL,
 		direction: CLOCKWISE,
@@ -198,8 +194,8 @@ MoveFactory.prototype.twoPropFlower = function(options) {
 
 MoveFactory.prototype.ccap = function(options) {
 	options = this.defaults(options,{
-		method: "ccap",
-		name: "C-CAP",
+		build: "ccap",
+		movename: "C-CAP",
 		plane: WALL,
 		orient: THREE,
 		direction: CLOCKWISE,
@@ -207,6 +203,8 @@ MoveFactory.prototype.ccap = function(options) {
 		antipetals: 4, 
 		extend: 1,
 		speed: 1,
+		phase: 0,
+		duration: 1
 	});
 	segment = new MoveLink();
 	segment.duration = 0.25;
@@ -228,22 +226,27 @@ MoveFactory.prototype.ccap = function(options) {
 	move.extend();
 	move.tail().hand.speed = options.speed*options.direction;
 	move.tail().prop.speed = (options.inpetals+1)*options.speed*options.direction;
+	move.phaseBy(options.phase);
+	if (options.duration < 1) {
+		move = move.split(options.duration*this.getDuration())[0];
+	}
 	move.definition = options;
 	return move;
 }
 
-
 MoveFactory.prototype.pendulum = function(options) {
 	options = this.defaults(options,{
-		method: "pendulum",
-		name: "Pendulum",
-		orient: DOWN,
+		build: "pendulum",
+		movename: "Pendulum",
+		orient: SIX,
 		plane: WALL,
 		direction: CLOCKWISE,
+		speed: 1,
 		extend: 1, 
 		spin: INSPIN,
-		speed: 1,
-		pivot: undefined
+		pivot: undefined,
+		duration: 1,
+		phase: 0
 	});
 	var segment = new MoveLink();
 	if (options.pivot!==undefined) {
@@ -269,9 +272,13 @@ MoveFactory.prototype.pendulum = function(options) {
 	move.tail().prop.acc = 8*options.direction*options.speed*options.spin;
 	move.extend();
 	move.tail().prop.acc = 8*options.direction*options.speed*options.spin;
+	move.phaseBy(options.phase);
+	if (options.duration < 1) {
+		move = move.split(options.duration*this.getDuration())[0];
+	}
 	move.definition = options;
-	if (options.spin == ANTISPIN) {
-		move.definition.name = "Iso-Pendulum";
+	if (options.spin === ANTISPIN) {
+		move.definition.movename = "Iso-Pendulum";
 	}
 	return move;
 }
@@ -279,15 +286,17 @@ MoveFactory.prototype.pendulum = function(options) {
 
 MoveFactory.prototype.onepointfive = function(options) {
 	options = this.defaults(options,{
-		method: "onepointfive",
-		name: "1.5",
+		build: "onepointfive",
+		movename: "1.5",
 		orient: DOWN,
 		plane: WALL,
 		direction: CLOCKWISE,
 		extend: 1, 
 		spin: INSPIN,
 		speed: 1,
-		pivot: undefined
+		pivot: undefined,
+		phase: 0,
+		duration: 1
 	});
 	var segment = new MoveLink();
 	if (options.pivot!==undefined) {
@@ -313,6 +322,10 @@ MoveFactory.prototype.onepointfive = function(options) {
 	move.tail().prop.acc = 8*options.direction*options.speed*options.spin;
 	move.extend();
 	move.tail().prop.acc = 24*options.direction*options.speed*options.spin;
+	move.phaseBy(options.phase);
+	if (options.duration < 1) {
+		move = move.split(options.duration*this.getDuration())[0];
+	}
 	move.definition = options;
 	return move;
 }
@@ -320,8 +333,8 @@ MoveFactory.prototype.onepointfive = function(options) {
 MoveFactory.prototype.linex = function(options) {
 	// A linex with harmonics = 1 is a linear extension.  harmonics = 2 is a linear isolation;
 	options = this.defaults(options,{
-		method: "linex",
-		name: "Linear Extension",
+		build: "linex",
+		movename: "Linear Extension",
 		orient: THREE,
 		direction: CLOCKWISE,
 		harmonics: 1,
@@ -330,7 +343,9 @@ MoveFactory.prototype.linex = function(options) {
 		plane: WALL,
 		extend: 1,
 		offset: 0,
-		pivot: undefined
+		pivot: undefined,
+		phase: 0,
+		duration: 1
 	});
 	segment = new MoveLink();
 	if (options.pivot!==undefined) {
@@ -358,9 +373,13 @@ MoveFactory.prototype.linex = function(options) {
 	move.tail().hand.linear_acc = 32*options.speed;
 	move.extend();
 	move.tail().hand.linear_acc = -32*options.speed;
+	if (options.duration < 1) {
+		move = move.split(options.duration*this.getDuration())[0];
+	}
+	move.phaseBy(options.phase);
 	move.definition = options;
 	if (options.harmonics == 2) {
-		move.definition.name = "Linear Isolation";
+		move.definition.movename = "Linear Isolation";
 	}
 	return move;
 }
@@ -369,15 +388,16 @@ MoveFactory.prototype.linex = function(options) {
 MoveFactory.prototype.isolation = function(options) {
 	// A no-offset isolation is a unit-circle extension. An anti-spin isolation is a cateye;
 	options = this.defaults(options,{
-		method: "isolation",
-		name: "Isolation",
+		build: "isolation",
+		movename: "Isolation",
 		orient: THREE,
 		plane: WALL,
 		direction: CLOCKWISE,
 		spin: INSPIN,
 		offset: OFFSET,
 		speed: 1,
-		pivot: undefined
+		pivot: undefined,
+		phase: 0
 	});
 	var segment = new MoveLink();
 	if (options.pivot!==undefined) {
@@ -393,21 +413,26 @@ MoveFactory.prototype.isolation = function(options) {
 	segment.hand.plane = options.plane;
 	segment.hand.angle = options.orient;
 	segment.prop.angle = options.orient + options.offset;
+	segment.duration = 0.25;
 	var move = new MoveChain();
 	move.add(segment);
+	move.extend();
+	move.extend();
+	move.extend();
+	move.phaseBy(options.phase);
 	move.definition = options;
 	if (options.spin == ANTISPIN) {
-		move.definition.name = "Cat-Eye";
+		move.definition.movename = "Cat-Eye";
 	} else if (options.offset == NOOFFSET) {
-		move.definition.name = "Unit Circle Extension";
+		move.definition.movename = "Unit Circle Extension";
 	}
 	return move;
 }
 
 MoveFactory.prototype.toroid = function(options) {
 	options = this.defaults(options,{
-		method: "toroid",
-		name: "Toroid",
+		build: "toroid",
+		movename: "Toroid",
 		orient: THREE,
 		plane: WALL,
 		direction: CLOCKWISE,

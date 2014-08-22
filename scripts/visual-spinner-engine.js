@@ -216,7 +216,7 @@ function nearly(n1,n2, delta) {
 	// Props define angles uniquely in terms of spherical coordinates: zenith and azimuth
 	// Moves define angles in spinner's terms: distance from a reference angle in the wall, wheel, or floor plane 
 function Prop() {
-	this.name = undefined;
+	this.propname = undefined;
 	// These elements define the Prop's position
 	// "hand" and "prop" are used in almost every move
 	// "home" should be used when the spinner's body is moving, e.g. walking around
@@ -446,7 +446,7 @@ Prop.prototype.dummitize = function() {
 
 //// A "MoveLink" is the simplest kind of movement.  It defines a single, continuous movement.
 function MoveLink() {
-	this.name = "not defined";
+	this.movename = "not defined";
 	// the default MoveLink is a clockwise static spin starting from the right
 	this.elements = [];
 	for (var i = HOME; i<=GRIP; i++) {
@@ -660,7 +660,7 @@ MoveLink.prototype.socket = function() {
 //// A "MoveChain" is a queued tree of MoveLinks and other, nested MoveChains
 // This allows a MoveChain to represent multiple kinds of movements in sequences
 function MoveChain() {
-	this.name = "not defined";
+	this.movename = "not defined";
 	this.p = 0;
 	this.oneshot = false;
 	this.started = false;
@@ -751,33 +751,10 @@ MoveChain.prototype.split = function(t) {
 	}
 	return [chain1, chain2];
 }
-// Rotate through submoves, changing which one comes first
-MoveChain.prototype.phaseBy = function(phase) {
-	//this currently trusts that the head and tail of the move fit together
-	if (phase===undefined) {phase = 1;}
-	if (this.definition !== undefined) {
-		if (this.definition.phase === undefined) {
-			this.definition.phase = 0;
-		} else {
-			// this might not be quite right.
-			this.definition.phase = (this.definition.phase + phase) % this.submoves.length;
-		}
-	}
-	if (phase>0) {
-		for (var i = 0; i<phase; i++) {
-			this.submoves.push(this.submoves.shift());
-		}
-	} else if (phase<0) {
-		for (var i = 0; i>phase; i--) {
-			this.submoves.unshift(this.submoves.pop());
-		}
-	}
-	return this;
-}
+
 
 // Rotate the move until a specified element matches a specified angle
 MoveChain.prototype.reangle = function(element, angle) {
-	//first we try this the easy way...
 	for (var i = HOME; i<GRIP; i++) {
 		if (nearly(this.head()[element].angle, angle, 0.1)) {
 			return this;
@@ -785,26 +762,6 @@ MoveChain.prototype.reangle = function(element, angle) {
 			this.phaseBy(1);
 		}
 	}
-	//...then we try it the hard way...
-	var dummy = new Prop();
-	dummy.dummitize();
-	var d = this.getDuration()*BEAT;
-	var ts = [];
-	for (var i =0; i<d; i++) {
-		this.spindummy(dummy);
-		if (nearly(dummy.getElementAngle(element,this.current()[element].plane), angle, 0.1)) {
-			ts.push(i);
-		}
-	}
-	this.reset();
-	var halves;
-	if (ts.length>0) {
-		halves = this.split(ts[0]);
-		halves[1].concatenate(halves[0]);
-		this.submoves = halves[1].submoves;
-		return this;
-	}
-	//...and if that doesn't work we just give up.
 	alert("alignment failed.");
 	return this;
 }
@@ -821,8 +778,6 @@ MoveChain.prototype.reorient = function(target) {
 		hand = target.socket().handVector();
 		prop = target.socket().propVector();
 	}
-	
-	//first we try this the easy way...
 	for (var i = 0; i<this.submoves.length; i++) {
 		if (hand.nearly(this.handVector(),0.05) && prop.nearly(this.propVector(),0.1)) {
 			return this;
@@ -830,28 +785,6 @@ MoveChain.prototype.reorient = function(target) {
 			this.phaseBy(1);
 		}
 	}
-	
-	//...then we try it the hard way...
-	var dummy = new Prop();
-	dummy.dummitize();
-	var d = this.getDuration()*BEAT;
-	var ts = [];
-	for (var i =0; i<d; i++) {
-		this.spindummy(dummy);
-		if (hand.nearly(this.handVector(),0.05) && prop.nearly(this.propVector(),0.1)) {
-			ts.push(i);
-		}
-	}
-	this.reset();
-	var halves;
-	if (ts.length>0) {
-		halves = this.split(ts[0]);
-		halves[1].concatenate(halves[0]);
-		this.submoves = halves[1].submoves;
-		return this;
-	}
-	
-	//...and if that doesn't work we just give up.
 	alert("alignment failed.");
 	return this;
 }
@@ -935,23 +868,48 @@ PropFactory.prototype.defaults = function(options, defaults) {
 }
 PropFactory.prototype.parse = function(json) {
 	var definition = JSON.parse(json);
-	return this[definition.prop](definition);
+	return definition;
+}
+Prop.prototype.apply = function(json, fix) {
+	var definition = PropFactory.prototype.parse(json);
+	for (var i = HOME; i<=GRIP; i++) {
+		this[ELEMENTS[i]].radius = definition[ELEMENTS[i]].radius;
+		this[ELEMENTS[i]].azimuth = definition[ELEMENTS[i]].azimuth;
+		this[ELEMENTS[i]].zenith = definition[ELEMENTS[i]].zenith;
+	}
+	this.roll = definition.roll;
+	this.propname = definition.propname;
+	this.emptyMoves();
+	var jmove;
+	for (var i = 0; i<definition.moves.length; i++) {
+		jmove = JSON.stringify(definition.moves[i]);
+		this.addMove(MoveFactory.prototype.build(jmove),fix);
+	}
+}
+Prop.prototype.applyFix = function(json) {
+	this.apply(json,true);
 }
 ///these methods should not be on the factories
-PropFactory.prototype.stringify = function(prop) {
+Prop.prototype.stringify = function() {
 	// This currently won't exist
-	var definition = {};
+	
+	var definition = {	propname: this.propname,
+					home: {},
+					pivot: {},
+					hand: {},
+					prop: {},
+					grip: {}};
 	for (var i = HOME; i<=GRIP; i++) {
-		definition[elements[i]].radius = prop[elements[i]].radius;
-		definition[elements[i]].azimuth = prop[elements[i]].azimuth;
-		definition[elements[i]].zenith = prop[elements[i]].zenith;
-		//should this have roll?
+		definition[ELEMENTS[i]].radius = this[ELEMENTS[i]].radius;
+		definition[ELEMENTS[i]].azimuth = this[ELEMENTS[i]].azimuth;
+		definition[ELEMENTS[i]].zenith = this[ELEMENTS[i]].zenith;
 	}
+	definition.roll = this.roll;
 	definition.moves = [];
-	for (var i = 0; i<prop.move.submoves.length; i++) {
-		definition.moves[i] = MoveFactory.stringify(prop.move.submoves[i]);
+	for (var i = 0; i<this.move.submoves.length; i++) {
+		definition.moves[i] = this.move.submoves[i].definition;
 	}
-	return JSON.stringify(prop.definition);
+	return JSON.stringify(definition);
 }
 
 function MoveFactory() {
@@ -968,11 +926,48 @@ MoveFactory.prototype.defaults = function(options, defaults) {
 }
 MoveFactory.prototype.parse = function(json) {
 	var definition = JSON.parse(json);
-	return this[definition.method](definition);
+	if (definition.plane !== undefined) {
+		definition.plane = new Vector(definition.plane.x,definition.plane.y,definition.plane.z);
+	}
+	return definition;
+}
+MoveFactory.prototype.build = function(json) {
+	var definition = this.parse(json);
+	var move = this[definition.build](definition);
+	return move;
 }
 
-MoveFactory.prototype.stringify = function(move) {
-	if (move.definition !== undefined) {
-		return JSON.stringify(move.definition);
+MoveLink.prototype.stringify = function() {
+	if (this.definition !== undefined) {
+		return JSON.stringify(this.definition);
 	}
+}
+MoveChain.prototype.stringify = function() {
+	if (this.definition !== undefined) {
+		return JSON.stringify(this.definition);
+	}
+}
+
+// Rotate through submoves, changing which one comes first
+MoveChain.prototype.phaseBy = function(phase) {
+	//this currently trusts that the head and tail of the move fit together
+	if (phase===undefined) {phase = 1;}
+	if (this.definition !== undefined) {
+		if (this.definition.phase === undefined) {
+			this.definition.phase = 0;
+		} else {
+			// this might not be quite right.
+			this.definition.phase = (this.definition.phase + phase) % this.submoves.length;
+		}
+	}
+	if (phase>0) {
+		for (var i = 0; i<phase; i++) {
+			this.submoves.push(this.submoves.shift());
+		}
+	} else if (phase<0) {
+		for (var i = 0; i>phase; i--) {
+			this.submoves.unshift(this.submoves.pop());
+		}
+	}
+	return this;
 }
