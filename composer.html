@@ -33,46 +33,31 @@ table {position: relative; top: -20px;}
 <script src="scripts/visual-spinner-renderers.js"></script>
 <script>
 // set parameters
-var movenames = {
-"xtsn" : "Extension",
-"1pif" : "1-Petal In-Spin Flower",
-"2pif" : "2-Petal In-Spin Flower",
-"4pif" : "4-Petal In-Spin Flower",
-"3paf" : "3-Petal Anti-Spin Flower",
-"4paf" : "4-Petal Anti-Spin Flower",
-"pend": "Pendulum",
-"1pt5" : "One Point Five"
-}
 function allowDrop(event) {event.preventDefault();}
 function drag(event) {
-	event.dataTransfer.setData("Text",event.target.value);
+	var def = event.target.value;
+	def = JSON.parse(def);
+	def = augmentDefinition(def);
+	def = JSON.stringify(def);
+	event.dataTransfer.setData("Text",def);
 }
 function drop1(event) {
 	event.preventDefault();
-	var parent = event.dataTransfer.getData("Text");
-	var def = defineMove(propOne, parent);
+	var def = event.dataTransfer.getData("Text");
+	var str = moves.parse(def);
 	var child = document.createElement("option");
-	// need to attach the "def" to it somehow
-	child.value = parent;
-	child.text = movenames[parent];
-	child.def = def;
-	def["description"] = child.text;
-	def["identifier"] = child.value;
+	child.text = str.movename;
+	child.value= def;
 	event.target.appendChild(child);
 	rebuildQueues();
 }
 function drop2(event) {
 	event.preventDefault();
-	var parent = event.dataTransfer.getData("Text");
-	// how do we get this? maybe drop1 and drop2?
-	var def = defineMove(propTwo, parent);
+	var def = event.dataTransfer.getData("Text");
+	var str = moves.parse(def);
 	var child = document.createElement("option");
-	// need to attach the "def" to it somehow
-	child.value = parent;
-	child.text = movenames[parent];
-	child.def = def;
-	def["description"] = child.text;
-	def["identifier"] = child.value;
+	child.text = str.movename;
+	child.value= def;
 	event.target.appendChild(child);
 	rebuildQueues();
 }
@@ -126,33 +111,19 @@ function setRadius(prop, box) {
 function buildQueue(prop, queue) {
 	var items = $("#"+queue + " select option");
 	prop.emptyMoves();
+	var def;
 	for (var i = 0; i<items.length; i++) {
-		prop.addMove(buildMove(prop, items[i].def), "defitted");	
+		def = items[i].value;
+		def = moves.parse(def);
+		prop.addMove(buildMove(prop, def));	
 	}
 }
 function buildMove(prop, def) {
-	var move;
 	var predict = prop.predict();
-	switch(def.move) {
-		case "flower":
-			move = moves.petal(def);
-			move.reorient(predict);
-		break;
-		case "pendulum":
-			move = moves.pendulum(def);
-			move.reorient(predict);
-			//move = move.slice(0,def.phases);
-		break;
-		case "onepointfive":
-			move = moves.onepointfive(def);
-			move.reorient(predict);
-			//move = move.slice(0,def.phases);
-		break;
-	}
+	var move = moves[def.build](def);
 	return move;
 }
-function defineMove(prop, movename) {
-	var def = {};
+function augmentDefinition(def) {
 	var val;
 	val = $('input[name=direction]:checked').val();
 	var mydir;
@@ -189,70 +160,12 @@ function defineMove(prop, movename) {
 		case "left": mypivot = NINE; break;
 		case "none": mypivot = undefined; break; 
 	}
-	var nphases;
-	switch(movename) {
-		case "xtsn":
-			if (mypivot===undefined) {
-				def = {move: "flower", direction: mydir, plane: myplane, petals: 0, spin: INSPIN, duration: mydur};
-			} else {
-				def = {move: "flower", direction: mydir, plane: myplane, petals: 0, spin: INSPIN, duration: mydur, orient: mypivot, pivot: 1};
-			}
-		break;
-		case "1pif":
-			if (mypivot===undefined) {
-				def = {move: "flower", direction: mydir, plane: myplane, petals: 1, spin: INSPIN, duration: mydur};
-			} else {
-				def = {move: "flower", direction: mydir, plane: myplane, petals: 1, spin: INSPIN, duration: mydur, orient: mypivot, pivot: 1};
-			}
-		break;
-		case "2pif":
-			if (mypivot===undefined) {
-				def = {move: "flower", direction: mydir, plane: myplane, petals: 2, spin: INSPIN, duration: mydur};
-			} else {
-				def = {move: "flower", direction: mydir, plane: myplane, petals: 2, spin: INSPIN, duration: mydur, orient: mypivot, pivot: 1};
-			}
-		break;
-		case "4pif":
-			if (mypivot===undefined) {
-				def = {move: "flower", direction: mydir, plane: myplane, petals: 4, spin: INSPIN, duration: mydur};
-			} else {
-				def = {move: "flower", direction: mydir, plane: myplane, petals: 4, spin: INSPIN, duration: mydur, orient: mypivot, pivot: 1};
-			}
-		break;
-		case "3paf":
-			if (mypivot===undefined) {
-				def = {move: "flower", direction: mydir, plane: myplane, petals: 4, spin: ANTISPIN, duration: mydur};
-			} else {
-				def = {move: "flower", direction: mydir, plane: myplane, petals: 4, spin: ANTISPIN, duration: mydur, orient: mypivot, pivot: 1};
-			}
-		break;
-		case "4paf":
-			if (mypivot===undefined) {
-				def = {move: "flower", direction: mydir, plane: myplane, petals: 4, spin: ANTISPIN, duration: mydur};
-			} else {
-				def = {move: "flower", direction: mydir, plane: myplane, petals: 4, spin: ANTISPIN, duration: mydur, orient: mypivot, pivot: 1};
-			}
-		break;
-		case "pend":
-			if (mydur===1) {
-				nphases = 4;
-			} if (mydur===0.5) {
-				nphases = 2;
-			} if (mydur===0.25) {
-				nphases = 1;
-			}
-			def = {move: "pendulum", direction: mydir, plane: myplane, phases: nphases};
-		break;
-		case "1pt5":
-			if (mydur===1) {
-				nphases = 4;
-			} if (mydur===0.5) {
-				nphases = 2;
-			} if (mydur===0.25) {
-				nphases = 1;
-			}
-			def = {move: "onepointfive", direction: mydir, plane: myplane, phases: nphases};
-		break;
+	def.direction = mydir;
+	def.plane = myplane;
+	def.duration = mydur;
+	if (mypivot!==undefined) {
+		def.orient = mypivot;
+		def.pivot = 1;
 	}
 	return def;
 }
@@ -279,15 +192,12 @@ function rebuildQueues() {
 	}
 	redraw();
 }
-
 function popExport() {
 	$("#popimport").hide();
 	$("#popexport").toggle();
-	var reds = $.makeArray($("#queue1 select option"));
-	reds = reds.map(function(item) {return item.def;});
-	var blues = $.makeArray($("#queue2 select option"));
-	blues = blues.map(function(item) {return item.def;});
-	$("#popexport textarea").html(JSON.stringify({"red" : reds, "blue" : blues}));
+	var red = propOne.stringify();
+	var blue = propTwo.stringify();
+	$("#popexport textarea").html("{red: {"+red+"}, blue: {"+blue+"}}");
 }
 function popImport() {
 	$("#popexport").hide();
@@ -295,31 +205,21 @@ function popImport() {
 }
 function importSubmit() {
 	var imported = $("#popimport textarea").val();
-	imported = JSON.parse(imported);
+	imported = props.parse(imported);
 	emptyQueues();
 	var newoption;
 	var plane;
-	for (var i = 0; i < imported.red.length; i++) {
+	for (var i = 0; i < imported.red.moves.length; i++) {
 		newoption = document.createElement("option");
-		newoption.def = imported.red[i];
-		newoption.value = newoption.def.identifier;
-		newoption.text = newoption.def.description;
-		if (newoption.def.plane !== undefined) {
-			plane = new Vector(newoption.def.plane.x,newoption.def.plane.y,newoption.def.plane.z);
-			newoption.def.plane = plane;
-		}
+		newoption.value = JSON.stringify(imported.red.moves[i]);
+		newoption.text = newoption.def.movename;
 		$("#queue1 select").append(newoption);
 
 	}
-	for (var i = 0; i < imported.blue.length; i++) {
+	for (var i = 0; i < imported.blue.moves.length; i++) {
 		newoption = document.createElement("option");
-		newoption.def = imported.blue[i];
-		newoption.value = newoption.def.identifier;
-		newoption.text = newoption.def.description;
-		if (newoption.def.plane !== undefined) {
-			plane = new Vector(newoption.def.plane.x,newoption.def.plane.y,newoption.def.plane.z);
-			newoption.def.plane = plane;
-		}
+		newoption.value= JSON.stringify(imported.blue.moves[i]);
+		newoption.text = newoption.def.movename;
 		$("#queue2 select").append(newoption);
 
 	}
@@ -327,23 +227,23 @@ function importSubmit() {
 	$("#popimport").toggle();
 }
 
+
 function populateMenu() {
 	var menu = $("#menu").children("select");
 	var options = [
-		"xtsn",
-		"1pif",
-		"2pif",
-		"4pif",
-		"3paf",
-		"4paf",
-		"pend",
-		"1pt5"
+		{movename: "Extension", build: "flower", spin: INSPIN, petals: 0},
+		{movename: "One-Petal In-Spin Flower", build: "flower", spin: INSPIN, petals: 1},
+		{movename: "Two-Petal In-Spin Flower", build: "flower", spin: INSPIN, petals: 2},
+		{movename: "Four-Petal In-Spin Flower", build: "flower", spin: INSPIN, petals: 4},
+		{movename: "Three-Petal Anti-Spin Flower", build: "flower", spin: ANTISPIN, petals: 3},
+		{movename: "Four-Petal Anti-Spin Flower", build: "flower", spin: ANTISPIN, petals: 4},
+		{movename: "Pendulum", build: "pendulum"},
+		{movename: "1.5", build: "onepointfive"},
 	];
+	var def;
 	for (var i = 0; i<options.length; i++) {
-		menu.append('<option value = '.concat(options[i],
-			' draggable="true" ondragstart="drag(event)">',
-			movenames[options[i]],
-			"</option"));
+		def = JSON.stringify(options[i]);
+		menu.append('<option draggable="true" value='+"'"+def+"'"+' ondragstart="drag(event)">'+options[i].movename+"</option");
 	}
 }
 
