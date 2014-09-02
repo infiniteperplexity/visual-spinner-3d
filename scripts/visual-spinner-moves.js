@@ -65,7 +65,8 @@ MoveFactory.prototype.flower = function(options) {
 		extend: 1,
 		speed: 1,
 		mode: DIAMOND,
-		pivot: undefined
+		pivot: null,
+		duration: 1
 	});
 	var segment = new MoveLink();
 	if (options.spin==INSPIN) {
@@ -73,24 +74,37 @@ MoveFactory.prototype.flower = function(options) {
 	} else {
 		segment.prop.speed = (options.petals-1)*options.spin*options.direction*options.speed;
 	}
-	if (options.pivot!==undefined) {
+	if (options.pivot != null) {
 		segment.pivot.angle = options.pivot;
 		segment.pivot.radius = 0.5;
 		segment.pivot.plane = options.plane;
 		segment.pivot.speed = 0;
 	}
-	segment.hand.radius = options.extend;
 	segment.hand.speed = options.direction*options.speed;
 	segment.prop.plane = options.plane;
 	segment.hand.plane = options.plane;
-	segment.hand.angle = options.orient;
-	segment.prop.angle = options.orient + options.mode;
+	if (options.extend != null) {
+		segment.hand.radius = options.extend;
+	}
+	if (options.orient != null) {
+		segment.hand.angle = options.orient;
+		if (options.mode != null) {
+			segment.prop.angle = options.orient + options.mode;
+		}
+	}
 	segment.duration = 0.25;
 	var move = new MoveChain();
 	move.add(segment);
 	move.extend();
 	move.extend();
 	move.extend();
+	if (options.duration < 1) {
+		move = move.slice(0,(options.duration-0.25)*4);
+	} else if (options.duration > 1) {
+		for (var i = 1; i<=options.duration; i+=0.25) {
+			move.add(move.submoves[4*(i-1)].clone());
+		}
+	}
 	move.definition = options;
 	return move;
 }
@@ -228,7 +242,11 @@ MoveFactory.prototype.ccap = function(options) {
 	move.tail().prop.speed = (options.inpetals+1)*options.speed*options.direction;
 	move.phaseBy(options.phase);
 	if (options.duration < 1) {
-		move = move.split(options.duration*this.getDuration())[0];
+		move = move.slice(0,(options.duration-0.25)*4);
+	} else if (options.duration > 1) {
+		for (var i = 1; i<=options.duration; i+=0.25) {
+			move.add(move.submoves[4*(i-1)].clone());
+		}
 	}
 	move.definition = options;
 	return move;
@@ -274,7 +292,11 @@ MoveFactory.prototype.pendulum = function(options) {
 	move.tail().prop.acc = 8*options.direction*options.speed*options.spin;
 	move.phaseBy(options.phase);
 	if (options.duration < 1) {
-		move = move.split(options.duration*this.getDuration())[0];
+		move = move.slice(0,(options.duration-0.25)*4);
+	} else if (options.duration > 1) {
+		for (var i = 1; i<=options.duration; i+=0.25) {
+			move.add(move.submoves[4*(i-1)].clone());
+		}
 	}
 	move.definition = options;
 	if (options.spin === ANTISPIN) {
@@ -324,7 +346,11 @@ MoveFactory.prototype.onepointfive = function(options) {
 	move.tail().prop.acc = 24*options.direction*options.speed*options.spin;
 	move.phaseBy(options.phase);
 	if (options.duration < 1) {
-		move = move.split(options.duration*this.getDuration())[0];
+		move = move.slice(0,(options.duration-0.25)*4);
+	} else if (options.duration > 1) {
+		for (var i = 1; i<=options.duration; i+=0.25) {
+			move.add(move.submoves[4*(i-1)].clone());
+		}
 	}
 	move.definition = options;
 	return move;
@@ -373,10 +399,14 @@ MoveFactory.prototype.linex = function(options) {
 	move.tail().hand.linear_acc = 32*options.speed;
 	move.extend();
 	move.tail().hand.linear_acc = -32*options.speed;
-	if (options.duration < 1) {
-		move = move.split(options.duration*this.getDuration())[0];
-	}
 	move.phaseBy(options.phase);
+	if (options.duration < 1) {
+		move = move.slice(0,(options.duration-0.25)*4);
+	} else if (options.duration > 1) {
+		for (var i = 1; i<=options.duration; i+=0.25) {
+			move.add(move.submoves[4*(i-1)].clone());
+		}
+	}
 	move.definition = options;
 	if (options.harmonics == 2) {
 		move.definition.movename = "Linear Isolation";
@@ -462,16 +492,20 @@ MoveFactory.prototype.toroid = function(options) {
 	segment.hand.plane = options.plane;
 	segment.hand.angle = options.orient;
 	segment.prop.angle = options.orient + options.mode + QUARTER;
-	//if (options.harmonics==0) {
-		segment.duration = 1;
-	//} else {
-	//	segment.duration = 1/options.harmonics;
-	//}
+	segment.duration = 0.25;
 	var move = new MoveChain();
 	move.add(segment);
-	//for (var i = 1; i<options.harmonics; i++) {
-	//	move.extend();
-	//}
+	move.extend();
+	move.extend();
+	move.extend();
+	move.phaseBy(options.phase);
+	if (options.duration < 1) {
+		move = move.slice(0,(options.duration-0.25)*4);
+	} else if (options.duration > 1) {
+		for (var i = 1; i<=options.duration; i+=0.25) {
+			move.add(move.submoves[4*(i-1)].clone());
+		}
+	}
 	move.definition = options;
 	return move;
 }

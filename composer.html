@@ -30,8 +30,7 @@ table {position: relative; top: -20px;}
 <script src="scripts/requestAnimationFrame.js"></script>
 <script src="scripts/visual-spinner-engine.js"></script>
 <script src="scripts/visual-spinner-moves.js"></script>
-<script src="scripts/visual-spinner-renderers.js"></script>
-<script>
+<script src="scripts/visual-spinner-renderers.js"></script><script>
 // set parameters
 function allowDrop(event) {event.preventDefault();}
 function drag(event) {
@@ -47,7 +46,7 @@ function drop1(event) {
 	var str = moves.parse(def);
 	var child = document.createElement("option");
 	child.text = str.movename;
-	child.value= def;
+	child.value = def;
 	event.target.appendChild(child);
 	rebuildQueues();
 }
@@ -158,12 +157,12 @@ function augmentDefinition(def) {
 		case "down": mypivot = SIX; break;
 		case "right": mypivot = THREE; break;
 		case "left": mypivot = NINE; break;
-		case "none": mypivot = undefined; break; 
+		case "none": mypivot = null; break; 
 	}
 	def.direction = mydir;
 	def.plane = myplane;
 	def.duration = mydur;
-	if (mypivot!==undefined) {
+	if (mypivot!==null) {
 		def.orient = mypivot;
 		def.pivot = 1;
 	}
@@ -231,12 +230,12 @@ function importSubmit() {
 function populateMenu() {
 	var menu = $("#menu").children("select");
 	var options = [
-		{movename: "Extension", build: "flower", spin: INSPIN, petals: 0},
-		{movename: "One-Petal In-Spin Flower", build: "flower", spin: INSPIN, petals: 1},
-		{movename: "Two-Petal In-Spin Flower", build: "flower", spin: INSPIN, petals: 2},
-		{movename: "Four-Petal In-Spin Flower", build: "flower", spin: INSPIN, petals: 4},
-		{movename: "Three-Petal Anti-Spin Flower", build: "flower", spin: ANTISPIN, petals: 3},
-		{movename: "Four-Petal Anti-Spin Flower", build: "flower", spin: ANTISPIN, petals: 4},
+		{movename: "Extension", build: "flower", spin: INSPIN, petals: 0, orient: null, mode: null},
+		{movename: "One-Petal In-Spin Flower", build: "flower", spin: INSPIN, petals: 1, orient: null, mode: null},
+		{movename: "Two-Petal In-Spin Flower", build: "flower", spin: INSPIN, petals: 2, orient: null, mode: null},
+		{movename: "Four-Petal In-Spin Flower", build: "flower", spin: INSPIN, petals: 4, orient: null, mode: null},
+		{movename: "Three-Petal Anti-Spin Flower", build: "flower", spin: ANTISPIN, petals: 3, orient: null, mode: null},
+		{movename: "Four-Petal Anti-Spin Flower", build: "flower", spin: ANTISPIN, petals: 4, orient: null, mode: null},
 		{movename: "Pendulum", build: "pendulum"},
 		{movename: "1.5", build: "onepointfive"},
 	];
@@ -366,7 +365,7 @@ function nothing() {
 					</tr>
 					<tr>
 						<td><input onclick="rebuildQueues();" checked="checked" name="hand1" value="left" type="radio">Left</td>
-						<td><input onclick ="rebuildQueues();" type="number" id="radius1" min="0" max="1" step = "0.5" value="1"></td>
+						<td><input onclick="rebuildQueues();" id="radius1" min="0" max="1" step="0.5" value="1" type="number"></td>
 						<td><input onclick="rebuildQueues();" name="hand1" value="right" type="radio">Right</td>
 					</tr>	
 					<tr>
@@ -409,7 +408,7 @@ function nothing() {
 					</tr>
 					<tr>
 						<td><input onclick="rebuildQueues();" name="hand2" value="left" type="radio">Left</td>
-						<td><input onclick ="rebuildQueues();" type="number" id="radius2" min="0" max="1" step = "0.5" value="1"></td>
+						<td><input onclick="rebuildQueues();" id="radius2" min="0" max="1" step="0.5" value="1" type="number"></td>
 						<td><input onclick="rebuildQueues();" checked="checked" name="hand2" value="right" type="radio">Right</td>
 					</tr>	
 					<tr>
@@ -491,13 +490,13 @@ function nothing() {
 		</div>
 	</section>
 </div>
-<div id="popexport">
+<div style="display: none;" id="popexport">
 	<textarea rows="4" cols="50"></textarea><br>
 	<button type="button" onclick="$('#popexport').toggle()">Done</button>
 </div>
-<div id="popimport">
+<div style="display: none;" id="popimport">
 	<textarea rows="4" cols="50"></textarea><br>
-	<button type="button" onclick = "popImport();">Cancel</button>
-	<button type="button" onclick = "importSubmit();">Submit</button>
+	<button type="button" onclick="popImport();">Cancel</button>
+	<button type="button" onclick="importSubmit();">Submit</button>
 </div>
 </body></html>
