@@ -399,9 +399,9 @@ Prop.prototype.render = function() {
 Prop.prototype.addMove = function(myMove, fix) {
 	if (fix!==true && fix!=="fixed" && fix!=="fix") {
 		if (this.move.submoves.length>0) {
-			myMove.reorient(this.move.tail());
+			myMove.adjust(this.move.tail());
 		} else {
-			myMove.reorient(this);
+			myMove.adjust(this);
 		}
 	}
 	this.move.add(myMove);
@@ -556,12 +556,12 @@ MoveLink.prototype.current = function() {return this;}
 // Does nothing except return itself
 MoveLink.prototype.refit = function() {return this;}
 // Set the starting angle to an angle
-MoveLink.prototype.reangle = function(element, angle) {
+MoveLink.prototype.align = function(element, angle) {
 	this[element].angle = angle;
 	return this;
 }		
-// Reorient the MoveLink to match a Prop or Move
-MoveLink.prototype.reorient = function(target) {
+// adjust the MoveLink to match a Prop or Move
+MoveLink.prototype.adjust = function(target) {
 	if (target instanceof Prop) {
 		for (var i = HOME; i<=GRIP; i++) {
 			if (target.elements[i].azimuth != null && this.elements[i].plane != null) {
@@ -766,7 +766,7 @@ MoveChain.prototype.split = function(t) {
 
 
 // Rotate the move until a specified element matches a specified angle
-MoveChain.prototype.reangle = function(element, angle) {
+MoveChain.prototype.align = function(element, angle) {
 	for (var i = HOME; i<GRIP; i++) {
 		if (nearly(this.head()[element].angle, angle, 0.1)) {
 			return this;
@@ -779,7 +779,7 @@ MoveChain.prototype.reangle = function(element, angle) {
 }
 
 // Rotate the move until it matches a target Move or Prop
-MoveChain.prototype.reorient = function(target) {
+MoveChain.prototype.adjust = function(target) {
 	var hand;
 	var prop;
 	if (target instanceof Prop) {

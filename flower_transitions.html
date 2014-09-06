@@ -87,9 +87,9 @@ function canvasSetup() {
 	myProps.push(propFour);
 	var doublemove;
 	for (var i = 0; i<8; i++) {
-		doublemove = moves.twoPropFlower({mode: (i%2)*SPLIT, direction: CLOCKWISE, spin: ANTISPIN, duration: (i==4) ? 1 : 1.25});
+		doublemove = moves.twoPropFlower({entry: null, hands: (i%2)*SPLIT, direction: CLOCKWISE, spin: ANTISPIN, duration: (i==4) ? 1 : 1.25});
 		propOne.addPartnership(doublemove, propTwo);
-		doublemove = moves.twoPropFlower({mode: (i%2)*SPLIT, direction: COUNTERCLOCKWISE, spin: ANTISPIN, duration: (i==4) ? 1 : 1.25});
+		doublemove = moves.twoPropFlower({entry: null, hands: (i%2)*SPLIT, direction: COUNTERCLOCKWISE, spin: ANTISPIN, duration: (i==4) ? 1 : 1.25});
 		propThree.addPartnership(doublemove, propFour);
 	}
 }
