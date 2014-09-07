@@ -16,7 +16,14 @@ PhoriaPropRenderer.prototype.render = function(myProp) {
 	}
 	mat4.rotate(mat, mat, myProp.prop.azimuth, ZAXIS);
 	mat4.rotate(mat, mat, myProp.prop.zenith, YAXIS);
+	// prop radius should be handled by prop-specific renderers
+	// grip works a little differently from the other elements
+	mat4.translate(mat, mat, [0,0,-myProp.grip.radius]);
 	mat4.rotate(mat, mat, myProp.roll, ZAXIS);
+	//!!! Note: At this point, rotating GRIP just flat-out does not work
+	//mat4.rotate(mat, mat, myProp.grip.azimuth-myProp.prop.azimuth, ZAXIS);
+	//mat4.rotate(mat, mat, myProp.grip.zenith-myProp.prop.zenith, YAXIS);
+	
 	for (var i=0; i<this.shapes.length; i++) {
 		this.shapes[i].matrix = mat;
 	}
@@ -32,6 +39,10 @@ PhoriaPropRenderer.prototype.deactivate = function(scene) {
 			this.scene.graph.splice(this.scene.graph.indexOf(this.shapes[i]),1);
 		}
 	}
+}
+
+PropFactory.prototype.scaleProp = function(shape, scale) {
+	//someday there might be code here
 }
 
 PropFactory.prototype.translatePoints = function(shape, vector) {
@@ -303,8 +314,10 @@ CanvasPropRenderer.prototype.render = function(myProp) {
 		this.context.rotate(-myProp[elements[i]].azimuth);
 	}
 	this.context.rotate(myProp.prop.azimuth);
+	this.context.translate(myProp.prop.zenith*-myProp.grip.radius*this.pixels,0);
+	// grip rotation does not yet work
 	for (var i=0; i<this.shapes.length; i++) {
-		this.shapes[i].draw(this.context, myProp.prop.zenith, myProp.roll);
+		this.shapes[i].draw(this.context, myProp.prop.zenith, myProp.roll, myProp.prop.radius);
 	}
 	this.context.restore();
 }
@@ -356,13 +369,14 @@ function canvasLine(x1,y1,x2,y2,thickness,color) {
 	this.thickness = thickness;
 	this.color = color;
 }
-canvasLine.prototype.draw = function(context, zenith, roll) {
+canvasLine.prototype.draw = function(context, zenith, roll, scale) {
 	var scalex = Math.sin(zenith);
 	var scaley = Math.cos(roll);
 	context.save();
 	context.beginPath();
 	context.moveTo(this.x1*scalex, this.y1*scaley);
-	context.lineTo(this.x2*scalex, this.y2*scaley);
+	//context.lineTo(this.x2*scalex, this.y2*scaley);
+	context.lineTo(this.x2*scalex*scale, this.y2*scaley*scale);
 	context.lineWidth = this.thickness;
 	context.strokeStyle = this.color;
 	context.stroke();
@@ -375,9 +389,9 @@ function canvasBall(x, y, r, color, linecolor) {
 	this.color = color;
 	this.linecolor = linecolor;
 }
-canvasBall.prototype.draw = function(context, zenith, roll) {
-	var scalex = Math.sin(zenith);
-	var scaley = Math.cos(roll);
+canvasBall.prototype.draw = function(context, zenith, roll, scale) {
+	var scalex = Math.sin(zenith)*scale;
+	var scaley = Math.cos(roll)*scale;
 	context.save();
 	context.beginPath();
 	context.arc(this.x*scalex, this.y*scaley, this.radius, 0, 2*Math.PI);
@@ -389,6 +403,7 @@ canvasBall.prototype.draw = function(context, zenith, roll) {
 	context.restore();
 }
 
+//for now, canvasRing ignores scale
 function canvasRing(x, y, r, detail, thickness, color) {
 	this.x = x;
 	this.y = y;
@@ -435,9 +450,9 @@ function canvasFlame(x, y, r) {
 	this.fire_density = 10;
 	this.mote_size = 0.5;
 }
-canvasFlame.prototype.draw = function(context, zenith, roll) {
-	var scalex = Math.sin(zenith);
-	var scaley = Math.cos(roll);
+canvasFlame.prototype.draw = function(context, zenith, roll, scale) {
+	var scalex = Math.sin(zenith)*scale;
+	var scaley = Math.cos(roll)*scale;
 	context.save();
 	context.translate(this.x*scalex,this.y*scaley);
 	for (var i = 0; i < this.fire_density; i++) {
@@ -486,6 +501,13 @@ PropFactory.prototype.staffrender2d = function(options) {
 		r.shapes.push(flame2);
 	}
 	return r;
+}
+
+PropFactory.prototype.hoop = function(options) {
+	var p = new Prop();
+	p.renderer = this.hooprender(options);
+	p.renderer.activate();
+	return p;
 }
 
 

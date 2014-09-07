@@ -226,10 +226,10 @@ function Prop() {
 	this.pivot = new Spherical(TINY,QUARTER,TINY);
 	this.hand = new Spherical(TINY,QUARTER,TINY);
 	this.prop = new Spherical(1,QUARTER,TINY);
-	this.grip = new Spherical(0.5,QUARTER,TINY);
+	this.grip = new Spherical(TINY,QUARTER,TINY);
 	//this.elements = ["home","pivot","hand","prop","grip"];
 	this.elements = [this.home, this.pivot, this.hand, this.prop, this.grip];
-	// "roll", which I may rename to "twist", has no effect for poi, but for hoop or fans it represents twisting the grip
+	// "roll" has no effect for poi or staff, but for hoop or fans it represents rolling the grip
 	this.roll = 0;
 	// "renderer" is specific to a type of prop and a viewing interface
 	this.renderer = null;

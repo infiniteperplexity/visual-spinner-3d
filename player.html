@@ -1,0 +1,172 @@
+<!--Distributed under GNU Public License version 3-->
+<!DOCTYPE html>
+<html><head>
+<style>
+body {margin: 0; padding: 0; background-color: #679}
+h1, h2, header p {text-align: center}
+header {width: 1240px; height: 100px}
+#content {width: 1250px; height: 510px;}
+canvas {width: 400px; height: 400px; background-color: #000;}
+section {margin: 0; padding: 0}
+header, section div {vertical-align: top; padding: 2.5px; border: 5px solid gray; margin: -2.5px; display: inline-block;}
+#display {width: 400px; height: 400px; float: left}
+#popimport {height: 240px; width: 400px}
+</style>
+
+
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>VisualSpinner3D Player, by Glenn Wright</title>
+<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="scripts/gl-matrix-min.js"></script>
+<script src="scripts/phoria-min.js"></script>
+<script src="scripts/requestAnimationFrame.js"></script>
+<script src="scripts/visual-spinner-engine.js"></script>
+<script src="scripts/visual-spinner-moves.js"></script>
+<script src="scripts/visual-spinner-renderers.js"></script><script>
+// set parameters
+
+var HEIGHT = 400;
+var WIDTH = 400;
+var ORIGINX = WIDTH/2;
+var ORIGINY = HEIGHT/2;
+var BACKGROUND = "black";
+
+var view2d = false;
+
+var myProps = new Array(); 
+var moves = new MoveFactory();
+var props = new PropFactory();
+
+function init() {
+	ctx=document.getElementById('canvas').getContext('2d');
+	if( 	navigator.userAgent.match(/Android/i)
+		|| navigator.userAgent.match(/webOS/i)
+		|| navigator.userAgent.match(/iPhone/i)
+		|| navigator.userAgent.match(/iPad/i)
+		|| navigator.userAgent.match(/iPod/i)
+		|| navigator.userAgent.match(/BlackBerry/i)
+		|| navigator.userAgent.match(/Windows Phone/i)) {
+		$("#2d3d").val("2d");
+	} else {
+		$("#2d3d").val("3d");
+	}
+	canvasSetup();
+	canvasLoop();
+}
+
+function popImport() {
+	//$("#popimport").toggle();
+}
+function importSubmit() {
+	var imported = $("#popimport textarea").val();
+	imported = props.parse(imported);
+	var blue = JSON.stringify(imported.blue);
+	var red = JSON.stringify(imported.red);
+	propOne.apply(blue);
+	propTwo.apply(red);
+	canvasLoop();
+}
+
+var scene = new Phoria.Scene();
+var renderer;
+var propOne = props.poi({head_color: "blue", flame_color: "blue", scene: scene});
+var propTwo = props.poi({head_color: "red", flame_color: "red", scene: scene});
+function canvasSetup() {
+	var prop = new Prop();
+	var link = new MoveLink();
+	var angle = SIX;
+	canvas.height = HEIGHT;
+	canvas.width = WIDTH;
+	ctx.fillStyle = BACKGROUND;
+	ctx.strokeStyle = BACKGROUND;
+	ctx.fillRect(0,0,WIDTH,HEIGHT);
+	
+	// set up Phoria scene for 3D rendering
+	scene.camera.position = {x:0.0, y:1.0, z:10.0};
+	scene.perspective.aspect = canvas.width / canvas.height;
+	scene.viewport.width = canvas.width;
+	scene.viewport.height = canvas.height;
+	renderer = new Phoria.CanvasRenderer(canvas);
+	var plane = Phoria.Util.generateTesselatedPlane(8,8,0,20);
+	scene.graph.push(Phoria.Entity.create({
+		points: plane.points,
+		edges: plane.edges,
+		polygons: plane.polygons,
+		style: {
+				 drawmode: "wireframe",
+				 shademode: "plain",
+				 linewidth: 0.5,
+				 objectsortmode: "back"
+			}}));
+	scene.graph.push(new Phoria.DistantLight());
+	var light = new Phoria.DistantLight();
+	light.direction.x = 1;
+	light.direction.z = 0;
+	scene.graph.push(light);
+	light = new Phoria.DistantLight();
+	light.direction.y = 1;
+	light.direction.z = 0;
+	scene.graph.push(light);
+	// set up props
+	propOne.hand.radius = 1;
+	propTwo.hand.radius = 1;
+	propOne.rotateHand(SPLIT);
+	propOne.rotateProp(SPLIT);
+	myProps.push(propOne);
+	myProps.push(propTwo);
+	propOne.addMove(moves.contactroll());
+	propTwo.addMove(moves.contactroll());
+	redraw();
+}
+
+Prop.prototype.spinfail = function() {
+	alert("can't spin with an empty queue");
+}
+
+// animation loop
+function canvasLoop() {
+	setTimeout(function() {
+		requestAnimationFrame(canvasLoop);
+		redraw();
+		for (var i = 0; i < myProps.length; i++) {
+			myProps[i].spin();
+			myProps[i].render();
+		}
+	},1000/BEAT);
+}
+function redraw() {
+	for (var i = 0; i < myProps.length; i++) {
+		myProps[i].render();
+	}
+	if (view2d == true) {
+		ctx.fillStyle = "rgba(0,0,0,0.01)";
+		ctx.strokeStyle=BACKGROUND;
+		ctx.fillRect(0,0,WIDTH,HEIGHT);
+	}
+	else {
+		scene.modelView();
+		renderer.render(scene);
+	}
+}
+
+</script>
+</head>
+<body onload="init();">
+<header>
+	<h1>Welcome to VisualSpinner3d. </h1>
+	<p>(An experimental interface for testing sequences of moves)</p>
+</header>
+	
+<div id="display">
+	<canvas width="400" height="400" id="canvas">
+		Your browser doesn't support the HTML5 element canvas.
+	</canvas>
+</div>
+<div id="popimport">
+	<textarea rows="10" cols="54">
+{"red": {"propname":"not defined","home":{"radius":0.0001,"azimuth":0.0001,"zenith":1.5707963267948966},"pivot":{"radius":0.0001,"azimuth":0.0001,"zenith":1.5707963267948966},"hand":{"radius":"1","azimuth":3.141592653589793,"zenith":1.5707963267948966},"prop":{"radius":1,"azimuth":3.141592653589793,"zenith":1.5707963267948966},"grip":{"radius":0.5,"azimuth":0.0001,"zenith":1.5707963267948966},"roll":0,"moves":[{"movename":"Two-Petal In-Spin Flower","build":"flower","spin":1,"petals":2,"entry":3.141592653589793,"mode":null,"direction":1,"plane":{"x":0,"y":0,"z":1},"duration":1,"extend":1,"speed":1,"pivot_angle":0,"pivot_radius":0}]}, "blue": {"propname":"not defined","home":{"radius":0.0001,"azimuth":0.0001,"zenith":1.5707963267948966},"pivot":{"radius":0.0001,"azimuth":0.0001,"zenith":1.5707963267948966},"hand":{"radius":"1","azimuth":0,"zenith":1.5707963267948966},"prop":{"radius":1,"azimuth":0,"zenith":1.5707963267948966},"grip":{"radius":0.5,"azimuth":0.0001,"zenith":1.5707963267948966},"roll":0,"moves":[{"movename":"Four-Petal Anti-Spin Flower","build":"flower","spin":-1,"petals":4,"entry":0,"mode":null,"direction":1,"plane":{"x":0,"y":0,"z":1},"duration":1,"extend":1,"speed":1,"pivot_angle":0,"pivot_radius":0}]}}
+	</textarea>
+	<br>
+	<button type="button" onclick="importSubmit();">Submit</button>
+</div>
+</body></html>

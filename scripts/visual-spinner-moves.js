@@ -489,6 +489,60 @@ MoveFactory.prototype.toroid = function(options) {
 	return move;
 }
 
+// This is a crappy excuse for a contact roll but it does demonstrate the concept
+MoveFactory.prototype.contactroll = function(options) {
+	options = this.defaults(options,{
+		build: "contactroll",
+		movename: "Contact Roll",
+		orient: THREE,
+		//entry: THREE,
+		direction: CLOCKWISE,
+		harmonics: 2,
+		duration: 1,
+		speed: 1,
+		offset: 0,
+		extend: 1,
+		phase: 0,
+		plane: WALL
+	});
+	segment = new MoveLink();
+	segment.duration = 0.25;
+	segment.hand.linear_angle = options.orient;
+	segment.hand.linear_speed = 0;
+	segment.prop.speed = options.harmonics*options.speed*options.direction;
+	segment.hand.angle = options.orient;
+	segment.hand.radius = options.extend;
+	segment.hand.plane = options.plane;
+	segment.prop.plane = options.plane;
+	segment.grip.radius = 1;
+	//I'm not sure if I like this....
+	segment.prop.angle = options.orient + options.offset;
+	move = new MoveChain();
+	move.add(segment);
+	move.tail().hand.linear_acc = -32*options.speed;
+	move.extend();
+	move.tail().hand.linear_acc = 32*options.speed;
+	move.extend();
+	move.tail().hand.linear_acc = 32*options.speed;
+	move.extend();
+	move.tail().hand.linear_acc = -32*options.speed;
+	if (options.entry != null) {
+		move.align("prop",options.entry);
+	}
+	move.phaseBy(options.phase);
+	if (options.duration < 1) {
+		move = move.slice(0,options.duration*4);
+	} else if (options.duration > 1) {
+		for (var i = 1; i<options.duration; i+=0.25) {
+			move.add(move.submoves[4*(i-1)].clone());
+		}
+	}
+	move.definition = options;
+	return move;
+}
+
+
+
 //***obscure moves***
 MoveFactory.prototype.fractal = function(options) {
 	options = this.defaults(options,{

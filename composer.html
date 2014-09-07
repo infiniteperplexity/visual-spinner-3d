@@ -198,7 +198,7 @@ function popExport() {
 	$("#popexport").toggle();
 	var red = propOne.stringify();
 	var blue = propTwo.stringify();
-	$("#popexport textarea").html("{red: {"+red+"}, blue: {"+blue+"}}");
+	$("#popexport textarea").html('{"red": '+red+', "blue": '+blue+"}");
 }
 function popImport() {
 	$("#popexport").hide();
@@ -213,14 +213,14 @@ function importSubmit() {
 	for (var i = 0; i < imported.red.moves.length; i++) {
 		newoption = document.createElement("option");
 		newoption.value = JSON.stringify(imported.red.moves[i]);
-		newoption.text = newoption.def.movename;
+		newoption.text = imported.red.moves[i].movename;
 		$("#queue1 select").append(newoption);
 
 	}
 	for (var i = 0; i < imported.blue.moves.length; i++) {
 		newoption = document.createElement("option");
 		newoption.value= JSON.stringify(imported.blue.moves[i]);
-		newoption.text = newoption.def.movename;
+		newoption.text = imported.blue.moves[i].movename;
 		$("#queue2 select").append(newoption);
 
 	}
