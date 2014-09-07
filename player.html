@@ -51,7 +51,7 @@ function init() {
 		$("#2d3d").val("3d");
 	}
 	canvasSetup();
-	canvasLoop();
+	//canvasLoop();
 }
 
 function popImport() {
@@ -114,8 +114,8 @@ function canvasSetup() {
 	propOne.rotateProp(SPLIT);
 	myProps.push(propOne);
 	myProps.push(propTwo);
-	propOne.addMove(moves.contactroll());
-	propTwo.addMove(moves.contactroll());
+	//propOne.addMove(moves.contactroll());
+	//propTwo.addMove(moves.contactroll());
 	redraw();
 }
 
@@ -164,7 +164,7 @@ function redraw() {
 </div>
 <div id="popimport">
 	<textarea rows="10" cols="54">
-{"red": {"propname":"not defined","home":{"radius":0.0001,"azimuth":0.0001,"zenith":1.5707963267948966},"pivot":{"radius":0.0001,"azimuth":0.0001,"zenith":1.5707963267948966},"hand":{"radius":"1","azimuth":3.141592653589793,"zenith":1.5707963267948966},"prop":{"radius":1,"azimuth":3.141592653589793,"zenith":1.5707963267948966},"grip":{"radius":0.5,"azimuth":0.0001,"zenith":1.5707963267948966},"roll":0,"moves":[{"movename":"Two-Petal In-Spin Flower","build":"flower","spin":1,"petals":2,"entry":3.141592653589793,"mode":null,"direction":1,"plane":{"x":0,"y":0,"z":1},"duration":1,"extend":1,"speed":1,"pivot_angle":0,"pivot_radius":0}]}, "blue": {"propname":"not defined","home":{"radius":0.0001,"azimuth":0.0001,"zenith":1.5707963267948966},"pivot":{"radius":0.0001,"azimuth":0.0001,"zenith":1.5707963267948966},"hand":{"radius":"1","azimuth":0,"zenith":1.5707963267948966},"prop":{"radius":1,"azimuth":0,"zenith":1.5707963267948966},"grip":{"radius":0.5,"azimuth":0.0001,"zenith":1.5707963267948966},"roll":0,"moves":[{"movename":"Four-Petal Anti-Spin Flower","build":"flower","spin":-1,"petals":4,"entry":0,"mode":null,"direction":1,"plane":{"x":0,"y":0,"z":1},"duration":1,"extend":1,"speed":1,"pivot_angle":0,"pivot_radius":0}]}}
+{"red": {"propname":"not defined","home":{"radius":0.0001,"azimuth":0.0001,"zenith":1.5707963267948966},"pivot":{"radius":0.0001,"azimuth":0.0001,"zenith":1.5707963267948966},"hand":{"radius":"1","azimuth":3.141592653589793,"zenith":1.5707963267948966},"prop":{"radius":1,"azimuth":3.141592653589793,"zenith":1.5707963267948966},"grip":{"radius":0.0001,"azimuth":0.0001,"zenith":1.5707963267948966},"roll":0,"moves":[{"movename":"Two-Petal In-Spin Flower","build":"flower","spin":1,"petals":2,"entry":3.141592653589793,"mode":null,"direction":1,"plane":{"x":0,"y":0,"z":1},"duration":1,"extend":1,"speed":1,"pivot_angle":0,"pivot_radius":0}]}, "blue": {"propname":"not defined","home":{"radius":0.0001,"azimuth":0.0001,"zenith":1.5707963267948966},"pivot":{"radius":0.0001,"azimuth":0.0001,"zenith":1.5707963267948966},"hand":{"radius":"1","azimuth":0,"zenith":1.5707963267948966},"prop":{"radius":1,"azimuth":0,"zenith":1.5707963267948966},"grip":{"radius":0.0001,"azimuth":0.0001,"zenith":1.5707963267948966},"roll":0,"moves":[{"movename":"Four-Petal Anti-Spin Flower","build":"flower","spin":-1,"petals":4,"entry":0,"mode":null,"direction":1,"plane":{"x":0,"y":0,"z":1},"duration":1,"extend":1,"speed":1,"pivot_angle":0,"pivot_radius":0}]}}
 	</textarea>
 	<br>
 	<button type="button" onclick="importSubmit();">Submit</button>

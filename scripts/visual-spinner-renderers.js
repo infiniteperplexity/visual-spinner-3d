@@ -15,17 +15,16 @@ PhoriaPropRenderer.prototype.render = function(myProp) {
 		mat4.rotate(mat, mat, -myProp[elements[i]].azimuth, ZAXIS);
 	}
 	mat4.rotate(mat, mat, myProp.prop.azimuth, ZAXIS);
-	mat4.rotate(mat, mat, myProp.prop.zenith, YAXIS);
-	// prop radius should be handled by prop-specific renderers
 	// grip works a little differently from the other elements
+	mat4.rotate(mat, mat, myProp.grip.azimuth, ZAXIS);
+	mat4.rotate(mat, mat, myProp.prop.zenith, YAXIS);
+	mat4.rotate(mat, mat, myProp.grip.zenith-myProp.prop.zenith, YAXIS);
+	// prop radius should be handled by prop-specific renderers
 	mat4.translate(mat, mat, [0,0,-myProp.grip.radius]);
 	mat4.rotate(mat, mat, myProp.roll, ZAXIS);
-	//!!! Note: At this point, rotating GRIP just flat-out does not work
-	//mat4.rotate(mat, mat, myProp.grip.azimuth-myProp.prop.azimuth, ZAXIS);
-	//mat4.rotate(mat, mat, myProp.grip.zenith-myProp.prop.zenith, YAXIS);
-	
 	for (var i=0; i<this.shapes.length; i++) {
 		this.shapes[i].matrix = mat;
+		PropFactory.prototype.rescale(this.shapes[i], myProp.prop.radius);
 	}
 }
 PhoriaPropRenderer.prototype.activate = function(scene) {
@@ -39,10 +38,6 @@ PhoriaPropRenderer.prototype.deactivate = function(scene) {
 			this.scene.graph.splice(this.scene.graph.indexOf(this.shapes[i]),1);
 		}
 	}
-}
-
-PropFactory.prototype.scaleProp = function(shape, scale) {
-	//someday there might be code here
 }
 
 PropFactory.prototype.translatePoints = function(shape, vector) {
@@ -62,6 +57,34 @@ PropFactory.prototype.translatePoints = function(shape, vector) {
 	return shape;
 }
 
+PropFactory.prototype.rescale= function(shape, scale) {
+	if (shape.currscale == undefined) {
+		shape.currscale = 1;
+	}
+	var point;
+	var points = [];
+	if (shape.points!==undefined) {
+		points = shape.points;
+	} else if (shape.position!==undefined) {
+		points = [shape.position];
+	}
+	// for shapes such as poi tethers or staves
+	if (shape.scaleEffect === "stretch") {
+		for (var i=0; i<points.length; i++) {
+			points[i].z = scale*points[i].z/ shape.currscale;
+		}
+	}
+	else if (shape.scaleEffect === "slide") {
+		for (var i=0; i<points.length; i++) {
+			if (points[i].z > 0) {
+				points[i].z = points[i].z - shape.currscale + scale;
+			} else if (points[i].z < 0) {
+				points[i].z = points[i].z + shape.currscale - scale;
+			}
+		}
+	}
+	shape.currscale = scale;
+}
 PropFactory.prototype.swapPoints = function(shape, a, b) {
 	var point;
 	var points = [];
@@ -218,8 +241,10 @@ PropFactory.prototype.poirender = function(options) {
 	r.options = options;
 	var handle = this.sphere(options.handle_size, options.handle_detail);
 	var tether = this.cylinder(options.tether_size, 1, options.tether_detail);
+	tether.scaleEffect = "stretch";
 	this.translatePoints(tether,[0,0,0.5]);
 	var ball = this.sphere(options.head_size, options.head_detail);
+	ball.scaleEffect = "slide";
 	this.translatePoints(ball,[0,0,1]);
 	handle.style.color = this.colormap(options.handle_color);
 	tether.style.color = this.colormap(options.handle_color);
@@ -230,7 +255,7 @@ PropFactory.prototype.poirender = function(options) {
 	if (options.fire==true) {
 		ball.style.color = this.colormap(options.handle_color);
 		flame = this.flame(35*options.head_size, this.colorflame(options.flame_color));
-		//flame = this.trail(35*options.head_size, this.colorflame(options.flame_color));
+		flame.scaleEffect = "slide";
 		this.translatePoints(flame,[0,0,1]);
 		r.shapes.push(flame);
 	} else {
@@ -258,6 +283,7 @@ PropFactory.prototype.staffrender = function(options) {
 	var r = new PhoriaPropRenderer(options.scene);
 	r.options = options;
 	var staff= this.cylinder(options.handle_size, 2, options.handle_detail);
+	staff.scaleEffect = "stretch";
 	staff.style.color = this.colormap(options.head_color)
 	r.shapes.push(staff);
 	var handle = this.cylinder(options.handle_size+0.01, 0.1, options.handle_detail);
@@ -268,6 +294,8 @@ PropFactory.prototype.staffrender = function(options) {
 	if (options.fire==true) {
 		flame1 = this.flame(7, this.colorflame("fire"));
 		flame2 = this.flame(7, this.colorflame("fire"));
+		flame1.scaleEffect = "slide";
+		flame2.scaleEffect = "slide";
 		this.translatePoints(flame1,[0,0,1]);
 		this.translatePoints(flame2,[0,0,-1]);
 		r.shapes.push(flame1);
