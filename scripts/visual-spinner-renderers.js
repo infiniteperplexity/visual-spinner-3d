@@ -119,6 +119,8 @@ PropFactory.prototype.colormap= function(s) {
 		return [128,128,128];
 	} else if (s=="white") {
 		return [255,255,255];
+	} else if (s=="orange") {
+		return [255,128,0];
 	} else if (s=="fire") {
 		return [128,64,32];
 	} else {

@@ -341,7 +341,7 @@ Controller.prototype.generateMove = function(n, txt) {
 		move = moves.pendulum({direction: this.spin[n], plane: this.plane[n]});
 		move.align("hand",this.align[n]);
 	} else if (txt=="1pt5") {
-		move = moves.onepointfive({direction: this.spin[n], plane: this.plane[n]});
+		move = moves.pendulum({onepointfive: true, direction: this.spin[n], plane: this.plane[n]});
 		move.align("hand",this.align[n]);
 	} else if (txt=="ucex") {
 		move = moves.isolation({offset: 0, direction: this.spin[n], plane: this.plane[n]});

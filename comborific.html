@@ -51,26 +51,13 @@ function init() {
 		$("#2d3d").val("3d");
 	}
 	canvasSetup();
-	//canvasLoop();
-}
-
-function popImport() {
-	//$("#popimport").toggle();
-}
-function importSubmit() {
-	var imported = $("#popimport textarea").val();
-	imported = props.parse(imported);
-	var blue = JSON.stringify(imported.blue);
-	var red = JSON.stringify(imported.red);
-	propOne.apply(blue);
-	propTwo.apply(red);
 	canvasLoop();
 }
 
 var scene = new Phoria.Scene();
 var renderer;
-var propOne = props.poi({head_color: "blue", flame_color: "blue", scene: scene});
-var propTwo = props.poi({head_color: "red", flame_color: "red", scene: scene});
+var orangePoi = props.poi({head_color: "orange", scene: scene});
+var whitePoi = props.poi({head_color: "white", scene: scene});
 function canvasSetup() {
 	var prop = new Prop();
 	var link = new MoveLink();
@@ -108,14 +95,42 @@ function canvasSetup() {
 	light.direction.z = 0;
 	scene.graph.push(light);
 	// set up props
-	propOne.hand.radius = 1;
-	propTwo.hand.radius = 1;
-	propOne.rotateHand(SPLIT);
-	propOne.rotateProp(SPLIT);
-	myProps.push(propOne);
-	myProps.push(propTwo);
-	//propOne.addMove(moves.contactroll());
-	//propTwo.addMove(moves.contactroll());
+	orangePoi.hand.radius = 1;
+	whitePoi.hand.radius = 0;
+	orangePoi.rotateHand(SPLIT);
+	orangePoi.rotateProp(SPLIT);
+	whitePoi.rotateHand(SPLIT);
+	whitePoi.rotateProp(SPLIT);
+	myProps.push(orangePoi);
+	myProps.push(whitePoi);
+	var move;
+	orangePoi.addMove(moves.pendulum({hybrid: true, direction: COUNTERCLOCKWISE, extend: 1, duration: 0.5, entry: NINE}));
+	whitePoi.addMove(moves.pendulum({direction: COUNTERCLOCKWISE, extend: 0, duration: 0.5, entry: NINE}));
+	orangePoi.addMove(moves.flower({spin: ANTISPIN, duration: 0.5}).splice({hand: moves.pendulum({hybrid: true, duration: 0.5, entry: THREE})}));
+	whitePoi.addMove(moves.pendulum({extend: 0, duration: 0.5, entry: THREE}));
+	orangePoi.addMove(moves.pendulum({hybrid: true, direction: COUNTERCLOCKWISE, extend: 1, duration: 0.5, entry: NINE}));
+	whitePoi.addMove(moves.pendulum({direction: COUNTERCLOCKWISE, extend: 0, duration: 0.5, entry: NINE}));
+	orangePoi.addMove(moves.flower({spin: ANTISPIN, duration: 0.5}).splice({hand: moves.pendulum({hybrid: true, duration: 0.5, entry: THREE})}));
+	orangePoi.tail().prop.speed = -1; orangePoi.tail().prop.acc = 0; orangePoi.tail().hand.stretch = -2;
+	whitePoi.addMove(moves.pendulum({direction: CLOCKWISE, extend: 0, duration: 0.5, entry: THREE}));
+	whitePoi.tail().pivot.stretch = 2;
+	orangePoi.addMove(moves.flower({entry: NINE, petals: 0, mode: BOX, pivot_angle: THREE, pivot_radius: 0.5, duration: 0.5}));
+	whitePoi.addMove(moves.staticspin({entry: NINE, hand: THREE, extend: 0.5, duration: 0.5}));
+	orangePoi.addMove(moves.isolation({spin: CATEYE, entry: THREE, pivot_angle: THREE, pivot_radius: 1, duration: 1.25}));
+	whitePoi.addMove(moves.isolation({entry: NINE, pivot_angle: THREE, pivot_radius: 1, duration: 1.25}));
+	orangePoi.addMove(moves.flower({spin: ANTISPIN, entry: SIX, duration: 0.25, pivot_angle: THREE, pivot_radius: 1}));
+	orangePoi.tail().pivot.stretch = -2;
+	orangePoi.addMove(moves.flower({direction: COUNTERCLOCKWISE, petals: 0, entry: NINE, duration: 0.75}));
+	whitePoi.addMove(moves.generic({pivot_angle: THREE, pivot_radius: 1, hand_angle: TWELVE, hand_radius: 0.5, hand_stretch: -1, pivot_stretch: -2, duration: 0.5}));
+	whitePoi.addMove(moves.staticspin({entry: SIX, direction: COUNTERCLOCKWISE, duration: 0.5}));
+	orangePoi.addMove(moves.flower({spin: ANTISPIN, entry: TWELVE, duration: 0.25}));
+	orangePoi.addMove(moves.flower({direction: COUNTERCLOCKWISE, petals: 0, duration: 0.25}));
+	whitePoi.addMove(moves.staticspin({entry: SIX, direction: COUNTERCLOCKWISE}));
+	
+	//orangePoi.addMove(moves.linex({orient: TWELVE, duration: 0.25, pivot_angle: THREE, pivot_radius: 0.5}).splice({prop: moves.pendulum({direction: COUNTERCLOCKWISE})}));
+	//orangePoi.tail().pivot.stretch = 
+	//whitePoi.addMove(moves.linex({
+	
 	redraw();
 }
 
@@ -154,18 +169,12 @@ function redraw() {
 <body onload="init();">
 <header>
 	<h1>Welcome to VisualSpinner3d. </h1>
-	<p>(An experimental interface for testing sequences of moves)</p>
+	<p>(we have successfully digitized Drex.)</p>
 </header>
 	
 <div id="display">
 	<canvas width="400" height="400" id="canvas">
 		Your browser doesn't support the HTML5 element canvas.
 	</canvas>
-</div>
-<div id="popimport">
-	<textarea rows="10" cols="54">
-{"red": {"propname":"not defined","home":{"radius":0.0001,"azimuth":0.0001,"zenith":1.5707963267948966},"pivot":{"radius":0.0001,"azimuth":0.0001,"zenith":1.5707963267948966},"hand":{"radius":"1","azimuth":3.141592653589793,"zenith":1.5707963267948966},"prop":{"radius":1,"azimuth":3.141592653589793,"zenith":1.5707963267948966},"grip":{"radius":0.0001,"azimuth":0.0001,"zenith":1.5707963267948966},"roll":0,"moves":[{"movename":"Extension","build":"flower","spin":1,"petals":0,"entry":3.141592653589793,"mode":null,"direction":1,"plane":{"x":0,"y":0,"z":1},"duration":1}]}, "blue": {"propname":"not defined","home":{"radius":0.0001,"azimuth":0.0001,"zenith":1.5707963267948966},"pivot":{"radius":0.0001,"azimuth":0.0001,"zenith":1.5707963267948966},"hand":{"radius":"1","azimuth":0,"zenith":1.5707963267948966},"prop":{"radius":1,"azimuth":0,"zenith":1.5707963267948966},"grip":{"radius":0.0001,"azimuth":0.0001,"zenith":1.5707963267948966},"roll":0,"moves":[{"movename":"Extension","build":"flower","spin":1,"petals":0,"entry":0,"mode":null,"direction":1,"plane":{"x":0,"y":0,"z":1},"duration":1}]}}	</textarea>
-	<br>
-	<button type="button" onclick="importSubmit();">Submit</button>
 </div>
 </body></html>

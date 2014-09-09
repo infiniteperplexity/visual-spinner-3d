@@ -8,6 +8,7 @@ var CLOCKWISE = 1;
 var COUNTERCLOCKWISE = -1;
 var INSPIN = 1;
 var ANTISPIN = -1;
+var CATEYE = -1;
 var FORWARD = 1;
 var BACKWARD = -1;
 var ISOBEND = 1;
@@ -447,6 +448,7 @@ Prop.prototype.dummitize = function() {
 
 //// A "MoveLink" is the simplest kind of movement.  It defines a single, continuous movement.
 function MoveLink() {
+	this.parent = null;
 	this.movename = "not defined";
 	// the default MoveLink is a clockwise static spin starting from the right
 	this.elements = [];
@@ -458,7 +460,8 @@ function MoveLink() {
 			bend_plane: WALL,
 			linear_angle: THREE,
 			linear_speed: 0,
-			linear_acc: 0
+			linear_acc: 0,
+			stretch: 0
 		}
 		if (i==PIVOT || i==HAND || i==PROP) {
 			this.elements[i].plane = WALL;
@@ -518,6 +521,7 @@ MoveLink.prototype.spin = function(prop, dummy) {
 	var p;
 	for (var i = HOME; i<=GRIP; i++) {
 		if (this.elements[i].plane != null) {
+			prop.elements[i].radius += this.elements[i].stretch/BEAT;
 			p = this.elements[i].plane.rotate(this.elements[i].bend*this.t*SPEED, this.elements[i].bend_plane);
 			v = this.elements[i].linear_speed + this.elements[i].linear_acc*this.t/BEAT;
 			prop.translateElement(i, v/BEAT, this.elements[i].linear_angle, p);
@@ -591,6 +595,7 @@ MoveLink.prototype.clone = function() {
 		newlink.elements[i].linear_acc = this.elements[i].linear_acc;
 		newlink.elements[i].bend = this.elements[i].bend;
 		newlink.elements[i].bend_plane = this.elements[i].bend_plane;
+		newlink.elements[i].stretch = this.elements[i].stretch;
 	}
 	newlink.duration = this.duration;
 	newlink.roll = this.roll;
@@ -615,6 +620,7 @@ MoveLink.prototype.getVector = function(element) {
 	var v;
 	for (var i = PIVOT; i<=element; i++) {
 		e = new Spherical();
+		// do we need to handle GRIP differently?
 		e.setRadiusAnglePlane(this.elements[i].radius, this.elements[i].angle, this.elements[i].plane);
 		if (e.radius != null) {
 			v = e.vectorize();
@@ -668,10 +674,30 @@ MoveLink.prototype.socket = function() {
 	}
 	return socket;
 }
+// the argument to this function should be a hash of elements paired with moves
+MoveLink.prototype.splice = function(options) {
+	for (var i = HOME; i < GRIP; i++) {
+		if (options[ELEMENTS[i]] !== undefined) {
+			this[ELEMENTS[i]].plane = options[ELEMENTS[i]].plane;
+			this[ELEMENTS[i]].radius = options[ELEMENTS[i]].radius;
+			this[ELEMENTS[i]].angle = options[ELEMENTS[i]].angle;
+			this[ELEMENTS[i]].speed = options[ELEMENTS[i]].speed;
+			this[ELEMENTS[i]].acc = options[ELEMENTS[i]].acc;
+			this[ELEMENTS[i]].linear_angle = options[ELEMENTS[i]].linear_angle;
+			this[ELEMENTS[i]].linear_speed = options[ELEMENTS[i]].linear_speed;
+			this[ELEMENTS[i]].linear_acc = options[ELEMENTS[i]].linear_acc;
+			this[ELEMENTS[i]].bend = options[ELEMENTS[i]].bend;
+			this[ELEMENTS[i]].bend_plane = options[ELEMENTS[i]].bend_plane;
+			this[ELEMENTS[i]].stretch = options[ELEMENTS[i]].stretch;
+		}
+	}
+	return this;
+}
 
 //// A "MoveChain" is a queued tree of MoveLinks and other, nested MoveChains
 // This allows a MoveChain to represent multiple kinds of movements in sequences
 function MoveChain() {
+	this.parent = null;
 	this.movename = "not defined";
 	this.p = 0;
 	this.oneshot = false;
@@ -718,13 +744,14 @@ MoveChain.prototype.setOneShot = function(tf) {
 }
 // Add a submove to the MoveChain
 MoveChain.prototype.add = function(move) {
+	move.parent = this;
 	this.submoves.push(move);
 	return this;
 }
 // Concatenate two MoveChains
 MoveChain.prototype.concatenate = function(move) {
 	for (var i=0; i<move.submoves.length; i++) {
-		this.submoves.push(move.submoves[i]);
+		this.add(move.submoves[i]);
 	}
 	return this;
 }
@@ -737,6 +764,8 @@ MoveChain.prototype.slice = function(from, to) {
 	for (var i = from; i < to; i++) {
 		newMove.add(this.submoves[i].clone());
 	}
+	// didn't we originally want to keep it the same move?  anyway...
+	newMove.definition = this.definition;
 	return newMove;
 }
 // Split a MoveChain into two MoveChains at a specific frame
@@ -895,13 +924,17 @@ MoveChain.prototype.refit = function() {
 function PropFactory() {}
 PropFactory.prototype.defaults = function(options, defaults) {
 	if (options===undefined) {options = {};}
-	for (var option in defaults) {
+	//for (var option in defaults) {
 		// this will define "undefined" options but it will not overwrite "null" options
-		if (options[option]===undefined) {
-			options[option] = defaults[option];
-		}
+	//	if (options[option]===undefined) {
+	//		options[option] = defaults[option];
+	//	}
+	//}
+	for (var option in options) {
+		defaults[option] = options[option];
 	}
-	return options;
+	//return options;
+	return defaults;
 }
 PropFactory.prototype.parse = function(json) {
 	var definition = JSON.parse(json);
@@ -954,13 +987,17 @@ function MoveFactory() {
 }
 MoveFactory.prototype.defaults = function(options, defaults) {
 	if (options===undefined) {options = {};}
-	for (var option in defaults) {
+	//for (var option in defaults) {
 		// this will define "undefined" options but it will not overwrite "null" options
-		if (options[option]===undefined) {
-			options[option] = defaults[option];
-		}
+	//	if (options[option]===undefined) {
+	//		options[option] = defaults[option];
+	//	}
+	//}
+	for (var option in options) {
+		defaults[option] = options[option];
 	}
-	return options;
+	//return options;
+	return defaults;
 }
 MoveFactory.prototype.parse = function(json) {
 	var definition = JSON.parse(json);
@@ -1006,6 +1043,31 @@ MoveChain.prototype.phaseBy = function(phase) {
 	} else if (phase<0) {
 		for (var i = 0; i>phase; i--) {
 			this.submoves.unshift(this.submoves.pop());
+		}
+	}
+	return this;
+}
+
+// the argument to this function should be a hash of elements paired with moves
+MoveChain.prototype.splice = function(options) {
+	var submoves;
+	for (var i = HOME; i < GRIP; i++) {
+		if (options[ELEMENTS[i]] !== undefined) {
+			//this can't yet drill down multiple levels
+			submoves = options[ELEMENTS[i]].submoves;
+			for (var j = 0; j < submoves.length; j++) {
+				this.submoves[j][ELEMENTS[i]].plane = submoves[j][ELEMENTS[i]].plane;
+				this.submoves[j][ELEMENTS[i]].radius = submoves[j][ELEMENTS[i]].radius;
+				this.submoves[j][ELEMENTS[i]].angle = submoves[j][ELEMENTS[i]].angle;
+				this.submoves[j][ELEMENTS[i]].speed = submoves[j][ELEMENTS[i]].speed;
+				this.submoves[j][ELEMENTS[i]].acc = submoves[j][ELEMENTS[i]].acc;
+				this.submoves[j][ELEMENTS[i]].linear_angle = submoves[j][ELEMENTS[i]].linear_angle;
+				this.submoves[j][ELEMENTS[i]].linear_speed = submoves[j][ELEMENTS[i]].linear_speed;
+				this.submoves[j][ELEMENTS[i]].linear_acc = submoves[j][ELEMENTS[i]].linear_acc;
+				this.submoves[j][ELEMENTS[i]].bend = submoves[j][ELEMENTS[i]].bend;
+				this.submoves[j][ELEMENTS[i]].bend_plane = submoves[j][ELEMENTS[i]].bend_plane;
+				this.submoves[j][ELEMENTS[i]].stretch = submoves[j][ELEMENTS[i]].stretch;
+			}
 		}
 	}
 	return this;
