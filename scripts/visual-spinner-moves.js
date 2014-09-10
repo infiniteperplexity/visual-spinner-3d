@@ -4,7 +4,7 @@ MoveFactory.prototype.staticspin= function(options) {
 	options = this.defaults(options,{
 		build: "staticspin",
 		movename: "Static Spin",
-		entry: THREE,
+		entry: null,
 		hand: THREE,
 		extend: TINY,
 		plane: WALL,
@@ -87,14 +87,15 @@ MoveFactory.prototype.flower = function(options) {
 	options = this.defaults(options,{
 		build: "flower",
 		movename: "Flower",
-		entry: THREE,
+		entry: null,
 		plane: WALL,
 		direction: CLOCKWISE,
 		spin: INSPIN,
 		petals: 4,
 		extend: 1,
 		speed: 1,
-		mode: DIAMOND,
+		mode: null,
+		//mode: DIAMOND,
 		pivot_angle: 0,
 		pivot_radius: 0,
 		duration: 1
@@ -138,6 +139,19 @@ MoveFactory.prototype.flower = function(options) {
 	move.movename = options.movename;
 	return move;
 }
+MoveFactory.prototype.antispin = function(options) {
+	options.spin = ANTISPIN;
+	return MoveFactory.prototype.flower(options);
+}
+MoveFactory.prototype.extension = function(options) {
+	options.petals = 0;
+	return MoveFactory.prototype.flower(options);
+}
+MoveFactory.prototype.pointiso = function(options) {
+	options.petals = 0;
+	return MoveFactory.prototype.flower(options);
+}
+
 
 MoveFactory.prototype.twoPropFlower = function(options) {
 	options = this.defaults(options,{
@@ -200,6 +214,7 @@ MoveFactory.prototype.ccap = function(options) {
 		spin2: ANTISPIN, 
 		extend: 1,
 		speed: 1,
+		// need to add "entry"
 		duration: 1
 	});
 	segment = new MoveLink();
@@ -239,7 +254,6 @@ MoveFactory.prototype.ccap = function(options) {
 MoveFactory.prototype.pendulum = function(options) {
 	var move = new MoveChain();
 	move.definition = options;
-	
 	options = this.defaults(options,{
 		build: "pendulum",
 		movename: "Pendulum",
@@ -256,6 +270,7 @@ MoveFactory.prototype.pendulum = function(options) {
 		phase: 0,
 		hybrid: false,
 		onepointfive: false,
+		antibrid: false
 	});
 	
 	var segment = new MoveLink();
@@ -268,27 +283,33 @@ MoveFactory.prototype.pendulum = function(options) {
 	if (options.hybrid == true) {
 		segment.hand.speed *= 2;
 	}
-	var multiplier = (options.onepointfive == true) ? 3 : 1;
-	segment.prop.speed = 2*multiplier*options.speed*options.direction*options.spin;
+	var onepointfive = (options.onepointfive == true) ? 3 : 1;
+	var antibrid= (options.antibrid == true) ? 0.75 : 1;
+	segment.prop.speed = 2*onepointfive*antibrid*options.speed*options.direction*options.spin;
 	segment.hand.radius = options.extend;
 	segment.hand.plane = options.plane;
 	segment.prop.plane = options.plane;
 	segment.hand.angle = options.orient;
 	segment.prop.angle = (options.onepointfive == true) ? options.orient + OFFSET: options.orient;
 	
-	var hacc = (options.hybrid == true)  ? 8*options.direction*options.speed*options.spin: 0;
+	var hybrid = (options.hybrid == true)  ? 8*options.direction*options.speed*options.spin : 0;
 	move.add(segment);
-	move.tail().prop.acc = -8*multiplier*options.direction*options.speed*options.spin;
-	move.tail().hand.acc = -hacc;
+	move.tail().prop.acc = -8*onepointfive*antibrid*options.direction*options.speed*options.spin;
+	move.tail().hand.acc = -hybrid;
 	move.extend();
-	move.tail().prop.acc = -8*options.direction*options.speed*options.spin;
-	move.tail().hand.acc = -hacc;
+	move.tail().prop.acc = -8*antibrid*options.direction*options.speed*options.spin;
+	move.tail().hand.acc = -hybrid;
 	move.extend();
-	move.tail().prop.acc = 8*options.direction*options.speed*options.spin;
-	move.tail().hand.acc = hacc;
+	move.tail().prop.acc = 8*antibrid*options.direction*options.speed*options.spin;
+	move.tail().hand.acc = hybrid;
 	move.extend();
-	move.tail().prop.acc = 8*multiplier*options.direction*options.speed*options.spin;
-	move.tail().hand.acc = hacc;
+	move.tail().prop.acc = 8*onepointfive*antibrid*options.direction*options.speed*options.spin;
+	move.tail().hand.acc = hybrid;
+	if (options.antibrid == true) {
+		move.submoves[1].pivot.stretch = -4*options.pivot_radius;
+		move.submoves[2].pivot.radius -= options.pivot_radius;
+		move.submoves[2].pivot.stretch = 4*options.pivot_radius;
+	}
 	if (options.entry != null) {
 		move.align("hand", options.entry);
 	}
@@ -312,6 +333,41 @@ MoveFactory.prototype.pendulum = function(options) {
 	return move;
 }
 
+//the goofy, wobbly kind
+MoveFactory.prototype.isopendulum = function(options) {
+	var segment = new MoveLink();
+	segment.definition = options;
+	options = this.defaults(options,{
+		build: "isopendulum",
+		movename: "Iso-Pendulum",
+		orient: SIX,
+		plane: WALL,
+		direction: CLOCKWISE,
+		speed: 1,
+		pivot_angle: 0,
+		pivot_radius: 0,
+		duration: 1
+	});
+	segment.duration = options.duration;
+	segment.pivot.angle = options.pivot_angle;
+	segment.pivot.radius = options.pivot_radius;
+	segment.pivot.plane = options.plane;
+	segment.pivot.speed = 0;
+	segment.hand.plane = options.plane;
+	segment.hand.radius = 0.5;
+	// these look drastically too slow but we can deal with that later
+	segment.hand.speed = 2*options.speed*options.direction;
+	segment.hand.acc = -4*options.direction*options.speed;
+	segment.prop.speed = 2*options.speed*options.direction;
+	segment.prop.acc = -4*options.direction*options.speed;
+	segment.prop.plane = options.plane;
+	segment.prop.angle = (options.direction == CLOCKWISE) ? options.orient - QUARTER : options.orient + QUARTER;
+	segment.hand.angle = segment.prop.angle + OFFSET;
+	segment.build = options.build;
+	segment.movename = options.movename;
+	return segment;
+}
+
 MoveFactory.prototype.linex = function(options) {
 	var move = new MoveChain();
 	move.definition = options;
@@ -321,6 +377,7 @@ MoveFactory.prototype.linex = function(options) {
 		movename: "Linear Extension",
 		orient: THREE,
 		//entry: THREE,
+		// why didn't this work?
 		direction: CLOCKWISE,
 		harmonics: 1,
 		duration: 1,
@@ -347,7 +404,7 @@ MoveFactory.prototype.linex = function(options) {
 	segment.hand.plane = options.plane;
 	segment.prop.plane = options.plane;
 	//I'm not sure if I like this....
-	segment.prop.angle = options.orient + options.offset;
+	segment.prop.angle = options.orient + options.harmonics*options.offset;
 	move.add(segment);
 	move.tail().hand.linear_acc = -32*options.speed;
 	move.extend();
@@ -444,7 +501,7 @@ MoveFactory.prototype.isolation = function(options) {
 	options = this.defaults(options,{
 		build: "isolation",
 		movename: "Isolation",
-		entry: THREE,
+		entry: null,
 		plane: WALL,
 		direction: CLOCKWISE,
 		spin: INSPIN,
@@ -472,6 +529,7 @@ MoveFactory.prototype.isolation = function(options) {
 	segment.duration = 0.25;
 	move.add(segment);
 	move.extend();
+	
 	move.extend();
 	move.extend();
 	move.phaseBy(options.phase);
@@ -491,6 +549,10 @@ MoveFactory.prototype.isolation = function(options) {
 	}
 	return move;
 }
+MoveFactory.prototype.cateye = function(options) {
+	options.spin = CATEYE;
+	return MoveFactory.prototype.isolation(options);
+}
 
 MoveFactory.prototype.toroid = function(options) {
 	var move = new MoveChain();
@@ -498,7 +560,7 @@ MoveFactory.prototype.toroid = function(options) {
 	options = this.defaults(options,{
 		build: "toroid",
 		movename: "Toroid",
-		entry: THREE,
+		entry: null,
 		plane: WALL,
 		direction: CLOCKWISE,
 		pitch: FORWARD,
@@ -507,7 +569,8 @@ MoveFactory.prototype.toroid = function(options) {
 		harmonics: 4,
 		extend: 1,
 		speed: 1,
-		mode: DIAMOND,
+		mode: null,
+		//mode: DIAMOND,
 		pivot_radius: 0,
 		pivot_angle: 0
 	});
@@ -983,8 +1046,8 @@ MoveFactory.prototype.generic = function(options) {
 		hand_plane: null,
 		prop_plane: null,
 		grip_plane: null,
-		pivot_radius: 0,
-		hand_radius: 0,
+		pivot_radius: null,
+		hand_radius: null,
 		prop_radius: 1,
 		grip_radius: 0,
 		pivot_speed: 0,

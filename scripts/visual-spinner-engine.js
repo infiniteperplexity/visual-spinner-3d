@@ -466,7 +466,7 @@ function MoveLink() {
 		if (i==PIVOT || i==HAND || i==PROP) {
 			this.elements[i].plane = WALL;
 			this.elements[i].radius = 0;
-			//this.elements[i].angle = THREE;
+			this.elements[i].angle = null;
 			this.elements[i].angle = null;
 		} else {
 			this.elements[i].plane = null;
@@ -521,12 +521,12 @@ MoveLink.prototype.spin = function(prop, dummy) {
 	var p;
 	for (var i = HOME; i<=GRIP; i++) {
 		if (this.elements[i].plane != null) {
-			prop.elements[i].radius += this.elements[i].stretch/BEAT;
 			p = this.elements[i].plane.rotate(this.elements[i].bend*this.t*SPEED, this.elements[i].bend_plane);
 			v = this.elements[i].linear_speed + this.elements[i].linear_acc*this.t/BEAT;
 			prop.translateElement(i, v/BEAT, this.elements[i].linear_angle, p);
 			v = this.elements[i].speed + this.elements[i].acc*this.t/BEAT;
 			prop.rotateElement(i, v*SPEED, p);
+			prop.elements[i].radius += this.elements[i].stretch/BEAT;
 		}
 	}
 	this.t+=1;
@@ -1071,4 +1071,9 @@ MoveChain.prototype.splice = function(options) {
 		}
 	}
 	return this;
+}
+
+MoveChain.prototype.modify = function(options) {
+	for (var i = 0; i < this.submoves.length; i++) {
+	}
 }
