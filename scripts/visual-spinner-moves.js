@@ -264,7 +264,7 @@ MoveFactory.prototype.pendulum = function(options) {
 		speed: 1,
 		extend: 1, 
 		spin: INSPIN,
-		pivot_angle: 0,
+		pivot_angle: null,
 		pivot_radius: 0,
 		duration: 1,
 		phase: 0,
@@ -275,6 +275,9 @@ MoveFactory.prototype.pendulum = function(options) {
 	
 	var segment = new MoveLink();
 	segment.pivot.angle = options.pivot_angle;
+	if (options.pivot_angle == undefined && options.antibrid == true) {
+		segment.pivot_angle = TWELVE;
+	}
 	segment.pivot.radius = options.pivot_radius;
 	segment.pivot.plane = options.plane;
 	segment.pivot.speed = 0;
@@ -306,9 +309,12 @@ MoveFactory.prototype.pendulum = function(options) {
 	move.tail().prop.acc = 8*onepointfive*antibrid*options.direction*options.speed*options.spin;
 	move.tail().hand.acc = hybrid;
 	if (options.antibrid == true) {
-		move.submoves[1].pivot.stretch = -4*options.pivot_radius;
-		move.submoves[2].pivot.radius -= options.pivot_radius;
-		move.submoves[2].pivot.stretch = 4*options.pivot_radius;
+		move.submoves[0].pivot.radius += 0.5;
+		move.submoves[1].pivot.stretch = 2;
+		move.submoves[1].pivot.radius += 0.5;
+		move.submoves[2].pivot.radius += 1;
+		move.submoves[2].pivot.stretch = -2;
+		move.submoves[3].pivot.radius += 0.5;
 	}
 	if (options.entry != null) {
 		move.align("hand", options.entry);
@@ -366,6 +372,144 @@ MoveFactory.prototype.isopendulum = function(options) {
 	segment.build = options.build;
 	segment.movename = options.movename;
 	return segment;
+}
+
+//not the greatest way to make an oval...
+MoveFactory.prototype.oval = function(options) {
+	var move = new MoveChain();
+	move.definition = options;
+	options = this.defaults(options,{
+		build: "oval",
+		movename: "Linear Isolation",
+		plane: WALL,
+		direction: CLOCKWISE,
+		spin: INSPIN,
+		petals: 2,
+		extend: 1,
+		speed: 1,
+		mode: null,
+		stretch: -0.5,
+		entry: THREE,
+		orient: THREE,
+		pivot_angle: 0,
+		pivot_radius: 0,
+		duration: 1
+	});
+	var segment = new MoveLink();
+	if (options.spin==INSPIN) {
+		segment.prop.speed = (options.petals+1)*options.spin*options.direction*options.speed;
+	} else {
+		segment.prop.speed = (options.petals-1)*options.spin*options.direction*options.speed;
+	}
+	segment.pivot.angle = options.pivot_angle;
+	segment.pivot.radius = options.pivot_radius;
+	segment.pivot.plane = options.plane;
+	segment.pivot.speed = 0;
+
+	segment.hand.speed = options.direction*options.speed;
+	segment.prop.plane = options.plane;
+	segment.hand.plane = options.plane;
+	segment.hand.angle = options.orient;
+	if (options.mode != null) {
+		segment.prop.angle = options.orient + options.mode;
+	}
+	// may need to make it 0.125
+	segment.duration = 0.25;
+	move.add(segment);
+	move.tail().hand.stretch = 4*options.stretch;
+	move.tail().hand.radius = options.extend;
+	move.extend();
+	move.tail().hand.stretch = -4*options.stretch;
+	move.tail().hand.radius = options.extend + options.stretch;
+	move.extend();
+	move.tail().hand.stretch = 4*options.stretch;
+	move.tail().hand.radius = options.extend;
+	move.extend();
+	move.tail().hand.stretch = -4*options.stretch;
+	move.tail().hand.radius = options.extend + options.stretch;
+	if (options.entry != null) {
+		move.align("hand",options.entry);
+	}
+	if (options.duration < 1) {
+		move = move.slice(0,options.duration*4);
+	} else if (options.duration > 1) {
+		for (var i = 1; i<options.duration; i+=0.25) {
+			move.add(move.submoves[4*(i-1)].clone());
+		}
+	}
+	move.build = options.build;
+	move.movename = options.movename;
+	return move;
+}
+
+
+//in process
+MoveFactory.prototype.linflower = function(options) {
+	var move = new MoveChain();
+	move.definition = options;
+	options = this.defaults(options,{
+		build: "linflower",
+		movename: "Linearized Flower",
+		plane: WALL,
+		direction: CLOCKWISE,
+		spin: INSPIN,
+		petals: 2,
+		extend: 1,
+		speed: 1,
+		mode: null,
+		stretch: -0.5,
+		entry: THREE,
+		orient: THREE,
+		pivot_angle: 0,
+		pivot_radius: 0,
+		duration: 1
+	});
+	var segment = new MoveLink();
+	if (options.spin==INSPIN) {
+		segment.prop.speed = (options.petals+1)*options.spin*options.direction*options.speed;
+	} else {
+		segment.prop.speed = (options.petals-1)*options.spin*options.direction*options.speed;
+	}
+	segment.pivot.angle = options.pivot_angle;
+	segment.pivot.radius = options.pivot_radius;
+	segment.pivot.plane = options.plane;
+	segment.pivot.speed = 0;
+	segment.prop.plane = options.plane;
+	segment.hand.plane = options.plane;
+	segment.hand.angle = options.orient;
+	if (options.mode != null) {
+		segment.prop.angle = options.orient + options.mode;
+	}
+	
+	segment.hand.speed = 0;
+	segment.hand.linear_speed = options.direction*options.speed;
+	// may need to make it 0.125
+	segment.duration = 0.25;
+	move.add(segment);
+	move.tail().hand.stretch = 4*options.stretch;
+	move.tail().hand.radius = options.extend;
+	move.extend();
+	move.tail().hand.stretch = -4*options.stretch;
+	move.tail().hand.radius = options.extend + options.stretch;
+	move.extend();
+	move.tail().hand.stretch = 4*options.stretch;
+	move.tail().hand.radius = options.extend;
+	move.extend();
+	move.tail().hand.stretch = -4*options.stretch;
+	move.tail().hand.radius = options.extend + options.stretch;
+	if (options.entry != null) {
+		move.align("hand",options.entry);
+	}
+	if (options.duration < 1) {
+		move = move.slice(0,options.duration*4);
+	} else if (options.duration > 1) {
+		for (var i = 1; i<options.duration; i+=0.25) {
+			move.add(move.submoves[4*(i-1)].clone());
+		}
+	}
+	move.build = options.build;
+	move.movename = options.movename;
+	return move;
 }
 
 MoveFactory.prototype.linex = function(options) {
@@ -1174,20 +1318,21 @@ MoveFactory.prototype.spiralwrap = function(options) {
 }
 
 
-MoveFactory.prototype.stallentry = function(options) {
+MoveFactory.prototype.stall = function(options) {
 	var segment = new MoveLink();
 	segment.definition = options;
 	options = this.defaults(options,{
-		build: "stallentry",
-		movename: "Stall Entry",
+		build: "stall",
+		movename: "Stall",
+		exit: false,
 		entry: null,
 		plane: WALL,
 		direction: CLOCKWISE,
-		spin: ANTISPIN,
+		spin: INSPIN,
 		petals: 4,
 		extend: 1,
 		speed: 1,
-		mode: DIAMOND,
+		mode: null,
 		duration: 0.5
 	});
 	if (options.spin==INSPIN) {
@@ -1195,47 +1340,9 @@ MoveFactory.prototype.stallentry = function(options) {
 	} else {
 		segment.prop.speed = 2*(options.petals-1)*options.spin*options.direction*options.speed;
 	}
-	segment.prop.acc = -8*segment.prop.speed;
-	segment.hand.speed = options.direction*options.speed;
-	segment.prop.plane = options.plane;
-	segment.hand.plane = options.plane;
-	if (options.extend != null) {
-		segment.hand.radius = options.extend;
-	}
-	if (options.entry != null) {
-		segment.hand.angle = options.entry;
-		if (options.mode != null) {
-			segment.prop.angle = options.entry + options.mode;
-		}
-	}
-	segment.duration = options.duration;
-	segment.build = options.build;
-	segment.movename = options.movename;
-	return segment;
-}
-
-MoveFactory.prototype.stallexit= function(options) {
-	var segment = new MoveLink();
-	segment.definition = options;
-	options = this.defaults(options,{
-		build: "stallexit",
-		movename: "Stall Exit",
-		entry: null,
-		plane: WALL,
-		direction: CLOCKWISE,
-		spin: ANTISPIN,
-		petals: 4,
-		extend: 1,
-		speed: 1,
-		mode: DIAMOND,
-		duration: 0.5
-	});
-	if (options.spin==INSPIN) {
-		segment.prop.acc = 16*(options.petals+1)*options.spin*options.direction*options.speed;
-	} else {
-		segment.prop.acc = 16*(options.petals-1)*options.spin*options.direction*options.speed;
-	}
-	segment.prop.speed = 0;
+	var exit = (options.exit == true) ? -1 : 1;
+	segment.prop.acc = -exit*segment.prop.speed/options.duration;
+	segment.prop.speed = (options.exit == true) ? 0 : segment.prop.speed;
 	segment.hand.speed = options.direction*options.speed;
 	segment.prop.plane = options.plane;
 	segment.hand.plane = options.plane;

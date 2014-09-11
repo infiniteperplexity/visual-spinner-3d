@@ -350,7 +350,7 @@ Controller.prototype.generateMove = function(n, txt) {
 		move = moves.isolation({entry: TWELVE, offset: 0, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
 		move.align("prop",this.align[n]);
 	} else if (txt=="hcat") {
-		move = moves.isolation({direction: this.spin[n], offset: 0, plane: this.plane[n], spin: ANTISPIN});
+		move = moves.isolation({entry: THREE, direction: this.spin[n], offset: 0, plane: this.plane[n], spin: ANTISPIN});
 		move.align("prop",this.align[n]);
 	} else if (txt=="isol") {
 		move = moves.isolation({direction: this.spin[n], plane: this.plane[n]});

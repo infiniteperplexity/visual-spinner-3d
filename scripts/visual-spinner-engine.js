@@ -40,6 +40,7 @@ var NWALL = new Vector(0,0,-1);
 var NWHEEL = new Vector(-1,0,0);
 var NFLOOR = new Vector(0,-1,0);
 var BEAT = 360;
+//BEAT= 60;
 var SPEED = UNIT/BEAT;
 var TINY = 0.0001;
 
@@ -521,12 +522,12 @@ MoveLink.prototype.spin = function(prop, dummy) {
 	var p;
 	for (var i = HOME; i<=GRIP; i++) {
 		if (this.elements[i].plane != null) {
+			prop.elements[i].radius += this.elements[i].stretch/BEAT;
 			p = this.elements[i].plane.rotate(this.elements[i].bend*this.t*SPEED, this.elements[i].bend_plane);
-			v = this.elements[i].linear_speed + this.elements[i].linear_acc*this.t/BEAT;
-			prop.translateElement(i, v/BEAT, this.elements[i].linear_angle, p);
 			v = this.elements[i].speed + this.elements[i].acc*this.t/BEAT;
 			prop.rotateElement(i, v*SPEED, p);
-			prop.elements[i].radius += this.elements[i].stretch/BEAT;
+			v = this.elements[i].linear_speed + this.elements[i].linear_acc*this.t/BEAT;
+			prop.translateElement(i, v/BEAT, this.elements[i].linear_angle, p);
 		}
 	}
 	this.t+=1;
@@ -796,7 +797,9 @@ MoveChain.prototype.split = function(t) {
 
 // Rotate the move until a specified element matches a specified angle
 MoveChain.prototype.align = function(element, angle) {
-	for (var i = HOME; i<GRIP; i++) {
+	// the current code makes no sense whatosever
+	//for (var i = HOME; i<GRIP; i++) {
+	for (var i = 0; i<this.submoves.length; i++) {
 		if (nearly(this.head()[element].angle, angle, 0.1)) {
 			return this;
 		} else {
@@ -843,7 +846,6 @@ MoveChain.prototype.adjust = function(target) {
 		prop = prop.propVector();
 	}
 	for (var i = 0; i<this.submoves.length; i++) {
-		//if (2+2==4) {
 		if (hand.nearly(this.handVector(),0.05) && prop.nearly(this.propVector(),0.1)) {
 			return this;
 		} else {
