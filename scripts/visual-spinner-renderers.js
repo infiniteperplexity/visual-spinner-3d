@@ -18,7 +18,8 @@ PhoriaPropRenderer.prototype.render = function(myProp) {
 	// grip works a little differently from the other elements
 	mat4.rotate(mat, mat, myProp.grip.azimuth, ZAXIS);
 	mat4.rotate(mat, mat, myProp.prop.zenith, YAXIS);
-	mat4.rotate(mat, mat, myProp.grip.zenith-myProp.prop.zenith, YAXIS);
+	//!!!Something needs to be figured out here!
+	//mat4.rotate(mat, mat, myProp.grip.zenith-myProp.prop.zenith, YAXIS);
 	// prop radius should be handled by prop-specific renderers
 	mat4.translate(mat, mat, [0,0,-myProp.grip.radius]);
 	mat4.rotate(mat, mat, myProp.roll, ZAXIS);

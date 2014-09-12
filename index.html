@@ -196,8 +196,6 @@ Controller.prototype.updateParameters = function() {
 					renderer = props.staffrender({head_color: pcolor, flame_color: fcolor, fire: true, scene: scene});
 				} else if (txt=="hoop") {
 					renderer = props.hooprender({head_color: pcolor, flame_color: fcolor, scene: scene});
-				} else if (txt=="fhoop") {
-					renderer = props.hooprender({head_color: pcolor, flame_color: fcolor, fire: true, scene: scene});
 				} else if (txt=="none") {
 					renderer = props.noproprender({head_color: pcolor, flame_color: fcolor, scene: scene});
 				}
@@ -272,37 +270,36 @@ Controller.prototype.updateParameters = function() {
 Controller.prototype.generateMove = function(n, txt) {
 	var move;
 	if (txt=="stat") {
-		move = moves.staticspin({direction: this.spin[n], plane: this.plane[n]});
-		move.align("prop",this.align[n]);
+		move = moves.staticspin({direction: this.spin[n], plane: this.plane[n], entry: this.align[n]});
 	} else if (txt=="xtsn") {
-		move = moves.flower({direction: this.spin[n], plane: this.plane[n], petals: 0});
+		move = moves.flower({entry: this.align[n], direction: this.spin[n], plane: this.plane[n], mode: DIAMOND, petals: 0});
 		move.align("hand",this.align[n]);
 	} else if (txt=="1pif") {
-		move = moves.flower({entry: this.align[n], direction: this.spin[n], plane: this.plane[n], petals: 1});
+		move = moves.flower({entry: this.align[n], direction: this.spin[n], mode: DIAMOND, plane: this.plane[n], petals: 1});
 		move.align("hand",this.align[n]);
 	} else if (txt=="o1if") {
 		move = moves.flower({entry: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n], petals: 1});
 		move.align("hand",this.align[n]);
 	} else if (txt=="2pif") {
-		move = moves.flower({entry: this.align[n],direction: this.spin[n], plane: this.plane[n], petals: 2});
+		move = moves.flower({entry: this.align[n], mode: DIAMOND, direction: this.spin[n], plane: this.plane[n], petals: 2});
 		move.align("hand",this.align[n]);
 	} else if (txt=="o2if") {
 		move = moves.flower({entry: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n], petals: 2});
 		move.align("hand",this.align[n]);
 	} else if (txt=="4pif") {
-		move = moves.flower({entry: this.align[n],direction: this.spin[n], plane: this.plane[n]});
+		move = moves.flower({entry: this.align[n], mode: DIAMOND, direction: this.spin[n], plane: this.plane[n]});
 		move.align("hand",this.align[n]);
 	} else if (txt=="b4if") {
 		move = moves.flower({entry: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n]});
 		move.align("hand",this.align[n]);
 	} else if (txt=="3paf") {
-		move = moves.flower({entry: this.align[n],direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN, petals: 3});
+		move = moves.flower({entry: this.align[n], mode: DIAMOND, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN, petals: 3});
 		move.align("hand",this.align[n]);
 	} else if (txt=="o3af") {
 		move = moves.flower({entry: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN, petals: 3});
 		move.align("hand",this.align[n]);
 	} else if (txt=="4paf") {
-		move = moves.flower({entry: this.align[n],direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
+		move = moves.flower({entry: this.align[n], mode: DIAMOND, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
 		move.align("hand",this.align[n]);
 	} else if (txt=="b4af") {
 		move = moves.flower({entry: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
@@ -344,7 +341,7 @@ Controller.prototype.generateMove = function(n, txt) {
 		move = moves.pendulum({onepointfive: true, direction: this.spin[n], plane: this.plane[n]});
 		move.align("hand",this.align[n]);
 	} else if (txt=="ucex") {
-		move = moves.isolation({offset: 0, direction: this.spin[n], plane: this.plane[n]});
+		move = moves.isolation({entry: this.align[n], offset: 0, direction: this.spin[n], plane: this.plane[n]});
 		move.align("prop",this.align[n]);
 	} else if (txt=="vcat") {
 		move = moves.isolation({entry: TWELVE, offset: 0, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
@@ -353,7 +350,7 @@ Controller.prototype.generateMove = function(n, txt) {
 		move = moves.isolation({entry: THREE, direction: this.spin[n], offset: 0, plane: this.plane[n], spin: ANTISPIN});
 		move.align("prop",this.align[n]);
 	} else if (txt=="isol") {
-		move = moves.isolation({direction: this.spin[n], plane: this.plane[n]});
+		move = moves.isolation({entry: this.align[n], direction: this.spin[n], plane: this.plane[n]});
 		move.align("prop",this.align[n]);
 	} else if (txt=="unip") {
 		move = moves.pendulum({direction: this.spin[n], plane: this.plane[n], extend: 0.5});
@@ -383,20 +380,20 @@ Controller.prototype.generateMove = function(n, txt) {
 		move = moves.pendulum({pivot: this.align[n], extend: 0.5, direction: this.spin[n], plane: this.plane[n]});
 		move.align("hand",this.align[n]);
 	} else if (txt=="hlex") {
-		move = moves.linex({direction: this.spin[n], plane: this.plane[n], orient: THREE});
+		move = moves.old_linex({direction: this.spin[n], plane: this.plane[n], orient: THREE});
 		move.align("prop",this.align[n]);
 	} else if (txt=="vlex") {
-		move = moves.linex({direction: this.spin[n], plane: this.plane[n], orient: TWELVE});
+		move = moves.old_linex({direction: this.spin[n], plane: this.plane[n], orient: TWELVE});
 		move.align("prop",this.align[n]);
 	} else if (txt=="hlis") {
-		move = moves.linex({harmonics: 2, direction: this.spin[n], plane: this.plane[n], orient: THREE});
+		move = moves.old_linex({harmonics: 2, direction: this.spin[n], plane: this.plane[n], orient: this.align[n]});
 		if ((this.align[n]==TWELVE || this.align[n]==SIX) && this.spin[n] == COUNTERCLOCKWISE) {
 			move.phaseBy(2+this.align[n]/STAGGER);
 		} else {
 			move.phaseBy(this.align[n]/STAGGER);
 		}
 	} else if (txt=="vlis") {
-		move = moves.linex({harmonics: 2, direction: this.spin[n], plane: this.plane[n], orient: TWELVE})
+		move = moves.old_linex({harmonics: 2, direction: this.spin[n], plane: this.plane[n], orient: TWELVE})
 		if ((this.align[n]==THREE || this.align[n]==NINE) && this.spin[n] == COUNTERCLOCKWISE) {
 			move.phaseBy(2+this.align[n]/STAGGER);
 		} else {

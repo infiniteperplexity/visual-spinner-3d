@@ -265,7 +265,7 @@ MoveFactory.prototype.pendulum = function(options) {
 		extend: 1, 
 		spin: INSPIN,
 		pivot_angle: null,
-		pivot_radius: 0,
+		pivot_radius: null,
 		duration: 1,
 		phase: 0,
 		hybrid: false,
@@ -275,10 +275,15 @@ MoveFactory.prototype.pendulum = function(options) {
 	
 	var segment = new MoveLink();
 	segment.pivot.angle = options.pivot_angle;
-	if (options.pivot_angle == undefined && options.antibrid == true) {
-		segment.pivot_angle = TWELVE;
-	}
 	segment.pivot.radius = options.pivot_radius;
+	if (options.antibrid == true) {
+		if (options.pivot_angle == undefined) {
+			segment.pivot.angle = TWELVE;
+		}
+		if (options.pivot_radius == undefined) {
+			segment.pivot.radius = 0.5;
+		}
+	}
 	segment.pivot.plane = options.plane;
 	segment.pivot.speed = 0;
 	segment.duration = 0.25;
@@ -287,7 +292,7 @@ MoveFactory.prototype.pendulum = function(options) {
 		segment.hand.speed *= 2;
 	}
 	var onepointfive = (options.onepointfive == true) ? 3 : 1;
-	var antibrid= (options.antibrid == true) ? 0.75 : 1;
+	var antibrid = (options.antibrid == true) ? 0.75 : 1;
 	segment.prop.speed = 2*onepointfive*antibrid*options.speed*options.direction*options.spin;
 	segment.hand.radius = options.extend;
 	segment.hand.plane = options.plane;
@@ -299,23 +304,25 @@ MoveFactory.prototype.pendulum = function(options) {
 	move.add(segment);
 	move.tail().prop.acc = -8*onepointfive*antibrid*options.direction*options.speed*options.spin;
 	move.tail().hand.acc = -hybrid;
+	move.tail().hand.stretch = 0;
+	move.tail().hand.stretch_acc = 0;
 	move.extend();
 	move.tail().prop.acc = -8*antibrid*options.direction*options.speed*options.spin;
 	move.tail().hand.acc = -hybrid;
+	move.tail().hand.stretch = 0;
+	move.tail().hand.stretch_acc = (options.antibrid == true) ? 16 : 0;
+	//alert(move.tail().socket().hand.stretch);
 	move.extend();
 	move.tail().prop.acc = 8*antibrid*options.direction*options.speed*options.spin;
 	move.tail().hand.acc = hybrid;
+	move.tail().hand.stretch = (options.antibrid == true) ? -4: 0;
+	move.tail().hand.radius = (options.antibrid == true) ? options.extend + 0.5 : options.extend;
+	move.tail().hand.stretch_acc = (options.antibrid == true) ? 16 : 0;
 	move.extend();
 	move.tail().prop.acc = 8*onepointfive*antibrid*options.direction*options.speed*options.spin;
 	move.tail().hand.acc = hybrid;
-	if (options.antibrid == true) {
-		move.submoves[0].pivot.radius += 0.5;
-		move.submoves[1].pivot.stretch = 2;
-		move.submoves[1].pivot.radius += 0.5;
-		move.submoves[2].pivot.radius += 1;
-		move.submoves[2].pivot.stretch = -2;
-		move.submoves[3].pivot.radius += 0.5;
-	}
+	move.tail().hand.stretch = 0;
+	move.tail().hand.stretch_acc = 0;
 	if (options.entry != null) {
 		move.align("hand", options.entry);
 	}
@@ -374,7 +381,6 @@ MoveFactory.prototype.isopendulum = function(options) {
 	return segment;
 }
 
-//not the greatest way to make an oval...
 MoveFactory.prototype.oval = function(options) {
 	var move = new MoveChain();
 	move.definition = options;
@@ -385,10 +391,10 @@ MoveFactory.prototype.oval = function(options) {
 		direction: CLOCKWISE,
 		spin: INSPIN,
 		petals: 2,
-		extend: 1,
+		major: 1,
+		minor: 0.5,
 		speed: 1,
 		mode: null,
-		stretch: -0.5,
 		entry: THREE,
 		orient: THREE,
 		pivot_angle: 0,
@@ -413,90 +419,23 @@ MoveFactory.prototype.oval = function(options) {
 	if (options.mode != null) {
 		segment.prop.angle = options.orient + options.mode;
 	}
-	// may need to make it 0.125
 	segment.duration = 0.25;
 	move.add(segment);
-	move.tail().hand.stretch = 4*options.stretch;
-	move.tail().hand.radius = options.extend;
+	move.tail().hand.radius = options.major;
+	move.tail().hand.stretch = -(options.major-options.minor)*8;
+	move.tail().hand.stretch_acc = (options.major-options.minor)*32;
 	move.extend();
-	move.tail().hand.stretch = -4*options.stretch;
-	move.tail().hand.radius = options.extend + options.stretch;
+	move.tail().hand.radius = options.minor;
+	move.tail().hand.stretch = 0;
+	move.tail().hand.stretch_acc = (options.major-options.minor)*32;
 	move.extend();
-	move.tail().hand.stretch = 4*options.stretch;
-	move.tail().hand.radius = options.extend;
+	move.tail().hand.radius = options.major;
+	move.tail().hand.stretch = -(options.major-options.minor)*8;
+	move.tail().hand.stretch_acc = (options.major-options.minor)*32;
 	move.extend();
-	move.tail().hand.stretch = -4*options.stretch;
-	move.tail().hand.radius = options.extend + options.stretch;
-	if (options.entry != null) {
-		move.align("hand",options.entry);
-	}
-	if (options.duration < 1) {
-		move = move.slice(0,options.duration*4);
-	} else if (options.duration > 1) {
-		for (var i = 1; i<options.duration; i+=0.25) {
-			move.add(move.submoves[4*(i-1)].clone());
-		}
-	}
-	move.build = options.build;
-	move.movename = options.movename;
-	return move;
-}
-
-
-//in process
-MoveFactory.prototype.linflower = function(options) {
-	var move = new MoveChain();
-	move.definition = options;
-	options = this.defaults(options,{
-		build: "linflower",
-		movename: "Linearized Flower",
-		plane: WALL,
-		direction: CLOCKWISE,
-		spin: INSPIN,
-		petals: 2,
-		extend: 1,
-		speed: 1,
-		mode: null,
-		stretch: -0.5,
-		entry: THREE,
-		orient: THREE,
-		pivot_angle: 0,
-		pivot_radius: 0,
-		duration: 1
-	});
-	var segment = new MoveLink();
-	if (options.spin==INSPIN) {
-		segment.prop.speed = (options.petals+1)*options.spin*options.direction*options.speed;
-	} else {
-		segment.prop.speed = (options.petals-1)*options.spin*options.direction*options.speed;
-	}
-	segment.pivot.angle = options.pivot_angle;
-	segment.pivot.radius = options.pivot_radius;
-	segment.pivot.plane = options.plane;
-	segment.pivot.speed = 0;
-	segment.prop.plane = options.plane;
-	segment.hand.plane = options.plane;
-	segment.hand.angle = options.orient;
-	if (options.mode != null) {
-		segment.prop.angle = options.orient + options.mode;
-	}
-	
-	segment.hand.speed = 0;
-	segment.hand.linear_speed = options.direction*options.speed;
-	// may need to make it 0.125
-	segment.duration = 0.25;
-	move.add(segment);
-	move.tail().hand.stretch = 4*options.stretch;
-	move.tail().hand.radius = options.extend;
-	move.extend();
-	move.tail().hand.stretch = -4*options.stretch;
-	move.tail().hand.radius = options.extend + options.stretch;
-	move.extend();
-	move.tail().hand.stretch = 4*options.stretch;
-	move.tail().hand.radius = options.extend;
-	move.extend();
-	move.tail().hand.stretch = -4*options.stretch;
-	move.tail().hand.radius = options.extend + options.stretch;
+	move.tail().hand.radius = options.minor;
+	move.tail().hand.stretch = 0;
+	move.tail().hand.stretch_acc = (options.major-options.minor)*32;
 	if (options.entry != null) {
 		move.align("hand",options.entry);
 	}
@@ -513,6 +452,91 @@ MoveFactory.prototype.linflower = function(options) {
 }
 
 MoveFactory.prototype.linex = function(options) {
+	var move = new MoveChain();
+	move.definition = options;
+	options = this.defaults(options,{
+		build: "linex",
+		movename: "Linear Extension",
+		plane: WALL,
+		direction: CLOCKWISE,
+		spin: INSPIN,
+		petals: 2,
+		extend: 1,
+		speed: 1,
+		mode: null,
+		entry: THREE,
+		orient: THREE,
+		pivot_angle: 0,
+		pivot_radius: 0,
+		duration: 1
+	});
+	var segment = new MoveLink();
+	if (options.spin==INSPIN) {
+		segment.prop.speed = (options.petals+1)*options.spin*options.direction*options.speed;
+	} else {
+		segment.prop.speed = (options.petals-1)*options.spin*options.direction*options.speed;
+	}
+	segment.pivot.angle = options.pivot_angle;
+	segment.pivot.radius = options.pivot_radius;
+	segment.pivot.plane = options.plane;
+	segment.pivot.speed = 0;
+
+	segment.hand.speed = 0;
+	segment.prop.plane = options.plane;
+	segment.hand.plane = options.plane;
+	segment.hand.angle = options.orient;
+	if (options.mode != null) {
+		segment.prop.angle = options.orient + options.mode;
+	}
+	segment.duration = 0.25;
+	move.add(segment);
+	segment.hand.angle = options.entry;
+	move.tail().hand.radius = options.extend;
+	move.tail().hand.stretch = -8;
+	move.tail().hand.stretch_acc = 32;
+	move.extend();
+	segment.hand.angle = options.entry;
+	move.tail().hand.radius = 0;
+	move.tail().hand.stretch = 0;
+	move.tail().hand.stretch_acc = 32;
+	move.extend();
+	segment.hand.angle = -options.entry;
+	move.tail().hand.radius = options.extend;
+	move.tail().hand.stretch = 8;
+	move.tail().hand.stretch_acc = -32;
+	move.extend();
+	segment.hand.angle = -options.entry;
+	move.tail().hand.radius = 0;
+	move.tail().hand.stretch = 0;
+	move.tail().hand.stretch_acc = -32;
+	// do we need to do some crazy thing here?
+	if (options.entry != null) {
+		if (nearly(options.entry,options.orient)) {
+			move.phaseBy(0);
+		} else if (nearly(options.entry,options.orient + QUARTER*options.direction)) {
+			move.phaseBy(1);
+		} else if (nearly(options.entry,options.orient +OFFSET)) {
+			move.phaseBy(2);
+		} else if (nearly(options.entry,options.orient - QUARTER*options.direction)) {
+			move.phaseBy(3);
+		}  else {
+			move.align("hand",options.entry);
+		}
+	}
+	if (options.duration < 1) {
+		move = move.slice(0,options.duration*4);
+	} else if (options.duration > 1) {
+		for (var i = 1; i<options.duration; i+=0.25) {
+			move.add(move.submoves[4*(i-1)].clone());
+		}
+	}
+	move.build = options.build;
+	move.movename = options.movename;
+	return move;
+}
+
+
+MoveFactory.prototype.old_linex = function(options) {
 	var move = new MoveChain();
 	move.definition = options;
 	// A linex with harmonics = 1 is a linear extension.  harmonics = 2 is a linear isolation;
@@ -1312,6 +1336,59 @@ MoveFactory.prototype.spiralwrap = function(options) {
 	move.tail().prop.radius = 0;
 	move.tail().stretch = -options.stretch;
 	move.tail().speed = -options.speed*options.direction;
+	move.build = options.build;
+	move.movename = options.movename;
+	return move;
+}
+
+MoveFactory.prototype.spiral = function(options) {
+	var move = new MoveChain();
+	move.definition = options;
+	options = this.defaults(options,{
+		build: "spiral",
+		movename: "Spiral Wrap",
+		entry: null,
+		hand: THREE,
+		extend: TINY,
+		plane: WALL,
+		direction: CLOCKWISE,
+		speed: 1,
+		stretch: -1,
+		pivot_angle: 0,
+		pivot_radius: 0,
+		duration: 1
+	});
+	var segment = new MoveLink();
+	if (options.entry != null) {
+		segment.hand.angle = options.entry;
+	}
+	segment.pivot.angle = options.pivot_angle;
+	segment.pivot.radius = options.pivot_radius;
+	segment.pivot.plane = options.plane;
+	segment.pivot.speed = 0;
+	
+	segment.hand.plane = options.plane;
+	segment.hand.radius = options.extend;
+	segment.hand.angle = options.hand;
+	segment.hand.speed = 0;
+	if (options.entry != null) {
+		segment.prop.angle = options.entry;
+	}
+	segment.prop.plane = options.plane;
+	segment.prop.speed = options.direction*options.speed;
+	segment.duration = 0.25;
+	segment.prop.stretch = options.stretch;
+	move.add(segment);
+	move.extend();
+	move.extend();
+	move.extend();
+	if (options.duration < 1) {
+		move = move.slice(0,options.duration*4);
+	} else if (options.duration > 1) {
+		for (var i = 1; i<options.duration; i+=0.25) {
+			move.extend();
+		}
+	}
 	move.build = options.build;
 	move.movename = options.movename;
 	return move;
