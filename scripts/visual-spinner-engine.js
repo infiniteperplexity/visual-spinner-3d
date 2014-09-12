@@ -213,6 +213,14 @@ function nearly(n1,n2, delta) {
 	else if (Math.abs(Math.abs(n1-n2)-2*Math.PI)<delta) {return true;}
 	else {return false;}
 }
+function addLinear(angle1, radius1, angle2, radius2) {
+	var results = {};
+	var x = radius1*Math.cos(angle1) + radius2*Math.cos(angle2);
+	var y = radius1*Math.sin(angle1) + radius2*Math.sin(angle2);;
+	results.radius = Math.sqrt(x*x+y*y);
+	results.angle = Math.atan2(y,x);
+	return results;
+}
 
 
 

@@ -292,7 +292,7 @@ MoveFactory.prototype.pendulum = function(options) {
 		segment.hand.speed *= 2;
 	}
 	var onepointfive = (options.onepointfive == true) ? 3 : 1;
-	var antibrid = (options.antibrid == true) ? 0.75 : 1;
+	var antibrid = (options.antibrid == true) ? 1 : 1;
 	segment.prop.speed = 2*onepointfive*antibrid*options.speed*options.direction*options.spin;
 	segment.hand.radius = options.extend;
 	segment.hand.plane = options.plane;
