@@ -44,7 +44,6 @@ var NWALL = new Vector(0,0,-1);
 var NWHEEL = new Vector(-1,0,0);
 var NFLOOR = new Vector(0,-1,0);
 var BEAT = 360;
-//BEAT= 120;
 var SPEED = UNIT/BEAT;
 var TINY = 0.0001;
 

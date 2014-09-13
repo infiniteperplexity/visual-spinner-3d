@@ -268,58 +268,51 @@ MoveFactory.prototype.pendulum = function(options) {
 		pivot_radius: null,
 		duration: 1,
 		phase: 0,
+		// governs whether the hand path is "pendulous" or not
 		hybrid: false,
-		onepointfive: false,
-		antibrid: false
+		// should always be odd, 1 = pendulum, 3 = one-point-five
+		twirl: 1,
+		// lift = 0 for antibrid pendulums
+		lift: 0,
+		// swing = 0.75 for antibrid pendulums
+		swing: 1
 	});
 	
 	var segment = new MoveLink();
 	segment.pivot.angle = options.pivot_angle;
 	segment.pivot.radius = options.pivot_radius;
-	if (options.antibrid == true) {
-		if (options.pivot_angle == undefined) {
-			segment.pivot.angle = TWELVE;
-		}
-		if (options.pivot_radius == undefined) {
-			segment.pivot.radius = 0.5;
-		}
-	}
 	segment.pivot.plane = options.plane;
 	segment.pivot.speed = 0;
 	segment.duration = 0.25;
 	segment.hand.speed = options.speed*options.direction;
-	if (options.hybrid == true) {
-		segment.hand.speed *= 2;
-	}
-	var onepointfive = (options.onepointfive == true) ? 3 : 1;
-	var antibrid = (options.antibrid == true) ? 1 : 1;
-	segment.prop.speed = 2*onepointfive*antibrid*options.speed*options.direction*options.spin;
+	segment.prop.speed = 2*options.twirl*options.swing*options.speed*options.direction*options.spin;
 	segment.hand.radius = options.extend;
 	segment.hand.plane = options.plane;
 	segment.prop.plane = options.plane;
 	segment.hand.angle = options.orient;
-	segment.prop.angle = (options.onepointfive == true) ? options.orient + OFFSET: options.orient;
-	
-	var hybrid = (options.hybrid == true)  ? 8*options.direction*options.speed*options.spin : 0;
+	segment.prop.angle = options.orient + ((options.twirl-1)%4)*QUARTER;
+	if (options.hybrid == true) {
+		segment.hand.speed *= 2;
+	}
+	var hybrid = (options.hybrid == true) ? 8*options.direction*options.speed*options.spin : 0;
 	move.add(segment);
-	move.tail().prop.acc = -8*onepointfive*antibrid*options.direction*options.speed*options.spin;
+	move.tail().prop.acc = -8*options.twirl*options.swing*options.direction*options.speed*options.spin;
 	move.tail().hand.acc = -hybrid;
 	move.tail().hand.stretch = 0;
 	move.tail().hand.stretch_acc = 0;
 	move.extend();
-	move.tail().prop.acc = -8*antibrid*options.direction*options.speed*options.spin;
+	move.tail().prop.acc = -8*options.swing*options.direction*options.speed*options.spin;
 	move.tail().hand.acc = -hybrid;
 	move.tail().hand.stretch = 0;
-	move.tail().hand.stretch_acc = (options.antibrid == true) ? 16 : 0;
-	//alert(move.tail().socket().hand.stretch);
+	move.tail().hand.stretch_acc = 32*options.lift;	
 	move.extend();
-	move.tail().prop.acc = 8*antibrid*options.direction*options.speed*options.spin;
+	move.tail().prop.acc = 8*options.swing*options.direction*options.speed*options.spin;
 	move.tail().hand.acc = hybrid;
-	move.tail().hand.stretch = (options.antibrid == true) ? -4: 0;
-	move.tail().hand.radius = (options.antibrid == true) ? options.extend + 0.5 : options.extend;
-	move.tail().hand.stretch_acc = (options.antibrid == true) ? 16 : 0;
+	move.tail().hand.stretch = -8*options.lift;
+	move.tail().hand.radius = options.extend + options.lift;
+	move.tail().hand.stretch_acc = 32*options.lift;	
 	move.extend();
-	move.tail().prop.acc = 8*onepointfive*antibrid*options.direction*options.speed*options.spin;
+	move.tail().prop.acc = 8*options.twirl*options.swing*options.direction*options.speed*options.spin;
 	move.tail().hand.acc = hybrid;
 	move.tail().hand.stretch = 0;
 	move.tail().hand.stretch_acc = 0;
@@ -337,14 +330,36 @@ MoveFactory.prototype.pendulum = function(options) {
 	}
 	move.build = options.build;
 	move.movename = options.movename;
-	
-	if (options.onepointfive === true) {
-		move.definition.movename = "One Point Five";
-	} else if (options.spin === ANTISPIN) {
-		move.definition.movename = "Iso-Pendulum";
-	}
 	return move;
 }
+
+MoveFactory.prototype.antipendulum = function(options) {
+	options = this.defaults(options,{
+		build: "antipendulum",
+		movename: "Anti-Pendulum",
+		extra_pivot: 0.5,
+		lift: 0.5,
+		swing: 0.75,
+		spin: ANTISPIN,
+		extend: 0.5,
+		pivot_angle: TWELVE,
+		pivot_radius: 0
+	});	
+	var pivots = addLinear(TWELVE, options.extra_pivot, options.pivot_angle, options.pivot_radius);
+	options.pivot_angle = pivots.angle;
+	options.pivot_radius = pivots.radius;
+	return MoveFactory.prototype.pendulum(options);
+}
+
+MoveFactory.prototype.onepointfive = function(options) {
+	options = this.defaults(options,{
+		build: "onepointfive",
+		movename: "One Point Five",
+		twirl: 3
+	});
+	return MoveFactory.prototype.pendulum(options);
+}
+
 
 //the goofy, wobbly kind
 MoveFactory.prototype.isopendulum = function(options) {
