@@ -51,13 +51,16 @@ function init() {
 		$("#2d3d").val("3d");
 	}
 	canvasSetup();
-	canvasLoop();
+	//canvasLoop();
 }
 
 var scene = new Phoria.Scene();
 var renderer;
 var orangePoi = props.poi({head_color: "orange", scene: scene});
 var whitePoi = props.poi({head_color: "white", scene: scene});
+// An ad hoc solution?  Two invisible props that remember where the orange and white poi started
+var startingPositions = [props.noprop({scene: scene}),props.noprop({scene: scene})];
+
 function canvasSetup() {
 	var prop = new Prop();
 	var link = new MoveLink();
@@ -94,6 +97,10 @@ function canvasSetup() {
 	light.direction.y = 1;
 	light.direction.z = 0;
 	scene.graph.push(light);
+	
+	window.addEventListener("keydown", listenForEnter, false);
+	
+	
 	// set up props
 	orangePoi.hand.radius = 1;
 	whitePoi.hand.radius = 0;
@@ -101,6 +108,8 @@ function canvasSetup() {
 	orangePoi.rotateProp(SPLIT);
 	whitePoi.rotateHand(SPLIT);
 	whitePoi.rotateProp(SPLIT);
+	startingPositions[0].orientToProp(orangePoi);
+	startingPositions[1].orientToProp(whitePoi);
 	myProps.push(orangePoi);
 	myProps.push(whitePoi);
 
@@ -260,9 +269,9 @@ function canvasSetup() {
 	orangePoi.addMove(moves.isolation({direction: COUNTERCLOCKWISE, entry: THREE, pivot_angle: NINE, pivot_radius: 1, duration: 1.5}));
 	whitePoi.addMove(moves.isolation({spin: CATEYE, direction: COUNTERCLOCKWISE, entry: NINE, pivot_angle: NINE, pivot_radius: 1, duration: 1.5}));
 	// Point Iso v. Static Spin
-	orangePoi.addMove(moves.flower({petals: 0, duration: 0.5, pivot_angle: NINE, pivot_radius: 0.5}));
-	whitePoi.addMove(moves.staticspin({duration: 0.5, pivot_angle: NINE, pivot_radius: 0.5}));
-	orangePoi.tail().pivot.stretch = -2; whitePoi.tail().pivot.stretch = -2;
+		// The complicated pivot going on here makes it easier to just use generic movements
+	orangePoi.addMove(moves.generic({pivot_angle: NINE, pivot_stretch: -3, hand_radius: 0.5, hand_speed: -1, prop_speed: -1, duration: 0.5}));
+	whitePoi.addMove(moves.generic({pivot_angle: NINE, pivot_stretch: -3, hand_radius: 0.5, hand_speed: -1, prop_speed: -1, duration: 0.5}));
 	
 	// Iso v. V. Cat-eye
 	orangePoi.addMove(moves.isolation({spin: CATEYE, entry: THREE, pivot_angle: THREE, pivot_radius: 0.5, duration: 1.5}));
@@ -359,6 +368,7 @@ function canvasSetup() {
 	orangePoi.addMove(moves.spiral({direction: COUNTERCLOCKWISE, entry: THREE, stretch: -0.45,duration: 1.75}));
 	whitePoi.addMove(moves.spiral({direction: COUNTERCLOCKWISE, entry: NINE, stretch: -0.45, duration: 1.75}));
 
+	document.getElementById("frameN").setAttribute("max", (orangePoi.move.getDuration()*BEAT).toString());
 	// Finally, the madness is over!  Note: I used the "addMove" method 109 times
 	redraw();
 }
@@ -368,16 +378,92 @@ Prop.prototype.spinfail = function() {
 }
 
 // animation loop
+var paused = false;
+
+function startSpin() {
+	paused = false;
+	canvasLoop();
+}
+
+function pauseSpin() {
+	paused = true;
+}
+
+function spinFrames(n) {
+	if (n > 0) {
+		pauseSpin();
+		advanceFrames(n);
+	} else if (n < 0) {
+		var value = parseInt(document.getElementById("frameN").value);
+		totalReset();
+		// This nonsense is necessary because it currently sometimes spins one additional frame after resetting
+		advanceFrames(value + n - parseInt(document.getElementById("frameN").value));
+	}
+	for (var i = 0; i < myProps.length; i++) {
+		myProps[i].render();
+	}
+	redraw();
+}
+
+//omg this is so stupid, the thing sometimes spins 1 additional frame after reseting.
+function totalReset() {
+	pauseSpin();
+	document.getElementById("frameN").value = "0";
+	for (var i= 0; i < myProps.length; i++) {
+		myProps[i].move.reset();
+		myProps[i].orientToProp(startingPositions[i]);
+	}
+	redraw();
+}
+
+function listenForEnter(e) {
+	if (e.keyCode ===13) {
+		goToFrame();
+	}
+}
+
+// currently this doesn't actually check the lower bound
+function checkBounds(n) {
+	var max = document.getElementById("frameN").max;
+	if (n > max) {
+		frameN.value = max.toString();
+		while (n > max) {
+			n = n-max;
+		}
+	} else if (n < 0) {
+		alert("You entered a negative frame number and I haven't done error handling for that yet.");
+	}
+	return n;
+}
+function goToFrame() {
+	var value = parseInt(document.getElementById("frameN").value);
+	value = checkBounds(value);
+	totalReset();
+	advanceFrames(value);
+	redraw();
+}
+
+function advanceFrames(n) {
+	var frameN = document.getElementById("frameN");
+	frameN.value = checkBounds((parseInt(frameN.value) + n)).toString();
+	for (var i = 0; i < n; i++) {
+		for (var j = 0;  j < myProps.length; j++) {
+			myProps[j].spin();
+		}
+	}
+}
 function canvasLoop() {
+	if (paused == true) {return;}
 	setTimeout(function() {
 		requestAnimationFrame(canvasLoop);
 		redraw();
+		advanceFrames(1);
 		for (var i = 0; i < myProps.length; i++) {
-			myProps[i].spin();
 			myProps[i].render();
 		}
-	},1000/BEAT);
+	},500/BEAT);
 }
+
 function redraw() {
 	for (var i = 0; i < myProps.length; i++) {
 		myProps[i].render();
@@ -405,6 +491,12 @@ function redraw() {
 	<canvas width="400" height="400" id="canvas">
 		Your browser doesn't support the HTML5 element canvas.
 	</canvas>
+	<button type="button" onclick="startSpin();">Play</button>
+	<button type="button" onclick="pauseSpin();">Pause</button>
+	<button type="button" onclick="spinFrames(-12)">-</button>
+	<input id="frameN" min="0" value="0" type="number">
+	<button type="button" onclick="spinFrames(12)";>+</button>
+	<button type="button" onclick="totalReset();">Reset</button>
 </div>
 <div id="vid">
 	<video id="drex" width="400px" controls>
@@ -412,5 +504,6 @@ function redraw() {
 		Your browser does not support HTML5 video.
 	</video>
 </div>
+
 </section>
 </body></html>

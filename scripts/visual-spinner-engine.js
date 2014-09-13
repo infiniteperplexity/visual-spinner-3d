@@ -561,6 +561,7 @@ MoveLink.prototype.spindummy = function(dprop) {
 MoveLink.prototype.reset = function() {
 	this.started = false;
 	this.finished = false;
+	this.t = 0;
 	return this;
 }
 // How many frames does the MoveLink have?
