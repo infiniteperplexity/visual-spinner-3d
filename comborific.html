@@ -259,12 +259,7 @@ function canvasSetup() {
 	// Iso v. V. Cat-eye
 	orangePoi.addMove(moves.isolation({direction: COUNTERCLOCKWISE, entry: THREE, pivot_angle: NINE, pivot_radius: 1, duration: 1.5}));
 	whitePoi.addMove(moves.isolation({spin: CATEYE, direction: COUNTERCLOCKWISE, entry: NINE, pivot_angle: NINE, pivot_radius: 1, duration: 1.5}));
-	//!!! I think this transition might be kind of b*llsh*t.
-	//somewhere around 0:28
-	//orangePoi.tail().pivot.stretch = -2; whitePoi.tail().pivot.stretch = -2;
 	// Point Iso v. Static Spin
-	//orangePoi.addMove(moves.flower({petals: 0, duration: 0.5}));
-	//whitePoi.addMove(moves.staticspin({duration: 0.5}));
 	orangePoi.addMove(moves.flower({petals: 0, duration: 0.5, pivot_angle: NINE, pivot_radius: 0.5}));
 	whitePoi.addMove(moves.staticspin({duration: 0.5, pivot_angle: NINE, pivot_radius: 0.5}));
 	orangePoi.tail().pivot.stretch = -2; whitePoi.tail().pivot.stretch = -2;
