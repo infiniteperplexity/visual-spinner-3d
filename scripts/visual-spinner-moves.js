@@ -270,7 +270,7 @@ MoveFactory.prototype.pendulum = function(options) {
 		phase: 0,
 		// governs whether the hand path is "pendulous" or not
 		hybrid: false,
-		// should always be odd, 1 = pendulum, 3 = one-point-five
+		// should usally be odd, 1 = pendulum, 3 = one-point-five
 		twirl: 1,
 		// lift = 0 for antibrid pendulums
 		lift: 0,

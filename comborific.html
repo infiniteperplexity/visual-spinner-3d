@@ -280,9 +280,11 @@ function canvasSetup() {
 	orangePoi.addMove(moves.isolation({spin: CATEYE, entry: THREE, pivot_angle: THREE, pivot_radius: 0.5, duration: 1.5}));
 	whitePoi.addMove(moves.isolation({entry: NINE, pivot_angle: THREE, pivot_radius: 0.5, duration: 1.5}));
 	
-	// Isopendulum v. Two-Petal transition
-		// The first "petal" is so weird and distorted that it's best handled as a generic move
-	orangePoi.addMove(moves.generic({prop_speed: -3, hand_acc: -4, hand_entry: NINE, hand_radius: 0.5, pivot_angle: THREE, pivot_radius: 0.5, duration: 0.5, pivot_stretch: -1, hand_stretch: 1}));
+	// Pendulum v. Two-Petal transition
+		// The first "petal" weirdly pendulum-like and distorted so it's best handled as a generic move
+	orangePoi.addMove(moves.generic({hand_entry: NINE, prop_entry: THREE, hand_radius: 1, pivot_angle: THREE, pivot_radius: 1, hand_speed: 0, hand_acc: -8, prop_speed: 0, prop_acc: -24, duration: 0.25}));
+	orangePoi.addMove(moves.generic({hand_entry: NINE, prop_entry: THREE, hand_radius: 1, pivot_angle: THREE, pivot_radius: 1, hand_speed: -2, hand_acc: 8, prop_speed: -6, prop_acc: 24, duration: 0.25, pivot_stretch: -4}));
+	
 	whitePoi.addMove(moves.pendulum({extend: 0, duration: 0.5, entry: NINE, pivot_angle: THREE, pivot_radius: 1}));
 		// Put a bit of "isolation" into the pendulum to recenter it.
 	whitePoi.modifyTail({pivot_stretch: -4});
@@ -680,9 +682,11 @@ whitePoi.addMove(moves.generic({pivot_angle: NINE, pivot_stretch: -3, hand_radiu
 orangePoi.addMove(moves.isolation({spin: CATEYE, entry: THREE, pivot_angle: THREE, pivot_radius: 0.5, duration: 1.5}));
 whitePoi.addMove(moves.isolation({entry: NINE, pivot_angle: THREE, pivot_radius: 0.5, duration: 1.5}));
 
-// Isopendulum v. Two-Petal transition
-	// The first "petal" is so weird and distorted that it's best handled as a generic move
-orangePoi.addMove(moves.generic({prop_speed: -3, hand_acc: -4, hand_entry: NINE, hand_radius: 0.5, pivot_angle: THREE, pivot_radius: 0.5, duration: 0.5, pivot_stretch: -1, hand_stretch: 1}));
+// Pendulum v. Two-Petal transition
+	// The first "petal" weirdly pendulum-like and distorted so it's best handled as a generic move
+orangePoi.addMove(moves.generic({hand_entry: NINE, prop_entry: THREE, hand_radius: 1, pivot_angle: THREE, pivot_radius: 1, hand_speed: 0, hand_acc: -8, prop_speed: 0, prop_acc: -24, duration: 0.25}));
+orangePoi.addMove(moves.generic({hand_entry: NINE, prop_entry: THREE, hand_radius: 1, pivot_angle: THREE, pivot_radius: 1, hand_speed: -2, hand_acc: 8, prop_speed: -6, prop_acc: 24, duration: 0.25, pivot_stretch: -4}));
+
 whitePoi.addMove(moves.pendulum({extend: 0, duration: 0.5, entry: NINE, pivot_angle: THREE, pivot_radius: 1}));
 	// Put a bit of "isolation" into the pendulum to recenter it.
 whitePoi.modifyTail({pivot_stretch: -4});

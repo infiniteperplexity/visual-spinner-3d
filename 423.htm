@@ -1,0 +1,266 @@
+<!--Distributed under GNU Public License version 3-->
+<!DOCTYPE html>
+<html><head>
+<style>
+body {margin: 0; padding: 0; background-color: #679}
+h1, h2, header p {text-align: center}
+header {width: 1240px; height: 100px}
+#content {width: 1250px; height: 510px;}
+canvas {width: 400px; height: 400px; background-color: #000;}
+section {margin: 0; padding: 0}
+header, section div {vertical-align: top; padding: 2.5px; border: 5px solid gray; margin: -2.5px; display: inline-block;}
+#display {width: 400px; height: 400px; float: left}
+#popimport {height: 240px; width: 400px}
+</style>
+
+
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Drex's "combo-rific" video modeled in VisualSpinner, by Glenn Wright)</title>
+<script src="Drex%27s%20%27combo-rific%27%20video%20modeled%20in%20VisualSpinner,%20by%20Glenn%20Wright%29_files/jquery-1.js"></script>
+<script src="Drex%27s%20%27combo-rific%27%20video%20modeled%20in%20VisualSpinner,%20by%20Glenn%20Wright%29_files/gl-matrix-min.js"></script>
+<script src="Drex%27s%20%27combo-rific%27%20video%20modeled%20in%20VisualSpinner,%20by%20Glenn%20Wright%29_files/phoria-min.js"></script>
+<script src="Drex%27s%20%27combo-rific%27%20video%20modeled%20in%20VisualSpinner,%20by%20Glenn%20Wright%29_files/requestAnimationFrame.js"></script>
+<script src="Drex%27s%20%27combo-rific%27%20video%20modeled%20in%20VisualSpinner,%20by%20Glenn%20Wright%29_files/visual-spinner-engine.js"></script>
+<script src="Drex%27s%20%27combo-rific%27%20video%20modeled%20in%20VisualSpinner,%20by%20Glenn%20Wright%29_files/visual-spinner-moves.js"></script>
+<script src="Drex%27s%20%27combo-rific%27%20video%20modeled%20in%20VisualSpinner,%20by%20Glenn%20Wright%29_files/visual-spinner-renderers.js"></script><script>
+// set parameters
+
+var HEIGHT = 400;
+var WIDTH = 400;
+var ORIGINX = WIDTH/2;
+var ORIGINY = HEIGHT/2;
+var BACKGROUND = "black";
+
+var view2d = false;
+
+var myProps = new Array(); 
+var moves = new MoveFactory();
+var props = new PropFactory();
+
+function init() {
+	ctx=document.getElementById('canvas').getContext('2d');
+	if( 	navigator.userAgent.match(/Android/i)
+		|| navigator.userAgent.match(/webOS/i)
+		|| navigator.userAgent.match(/iPhone/i)
+		|| navigator.userAgent.match(/iPad/i)
+		|| navigator.userAgent.match(/iPod/i)
+		|| navigator.userAgent.match(/BlackBerry/i)
+		|| navigator.userAgent.match(/Windows Phone/i)) {
+		$("#2d3d").val("2d");
+	} else {
+		$("#2d3d").val("3d");
+	}
+	canvasSetup();
+	//canvasLoop();
+}
+
+var scene = new Phoria.Scene();
+var renderer;
+var redPoi = props.poi({head_color: "red", scene: scene});
+var bluePoi = props.poi({head_color: "blue", scene: scene});
+var greenPoi = props.poi({head_color: "green", scene: scene});
+
+function canvasSetup() {
+	var prop = new Prop();
+	var link = new MoveLink();
+	var angle = SIX;
+	canvas.height = HEIGHT;
+	canvas.width = WIDTH;
+	ctx.fillStyle = BACKGROUND;
+	ctx.strokeStyle = BACKGROUND;
+	ctx.fillRect(0,0,WIDTH,HEIGHT);
+	
+	// set up Phoria scene for 3D rendering
+	scene.camera.position = {x:0.0, y:1.0, z:10.0};
+	scene.perspective.aspect = canvas.width / canvas.height;
+	scene.viewport.width = canvas.width;
+	scene.viewport.height = canvas.height;
+	renderer = new Phoria.CanvasRenderer(canvas);
+	var plane = Phoria.Util.generateTesselatedPlane(8,8,0,20);
+	scene.graph.push(Phoria.Entity.create({
+		points: plane.points,
+		edges: plane.edges,
+		polygons: plane.polygons,
+		style: {
+				 drawmode: "wireframe",
+				 shademode: "plain",
+				 linewidth: 0.5,
+				 objectsortmode: "back"
+			}}));
+	scene.graph.push(new Phoria.DistantLight());
+	var light = new Phoria.DistantLight();
+	light.direction.x = 1;
+	light.direction.z = 0;
+	scene.graph.push(light);
+	light = new Phoria.DistantLight();
+	light.direction.y = 1;
+	light.direction.z = 0;
+	scene.graph.push(light);
+	
+	window.addEventListener("keydown", listenForEnter, false);
+	
+	
+	// set up props
+	redPoi.hand.radius = 0;
+	bluePoi.hand.radius = 0;
+	greenPoi.hand.radius = 0;
+	redPoi.setHandAngle(THREE);
+	bluePoi.setHandAngle(NINE);
+	greenPoi.setHandAngle(THREE);
+	redPoi.setPropAngle(THREE);
+	bluePoi.setPropAngle(NINE);
+	greenPoi.setPropAngle(THREE);
+	myProps.push(redPoi);
+	myProps.push(bluePoi);
+	myProps.push(greenPoi);
+	
+	redPoi.addMove(moves.staticspin({direction: COUNTERCLOCKWISE, pivot_angle: THREE, pivot_radius: 0}));
+	bluePoi.addMove(moves.staticspin({direction: COUNTERCLOCKWISE, pivot_angle: THREE, pivot_radius: 0}));
+	greenPoi.addMove(moves.staticspin({direction: COUNTERCLOCKWISE, pivot_angle: THREE, pivot_radius: 0}));
+	
+	redPoi.addMove(moves.verticaltoss({direction: COUNTERCLOCKWISE, pivot_angle: THREE, pivot_radius: 0.5}));
+	bluePoi.addMove(moves.staticspin({direction: COUNTERCLOCKWISE, pivot_angle: THREE, pivot_radius: 0, duration: 0.5}));
+	greenPoi.addMove(moves.staticspin({direction: COUNTERCLOCKWISE, pivot_angle: THREE, pivot_radius: 0}));
+	
+	redPoi.addMove(moves.staticspin({direction: COUNTERCLOCKWISE, pivot_angle: THREE, pivot_radius: 0, duration: 0.5}));
+	bluePoi.addMove(moves.verticaltoss({direction: COUNTERCLOCKWISE, pivot_angle: THREE, pivot_radius: 0.5}));
+	greenPoi.addMove(moves.verticaltoss({direction: COUNTERCLOCKWISE, pivot_angle: THREE, pivot_radius: 0.5}));
+	
+	document.getElementById("frameN").setAttribute("max", (redPoi.move.getDuration()*BEAT).toString());
+	redraw();
+}
+
+Prop.prototype.spinfail = function() {
+	alert("can't spin with an empty queue");
+}
+
+// animation loop
+var paused = false;
+
+function startSpin() {
+	paused = false;
+	canvasLoop();
+}
+
+function pauseSpin() {
+	paused = true;
+}
+
+function spinFrames(n) {
+	if (n > 0) {
+		pauseSpin();
+		advanceFrames(n);
+	} else if (n < 0) {
+		var value = parseInt(document.getElementById("frameN").value);
+		totalReset();
+		// This nonsense is necessary because it currently sometimes spins one additional frame after resetting
+		advanceFrames(value + n - parseInt(document.getElementById("frameN").value));
+	}
+	for (var i = 0; i < myProps.length; i++) {
+		myProps[i].render();
+	}
+	redraw();
+}
+
+//omg this is so stupid, the thing sometimes spins 1 additional frame after reseting.
+function totalReset() {
+	pauseSpin();
+	document.getElementById("frameN").value = "0";
+	for (var i= 0; i < myProps.length; i++) {
+		myProps[i].move.reset();
+		myProps[i].orientToProp(startingPositions[i]);
+	}
+	redraw();
+}
+
+function listenForEnter(e) {
+	if (e.keyCode ===13) {
+		goToFrame();
+	}
+}
+
+// currently this doesn't actually check the lower bound
+function checkBounds(n) {
+	var max = document.getElementById("frameN").max;
+	if (n > max) {
+		frameN.value = max.toString();
+		while (n > max) {
+			n = n-max;
+		}
+	} else if (n < 0) {
+		alert("You entered a negative frame number and I haven't done error handling for that yet.");
+	}
+	return n;
+}
+function goToFrame() {
+	var value = parseInt(document.getElementById("frameN").value);
+	value = checkBounds(value);
+	totalReset();
+	advanceFrames(value);
+	redraw();
+}
+
+function advanceFrames(n) {
+	var frameN = document.getElementById("frameN");
+	frameN.value = checkBounds((parseInt(frameN.value) + n)).toString();
+	for (var i = 0; i < n; i++) {
+		for (var j = 0;  j < myProps.length; j++) {
+			myProps[j].spin();
+		}
+	}
+}
+function canvasLoop() {
+	if (paused == true) {return;}
+	setTimeout(function() {
+		requestAnimationFrame(canvasLoop);
+		redraw();
+		advanceFrames(1);
+		for (var i = 0; i < myProps.length; i++) {
+			myProps[i].render();
+		}
+	},500/BEAT);
+}
+
+function redraw() {
+	for (var i = 0; i < myProps.length; i++) {
+		myProps[i].render();
+	}
+	if (view2d == true) {
+		ctx.fillStyle = "rgba(0,0,0,0.01)";
+		ctx.strokeStyle=BACKGROUND;
+		ctx.fillRect(0,0,WIDTH,HEIGHT);
+	}
+	else {
+		scene.modelView();
+		renderer.render(scene);
+	}
+}
+
+</script>
+</head>
+<body onload="init();">
+<header>
+	<h1>Welcome to VisualSpinner3D. </h1>
+	<p>(we have successfully digitized Drex.)</p>
+</header>
+	<section>
+<div id="display">
+	<canvas width="400" height="400" id="canvas">
+		Your browser doesn't support the HTML5 element canvas.
+	</canvas>
+	<button type="button" onclick="startSpin();">Play</button>
+	<button type="button" onclick="pauseSpin();">Pause</button>
+	<button type="button" onclick="spinFrames(-12)">-</button>
+	<input max="14670" id="frameN" min="0" value="0" type="number">
+	<button type="button" onclick="spinFrames(12)" ;="">+</button>
+	<button type="button" onclick="totalReset();">Reset</button>
+</div>
+<div id="vid">
+	<video id="drex" controls="controls" width="400px">
+		<source src="Drex%27s%20%27combo-rific%27%20video%20modeled%20in%20VisualSpinner,%20by%20Glenn%20Wright%29_files/comborific.mp4" type="video/mp4">
+		Your browser does not support HTML5 video.
+	</video>
+</div>
+
+</section>
+</body></html>
