@@ -32,6 +32,7 @@ var NOOFFSET = 0;
 var OFFSET = Math.PI;
 var STAGGER = 0.5*Math.PI;
 var QUARTER = 0.5*Math.PI;
+var THIRD = (2/3)*Math.PI;
 var DIAMOND = 0;
 var BOX = Math.PI;
 var XAXIS = [1,0,0];
@@ -544,6 +545,12 @@ MoveLink.prototype.spin = function(prop, dummy) {
 			// linear translation
 			v = this.elements[i].linear_speed + this.elements[i].linear_acc*this.t/BEAT;
 			prop.translateElement(i, v/BEAT, this.elements[i].linear_angle, p);
+			
+			// not yet implemented..."parametric" is a hypothetical attribute that would do absolute positioning
+			//if (this.elements[i].parametric != null) {
+			//	this.setElementAngle(i, this.elements[i].parametric(this.t).angle,this.elements[i].plane);
+			//	this.elements[i].radius = this.elements[i].parametric(this.t).radius;
+			//}
 		}
 	}
 	this.t+=1;
@@ -1031,6 +1038,7 @@ MoveFactory.prototype.parse = function(json) {
 MoveFactory.prototype.build = function(json) {
 	var definition = this.parse(json);
 	var move = this[definition.build](definition);
+	// Need to add handling for the "tail_modify" attribute
 	return move;
 }
 
@@ -1095,8 +1103,70 @@ MoveChain.prototype.splice = function(options) {
 	return this;
 }
 
-// not yet implemented
+
+
+Prop.prototype.modifyTail = function(options) {
+	var tail = this.tail();
+	var parent = tail.parent;
+	if (parent !== this.move && parent.definition !== undefined) {
+		parent.definition.modify_tail = options;
+	}
+	tail.modify(options);
+}
 MoveChain.prototype.modify = function(options) {
 	for (var i = 0; i < this.submoves.length; i++) {
+		this.submoves[i].modify(options);
 	}
+}
+MoveLink.prototype.modify = function(options) {
+	this.duration = (options.duration !== undefined) ? options.duration : this.duration;
+	this.pivot.angle = (options.pivot_angle!== undefined) ? options.pivot_angle : this.pivot.angle;
+	this.pivot.plane = (options.pivot_plane !== undefined) ? options.pivot_plane : this.pivot.plane;
+	this.pivot.radius = (options.pivot_radius !== undefined) ? options.pivot_radius : this.pivot.radius;
+	this.pivot.speed = (options.pivot_speed !== undefined) ? options.pivot_speed : this.pivot.speed;
+	this.pivot.acc = (options.pivot_acc !== undefined) ? options.pivot_acc : this.pivot.acc;
+	this.pivot.linear_angle = (options.pivot_linear_angle !== undefined) ? options.pivot_linear_angle : this.pivot.linear_angle;
+	this.pivot.linear_speed = (options.pivot_linear_speed !== undefined) ? options.pivot_linear_speed : this.pivot.linear_speed;
+	this.pivot.linear_acc = (options.pivot_linear_acc !== undefined) ? options.pivot_linear_acc : this.pivot.linear_acc;
+	this.pivot.bend = (options.pivot_bend !== undefined) ? options.pivot_bend : this.pivot.bend;
+	this.pivot.bend_plane = (options.pivot_bend_plane !== undefined) ? options.pivot_bend_plane : this.pivot.bend_plane;
+	this.pivot.stretch = (options.pivot_stretch !== undefined) ? options.pivot_stretch : this.pivot.stretch;
+	this.pivot.stretch_acc = (options.pivot_stretch_acc !== undefined) ? options.pivot_stretch_acc : this.pivot.stretch_acc;
+	this.hand.angle = (options.hand_angle!== undefined) ? options.hand_angle : this.hand.angle;
+	this.hand.plane = (options.hand_plane !== undefined) ? options.hand_plane : this.hand.plane;
+	this.hand.radius = (options.hand_radius !== undefined) ? options.hand_radius : this.hand.radius;
+	this.hand.speed = (options.hand_speed !== undefined) ? options.hand_speed : this.hand.speed;
+	this.hand.acc = (options.hand_acc !== undefined) ? options.hand_acc : this.hand.acc;
+	this.hand.linear_angle = (options.hand_linear_angle !== undefined) ? options.hand_linear_angle : this.hand.linear_angle;
+	this.hand.linear_speed = (options.hand_linear_speed !== undefined) ? options.hand_linear_speed : this.hand.linear_speed;
+	this.hand.linear_acc = (options.hand_linear_acc !== undefined) ? options.hand_linear_acc : this.hand.linear_acc;
+	this.hand.bend = (options.hand_bend !== undefined) ? options.hand_bend : this.hand.bend;
+	this.hand.bend_plane = (options.hand_bend_plane !== undefined) ? options.hand_bend_plane : this.hand.bend_plane;
+	this.hand.stretch = (options.hand_stretch !== undefined) ? options.hand_stretch : this.hand.stretch;
+	this.hand.stretch_acc = (options.hand_stretch_acc !== undefined) ? options.hand_stretch_acc : this.hand.stretch_acc;
+	this.prop.angle = (options.prop_angle!== undefined) ? options.prop_angle : this.prop.angle;
+	this.prop.plane = (options.prop_plane !== undefined) ? options.prop_plane : this.prop.plane;
+	this.prop.radius = (options.prop_radius !== undefined) ? options.prop_radius : this.prop.radius;
+	this.prop.speed = (options.prop_speed !== undefined) ? options.prop_speed : this.prop.speed;
+	this.prop.acc = (options.prop_acc !== undefined) ? options.prop_acc : this.prop.acc;
+	this.prop.linear_angle = (options.prop_linear_angle !== undefined) ? options.prop_linear_angle : this.prop.linear_angle;
+	this.prop.linear_speed = (options.prop_linear_speed !== undefined) ? options.prop_linear_speed : this.prop.linear_speed;
+	this.prop.linear_acc = (options.prop_linear_acc !== undefined) ? options.prop_linear_acc : this.prop.linear_acc;
+	this.prop.bend = (options.prop_bend !== undefined) ? options.prop_bend : this.prop.bend;
+	this.prop.bend_plane = (options.prop_bend_plane !== undefined) ? options.prop_bend_plane : this.prop.bend_plane;
+	this.prop.stretch = (options.prop_stretch !== undefined) ? options.prop_stretch : this.prop.stretch;
+	this.prop.stretch_acc = (options.prop_stretch_acc !== undefined) ? options.prop_stretch_acc : this.prop.stretch_acc;
+	this.grip.angle = (options.grip_angle!== undefined) ? options.grip_angle : this.grip.angle;
+	this.grip.plane = (options.grip_plane !== undefined) ? options.grip_plane : this.grip.plane;
+	this.grip.radius = (options.grip_radius !== undefined) ? options.grip_radius : this.grip.radius;
+	this.grip.speed = (options.grip_speed !== undefined) ? options.grip_speed : this.grip.speed;
+	this.grip.acc = (options.grip_acc !== undefined) ? options.grip_acc : this.grip.acc;
+	this.grip.linear_angle = (options.grip_linear_angle !== undefined) ? options.grip_linear_angle : this.grip.linear_angle;
+	this.grip.linear_speed = (options.grip_linear_speed !== undefined) ? options.grip_linear_speed : this.grip.linear_speed;
+	this.grip.linear_acc = (options.grip_linear_acc !== undefined) ? options.grip_linear_acc : this.grip.linear_acc;
+	this.grip.bend = (options.grip_bend !== undefined) ? options.grip_bend : this.grip.bend;
+	this.grip.bend_plane = (options.grip_bend_plane !== undefined) ? options.grip_bend_plane : this.grip.bend_plane;
+	this.grip.stretch = (options.grip_stretch !== undefined) ? options.grip_stretch : this.grip.stretch;
+	this.grip.stretch_acc = (options.grip_stretch_acc !== undefined) ? options.grip_stretch_acc : this.grip.stretch_acc;
+	this.roll = (options.roll !== undefined) ? options.roll : this.roll;
 }

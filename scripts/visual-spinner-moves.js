@@ -1265,6 +1265,10 @@ MoveFactory.prototype.generic = function(options) {
 		hand_stretch: 0,
 		prop_stretch: 0,
 		grip_stretch: 0,
+		pivot_stretch_acc: 0,
+		hand_stretch_acc: 0,
+		prop_stretch_acc: 0,
+		grip_stretch_acc: 0,
 		roll: null,
 		duration: 1
 	});
@@ -1280,6 +1284,7 @@ MoveFactory.prototype.generic = function(options) {
 	segment.pivot.bend = options.pivot_bend;
 	segment.pivot.bend_plane = options.bend_plane;
 	segment.pivot.stretch = options.pivot_stretch;
+	segment.pivot.stretch_acc = options.pivot_stretch_acc;
 	segment.hand.angle = (options.hand_entry != null) ? options.hand_entry : null;
 	segment.hand.plane = (options.hand_plane != null) ? options.hand_plane : options.plane;
 	segment.hand.radius = options.hand_radius;
@@ -1451,4 +1456,60 @@ MoveFactory.prototype.stall = function(options) {
 	segment.build = options.build;
 	segment.movename = options.movename;
 	return segment;
+}
+
+
+MoveFactory.prototype.verticaltoss = function(options) {
+	var move = new MoveChain();
+	move.definition = options;
+	
+	options = this.defaults(options,{
+		build: "verticaltoss",
+		movename: "Vertical Toss",
+		speed: 0.5,
+		duration: 1,
+		gravity: 10,
+		direction: CLOCKWISE,
+		entry: NINE,
+		plane: WALL,
+		entry: THREE,
+		pivot_angle: 0,
+		pivot_radius: 0,
+		drift: 1
+	});
+	var segment = new MoveLink();
+// We need to add to this the proper displacement...or maybe do it manually for now?
+	segment.pivot.angle = options.pivot_angle;
+	segment.pivot.radius = options.pivot_radius;
+	
+	segment.hand.radius = 0;
+	segment.grip.radius = 0.5;
+	//segment.hand.stretch = -1;
+	segment.hand.linear_angle = NINE;
+	segment.hand.linear_speed = 1;
+	
+	if (options.entry != null) {
+		segment.prop.angle = options.entry;
+		segment.hand.angle = options.entry;
+	}
+	segment.pivot.plane = options.plane;
+	segment.pivot.speed = 0;
+	segment.pivot.linear_angle = TWELVE;
+	segment.pivot.linear_speed = 0.5*options.gravity*options.duration;
+	segment.pivot.linear_acc = -options.gravity;
+	
+	segment.prop.speed = options.direction*options.speed;
+	segment.hand.speed = 0;
+	//segment.grip.speed = options.direction*options.speed;
+	segment.grip.plane = options.plane;
+	segment.prop.plane = options.plane;
+	segment.hand.plane = options.plane;
+	
+
+	segment.duration = options.duration;
+	
+	move.add(segment);
+	move.build = options.build;
+	move.movename = options.movename;
+	return move;
 }
