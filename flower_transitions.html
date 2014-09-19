@@ -85,12 +85,11 @@ function canvasSetup() {
 	propFour.hand.radius = 1;
 	myProps.push(propThree);
 	myProps.push(propFour);
-	var doublemove;
 	for (var i = 0; i<8; i++) {
-		doublemove = moves.twoPropFlower({entry: null, hands: (i%2)*SPLIT, direction: CLOCKWISE, spin: ANTISPIN, duration: (i==4) ? 1 : 1.25});
-		propOne.addPartnership(doublemove, propTwo);
-		doublemove = moves.twoPropFlower({entry: null, hands: (i%2)*SPLIT, direction: COUNTERCLOCKWISE, spin: ANTISPIN, duration: (i==4) ? 1 : 1.25});
-		propThree.addPartnership(doublemove, propFour);
+		propOne.addMove(moves.flower({direction: CLOCKWISE, entry: propOne.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
+		propTwo.addMove(moves.flower({direction: 1-(i%2)*2, entry: propTwo.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
+		propThree.addMove(moves.flower({direction: COUNTERCLOCKWISE, entry: propThree.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
+		propFour.addMove(moves.flower({direction: (i%2)*2-1, entry: propFour.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
 	}
 }
 	
@@ -132,9 +131,9 @@ function redraw() {
 <p>Here is the code that drives the entire pattern:</p>
 <p></p>
 <p>for (var i = 0; i<8; i++) {</p>
-<p>&nbsp;&nbsp;&nbsp;&nbsp;doublemove = moves.twoPropFlower({mode: (i%2)*SPLIT , direction: CLOCKWISE, spin: ANTISPIN, duration: (i==4) ? 1 : 1.25});</p>
-<p>&nbsp;&nbsp;&nbsp;&nbsp;propOne.addPartnership(doublemove, propTwo);</p>
-<p>&nbsp;&nbsp;&nbsp;&nbsp;doublemove = moves.twoPropFlower({mode: (i%2)*SPLIT , direction: COUNTERCLOCKWISE, spin: ANTISPIN, duration: (i==4) ? 1 : 1.25});</p>
-<p>&nbsp;&nbsp;&nbsp;&nbsp;propThree.addPartnership(doublemove, propFour);</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;propOne.addMove(moves.flower({direction: CLOCKWISE, entry: propOne.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;propTwo.addMove(moves.flower({direction: 1-(i%2)*2, entry: propTwo.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;propThree.addMove(moves.flower({direction: COUNTERCLOCKWISE, entry: propThree.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;propFour.addMove(moves.flower({direction: (i%2)*2-1, entry: propFour.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));</p>
 <p>}</p>
 </body></html>

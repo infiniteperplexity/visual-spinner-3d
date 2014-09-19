@@ -50,10 +50,11 @@ var TINY = 0.0001;
 
 var HOME = 0;
 var PIVOT = 1;
-var HAND = 2;
-var PROP = 3;
-var GRIP = 4;
-var ELEMENTS = ["home","pivot","hand","prop","grip"];
+var HELPER = 2;
+var HAND = 3;
+var PROP = 4;
+var GRIP = 5;
+var ELEMENTS = ["home","pivot","helper","hand","prop","grip"];
 
 //// A Vector can represent either a point or a plane, in 3D Cartesian coordinates
 function Vector(x,y,z) {
@@ -234,15 +235,17 @@ function Prop() {
 	// These elements define the Prop's position
 	// "hand" and "prop" are used in almost every move
 	// "home" should be used when the spinner's body is moving, e.g. walking around
-	// "pivot" is used to displace a move when the spinner's body is not moving
-	// "grip" is thus far not used
+		// home is a little bit special because Moves default to "null" (respect the Prop's starting "home")
+	// "helper" and "pivot" are used to displace a move further
+		// in general, use "pivot" to displace an entire move, and "helper" as a last resort to fine-tune sub-movements
+	// "grip" is used in contact moves, gunslingers, and possibly in throws
 	this.home = new Spherical(TINY,QUARTER,TINY);
 	this.pivot = new Spherical(TINY,QUARTER,TINY);
+	this.helper = new Spherical(TINY,QUARTER,TINY);
 	this.hand = new Spherical(TINY,QUARTER,TINY);
 	this.prop = new Spherical(1,QUARTER,TINY);
 	this.grip = new Spherical(TINY,QUARTER,TINY);
-	//this.elements = ["home","pivot","hand","prop","grip"];
-	this.elements = [this.home, this.pivot, this.hand, this.prop, this.grip];
+	this.elements = [this.home, this.pivot, this.helper, this.hand, this.prop, this.grip];
 	// "roll" has no effect for poi or staff, but for hoop or fans it represents rolling the grip
 	this.roll = 0;
 	// "renderer" is specific to a type of prop and a viewing interface
@@ -252,24 +255,21 @@ function Prop() {
 }
 // Set an element to a particular spherical angle
 Prop.prototype.setElementAngle = function(element, angle, plane) {
-	if (typeof element == "number") {
-		element = ELEMENTS[element];
-	}
+	element = ELEMENTS[element];
 	if (plane === undefined) {plane = WALL;}
 	var v = plane.reference().rotate(angle,plane).unitize();
 	this[element].zenith = unwind(Math.acos(v.z/Math.sqrt(v.x*v.x+v.y*v.y+v.z*v.z)));
 	this[element].azimuth = unwind(Math.atan2(v.y,v.x));
 }
-Prop.prototype.setHomeAngle = function(angle, plane) {this.setElementAngle("home", angle, plane);}
-Prop.prototype.setPivotAngle = function(angle, plane) {this.setElementAngle("pivot", angle, plane);}
-Prop.prototype.setHandAngle = function(angle, plane) {this.setElementAngle("hand", angle, plane);}
-Prop.prototype.setPropAngle = function(angle, plane) {this.setElementAngle("prop", angle, plane);}
-Prop.prototype.setGripAngle = function(angle, plane) {this.setElementAngle("grip", angle, plane);}
+Prop.prototype.setHomeAngle = function(angle, plane) {this.setElementAngle(HOME, angle, plane);}
+Prop.prototype.setPivotAngle = function(angle, plane) {this.setElementAngle(PIVOT, angle, plane);}
+Prop.prototype.setHelperAngle = function(angle, plane) {this.setElementAngle(HELPER, angle, plane);}
+Prop.prototype.setHandAngle = function(angle, plane) {this.setElementAngle(HAND, angle, plane);}
+Prop.prototype.setPropAngle = function(angle, plane) {this.setElementAngle(PROP, angle, plane);}
+Prop.prototype.setGripAngle = function(angle, plane) {this.setElementAngle(GRIP, angle, plane);}
 // Rotate an element by a particular angle in a particular plane
 Prop.prototype.rotateElement = function(element, angle, plane) {
-	if (typeof element == "number") {
-		element = ELEMENTS[element];
-	}
+	element = ELEMENTS[element];
 	if (angle===0) {return;}
 	// not a perfect fix
 	if (this[element].radius==0) {this[element].radius=TINY}
@@ -286,16 +286,15 @@ Prop.prototype.rotateElement = function(element, angle, plane) {
 	this[element].zenith = unwind(Math.acos(v.z/Math.sqrt(v.x*v.x+v.y*v.y+v.z*v.z)));
 	this[element].azimuth = unwind(Math.atan2(v.y,v.x));
 }
-Prop.prototype.rotateHome = function(angle, plane) {this.rotateElement("home", angle, plane);}
-Prop.prototype.rotatePivot = function(angle, plane) {this.rotateElement("pivot", angle, plane);}
-Prop.prototype.rotateHand = function(angle, plane) {this.rotateElement("hand", angle, plane);}
-Prop.prototype.rotateProp = function(angle, plane) {this.rotateElement("prop", angle, plane);}
-Prop.prototype.rotateGrip = function(angle, plane) {this.rotateElement("grip", angle, plane);}
+Prop.prototype.rotateHome = function(angle, plane) {this.rotateElement(HOME, angle, plane);}
+Prop.prototype.rotatePivot = function(angle, plane) {this.rotateElement(PIVOT, angle, plane);}
+Prop.prototype.rotateHelper = function(angle, plane) {this.rotateElement(HELPER, angle, plane);}
+Prop.prototype.rotateHand = function(angle, plane) {this.rotateElement(HAND, angle, plane);}
+Prop.prototype.rotateProp = function(angle, plane) {this.rotateElement(PROP, angle, plane);}
+Prop.prototype.rotateGrip = function(angle, plane) {this.rotateElement(GRIP, angle, plane);}
 // Slide an element a certain distance in a certain angle in a certain plane
 Prop.prototype.translateElement = function(element, distance, angle, plane) {
-	if (typeof element == "number") {
-		element = ELEMENTS[element];
-	}
+	element = ELEMENTS[element];
 	if (distance===0) {return;}
 	if (plane === undefined) {plane = WALL;}
 	var current = this[element].vectorize();
@@ -309,16 +308,15 @@ Prop.prototype.translateElement = function(element, distance, angle, plane) {
 	this[element].zenith = translated.zenith;
 	this[element].radius = translated.radius;
 }
-Prop.prototype.translateHome = function(distance, angle, plane) {this.translateElement("home", distance, angle, plane);}
-Prop.prototype.translatePivot = function(distance, angle, plane) {this.translateElement("pivot", distance, angle, plane);}
-Prop.prototype.translateHand = function(distance, angle, plane) {this.translateElement("hand", distance, angle, plane);}
-Prop.prototype.translateProp = function(distance, angle, plane) {this.translateElement("prop", distance, angle, plane);}
-Prop.prototype.translateGrip = function(distance, angle, plane) {this.translateElement("grip", distance, angle, plane);}
+Prop.prototype.translateHome = function(distance, angle, plane) {this.translateElement(HOME, distance, angle, plane);}
+Prop.prototype.translatePivot = function(distance, angle, plane) {this.translateElement(PIVOT, distance, angle, plane);}
+Prop.prototype.translatePivot = function(distance, angle, plane) {this.translateElement(HELPER, distance, angle, plane);}
+Prop.prototype.translateHand = function(distance, angle, plane) {this.translateElement(HAND, distance, angle, plane);}
+Prop.prototype.translateProp = function(distance, angle, plane) {this.translateElement(PROP, distance, angle, plane);}
+Prop.prototype.translateGrip = function(distance, angle, plane) {this.translateElement(GRIP, distance, angle, plane);}
 // Get an element's angle in a certain plane
 Prop.prototype.getElementAngle = function(element, plane) {
-	if (typeof element == "number") {
-		element = ELEMENTS[element];
-	}
+	element = ELEMENTS[element];
         if (this[element].radius==0) {return 0;}
         if (plane === undefined) {plane = WALL;}
         var ref = plane.reference();
@@ -331,11 +329,12 @@ Prop.prototype.getElementAngle = function(element, plane) {
                 return unwind(-angle);
         }
 } 
-Prop.prototype.getHomeAngle = function(plane) {return this.getElementAngle("home", plane);}
-Prop.prototype.getPivotAngle = function(plane) {return this.getElementAngle("pivot", plane);}
-Prop.prototype.getHandAngle = function(plane) {return this.getElementAngle("hand", plane);}
-Prop.prototype.getPropAngle = function(plane) {return this.getElementAngle("prop", plane);}
-Prop.prototype.getGripAngle = function(plane) {return this.getElementAngle("grip", plane);}
+Prop.prototype.getHomeAngle = function(plane) {return this.getElementAngle(HOME, plane);}
+Prop.prototype.getPivotAngle = function(plane) {return this.getElementAngle(PIVOT, plane);}
+Prop.prototype.getHelperAngle = function(plane) {return this.getElementAngle(HELPER, plane);}
+Prop.prototype.getHandAngle = function(plane) {return this.getElementAngle(HAND, plane);}
+Prop.prototype.getPropAngle = function(plane) {return this.getElementAngle(PROP, plane);}
+Prop.prototype.getGripAngle = function(plane) {return this.getElementAngle(GRIP, plane);}
 // Generate a vector based on an element's cumulative position, skipping the HOME coordinates
 // If you have floating (i.e. null) hand or prop elements, you shouldn't be using this
 Prop.prototype.getVector = function(element) {
@@ -344,14 +343,14 @@ Prop.prototype.getVector = function(element) {
 	var z = 0;
 	var e;
 	var v;
+	// does this handle GRIP correctly?
 	for (var i = PIVOT; i<=element; i++) {
+		// none of these elements should ever have null values
 		e = this.elements[i];
-		if (e.radius != null) {
-			v = e.vectorize();
-			x += v.x;
-			y += v.y;
-			z += v.z;
-		}
+		v = e.vectorize();
+		x += v.x;
+		y += v.y;
+		z += v.z;
 	}
 	return (new Vector(x,y,z));
 }
@@ -359,6 +358,7 @@ Prop.prototype.handVector = function() {
 	return this.getVector(HAND);
 }
 Prop.prototype.propVector = function() {
+	//I bet this messes up GRIP
 	return this.getVector(PROP);
 }
 
@@ -450,6 +450,7 @@ Prop.prototype.addPartnership = function(partneredMove, otherPropsWithCommas, fi
 		}
 	}
 }
+//!!!I suspect we can refactor this away
 Prop.prototype.dummitize = function() {
 	for (var i = HOME; i<=GRIP; i++) {
 		this.elements[i].radius = null;
@@ -457,6 +458,95 @@ Prop.prototype.dummitize = function() {
 		this.elements[i].azimuth = null;
 	}
 	return this;
+}
+
+Prop.prototype.socket = function(plane) {
+	if (this.move.submoves.length===0) {
+		if (plane == null) {plane = WALL;}
+		var socket = new MoveLink();
+		for (var i=PIVOT; i<=GRIP; i++) {
+			socket.elements[i].radius = this.elements[i].radius;
+			socket.elements[i].speed =0;
+			socket.elements[i].linear_speed = 0;
+			socket.elements[i].linear_angle = 0;
+			socket.elements[i].stretch = 0;
+			// this is clearly not ideal...maybe there should be a pickValidPlane?
+			socket.elements[i].plane = plane;
+			socket.elements[i].angle = this.getElementAngle(i, plane);
+		}
+		return socket;
+	} else {
+		return this.tail().socket();
+	}
+}
+
+
+MoveLink.prototype.socket = function() {
+	var socket = this.clone();
+	var dummy = new Prop();
+	// does this work?  well, it has no HOME component
+	dummy.dummitize(); // I think this is now completely unnecessary
+	for (var i=0; i<socket.duration*BEAT; i++) {
+		socket.spindummy(dummy);
+	}
+	// Reset the MoveLink so it's ready for the real Prop
+	socket.reset();
+	// Fit this move to the final position of the target move
+	for (var i=HOME; i<=GRIP; i++) {
+		// only HOME should ever be null
+		// If the radius of an element is explicitly null, return a null radius on the socket
+		if (this.elements[i].radius !== null) {
+			socket.elements[i].radius = dummy.elements[i].radius;
+		}
+		socket.elements[i].speed = this.elements[i].speed + this.duration * this.elements[i].acc;
+		socket.elements[i].linear_speed = this.elements[i].linear_speed + this.duration * this.elements[i].linear_acc;
+		socket.elements[i].linear_angle = this.elements[i].linear_angle;
+		socket.elements[i].stretch = this.elements[i].stretch + this.duration * this.elements[i].stretch_acc;
+		if (this.elements[i].plane != null) {
+			p = this.elements[i].plane.rotate(this.elements[i].bend * this.duration*UNIT, this.elements[i].bend_plane);
+			// If the angle of an element is explicitly null, return a null angle on the socket
+			if (this.elements[i].angle !== null) {
+				socket.elements[i].angle = dummy.getElementAngle(i, p);
+			}
+			socket.elements[i].plane = p;
+		}
+	}
+	return socket;
+}
+
+
+
+MoveLink.prototype.socket = function() {
+	var socket = this.clone();
+	var dummy = new Prop();
+	// does this work?  well, it has no HOME component
+	dummy.dummitize();
+	for (var i=0; i<socket.duration*BEAT; i++) {
+		socket.spindummy(dummy);
+	}
+	// Reset the MoveLink so it's ready for the real Prop
+	socket.reset();
+	// Fit this move to the final position of the target move
+	for (var i=HOME; i<=GRIP; i++) {
+		// only HOME should ever be null
+		// If the radius of an element is explicitly null, return a null radius on the socket
+		if (this.elements[i].radius !== null) {
+			socket.elements[i].radius = dummy.elements[i].radius;
+		}
+		socket.elements[i].speed = this.elements[i].speed + this.duration * this.elements[i].acc;
+		socket.elements[i].linear_speed = this.elements[i].linear_speed + this.duration * this.elements[i].linear_acc;
+		socket.elements[i].linear_angle = this.elements[i].linear_angle;
+		socket.elements[i].stretch = this.elements[i].stretch + this.duration * this.elements[i].stretch_acc;
+		if (this.elements[i].plane != null) {
+			p = this.elements[i].plane.rotate(this.elements[i].bend * this.duration*UNIT, this.elements[i].bend_plane);
+			// If the angle of an element is explicitly null, return a null angle on the socket
+			if (this.elements[i].angle !== null) {
+				socket.elements[i].angle = dummy.getElementAngle(i, p);
+			}
+			socket.elements[i].plane = p;
+		}
+	}
+	return socket;
 }
 
 //// A "MoveLink" is the simplest kind of movement.  It defines a single, continuous movement.
@@ -475,20 +565,16 @@ function MoveLink() {
 			linear_speed: 0,
 			linear_acc: 0,
 			stretch: 0,
-			stretch_acc: 0
-		}
-		if (i==PIVOT || i==HAND || i==PROP) {
-			this.elements[i].plane = WALL;
-			this.elements[i].radius = 0;
-			this.elements[i].angle = null;
-			this.elements[i].angle = null;
-		} else {
-			this.elements[i].plane = null;
-			this.elements[i].radius = null;
-			this.elements[i].angle = null;
+			stretch_acc: 0,
+			plane: WALL,
+			radius: 0,
+			angle: THREE
 		}
 		this[ELEMENTS[i]] = this.elements[i];
 	}
+	this.home.radius = null;
+	this.home.plane = null;
+	this.home.angle = null;
 	this.prop.radius = 1;
 	this.duration = 1;
 	this.roll = null;
@@ -502,14 +588,12 @@ function MoveLink() {
 // A MoveLink is responsible for directly spinning a Prop
 MoveLink.prototype.spin = function(prop, dummy) {
 	// Currently, dummyspin for MoveLink is identical to normal spin
-	// When you start spinning, reposition the Prop to the starting position of the MoveLink
 	if (this.started == false) {
-		// If the MoveLink has no starting position, adopt the Prop's current position
+		// the comment in the old version was wrong...this is telling the prop to adopt the move's starting position
+		// the HOME plane should be the only thing we need to ever check.
 		for (var i = HOME; i<=GRIP; i++) {
-			if (this.elements[i].angle != null && this.elements[i].plane != null) {
+			if (this.elements[i].plane !== null) {
 				prop.setElementAngle(i, this.elements[i].angle, this.elements[i].plane);
-			}
-			if (this.elements[i].radius != null) {
 				prop.elements[i].radius = this.elements[i].radius;
 			}
 		}
@@ -533,6 +617,7 @@ MoveLink.prototype.spin = function(prop, dummy) {
 	// Spin, slide, and plane-bend the prop frame by frame
 	var v;
 	var p;
+	// If we keep the default null "home" plane, we skip the entire "home" element
 	for (var i = HOME; i<=GRIP; i++) {
 		if (this.elements[i].plane != null) {
 			// stretch
@@ -545,12 +630,6 @@ MoveLink.prototype.spin = function(prop, dummy) {
 			// linear translation
 			v = this.elements[i].linear_speed + this.elements[i].linear_acc*this.t/BEAT;
 			prop.translateElement(i, v/BEAT, this.elements[i].linear_angle, p);
-			
-			// not yet implemented..."parametric" is a hypothetical attribute that would do absolute positioning
-			//if (this.elements[i].parametric != null) {
-			//	this.setElementAngle(i, this.elements[i].parametric(this.t).angle,this.elements[i].plane);
-			//	this.elements[i].radius = this.elements[i].parametric(this.t).radius;
-			//}
 		}
 	}
 	this.t+=1;
@@ -592,6 +671,7 @@ MoveLink.prototype.align = function(element, angle) {
 // adjust the MoveLink to match a Prop or Move
 MoveLink.prototype.adjust = function(target) {
 	if (target instanceof Prop) {
+		// should this ever be adjusting HOME?
 		for (var i = HOME; i<=GRIP; i++) {
 			if (target.elements[i].azimuth != null && this.elements[i].plane != null) {
 				this.elements[i].angle = target.getElementAngle(i, this.elements[i].plane);
@@ -600,8 +680,9 @@ MoveLink.prototype.adjust = function(target) {
 	} else if (target instanceof MoveChain || target instanceof MoveLink) {
 		var tail = target.socket();
 		for (var i = HOME; i<=GRIP; i++) {
-			this.elements[i].plane = tail.elements[i].plane;
-			this.elements[i].angle = tail.elements[i].angle;
+			//this.elements[i].plane = tail.elements[i].plane;
+			// This actually seems like kind of a terrible idea, and has been a stumbling block so far
+			//this.elements[i].angle = tail.elements[i].angle;
 		}
 	}
 	return this;
@@ -610,6 +691,7 @@ MoveLink.prototype.adjust = function(target) {
 MoveLink.prototype.clone = function() {
 	newlink = new MoveLink();
 	for (var i = HOME; i<=GRIP; i++) {
+		//alert([i, newlink.elements[i]]);
 		newlink.elements[i].plane = this.elements[i].plane;
 		newlink.elements[i].radius = this.elements[i].radius;
 		newlink.elements[i].angle = this.elements[i].angle;
@@ -644,16 +726,15 @@ MoveLink.prototype.getVector = function(element) {
 	var z = 0;
 	var e;
 	var v;
+	// skip HOME
 	for (var i = PIVOT; i<=element; i++) {
 		e = new Spherical();
 		// do we need to handle GRIP differently?
 		e.setRadiusAnglePlane(this.elements[i].radius, this.elements[i].angle, this.elements[i].plane);
-		if (e.radius != null) {
-			v = e.vectorize();
-			x += v.x;
-			y += v.y;
-			z += v.z;
-		}
+		v = e.vectorize();
+		x += v.x;
+		y += v.y;
+		z += v.z;
 	}
 	return (new Vector(x,y,z));
 }
@@ -675,6 +756,7 @@ MoveLink.prototype.fitTo = function(move) {
 MoveLink.prototype.socket = function() {
 	var socket = this.clone();
 	var dummy = new Prop();
+	// does this work?  well, it has no HOME component
 	dummy.dummitize();
 	for (var i=0; i<socket.duration*BEAT; i++) {
 		socket.spindummy(dummy);
@@ -683,6 +765,7 @@ MoveLink.prototype.socket = function() {
 	socket.reset();
 	// Fit this move to the final position of the target move
 	for (var i=HOME; i<=GRIP; i++) {
+		// only HOME should ever be null
 		// If the radius of an element is explicitly null, return a null radius on the socket
 		if (this.elements[i].radius !== null) {
 			socket.elements[i].radius = dummy.elements[i].radius;
@@ -704,7 +787,7 @@ MoveLink.prototype.socket = function() {
 }
 // the argument to this function should be a hash of elements paired with moves
 MoveLink.prototype.splice = function(options) {
-	for (var i = HOME; i < GRIP; i++) {
+	for (var i = HOME; i <= GRIP; i++) {
 		if (options[ELEMENTS[i]] !== undefined) {
 			this[ELEMENTS[i]].plane = options[ELEMENTS[i]].plane;
 			this[ELEMENTS[i]].radius = options[ELEMENTS[i]].radius;
@@ -841,36 +924,13 @@ MoveChain.prototype.adjust = function(target) {
 	var hand;
 	var prop;
 	if (target instanceof Prop) {
-		// if this hand or prop is floating, succeed
-		hand = this.head().hand;
-		prop = this.head().prop;
-		if (	hand.radius == null
-				|| hand.angle == null
-				|| prop.radius == null
-				|| prop.angle == null
-		) {return this;}
 		hand = target.handVector();
 		prop = target.propVector();
 	} else if (target instanceof MoveLink || target instanceof MoveChain) {
-		// if this hand or prop is floating, succeed
-		hand = this.head().hand;
-		prop = this.head().prop;
-		if (	hand.radius == null
-				|| hand.angle == null
-				|| prop.radius == null
-				|| prop.angle == null
-		) {return this;}
-		// if target hand or prop is floating, succeed
-		hand = target.socket();
-		prop = target.socket();
-		if (	hand.radius == null
-				|| hand.angle == null
-				|| prop.radius == null
-				|| prop.angle == null
-		) {return this;}
-		hand = hand.handVector();
-		prop = prop.propVector();
+		hand = target.socket().handVector();
+		prop = target.socket().propVector();
 	}
+	
 	for (var i = 0; i<this.submoves.length; i++) {
 		if (hand.nearly(this.handVector(),0.05) && prop.nearly(this.propVector(),0.1)) {
 			return this;
@@ -878,7 +938,7 @@ MoveChain.prototype.adjust = function(target) {
 			this.phaseBy(1);
 		}
 	}
-	alert("alignment failed.");
+	alert("adjustment failed.");
 	return this;
 }
 
@@ -939,6 +999,7 @@ MoveChain.prototype.handVector = function() {
 	return this.getVector(HAND);
 }
 MoveChain.prototype.propVector = function() {
+	//should maybe be GRIP?
 	return this.getVector(PROP);
 }
 // I am no longer using this, but I will keep it around just in case
@@ -1015,16 +1076,9 @@ function MoveFactory() {
 }
 MoveFactory.prototype.defaults = function(options, defaults) {
 	if (options===undefined) {options = {};}
-	//for (var option in defaults) {
-		// this will define "undefined" options but it will not overwrite "null" options
-	//	if (options[option]===undefined) {
-	//		options[option] = defaults[option];
-	//	}
-	//}
 	for (var option in options) {
 		defaults[option] = options[option];
 	}
-	//return options;
 	return defaults;
 }
 MoveFactory.prototype.parse = function(json) {
@@ -1080,7 +1134,7 @@ MoveChain.prototype.phaseBy = function(phase) {
 // the argument to this function should be a hash of elements paired with moves
 MoveChain.prototype.splice = function(options) {
 	var submoves;
-	for (var i = HOME; i < GRIP; i++) {
+	for (var i = HOME; i <= GRIP; i++) {
 		if (options[ELEMENTS[i]] !== undefined) {
 			//this can't yet drill down multiple levels
 			submoves = options[ELEMENTS[i]].submoves;
@@ -1132,6 +1186,18 @@ MoveLink.prototype.modify = function(options) {
 	this.pivot.bend_plane = (options.pivot_bend_plane !== undefined) ? options.pivot_bend_plane : this.pivot.bend_plane;
 	this.pivot.stretch = (options.pivot_stretch !== undefined) ? options.pivot_stretch : this.pivot.stretch;
 	this.pivot.stretch_acc = (options.pivot_stretch_acc !== undefined) ? options.pivot_stretch_acc : this.pivot.stretch_acc;
+	this.helper.angle = (options.helper_angle!== undefined) ? options.helper_angle : this.helper.angle;
+	this.helper.plane = (options.helper_plane !== undefined) ? options.helper_plane : this.helper.plane;
+	this.helper.radius = (options.helper_radius !== undefined) ? options.helper_radius : this.helper.radius;
+	this.helper.speed = (options.helper_speed !== undefined) ? options.helper_speed : this.helper.speed;
+	this.helper.acc = (options.helper_acc !== undefined) ? options.helper_acc : this.helper.acc;
+	this.helper.linear_angle = (options.helper_linear_angle !== undefined) ? options.helper_linear_angle : this.helper.linear_angle;
+	this.helper.linear_speed = (options.helper_linear_speed !== undefined) ? options.helper_linear_speed : this.helper.linear_speed;
+	this.helper.linear_acc = (options.helper_linear_acc !== undefined) ? options.helper_linear_acc : this.helper.linear_acc;
+	this.helper.bend = (options.helper_bend !== undefined) ? options.helper_bend : this.helper.bend;
+	this.helper.bend_plane = (options.helper_bend_plane !== undefined) ? options.helper_bend_plane : this.helper.bend_plane;
+	this.helper.stretch = (options.helper_stretch !== undefined) ? options.helper_stretch : this.helper.stretch;
+	this.helper.stretch_acc = (options.helper_stretch_acc !== undefined) ? options.helper_stretch_acc : this.helper.stretch_acc;
 	this.hand.angle = (options.hand_angle!== undefined) ? options.hand_angle : this.hand.angle;
 	this.hand.plane = (options.hand_plane !== undefined) ? options.hand_plane : this.hand.plane;
 	this.hand.radius = (options.hand_radius !== undefined) ? options.hand_radius : this.hand.radius;

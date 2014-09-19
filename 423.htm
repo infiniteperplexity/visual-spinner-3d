@@ -6,23 +6,23 @@ body {margin: 0; padding: 0; background-color: #679}
 h1, h2, header p {text-align: center}
 header {width: 1240px; height: 100px}
 #content {width: 1250px; height: 510px;}
-canvas {width: 400px; height: 400px; background-color: #000;}
+canvas {width: 400px; height: 800px; background-color: #000;}
 section {margin: 0; padding: 0}
 header, section div {vertical-align: top; padding: 2.5px; border: 5px solid gray; margin: -2.5px; display: inline-block;}
-#display {width: 400px; height: 400px; float: left}
+#display {width: 400px; height: 800px; float: left}
 #popimport {height: 240px; width: 400px}
 </style>
 
 
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Drex's "combo-rific" video modeled in VisualSpinner, by Glenn Wright)</title>
-<script src="Drex%27s%20%27combo-rific%27%20video%20modeled%20in%20VisualSpinner,%20by%20Glenn%20Wright%29_files/jquery-1.js"></script>
-<script src="Drex%27s%20%27combo-rific%27%20video%20modeled%20in%20VisualSpinner,%20by%20Glenn%20Wright%29_files/gl-matrix-min.js"></script>
-<script src="Drex%27s%20%27combo-rific%27%20video%20modeled%20in%20VisualSpinner,%20by%20Glenn%20Wright%29_files/phoria-min.js"></script>
-<script src="Drex%27s%20%27combo-rific%27%20video%20modeled%20in%20VisualSpinner,%20by%20Glenn%20Wright%29_files/requestAnimationFrame.js"></script>
-<script src="Drex%27s%20%27combo-rific%27%20video%20modeled%20in%20VisualSpinner,%20by%20Glenn%20Wright%29_files/visual-spinner-engine.js"></script>
-<script src="Drex%27s%20%27combo-rific%27%20video%20modeled%20in%20VisualSpinner,%20by%20Glenn%20Wright%29_files/visual-spinner-moves.js"></script>
-<script src="Drex%27s%20%27combo-rific%27%20video%20modeled%20in%20VisualSpinner,%20by%20Glenn%20Wright%29_files/visual-spinner-renderers.js"></script><script>
+<title>Noel Yee's 423 video modeled in VisualSpinner, by Glenn Wright)</title>
+<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="scripts/gl-matrix-min.js"></script>
+<script src="scripts/phoria-min.js"></script>
+<script src="scripts/requestAnimationFrame.js"></script>
+<script src="scripts/visual-spinner-engine.js"></script>
+<script src="scripts/visual-spinner-moves.js"></script>
+<script src="scripts/visual-spinner-renderers.js"></script><script>
 // set parameters
 
 var HEIGHT = 400;
@@ -64,14 +64,14 @@ function canvasSetup() {
 	var prop = new Prop();
 	var link = new MoveLink();
 	var angle = SIX;
-	canvas.height = HEIGHT;
+	canvas.height = 2*HEIGHT;
 	canvas.width = WIDTH;
 	ctx.fillStyle = BACKGROUND;
 	ctx.strokeStyle = BACKGROUND;
-	ctx.fillRect(0,0,WIDTH,HEIGHT);
+	ctx.fillRect(0,0,WIDTH,2*HEIGHT);
 	
 	// set up Phoria scene for 3D rendering
-	scene.camera.position = {x:0.0, y:1.0, z:10.0};
+	scene.camera.position = {x:0.0, y:1.0, z:20.0};
 	scene.perspective.aspect = canvas.width / canvas.height;
 	scene.viewport.width = canvas.width;
 	scene.viewport.height = canvas.height;
@@ -101,30 +101,44 @@ function canvasSetup() {
 	
 	
 	// set up props
-	redPoi.hand.radius = 0;
-	bluePoi.hand.radius = 0;
-	greenPoi.hand.radius = 0;
-	redPoi.setHandAngle(THREE);
-	bluePoi.setHandAngle(NINE);
-	greenPoi.setHandAngle(THREE);
-	redPoi.setPropAngle(THREE);
-	bluePoi.setPropAngle(NINE);
-	greenPoi.setPropAngle(THREE);
+	redPoi.hand.radius = 1;
+	bluePoi.hand.radius = 1;
+	greenPoi.hand.radius = 1;
+	redPoi.setHandAngle(SIX);
+	bluePoi.setHandAngle(SIX);
+	greenPoi.setHandAngle(SIX);
+	redPoi.setPropAngle(SIX);
+	bluePoi.setPropAngle(SIX);
+	greenPoi.setPropAngle(SIX);
+	bluePoi.nudge(0.1,0,0);
+	greenPoi.nudge(-0.1,0,0);
 	myProps.push(redPoi);
 	myProps.push(bluePoi);
 	myProps.push(greenPoi);
 	
-	redPoi.addMove(moves.staticspin({direction: COUNTERCLOCKWISE, pivot_angle: THREE, pivot_radius: 0}));
-	bluePoi.addMove(moves.staticspin({direction: COUNTERCLOCKWISE, pivot_angle: THREE, pivot_radius: 0}));
-	greenPoi.addMove(moves.staticspin({direction: COUNTERCLOCKWISE, pivot_angle: THREE, pivot_radius: 0}));
+	redPoi.addFixedMove(moves.pendulum({direction: COUNTERCLOCKWISE, duration: 0.25}));
+	bluePoi.addFixedMove(moves.pendulum({direction: COUNTERCLOCKWISE, duration: 0.25}));
+	greenPoi.addFixedMove(moves.pendulum({direction: COUNTERCLOCKWISE, duration: 0.25}));
 	
-	redPoi.addMove(moves.verticaltoss({direction: COUNTERCLOCKWISE, pivot_angle: THREE, pivot_radius: 0.5}));
-	bluePoi.addMove(moves.staticspin({direction: COUNTERCLOCKWISE, pivot_angle: THREE, pivot_radius: 0, duration: 0.5}));
-	greenPoi.addMove(moves.staticspin({direction: COUNTERCLOCKWISE, pivot_angle: THREE, pivot_radius: 0}));
+	// The toss lasts one beat
+	redPoi.addMove(moves.verticaltoss({direction: COUNTERCLOCKWISE, hand: THREE, extend: 1.5}));
+		// t = 1
+	redPoi.addMove(moves.staticspin({direction: CLOCKWISE, hand: THREE, extend: 1}));
+		// t = 2
 	
-	redPoi.addMove(moves.staticspin({direction: COUNTERCLOCKWISE, pivot_angle: THREE, pivot_radius: 0, duration: 0.5}));
-	bluePoi.addMove(moves.verticaltoss({direction: COUNTERCLOCKWISE, pivot_angle: THREE, pivot_radius: 0.5}));
-	greenPoi.addMove(moves.verticaltoss({direction: COUNTERCLOCKWISE, pivot_angle: THREE, pivot_radius: 0.5}));
+	// okay, so here's the deal, I think...between 
+	// The blue poi has to speed up in order to make it around for the throw
+	bluePoi.addMove(moves.staticspin({direction: COUNTERCLOCKWISE, hand: THREE, extend: 1, speed: 2, duration: 0.5}));
+		// t = 0.5
+	bluePoi.addMove(moves.verticaltoss({direction: COUNTERCLOCKWISE, hand: THREE, extend: 1.5}));
+		// t = 1.5
+	bluePoi.addMove(moves.generic({hand_entry: THREE, prop_entry: THREE, hand_radius: 1, hand_speed: 2, hand_acc: -1, prop_speed: 1, duration: 0.5}));
+		// t = 2
+	
+	greenPoi.addMove(moves.staticspin({direction: COUNTERCLOCKWISE, hand: THREE, extend: 1}));
+		// t = 1
+	greenPoi.addMove(moves.verticaltoss({direction: COUNTERCLOCKWISE, hand: THREE, extend: 1.5, speed: 0.8, duration: 1.25}));
+		// t = 2.25
 	
 	document.getElementById("frameN").setAttribute("max", (redPoi.move.getDuration()*BEAT).toString());
 	redraw();
@@ -241,11 +255,11 @@ function redraw() {
 <body onload="init();">
 <header>
 	<h1>Welcome to VisualSpinner3D. </h1>
-	<p>(we have successfully digitized Drex.)</p>
+	<p>(we are working on digitizing Noel.)</p>
 </header>
 	<section>
 <div id="display">
-	<canvas width="400" height="400" id="canvas">
+	<canvas width="400" height="800" id="canvas">
 		Your browser doesn't support the HTML5 element canvas.
 	</canvas>
 	<button type="button" onclick="startSpin();">Play</button>

@@ -380,25 +380,13 @@ Controller.prototype.generateMove = function(n, txt) {
 		move = moves.pendulum({pivot: this.align[n], extend: 0.5, direction: this.spin[n], plane: this.plane[n]});
 		move.align("hand",this.align[n]);
 	} else if (txt=="hlex") {
-		move = moves.old_linex({direction: this.spin[n], plane: this.plane[n], orient: THREE});
-		move.align("prop",this.align[n]);
+		move = moves.linex({entry: this.align[n], petals: 0, direction: this.spin[n], plane: this.plane[n], orient: THREE});
 	} else if (txt=="vlex") {
-		move = moves.old_linex({direction: this.spin[n], plane: this.plane[n], orient: TWELVE});
-		move.align("prop",this.align[n]);
+		move = moves.linex({entry: this.align[n], petals: 0, direction: this.spin[n], plane: this.plane[n], orient: TWELVE});
 	} else if (txt=="hlis") {
-		move = moves.old_linex({harmonics: 2, direction: this.spin[n], plane: this.plane[n], orient: this.align[n]});
-		if ((this.align[n]==TWELVE || this.align[n]==SIX) && this.spin[n] == COUNTERCLOCKWISE) {
-			move.phaseBy(2+this.align[n]/STAGGER);
-		} else {
-			move.phaseBy(this.align[n]/STAGGER);
-		}
+		move = moves.linex({entry: this.align[n], petals: 2, direction: this.spin[n], plane: this.plane[n], orient: THREE});
 	} else if (txt=="vlis") {
-		move = moves.old_linex({harmonics: 2, direction: this.spin[n], plane: this.plane[n], orient: TWELVE})
-		if ((this.align[n]==THREE || this.align[n]==NINE) && this.spin[n] == COUNTERCLOCKWISE) {
-			move.phaseBy(2+this.align[n]/STAGGER);
-		} else {
-			move.phaseBy(this.align[n]/STAGGER);
-		}
+		move = moves.linex({entry: this.align[n], petals: 2, direction: this.spin[n], plane: this.plane[n], orient: TWELVE});
 	} else if (txt=="2btw") {
 		move = moves.staticspin({entry: this.align[n], speed: 2, direction: this.spin[n], plane: this.plane[n]});
 		move.align("prop",this.align[n]);

@@ -6,19 +6,19 @@ function PhoriaPropRenderer(scene) {
 PhoriaPropRenderer.prototype.render = function(myProp) {
 	// new matrix centered on the origin
 	var mat = mat4.create();
-	var elements = ["home","pivot","hand"];
-	for (i = 0; i<elements.length; i++) {
-		mat4.rotate(mat, mat, myProp[elements[i]].azimuth, ZAXIS);
-		mat4.rotate(mat, mat, myProp[elements[i]].zenith, YAXIS);
-		mat4.translate(mat, mat, [0,0,myProp[elements[i]].radius]);
-		mat4.rotate(mat, mat, -myProp[elements[i]].zenith, YAXIS);
-		mat4.rotate(mat, mat, -myProp[elements[i]].azimuth, ZAXIS);
+	// rotate and translate according to "home", "pivot", "helper", and "hand"
+	for (i = 0; i<=HAND; i++) {
+		mat4.rotate(mat, mat, myProp[ELEMENTS[i]].azimuth, ZAXIS);
+		mat4.rotate(mat, mat, myProp[ELEMENTS[i]].zenith, YAXIS);
+		mat4.translate(mat, mat, [0,0,myProp[ELEMENTS[i]].radius]);
+		mat4.rotate(mat, mat, -myProp[ELEMENTS[i]].zenith, YAXIS);
+		mat4.rotate(mat, mat, -myProp[ELEMENTS[i]].azimuth, ZAXIS);
 	}
 	mat4.rotate(mat, mat, myProp.prop.azimuth, ZAXIS);
 	// grip works a little differently from the other elements
 	mat4.rotate(mat, mat, myProp.grip.azimuth, ZAXIS);
 	mat4.rotate(mat, mat, myProp.prop.zenith, YAXIS);
-	//!!!Something needs to be figured out here!
+	//!!!I think this is currently broken for 3D grip-changed moves
 	//mat4.rotate(mat, mat, myProp.grip.zenith-myProp.prop.zenith, YAXIS);
 	// prop radius should be handled by prop-specific renderers
 	mat4.translate(mat, mat, [0,0,-myProp.grip.radius]);
