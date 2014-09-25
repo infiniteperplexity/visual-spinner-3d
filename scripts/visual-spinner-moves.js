@@ -735,6 +735,60 @@ MoveFactory.prototype.cateye = function(options) {
 }
 
 MoveFactory.prototype.toroid = function(options) {
+        var move = new MoveChain();
+        move.definition = options;
+        options = this.defaults(options,{
+                build: "toroid",
+                movename: "Toroid",
+                entry: THREE,
+                plane: WALL,
+                direction: CLOCKWISE,
+                pitch: FORWARD,
+                bend: ISOBEND,
+                harmonics: 4,
+                extend: 1,
+                speed: 1,
+                mode: DIAMOND,
+                orient: THREE,
+                pivot_angle: 0,
+                pivot_radius: 0,
+                duration: 1,
+                sliceby: 4
+        });
+        var segment = new MoveLink();
+        segment.prop.speed = options.bend*options.direction*options.speed;
+        segment.bend.speed = options.harmonics*options.pitch*options.speed;
+        segment.pivot.angle = options.pivot_angle;
+        segment.pivot.radius = options.pivot_radius;
+        segment.pivot.plane = options.plane;
+        segment.pivot.speed = 0;
+
+        segment.hand.speed = options.direction*options.speed;
+        segment.prop.plane = options.plane;
+        segment.hand.plane = options.plane;
+        segment.hand.radius = options.extend;
+       
+        segment.hand.angle = options.orient;
+        segment.prop.angle = options.orient + options.mode;
+        segment.duration = 1/options.sliceby;
+        move.add(segment);
+        for (var i = 1; i<options.sliceby; i++) {
+                move.extend();
+        }
+        move.align("hand", options.entry);
+        if (options.duration < 1) {
+                move = move.slice(0,options.duration*options.sliceby);
+        } else if (options.duration > 1) {
+                for (var i = 1; i<options.duration; i+=(1/options.sliceby)) {
+                        move.add(move.submoves[options.sliceby*(i-1)].clone());
+                }
+        }
+        move.build = options.build;
+        move.movename = options.movename;
+        return move;
+}
+
+MoveFactory.prototype.oldtoroid = function(options) {
 	var move = new MoveChain();
 	move.definition = options;
 	options = this.defaults(options,{
@@ -788,61 +842,6 @@ MoveFactory.prototype.toroid = function(options) {
 	move.movename = options.movename;
 	return move;
 }
-
-// This is a crappy excuse for a contact roll but it does demonstrate the concept
-MoveFactory.prototype.contactroll = function(options) {
-	var move = new MoveChain();
-	move.definition = options;
-	options = this.defaults(options,{
-		build: "contactroll",
-		movename: "Contact Roll",
-		orient: THREE,
-		//entry: THREE,
-		direction: CLOCKWISE,
-		harmonics: 2,
-		duration: 1,
-		speed: 1,
-		offset: 0,
-		extend: 1,
-		phase: 0,
-		plane: WALL
-	});
-	segment = new MoveLink();
-	segment.duration = 0.25;
-	segment.hand.linear_angle = options.orient;
-	segment.hand.linear_speed = 0;
-	segment.prop.speed = options.harmonics*options.speed*options.direction;
-	segment.hand.angle = options.orient;
-	segment.hand.radius = options.extend;
-	segment.hand.plane = options.plane;
-	segment.prop.plane = options.plane;
-	segment.grip.radius = 1;
-	//I'm not sure if I like this....
-	segment.prop.angle = options.orient + options.offset;
-	move.add(segment);
-	move.tail().hand.linear_acc = -32*options.speed;
-	move.extend();
-	move.tail().hand.linear_acc = 32*options.speed;
-	move.extend();
-	move.tail().hand.linear_acc = 32*options.speed;
-	move.extend();
-	move.tail().hand.linear_acc = -32*options.speed;
-	if (options.entry != null) {
-		move.align("prop",options.entry);
-	}
-	move.phaseBy(options.phase);
-	if (options.duration < 1) {
-		move = move.slice(0,options.duration*4);
-	} else if (options.duration > 1) {
-		for (var i = 1; i<options.duration; i+=0.25) {
-			move.add(move.submoves[4*(i-1)].clone());
-		}
-	}
-	move.build = options.build;
-	move.movename = options.movename;
-	return move;
-}
-
 
 
 //***obscure moves***
@@ -1222,75 +1221,65 @@ MoveFactory.prototype.generic = function(options) {
 		helper_angle: THREE,
 		hand_angle: THREE,
 		prop_angle: THREE,
-		grip_angle: THREE,
+		bend_angle: THREE,
 		plane: WALL,
 		home_plane: null,
 		pivot_plane: null,
 		helper_plane: null,
 		hand_plane: null,
 		prop_plane: null,
-		grip_plane: null,
+		bend_plane: null,
 		home_radius: null,
 		pivot_radius: 0,
 		helper_radius: 0,
 		hand_radius: 0,
 		prop_radius: 1,
-		grip_radius: 0,
+		bend_radius: 0,
 		home_speed: 0,
 		pivot_speed: 0,
 		helper_speed: 0,
 		hand_speed: 0,
 		prop_speed: 0,
-		grip_speed: 0,
+		bend_speed: 0,
 		home_acc: 0,
 		pivot_acc: 0,
 		helper_acc: 0,
 		hand_acc: 0,
 		prop_acc: 0,
-		grip_acc: 0,
+		bend_acc: 0,
 		home_linear_speed: 0,
 		pivot_linear_speed: 0,
 		helper_linear_speed: 0,
 		hand_linear_speed: 0,
 		prop_linear_speed: 0,
-		grip_linear_speed: 0,
+		bend_linear_speed: 0,
 		home_linear_angle: THREE,
 		pivot_linear_angle: THREE,
 		helper_linear_angle: THREE,
 		hand_linear_angle: THREE,
 		prop_linear_angle: THREE,
-		grip_linear_angle: THREE,
+		bend_linear_angle: THREE,
 		home_linear_acc: 0,
 		pivot_linear_acc: 0,
 		helper_linear_acc: 0,
 		hand_linear_acc: 0,
 		prop_linear_acc: 0,
-		grip_linear_acc: 0,
-		home_bend: 0,
-		pivot_bend: 0,
-		helper_bend: 0,
-		hand_bend: 0,
-		prop_bend: 0,
-		grip_bend: 0,
-		home_bend_plane: WHEEL,
-		pivot_bend_plane: WHEEL,
-		helper_bend_plane: WHEEL,
-		hand_bend_plane: WHEEL,
-		prop_bend_plane: WHEEL,
-		grip_bend_plane: WHEEL,
+		bend_linear_acc: 0,
 		home_rescale: 0,
 		pivot_rescale: 0,
 		helper_rescale: 0,
 		hand_rescale: 0,
 		prop_rescale: 0,
-		grip_rescale: 0,
+		bend_rescale: 0,
 		home_rescale_acc: 0,
 		pivot_rescale_acc: 0,
 		helper_rescale_acc: 0,
 		hand_rescale_acc: 0,
 		prop_rescale_acc: 0,
-		grip_rescale_acc: 0,
+		bend_rescale_acc: 0,
 		twist: null,
+		grip: 0,
+		choke: 0,
 		duration: 1
 	});
 	segment.duration = options.duration;
@@ -1302,8 +1291,6 @@ MoveFactory.prototype.generic = function(options) {
 	segment.pivot.linear_angle = options.pivot_linear_angle;
 	segment.pivot.linear_speed = options.pivot_linear_speed;
 	segment.pivot.linear_acc = options.pivot_linear_acc;
-	segment.pivot.bend = options.pivot_bend;
-	segment.pivot.bend_plane = options.bend_plane;
 	segment.pivot.rescale = options.pivot_rescale;
 	segment.pivot.rescale_acc = options.pivot_rescale_acc;
 	segment.helper.angle = options.helper_angle;
@@ -1314,8 +1301,6 @@ MoveFactory.prototype.generic = function(options) {
 	segment.helper.linear_angle = options.helper_linear_angle;
 	segment.helper.linear_speed = options.helper_linear_speed;
 	segment.helper.linear_acc = options.helper_linear_acc;
-	segment.helper.bend = options.helper_bend;
-	segment.helper.bend_plane = options.bend_plane;
 	segment.helper.rescale = options.helper_rescale;
 	segment.helper.rescale_acc = options.helper_rescale_acc;
 	segment.hand.angle = options.hand_angle;
@@ -1326,8 +1311,6 @@ MoveFactory.prototype.generic = function(options) {
 	segment.hand.linear_angle = options.hand_linear_angle;
 	segment.hand.linear_speed = options.hand_linear_speed;
 	segment.hand.linear_acc = options.hand_linear_acc;
-	segment.hand.bend = options.hand_bend;
-	segment.hand.bend_plane = options.bend_plane;
 	segment.hand.rescale = options.hand_rescale;
 	segment.hand.rescale_acc = options.hand_rescale_acc;
 	segment.prop.angle = options.prop_angle;
@@ -1338,23 +1321,21 @@ MoveFactory.prototype.generic = function(options) {
 	segment.prop.linear_angle = options.prop_linear_angle;
 	segment.prop.linear_speed = options.prop_linear_speed;
 	segment.prop.linear_acc = options.prop_linear_acc;
-	segment.prop.bend = options.prop_bend;
-	segment.prop.bend_plane = options.bend_plane;
 	segment.prop.rescale = options.prop_rescale;
 	segment.prop.rescale_acc = options.prop_rescale_acc;
-	segment.grip.angle = options.grip_angle;
-	segment.grip.plane = (options.grip_plane != null) ? options.grip_plane : options.plane;
-	segment.grip.radius = options.grip_radius;
-	segment.grip.speed = options.grip_speed;
-	segment.grip.acc = options.grip_acc;
-	segment.grip.linear_angle = options.grip_linear_angle;
-	segment.grip.linear_speed = options.grip_linear_speed;
-	segment.grip.linear_acc = options.grip_linear_acc;
-	segment.grip.bend = options.grip_bend;
-	segment.grip.bend_plane = options.bend_plane;
-	segment.grip.rescale = options.grip_rescale;
-	segment.grip.rescale_acc = options.grip_rescale_acc;
+	segment.bend.angle = options.bend_angle;
+	segment.bend.plane = (options.bend_plane != null) ? options.bend_plane : options.plane;
+	segment.bend.radius = options.bend_radius;
+	segment.bend.speed = options.bend_speed;
+	segment.bend.acc = options.bend_acc;
+	segment.bend.linear_angle = options.bend_linear_angle;
+	segment.bend.linear_speed = options.bend_linear_speed;
+	segment.bend.linear_acc = options.bend_linear_acc;
+	segment.bend.rescale = options.bend_rescale;
+	segment.bend.rescale_acc = options.bend_rescale_acc;
 	segment.twist = options.twist;
+	segment.grip = options.grip;
+	segment.choke = options.choke;
 	segment.definition.movename = options.movename;
 	segment.definition.build = options.build;
 	return segment;

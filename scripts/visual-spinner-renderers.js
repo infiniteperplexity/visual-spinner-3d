@@ -8,27 +8,20 @@ PhoriaPropRenderer.prototype.render = function(myProp) {
 	// new matrix centered on the origin
 	var mat = mat4.create();
 	// rotate and translate according to "home", "pivot", "helper", and "hand"
-	for (i = 0; i<=HAND; i++) {
+	for (i = 0; i<=BEND; i++) {
 		mat4.rotate(mat, mat, myProp[ELEMENTS[i]].azimuth, ZAXIS);
 		mat4.rotate(mat, mat, myProp[ELEMENTS[i]].zenith, YAXIS);
 		mat4.translate(mat, mat, [0,0,myProp[ELEMENTS[i]].radius]);
-		//kind of worked a little bit...
-		//if (i==HAND) {mat4.rotate(mat, mat, -myProp.swerve, YAXIS);
 		mat4.rotate(mat, mat, -myProp[ELEMENTS[i]].zenith, YAXIS);
 		mat4.rotate(mat, mat, -myProp[ELEMENTS[i]].azimuth, ZAXIS);
 	}
-	
 	mat4.rotate(mat, mat, myProp.prop.azimuth, ZAXIS);
-	// This is clearly not yet right
-	mat4.rotate(mat, mat, -myProp.swerve_zenith, YAXIS);
-	// grip works a little differently from the other elements
-	mat4.rotate(mat, mat, myProp.grip.azimuth, ZAXIS);
 	mat4.rotate(mat, mat, myProp.prop.zenith, YAXIS);
-	//!!!this has not been tested for 3D grip-shifted moves
-	mat4.rotate(mat, mat, myProp.grip.zenith-QUARTER, YAXIS);
+	// ignore the very possibility of bend.radius for now
 	// prop radius should be handled by prop-specific renderers
-	mat4.translate(mat, mat, [0,0,-myProp.grip.radius]);
-	mat4.rotate(mat, mat, myProp.twist, ZAXIS);
+	//mat4.rotate(mat, mat, myProp.grip, YAXIS);
+	//mat4.translate(mat, mat, [0,0,-myProp.choke]);
+	//mat4.rotate(mat, mat, myProp.twist, ZAXIS);
 	for (var i=0; i<this.shapes.length; i++) {
 		this.shapes[i].matrix = mat;
 		PropFactory.prototype.rescale(this.shapes[i], myProp.prop.radius);

@@ -338,7 +338,7 @@ Controller.prototype.generateMove = function(n, txt) {
 		move = moves.pendulum({direction: this.spin[n], plane: this.plane[n]});
 		move.align("hand",this.align[n]);
 	} else if (txt=="1pt5") {
-		move = moves.pendulum({onepointfive: true, direction: this.spin[n], plane: this.plane[n]});
+		move = moves.onepointfive({direction: this.spin[n], plane: this.plane[n]});
 		move.align("hand",this.align[n]);
 	} else if (txt=="ucex") {
 		move = moves.isolation({entry: this.align[n], offset: 0, direction: this.spin[n], plane: this.plane[n]});
@@ -439,8 +439,9 @@ Controller.prototype.shuffle = function() {
 } 
 </script>
 <body onload="init();">
-<a href="http://infiniteperplexity.github.io/visual-spinner-3d/flower_transitions.html">See a demo of anti-spin flower transitions</a><br>
-<a href="http://infiniteperplexity.github.io/visual-spinner-3d/composer.html">See the (buggy, incomplete) working draft of the new composer interface</a>
+<p>Note: All toroids are currently broken.  A fix is in the works, and thereafter plane-bending will be much easier to model.</p>
+<a href="http://infiniteperplexity.github.io/visual-spinner-3d/comborific.html">See Drex's "combo-rific" video modeled in VisualSpinner!</a><br>
+<a href="http://infiniteperplexity.github.io/visual-spinner-3d/flower_transitions.html">See a demo of anti-spin flower transitions</a>
 <table>
 <tbody><tr>
 <td rowspan="9" colspan="2">
