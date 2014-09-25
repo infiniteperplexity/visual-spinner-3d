@@ -763,6 +763,7 @@ MoveFactory.prototype.toroid = function(options) {
         segment.pivot.plane = options.plane;
         segment.pivot.speed = 0;
 
+	segment.bend.plane = options.plane;
         segment.hand.speed = options.direction*options.speed;
         segment.prop.plane = options.plane;
         segment.hand.plane = options.plane;

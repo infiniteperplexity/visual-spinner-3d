@@ -53,9 +53,9 @@ var HOME = 0;
 var PIVOT = 1;
 var HELPER = 2;
 var HAND = 3;
-var BEND = 4;
-var PROP = 5;
-var ELEMENTS = ["home","pivot","helper","hand","bend","prop"];
+var PROP = 4;
+var BEND = 5;
+var ELEMENTS = ["home","pivot","helper","hand","prop","bend"];
 
 //// A Vector can represent either a point or a plane, in 3D Cartesian coordinates
 function Vector(x,y,z) {
@@ -247,7 +247,7 @@ function Prop() {
 	this.hand = new Spherical(TINY,QUARTER,TINY);
 	this.prop = new Spherical(1,QUARTER,TINY);
 	this.bend = new Spherical(TINY,QUARTER,TINY);
-	this.elements = [this.home, this.pivot, this.helper, this.hand, this.bend, this.prop];
+	this.elements = [this.home, this.pivot, this.helper, this.hand, this.prop, this.bend];
 	//// the way the prop  is held is in some sense a spherical coordinate as well, but the frame of reference is very different
 		// we divide it into "grip", "twist", and "choke" (technically,  zenith, azimuth, and radius) 
 	// "grip" could represent any point along the circumference of a hula hoop; for poi and staff, 0 or PI are the only sensible values
@@ -478,7 +478,7 @@ Prop.prototype.socket = function(plane) {
 	if (this.move.submoves.length===0) {
 		if (plane == null) {plane = WALL;}
 		var socket = new MoveLink();
-		for (var i=PIVOT; i<=PROP; i++) {
+		for (var i=PIVOT; i<=BEND; i++) {
 			socket.elements[i].radius = this.elements[i].radius;
 			socket.elements[i].speed = 0;
 			socket.elements[i].linear_speed = 0;
@@ -506,7 +506,7 @@ MoveLink.prototype.socket = function() {
 	// Reset the MoveLink so it's ready for the real Prop
 	socket.reset();
 	// Fit this move to the final position of the target move
-	for (var i=HOME; i<=PROP; i++) {
+	for (var i=HOME; i<=BEND; i++) {
 		// only HOME should ever be null
 		// If the radius of an element is explicitly null, return a null radius on the socket
 		if (this.elements[i].radius !== null) {
@@ -543,7 +543,7 @@ MoveLink.prototype.socket = function() {
 	// Reset the MoveLink so it's ready for the real Prop
 	socket.reset();
 	// Fit this move to the final position of the target move
-	for (var i=HOME; i<=PROP; i++) {
+	for (var i=HOME; i<=BEND; i++) {
 		// only HOME should ever be null
 		// If the radius of an element is explicitly null, return a null radius on the socket
 		if (this.elements[i].radius !== null) {
@@ -573,7 +573,7 @@ function MoveLink() {
 	this.movename = "not defined";
 	// the default MoveLink is a clockwise static spin starting from the right
 	this.elements = [];
-	for (var i = HOME; i<=PROP; i++) {
+	for (var i = HOME; i<=BEND; i++) {
 		this.elements[i] = {
 			speed: 0,
 			acc: 0,
@@ -609,7 +609,7 @@ MoveLink.prototype.spin = function(prop, dummy) {
 	if (this.started == false) {
 		// the comment in the old version was wrong...this is telling the prop to adopt the move's starting position
 		// the HOME plane should be the only thing we need to ever check.
-		for (var i = HOME; i<=PROP; i++) {
+		for (var i = HOME; i<=BEND; i++) {
 			if (this.elements[i].plane !== null) {
 				prop.setElementAngle(i, this.elements[i].angle, this.elements[i].plane);
 				prop.elements[i].radius = this.elements[i].radius;
@@ -634,22 +634,18 @@ MoveLink.prototype.spin = function(prop, dummy) {
 	this.finished = false;
 	// Spin, slide, and plane-bend the prop frame by frame
 	var v;
-	var p;
 	// If we keep the default null "home" plane, we skip the entire "home" element
-	for (var i = HOME; i<=PROP; i++) {
+	for (var i = HOME; i<=BEND; i++) {
 		if (this.elements[i].plane != null) {
 			// rescale
 			v = this.elements[i].rescale + this.elements[i].rescale_acc*this.t/BEAT;
 			prop.elements[i].radius += v/BEAT;
-			///!!!!! Try switching this out
-			p = this.elements[i].plane;
-			//p = this.elements[i].plane.rotate(this.elements[i].bend*this.t*SPEED, this.elements[i].bend_plane);
 			// rotation
 			v = this.elements[i].speed + this.elements[i].acc*this.t/BEAT;
-			prop.rotateElement(i, v*SPEED, p);
+			prop.rotateElement(i, v*SPEED, this.elements[i].plane);
 			// linear translation
 			v = this.elements[i].linear_speed + this.elements[i].linear_acc*this.t/BEAT;
-			prop.translateElement(i, v/BEAT, this.elements[i].linear_angle, p);
+			prop.translateElement(i, v/BEAT, this.elements[i].linear_angle, this.elements[i].plane);
 		}
 	}
 	this.t+=1;
@@ -692,14 +688,14 @@ MoveLink.prototype.align = function(element, angle) {
 MoveLink.prototype.adjust = function(target) {
 	if (target instanceof Prop) {
 		// should this ever be adjusting HOME?
-		for (var i = HOME; i<=PROP; i++) {
+		for (var i = HOME; i<=BEND; i++) {
 			if (target.elements[i].azimuth != null && this.elements[i].plane != null) {
 				this.elements[i].angle = target.getElementAngle(i, this.elements[i].plane);
 			}
 		}
 	} else if (target instanceof MoveChain || target instanceof MoveLink) {
 		var tail = target.socket();
-		for (var i = HOME; i<=PROP; i++) {
+		for (var i = HOME; i<=BEND; i++) {
 			//this.elements[i].plane = tail.elements[i].plane;
 			// This actually seems like kind of a terrible idea, and has been a stumbling block so far
 			//this.elements[i].angle = tail.elements[i].angle;
@@ -708,13 +704,10 @@ MoveLink.prototype.adjust = function(target) {
 	return this;
 }
 
-//!!!for some bizarre reason, newlink currently needs to be a global variable...
-// !!!this problem believed fixed
-//var newlink;
 // Create a perfect duplicate of this MoveLink
 MoveLink.prototype.clone = function() {
 	var newlink = new MoveLink();
-	for (var i = HOME; i<=PROP; i++) {
+	for (var i = HOME; i<=BEND; i++) {
 		newlink.elements[i].plane = this.elements[i].plane;
 		newlink.elements[i].radius = this.elements[i].radius;
 		newlink.elements[i].angle = this.elements[i].angle;
@@ -723,8 +716,6 @@ MoveLink.prototype.clone = function() {
 		newlink.elements[i].linear_angle = this.elements[i].linear_angle;
 		newlink.elements[i].linear_speed = this.elements[i].linear_speed;
 		newlink.elements[i].linear_acc = this.elements[i].linear_acc;
-		//newlink.elements[i].bend = this.elements[i].bend;
-		//newlink.elements[i].bend_plane = this.elements[i].bend_plane;
 		newlink.elements[i].rescale = this.elements[i].rescale;
 		newlink.elements[i].rescale_acc = this.elements[i].rescale_acc;
 	}
@@ -767,7 +758,7 @@ MoveLink.prototype.propVector = function() {
 	return this.getVector(PROP);
 }
 MoveLink.prototype.fitTo = function(move) {
-	for (var i = HOME; i<=PROP; i++) {
+	for (var i = HOME; i<=BEND; i++) {
 		this.elements[i].plane = move.elements[i].plane;
 		this.elements[i].radius = move.elements[i].radius;
 		this.elements[i].angle = move.elements[i].angle;
@@ -786,8 +777,7 @@ MoveLink.prototype.socket = function() {
 	// Reset the MoveLink so it's ready for the real Prop
 	socket.reset();
 	// Fit this move to the final position of the target move
-	var p;
-	for (var i=HOME; i<=PROP; i++) {
+	for (var i=HOME; i<=BEND; i++) {
 		// only HOME should ever be null
 		// If the radius of an element is explicitly null, return a null radius on the socket
 		if (this.elements[i].radius !== null) {
@@ -798,21 +788,17 @@ MoveLink.prototype.socket = function() {
 		socket.elements[i].linear_angle = this.elements[i].linear_angle;
 		socket.elements[i].rescale = this.elements[i].rescale + this.duration * this.elements[i].rescale_acc;
 		if (this.elements[i].plane != null) {
-			//!!!! Switch this out
-			p = this.elements[i].plane;
-			//p = this.elements[i].plane.rotate(this.elements[i].bend * this.duration*UNIT, this.elements[i].bend_plane);
-			// If the angle of an element is explicitly null, return a null angle on the socket
 			if (this.elements[i].angle !== null) {
-				socket.elements[i].angle = dummy.getElementAngle(i, p);
+				socket.elements[i].angle = dummy.getElementAngle(i, this.elements[i].plane);
 			}
-			socket.elements[i].plane = p;
+			socket.elements[i].plane = this.elements[i].plane;
 		}
 	}
 	return socket;
 }
 // the argument to this function should be a hash of elements paired with moves
 MoveLink.prototype.splice = function(options) {
-	for (var i = HOME; i <= PROP; i++) {
+	for (var i = HOME; i <= BEND; i++) {
 		if (options[ELEMENTS[i]] !== undefined) {
 			this[ELEMENTS[i]].plane = options[ELEMENTS[i]].plane;
 			this[ELEMENTS[i]].radius = options[ELEMENTS[i]].radius;
@@ -822,8 +808,6 @@ MoveLink.prototype.splice = function(options) {
 			this[ELEMENTS[i]].linear_angle = options[ELEMENTS[i]].linear_angle;
 			this[ELEMENTS[i]].linear_speed = options[ELEMENTS[i]].linear_speed;
 			this[ELEMENTS[i]].linear_acc = options[ELEMENTS[i]].linear_acc;
-			//this[ELEMENTS[i]].bend = options[ELEMENTS[i]].bend;
-			//this[ELEMENTS[i]].bend_plane = options[ELEMENTS[i]].bend_plane;
 			this[ELEMENTS[i]].rescale = options[ELEMENTS[i]].rescale;
 			this[ELEMENTS[i]].rescale_acc = options[ELEMENTS[i]].rescale_acc;
 		}
@@ -1064,7 +1048,7 @@ PropFactory.prototype.parse = function(json) {
 }
 Prop.prototype.apply = function(json, fix) {
 	var definition = PropFactory.prototype.parse(json);
-	for (var i = HOME; i<=PROP; i++) {
+	for (var i = HOME; i<=BEND; i++) {
 		this[ELEMENTS[i]].radius = definition[ELEMENTS[i]].radius;
 		this[ELEMENTS[i]].azimuth = definition[ELEMENTS[i]].azimuth;
 		this[ELEMENTS[i]].zenith = definition[ELEMENTS[i]].zenith;
@@ -1091,7 +1075,7 @@ Prop.prototype.stringify = function() {
 					hand: {},
 					prop: {},
 					bend: {}};
-	for (var i = HOME; i<=PROP; i++) {
+	for (var i = HOME; i<=BEND; i++) {
 		definition[ELEMENTS[i]].radius = this[ELEMENTS[i]].radius;
 		definition[ELEMENTS[i]].azimuth = this[ELEMENTS[i]].azimuth;
 		definition[ELEMENTS[i]].zenith = this[ELEMENTS[i]].zenith;
@@ -1167,7 +1151,7 @@ MoveChain.prototype.phaseBy = function(phase) {
 // the argument to this function should be a hash of elements paired with moves
 MoveChain.prototype.splice = function(options) {
 	var submoves;
-	for (var i = HOME; i <= PROP; i++) {
+	for (var i = HOME; i <= BEND; i++) {
 		if (options[ELEMENTS[i]] !== undefined) {
 			//this can't yet drill down multiple levels
 			submoves = options[ELEMENTS[i]].submoves;
@@ -1180,8 +1164,6 @@ MoveChain.prototype.splice = function(options) {
 				this.submoves[j][ELEMENTS[i]].linear_angle = submoves[j][ELEMENTS[i]].linear_angle;
 				this.submoves[j][ELEMENTS[i]].linear_speed = submoves[j][ELEMENTS[i]].linear_speed;
 				this.submoves[j][ELEMENTS[i]].linear_acc = submoves[j][ELEMENTS[i]].linear_acc;
-				//this.submoves[j][ELEMENTS[i]].bend = submoves[j][ELEMENTS[i]].bend;
-				//this.submoves[j][ELEMENTS[i]].bend_plane = submoves[j][ELEMENTS[i]].bend_plane;
 				this.submoves[j][ELEMENTS[i]].rescale = submoves[j][ELEMENTS[i]].rescale;
 				this.submoves[j][ELEMENTS[i]].rescale_acc = submoves[j][ELEMENTS[i]].rescale_acc;
 			}
