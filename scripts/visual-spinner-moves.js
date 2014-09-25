@@ -1,3 +1,4 @@
+"use strict";
 ///Fixes...get rid of most nulls...
 ///But make entry typically null and rely on orient more
 MoveFactory.prototype.staticspin= function(options) {
@@ -213,7 +214,7 @@ MoveFactory.prototype.ccap = function(options) {
 		// need to add "entry"
 		duration: 1
 	});
-	segment = new MoveLink();
+	var segment = new MoveLink();
 	segment.duration = 0.25;
 	segment.hand.radius = options.extend;
 	segment.hand.plane = options.plane;
@@ -299,25 +300,24 @@ MoveFactory.prototype.pendulum = function(options) {
 	move.add(segment);
 	move.tail().prop.acc = -8*options.twirl*options.swing*options.direction*options.speed*options.spin;
 	move.tail().hand.acc = -hybrid;
-	move.tail().hand.stretch = 0;
-	move.tail().hand.stretch_acc = 0;
+	move.tail().hand.rescale = 0;
+	move.tail().hand.rescale_acc = 0;
 	move.extend();
 	move.tail().prop.acc = -8*options.swing*options.direction*options.speed*options.spin;
 	move.tail().hand.acc = -hybrid;
-	move.tail().hand.stretch = 0;
-	move.tail().hand.stretch_acc = 32*options.lift;	
+	move.tail().hand.rescale = 0;
+	move.tail().hand.rescale_acc = 32*options.lift;	
 	move.extend();
 	move.tail().prop.acc = 8*options.swing*options.direction*options.speed*options.spin;
 	move.tail().hand.acc = hybrid;
-	move.tail().hand.stretch = -8*options.lift;
+	move.tail().hand.rescale = -8*options.lift;
 	move.tail().hand.radius = options.extend + options.lift;
-	move.tail().hand.stretch_acc = 32*options.lift;	
+	move.tail().hand.rescale_acc = 32*options.lift;
 	move.extend();
 	move.tail().prop.acc = 8*options.twirl*options.swing*options.direction*options.speed*options.spin;
 	move.tail().hand.acc = hybrid;
-	move.tail().hand.stretch = 0;
-	move.tail().hand.stretch_acc = 0;
-	
+	move.tail().hand.rescale = 0;
+	move.tail().hand.rescale_acc = 0;
 	if (options.entry != null) {
 		move.align("hand", options.entry);
 	}
@@ -436,20 +436,20 @@ MoveFactory.prototype.oval = function(options) {
 	segment.duration = 0.25;
 	move.add(segment);
 	move.tail().hand.radius = options.major;
-	move.tail().hand.stretch = -(options.major-options.minor)*8;
-	move.tail().hand.stretch_acc = (options.major-options.minor)*32;
+	move.tail().hand.rescale = -(options.major-options.minor)*8;
+	move.tail().hand.rescale_acc = (options.major-options.minor)*32;
 	move.extend();
 	move.tail().hand.radius = options.minor;
-	move.tail().hand.stretch = 0;
-	move.tail().hand.stretch_acc = (options.major-options.minor)*32;
+	move.tail().hand.rescale = 0;
+	move.tail().hand.rescale_acc = (options.major-options.minor)*32;
 	move.extend();
 	move.tail().hand.radius = options.major;
-	move.tail().hand.stretch = -(options.major-options.minor)*8;
-	move.tail().hand.stretch_acc = (options.major-options.minor)*32;
+	move.tail().hand.rescale = -(options.major-options.minor)*8;
+	move.tail().hand.rescale_acc = (options.major-options.minor)*32;
 	move.extend();
 	move.tail().hand.radius = options.minor;
-	move.tail().hand.stretch = 0;
-	move.tail().hand.stretch_acc = (options.major-options.minor)*32;
+	move.tail().hand.rescale = 0;
+	move.tail().hand.rescale_acc = (options.major-options.minor)*32;
 	if (options.entry != null) {
 		move.align("hand",options.entry);
 	}
@@ -503,23 +503,23 @@ MoveFactory.prototype.linex = function(options) {
 	move.add(segment);
 	move.tail().hand.angle = options.orient;
 	move.tail().hand.radius = options.extend;
-	move.tail().hand.stretch = 0;
-	move.tail().hand.stretch_acc = -32;
+	move.tail().hand.rescale = 0;
+	move.tail().hand.rescale_acc = -32;
 	move.extend();
 	move.tail().hand.angle = options.orient+OFFSET;
 	move.tail().hand.radius = 0;
-	move.tail().hand.stretch = 8;
-	move.tail().hand.stretch_acc = -32;
+	move.tail().hand.rescale = 8;
+	move.tail().hand.rescale_acc = -32;
 	move.extend();
 	move.tail().hand.angle = options.orient+OFFSET;
 	move.tail().hand.radius = options.extend;
-	move.tail().hand.stretch = 0;
-	move.tail().hand.stretch_acc = -32;
+	move.tail().hand.rescale = 0;
+	move.tail().hand.rescale_acc = -32;
 	move.extend();
 	move.tail().hand.angle = options.orient;
 	move.tail().hand.radius = 0;
-	move.tail().hand.stretch = 8;
-	move.tail().hand.stretch_acc = -32;
+	move.tail().hand.rescale = 8;
+	move.tail().hand.rescale_acc = -32;
 	//do we need to do some crazy thing here?
 	if (options.entry != null) {
 		if (nearly(options.entry,options.orient)) {
@@ -566,8 +566,7 @@ MoveFactory.prototype.old_linex = function(options) {
 		offset: 0,
 		pivot_angle: 0,
 		pivot_radius: 0,
-		phase: 0,
-		duration: 1
+		phase: 0
 	});
 	segment = new MoveLink();
 	segment.pivot.angle = options.pivot_angle;
@@ -628,8 +627,7 @@ MoveFactory.prototype.linearfloat = function(options) {
 		offset: 0,
 		pivot_angle: 0,
 		pivot_radius: 0,
-		phase: 0,
-		duration: 1
+		phase: 0
 	});
 	segment = new MoveLink();
 	segment.pivot.angle = options.pivot_angle;
@@ -742,7 +740,7 @@ MoveFactory.prototype.toroid = function(options) {
 	options = this.defaults(options,{
 		build: "toroid",
 		movename: "Toroid",
-		entry: null,
+		entry: THREE,
 		plane: WALL,
 		direction: CLOCKWISE,
 		pitch: FORWARD,
@@ -751,8 +749,7 @@ MoveFactory.prototype.toroid = function(options) {
 		harmonics: 4,
 		extend: 1,
 		speed: 1,
-		mode: null,
-		//mode: DIAMOND,
+		mode: DIAMOND,
 		pivot_radius: 0,
 		pivot_angle: 0
 	});
@@ -1281,19 +1278,19 @@ MoveFactory.prototype.generic = function(options) {
 		hand_bend_plane: WHEEL,
 		prop_bend_plane: WHEEL,
 		grip_bend_plane: WHEEL,
-		home_stretch: 0,
-		pivot_stretch: 0,
-		helper_stretch: 0,
-		hand_stretch: 0,
-		prop_stretch: 0,
-		grip_stretch: 0,
-		home_stretch_acc: 0,
-		pivot_stretch_acc: 0,
-		helper_stretch_acc: 0,
-		hand_stretch_acc: 0,
-		prop_stretch_acc: 0,
-		grip_stretch_acc: 0,
-		roll: null,
+		home_rescale: 0,
+		pivot_rescale: 0,
+		helper_rescale: 0,
+		hand_rescale: 0,
+		prop_rescale: 0,
+		grip_rescale: 0,
+		home_rescale_acc: 0,
+		pivot_rescale_acc: 0,
+		helper_rescale_acc: 0,
+		hand_rescale_acc: 0,
+		prop_rescale_acc: 0,
+		grip_rescale_acc: 0,
+		twist: null,
 		duration: 1
 	});
 	segment.duration = options.duration;
@@ -1307,8 +1304,8 @@ MoveFactory.prototype.generic = function(options) {
 	segment.pivot.linear_acc = options.pivot_linear_acc;
 	segment.pivot.bend = options.pivot_bend;
 	segment.pivot.bend_plane = options.bend_plane;
-	segment.pivot.stretch = options.pivot_stretch;
-	segment.pivot.stretch_acc = options.pivot_stretch_acc;
+	segment.pivot.rescale = options.pivot_rescale;
+	segment.pivot.rescale_acc = options.pivot_rescale_acc;
 	segment.helper.angle = options.helper_angle;
 	segment.helper.plane = (options.helper_plane != null) ? options.helper_plane : options.plane;
 	segment.helper.radius = options.helper_radius;
@@ -1319,8 +1316,8 @@ MoveFactory.prototype.generic = function(options) {
 	segment.helper.linear_acc = options.helper_linear_acc;
 	segment.helper.bend = options.helper_bend;
 	segment.helper.bend_plane = options.bend_plane;
-	segment.helper.stretch = options.helper_stretch;
-	segment.helper.stretch_acc = options.helper_stretch_acc;
+	segment.helper.rescale = options.helper_rescale;
+	segment.helper.rescale_acc = options.helper_rescale_acc;
 	segment.hand.angle = options.hand_angle;
 	segment.hand.plane = (options.hand_plane != null) ? options.hand_plane : options.plane;
 	segment.hand.radius = options.hand_radius;
@@ -1331,8 +1328,8 @@ MoveFactory.prototype.generic = function(options) {
 	segment.hand.linear_acc = options.hand_linear_acc;
 	segment.hand.bend = options.hand_bend;
 	segment.hand.bend_plane = options.bend_plane;
-	segment.hand.stretch = options.hand_stretch;
-	segment.hand.stretch_acc = options.hand_stretch_acc;
+	segment.hand.rescale = options.hand_rescale;
+	segment.hand.rescale_acc = options.hand_rescale_acc;
 	segment.prop.angle = options.prop_angle;
 	segment.prop.plane = (options.prop_plane != null) ? options.prop_plane : options.plane;
 	segment.prop.radius = options.prop_radius;
@@ -1343,8 +1340,8 @@ MoveFactory.prototype.generic = function(options) {
 	segment.prop.linear_acc = options.prop_linear_acc;
 	segment.prop.bend = options.prop_bend;
 	segment.prop.bend_plane = options.bend_plane;
-	segment.prop.stretch = options.prop_stretch;
-	segment.prop.stretch_acc = options.prop_stretch_acc;
+	segment.prop.rescale = options.prop_rescale;
+	segment.prop.rescale_acc = options.prop_rescale_acc;
 	segment.grip.angle = options.grip_angle;
 	segment.grip.plane = (options.grip_plane != null) ? options.grip_plane : options.plane;
 	segment.grip.radius = options.grip_radius;
@@ -1355,9 +1352,9 @@ MoveFactory.prototype.generic = function(options) {
 	segment.grip.linear_acc = options.grip_linear_acc;
 	segment.grip.bend = options.grip_bend;
 	segment.grip.bend_plane = options.bend_plane;
-	segment.grip.stretch = options.grip_stretch;
-	segment.grip.stretch_acc = options.grip_stretch_acc;
-	segment.roll = options.roll;
+	segment.grip.rescale = options.grip_rescale;
+	segment.grip.rescale_acc = options.grip_rescale_acc;
+	segment.twist = options.twist;
 	segment.definition.movename = options.movename;
 	segment.definition.build = options.build;
 	return segment;
@@ -1372,7 +1369,7 @@ MoveFactory.prototype.spiralwrap = function(options) {
 		entry: THREE,
 		plane: WALL,
 		direction: CLOCKWISE,
-		stretch: -1,
+		rescale: -1,
 		extend: 0,
 		speed: 1,
 		duration: 1
@@ -1385,7 +1382,7 @@ MoveFactory.prototype.spiralwrap = function(options) {
 	segment.prop.radius = 1;
 	segment.hand.speed = 0;
 	segment.prop.speed = options.speed*options.direction;
-	segment.prop.stretch = options.stretch;
+	segment.prop.rescale = options.rescale;
 	if (options.entry != null) {
 		segment.prop.angle = options.entry;
 	}
@@ -1393,7 +1390,7 @@ MoveFactory.prototype.spiralwrap = function(options) {
 	move.add(segment);
 	move.extend();
 	move.tail().prop.radius = 0;
-	move.tail().stretch = -options.stretch;
+	move.tail().rescale = -options.rescale;
 	move.tail().speed = -options.speed*options.direction;
 	move.build = options.build;
 	move.movename = options.movename;
@@ -1412,7 +1409,7 @@ MoveFactory.prototype.spiral = function(options) {
 		plane: WALL,
 		direction: CLOCKWISE,
 		speed: 1,
-		stretch: -1,
+		rescale: -1,
 		pivot_angle: 0,
 		pivot_radius: 0,
 		duration: 1,
@@ -1437,7 +1434,7 @@ MoveFactory.prototype.spiral = function(options) {
 	segment.prop.plane = options.plane;
 	segment.prop.speed = options.direction*options.speed;
 	segment.duration = 1/options.sliceby;
-	segment.prop.stretch = options.stretch;
+	segment.prop.rescale = options.rescale;
 	move.add(segment);
 	for (var i = 1; i<options.sliceby; i++) {
 		move.extend();
@@ -1514,7 +1511,6 @@ MoveFactory.prototype.verticaltoss = function(options) {
 		direction: CLOCKWISE,
 		hand: THREE,
 		extend: 0,
-		entry: NINE,
 		plane: WALL,
 		entry: THREE,
 		pivot_angle: 0,
