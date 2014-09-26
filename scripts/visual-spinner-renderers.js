@@ -16,10 +16,14 @@ PhoriaPropRenderer.prototype.render = function(myProp) {
 		mat4.rotate(mat, mat, -myProp[ELEMENTS[i]].azimuth, ZAXIS);
 	}
 	mat4.rotate(mat, mat, myProp.prop.azimuth, ZAXIS);
-	mat4.rotate(mat, mat, -myProp.bend.azimuth, YAXIS);
 	mat4.rotate(mat, mat, myProp.prop.zenith, YAXIS);
-	mat4.rotate(mat, mat, myProp.bend.zenith-QUARTER, ZAXIS);
-	// ignore the very possibility of bend.radius for now
+	// this should probably go off some kind of unitize, sqrt(x*y),z system...
+	// ???Why is this backwards for half the circuit?
+	if (myProp.axis.nearly(WALL)) {
+		mat4.rotate(mat, mat, -myProp.bend, YAXIS);
+	} else if (myProp.axis.nearly(WHEEL) || myProp.axis.nearly(FLOOR)) {
+		mat4.rotate(mat, mat, myProp.bend, XAXIS);
+	}
 	// prop radius should be handled by prop-specific renderers
 	mat4.rotate(mat, mat, myProp.grip, YAXIS);
 	mat4.translate(mat, mat, [0,0,-myProp.choke]);

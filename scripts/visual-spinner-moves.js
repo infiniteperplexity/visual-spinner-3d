@@ -757,13 +757,12 @@ MoveFactory.prototype.toroid = function(options) {
         });
         var segment = new MoveLink();
         segment.prop.speed = options.bend*options.direction*options.speed;
-        segment.bend.speed = options.harmonics*options.pitch*options.speed;
+        segment.bend_speed = options.harmonics*options.pitch*options.speed;
         segment.pivot.angle = options.pivot_angle;
         segment.pivot.radius = options.pivot_radius;
         segment.pivot.plane = options.plane;
         segment.pivot.speed = 0;
 
-	segment.bend.plane = options.plane;
         segment.hand.speed = options.direction*options.speed;
         segment.prop.plane = options.plane;
         segment.hand.plane = options.plane;
@@ -774,7 +773,7 @@ MoveFactory.prototype.toroid = function(options) {
         segment.duration = 1/options.sliceby;
         move.add(segment);
         for (var i = 1; i<options.sliceby; i++) {
-                move.extend();
+               move.extend();
         }
         move.align("hand", options.entry);
         if (options.duration < 1) {
@@ -1222,65 +1221,58 @@ MoveFactory.prototype.generic = function(options) {
 		helper_angle: THREE,
 		hand_angle: THREE,
 		prop_angle: THREE,
-		bend_angle: THREE,
 		plane: WALL,
 		home_plane: null,
 		pivot_plane: null,
 		helper_plane: null,
 		hand_plane: null,
 		prop_plane: null,
-		bend_plane: null,
 		home_radius: null,
 		pivot_radius: 0,
 		helper_radius: 0,
 		hand_radius: 0,
 		prop_radius: 1,
-		bend_radius: 0,
 		home_speed: 0,
 		pivot_speed: 0,
 		helper_speed: 0,
 		hand_speed: 0,
 		prop_speed: 0,
-		bend_speed: 0,
 		home_acc: 0,
 		pivot_acc: 0,
 		helper_acc: 0,
 		hand_acc: 0,
 		prop_acc: 0,
-		bend_acc: 0,
 		home_linear_speed: 0,
 		pivot_linear_speed: 0,
 		helper_linear_speed: 0,
 		hand_linear_speed: 0,
 		prop_linear_speed: 0,
-		bend_linear_speed: 0,
 		home_linear_angle: THREE,
 		pivot_linear_angle: THREE,
 		helper_linear_angle: THREE,
 		hand_linear_angle: THREE,
 		prop_linear_angle: THREE,
-		bend_linear_angle: THREE,
 		home_linear_acc: 0,
 		pivot_linear_acc: 0,
 		helper_linear_acc: 0,
 		hand_linear_acc: 0,
 		prop_linear_acc: 0,
-		bend_linear_acc: 0,
 		home_rescale: 0,
 		pivot_rescale: 0,
 		helper_rescale: 0,
 		hand_rescale: 0,
 		prop_rescale: 0,
-		bend_rescale: 0,
 		home_rescale_acc: 0,
 		pivot_rescale_acc: 0,
 		helper_rescale_acc: 0,
 		hand_rescale_acc: 0,
 		prop_rescale_acc: 0,
-		bend_rescale_acc: 0,
 		twist: null,
 		grip: 0,
 		choke: 0,
+		bend: 0,
+		bend_speed: 0,
+		bend_acc: 0,
 		duration: 1
 	});
 	segment.duration = options.duration;
@@ -1324,21 +1316,15 @@ MoveFactory.prototype.generic = function(options) {
 	segment.prop.linear_acc = options.prop_linear_acc;
 	segment.prop.rescale = options.prop_rescale;
 	segment.prop.rescale_acc = options.prop_rescale_acc;
-	segment.bend.angle = options.bend_angle;
-	segment.bend.plane = (options.bend_plane != null) ? options.bend_plane : options.plane;
-	segment.bend.radius = options.bend_radius;
-	segment.bend.speed = options.bend_speed;
-	segment.bend.acc = options.bend_acc;
-	segment.bend.linear_angle = options.bend_linear_angle;
-	segment.bend.linear_speed = options.bend_linear_speed;
-	segment.bend.linear_acc = options.bend_linear_acc;
-	segment.bend.rescale = options.bend_rescale;
-	segment.bend.rescale_acc = options.bend_rescale_acc;
 	segment.twist = options.twist;
 	segment.grip = options.grip;
 	segment.choke = options.choke;
+	segment.bend = options.bend;
+	segment.bend_speed = options.bend_speed;
+	segment.bend_acc = options.bend_acc;
 	segment.definition.movename = options.movename;
 	segment.definition.build = options.build;
+	//add stuff back in in a bit
 	return segment;
 }
 	
