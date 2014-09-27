@@ -788,61 +788,143 @@ MoveFactory.prototype.toroid = function(options) {
         return move;
 }
 
-MoveFactory.prototype.oldtoroid = function(options) {
-	var move = new MoveChain();
-	move.definition = options;
-	options = this.defaults(options,{
-		build: "toroid",
-		movename: "Toroid",
-		entry: THREE,
-		plane: WALL,
-		direction: CLOCKWISE,
-		pitch: FORWARD,
-		spin: INSPIN,
-		bend: ISOBEND,
-		harmonics: 4,
-		extend: 1,
-		speed: 1,
-		mode: DIAMOND,
-		pivot_radius: 0,
-		pivot_angle: 0
-	});
+MoveFactory.prototype.isobend = function(options) {
+        var move = new MoveChain();
+        move.definition = options;
+        options = this.defaults(options,{
+                build: "isobend",
+                movename: "Linearized Iso-Bend Toroid",
+                entry: THREE,
+                plane: WALL,
+                direction: CLOCKWISE,
+                pitch: FORWARD,
+                harmonics: 4,
+                speed: 1,
+                orient: THREE,
+                pivot_angle: 0,
+                pivot_radius: 0
+        });
 	var segment = new MoveLink();
-	segment.pivot.angle = options.pivot_angle;
 	segment.pivot.radius = options.pivot_radius;
-	segment.pivot.plane = options.plane;
-	segment.pivot.speed = 0;
-	segment.hand.radius = options.extend;
-	segment.hand.speed = options.direction*options.speed;
-	segment.prop.speed = options.pitch*options.harmonics*options.speed;
-	segment.prop.bend = options.bend*options.direction*options.speed;
-	segment.prop.bend_plane = options.plane;
-	// this might fail if options.orient is changed from the default
-	segment.prop.plane = options.plane.reference().rotate(options.entry-QUARTER, options.plane);
+        segment.pivot.plane = options.plane;
+	segment.pivot.angle = options.pivot_angle;
+        segment.pivot.speed = 0;
+	
+	segment.prop.bend = 0;
+	segment.bend_speed = options.harmonics*options.pitch*options.speed;
+	segment.prop.plane = options.plane;
 	segment.hand.plane = options.plane;
-	if (options.entry != null) {
-		segment.hand.angle = options.entry;
-		segment.prop.angle = options.entry + options.mode + QUARTER;
-	}
-	segment.duration = 0.25;
-	var move = new MoveChain();
+	segment.prop.speed = 0;
+	segment.hand.radius = 1;
+	segment.hand.angle = options.orient;
+	segment.prop.angle = options.orient + OFFSET;
+	segment.duration = 1 / (2*options.harmonics);
 	move.add(segment);
 	move.extend();
-	move.extend();
-	move.extend();
-	move.phaseBy(options.phase);
-	if (options.duration < 1) {
-		move = move.slice(0,(options.duration-0.25)*4);
-	} else if (options.duration > 1) {
-		for (var i = 1; i<options.duration; i+=0.25) {
-			move.add(move.submoves[4*(i-1)].clone());
-		}
+	for (var i = 1; i < options.harmonics; i++) {
+		move.extend();
+		move.tail().hand.angle = unwind(options.orient + i*options.direction*UNIT/options.harmonics);
+		move.tail().prop.angle = unwind(options.orient + OFFSET + i*options.direction*UNIT/options.harmonics);
+		move.extend();
 	}
+	move.align("hand", options.entry);
 	move.build = options.build;
-	move.movename = options.movename;
-	return move;
+        move.movename = options.movename;
+        return move;
 }
 
+MoveFactory.prototype.antibend = function(options) {
+        var move = new MoveChain();
+        move.definition = options;
+        options = this.defaults(options,{
+                build: "antibend",
+                movename: "Linearized Anti-Bend Toroid",
+                entry: THREE,
+                plane: WALL,
+                direction: CLOCKWISE,
+                pitch: FORWARD,
+                harmonics: 4,
+                speed: 1,
+                orient: THREE,
+                pivot_angle: 0,
+                pivot_radius: 0
+        });
+	var segment = new MoveLink();
+	segment.pivot.radius = options.pivot_radius;
+        segment.pivot.plane = options.plane;
+	segment.pivot.angle = options.pivot_angle;
+        segment.pivot.speed = 0;
+	
+	segment.prop.bend = 0;
+	segment.bend_speed = 0.5*options.harmonics*options.pitch*options.speed;
+	segment.prop.plane = options.plane;
+	segment.hand.plane = options.plane;
+	segment.prop.speed = 0;
+	// what a mess!
+	segment.hand.radius = 1 / (2*Math.sin(Math.PI/options.harmonics));
+	segment.hand.angle = options.orient;
+	segment.prop.angle = options.orient - QUARTER*options.direction;
+	segment.duration = 1 / options.harmonics;
+	segment.bend_angle = QUARTER;
+	move.add(segment);
+	for (var i = 1; i < options.harmonics; i++) {
+		move.extend();
+		move.tail().hand.angle = unwind(options.orient + i*options.direction*UNIT/options.harmonics);
+		move.tail().prop.angle = unwind(options.orient + ((i%2==0) ? -1 : 1)*QUARTER*options.direction + i*options.direction*UNIT/options.harmonics);
+	}
+	//move.align("hand", options.entry);
+	move.build = options.build;
+        move.movename = options.movename;
+        return move;
+}
+
+MoveFactory.prototype.tapedeck = function(options) {
+        var move = new MoveChain();
+        move.definition = options;
+        options = this.defaults(options,{
+                build: "tapedeck",
+                movename: "Tapedeck (Linearized Pro-Bend) Toroid",
+                entry: THREE,
+                plane: WALL,
+                direction: CLOCKWISE,
+                pitch: FORWARD,
+                speed: 1,
+                orient: THREE,
+                pivot_angle: 0,
+                pivot_radius: 0,
+		grace: false
+        });
+	var segment = new MoveLink();
+	segment.pivot.radius = options.pivot_radius;
+        segment.pivot.plane = options.plane;
+	segment.pivot.angle = options.pivot_angle;
+        segment.pivot.speed = 0;
+	
+	segment.prop.bend = 0;
+	
+	// until someone invents something new, the four-lobe version is the only one that exists
+	options.harmonics = 4;
+	segment.bend_speed = 0.5*options.harmonics*options.pitch*options.speed;
+	segment.prop.plane = options.plane;
+	segment.hand.plane = options.plane;
+	segment.prop.speed = 0;
+	
+	segment.hand.radius = 1;
+	segment.hand.angle = options.orient;
+	segment.prop.angle = options.orient - QUARTER;
+	segment.duration = 1 / options.harmonics;
+	segment.bend_angle = QUARTER;
+	move.add(segment);
+	for (var i = 1; i < options.harmonics; i++) {
+		move.extend();
+		move.tail().hand.angle = unwind(options.orient + i*options.direction*UNIT/options.harmonics);
+		move.tail().prop.angle = unwind(options.orient + ((i%2==0) ? -1 : 1)*QUARTER*options.direction + i*options.direction*UNIT/options.harmonics);
+	}
+	//move.align("hand", options.entry);
+	move.build = options.build;
+        move.movename = options.movename;
+        return move;
+}
 
 //***obscure moves***
 MoveFactory.prototype.fractal = function(options) {

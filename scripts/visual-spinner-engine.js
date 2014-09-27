@@ -269,6 +269,7 @@ function Prop() {
 			// grip = 0, choke = 1 is basically choking way up on the tether without changing the frame of reference
 	// "bend" is used for plane-bending moves, and represents a bend in the prop's plane relative to the axis of motion
 	this.bend = 0;
+	this.bend_angle = 0;
 	// "axis" tracks the prop's axis of motion, which is useful for rendering .bend and possibly .twist correctly
 		// WALL is an arbitrary default
 	this.axis = WALL;
@@ -497,6 +498,7 @@ Prop.prototype.socket = function(plane) {
 		socket.grip = this.grip;
 		socket.choke = this.choke;
 		socket.bend = this.bend;
+		socket.bend_angle = this.bend_angle;
 		return socket;
 	} else {
 		return this.tail().socket();
@@ -534,6 +536,7 @@ function MoveLink() {
 	this.grip = 0;
 	this.choke = 0;
 	this.bend = 0;
+	this.bend_angle = 0;
 	this.bend_speed = 0;
 	this.bend_acc = 0;
 	// initialize the move
@@ -570,6 +573,7 @@ MoveLink.prototype.spin = function(prop, dummy) {
 		// ???any sense in setting bend plane manually?
 		prop.twist = this.twist;
 		prop.bend = this.bend;
+		prop.bend_angle = this.bend_angle;
 		prop.choke = this.choke;
 		prop.grip = this.grip;
 		prop.axis = this.prop.plane;
@@ -673,6 +677,7 @@ MoveLink.prototype.clone = function() {
 	newlink.grip = this.grip;
 	newlink.choke = this.choke;
 	newlink.bend = this.bend;
+	newlink.bend_angle = this.bend_angle;
 	newlink.bend_speed = this.bend_speed;
 	newlink.bend_acc = this.bend_acc;
 	return newlink;
@@ -793,25 +798,6 @@ MoveLink.prototype.socket = function() {
 	socket.bend = dummy.bend;
 	socket.bend_speed = this.bend_speed + this.duration*this.bend_acc;
 	return socket;
-}
-// this function is just asking for trouble
-// the argument to this function should be a hash of elements paired with moves
-MoveLink.prototype.splice = function(options) {
-	for (var i = HOME; i <= PROP; i++) {
-		if (options[ELEMENTS[i]] !== undefined) {
-			this[ELEMENTS[i]].plane = options[ELEMENTS[i]].plane;
-			this[ELEMENTS[i]].radius = options[ELEMENTS[i]].radius;
-			this[ELEMENTS[i]].angle = options[ELEMENTS[i]].angle;
-			this[ELEMENTS[i]].speed = options[ELEMENTS[i]].speed;
-			this[ELEMENTS[i]].acc = options[ELEMENTS[i]].acc;
-			this[ELEMENTS[i]].linear_angle = options[ELEMENTS[i]].linear_angle;
-			this[ELEMENTS[i]].linear_speed = options[ELEMENTS[i]].linear_speed;
-			this[ELEMENTS[i]].linear_acc = options[ELEMENTS[i]].linear_acc;
-			this[ELEMENTS[i]].rescale = options[ELEMENTS[i]].rescale;
-			this[ELEMENTS[i]].rescale_acc = options[ELEMENTS[i]].rescale_acc;
-		}
-	}
-	return this;
 }
 
 //// A "MoveChain" is a queued tree of MoveLinks and other, nested MoveChains
@@ -1142,32 +1128,6 @@ MoveChain.prototype.phaseBy = function(phase) {
 	return this;
 }
 
-// I might get rid of this function...it's asking for trouble
-// the argument to this function should be a hash of elements paired with moves
-MoveChain.prototype.splice = function(options) {
-	var submoves;
-	for (var i = HOME; i <= PROP; i++) {
-		if (options[ELEMENTS[i]] !== undefined) {
-			//this can't yet drill down multiple levels
-			submoves = options[ELEMENTS[i]].submoves;
-			for (var j = 0; j < submoves.length; j++) {
-				this.submoves[j][ELEMENTS[i]].plane = submoves[j][ELEMENTS[i]].plane;
-				this.submoves[j][ELEMENTS[i]].radius = submoves[j][ELEMENTS[i]].radius;
-				this.submoves[j][ELEMENTS[i]].angle = submoves[j][ELEMENTS[i]].angle;
-				this.submoves[j][ELEMENTS[i]].speed = submoves[j][ELEMENTS[i]].speed;
-				this.submoves[j][ELEMENTS[i]].acc = submoves[j][ELEMENTS[i]].acc;
-				this.submoves[j][ELEMENTS[i]].linear_angle = submoves[j][ELEMENTS[i]].linear_angle;
-				this.submoves[j][ELEMENTS[i]].linear_speed = submoves[j][ELEMENTS[i]].linear_speed;
-				this.submoves[j][ELEMENTS[i]].linear_acc = submoves[j][ELEMENTS[i]].linear_acc;
-				this.submoves[j][ELEMENTS[i]].rescale = submoves[j][ELEMENTS[i]].rescale;
-				this.submoves[j][ELEMENTS[i]].rescale_acc = submoves[j][ELEMENTS[i]].rescale_acc;
-			}
-		}
-	}
-	return this;
-}
-
-
 
 Prop.prototype.modifyTail = function(options) {
 	var tail = this.tail();
@@ -1228,6 +1188,7 @@ MoveLink.prototype.modify = function(options) {
 	this.grip = (options.grip !== undefined) ? options.grip : this.grip;
 	this.choke = (options.choke !== undefined) ? options.choke : this.choke;
 	this.bend = (options.bend !== undefined) ? options.bend : this.bend;
+	this.bend_angle = (options.bend_angle !== undefined) ? options.bend_angle : this.bend_angle;
 	this.bend_speed = (options.bend_speed !== undefined) ? options.bend_speed : this.bend_speed;
 	this.bend_acc = (options.bend_acc !== undefined) ? options.bend_acc : this.bend_acc;
 }
