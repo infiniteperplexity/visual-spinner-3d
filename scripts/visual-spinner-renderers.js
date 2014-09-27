@@ -18,14 +18,23 @@ PhoriaPropRenderer.prototype.render = function(myProp) {
 	mat4.rotate(mat, mat, myProp.prop.azimuth, ZAXIS);
 	mat4.rotate(mat, mat, myProp.prop.zenith, YAXIS);
 	// this should probably go off some kind of unitize, sqrt(x*y),z system...
-	// ???Why is this backwards for half the circuit?
 	if (myProp.axis.nearly(WALL)) {
 		mat4.rotate(mat, mat, -myProp.bend, YAXIS);
-	} else if (myProp.axis.nearly(WHEEL) || myProp.axis.nearly(FLOOR)) {
-		mat4.rotate(mat, mat, myProp.bend, XAXIS);
+	} else if (myProp.axis.nearly(WHEEL)) {
+		if (myProp.prop.azimuth <= 0.5*Math.PI) {
+			mat4.rotate(mat, mat, -myProp.bend, XAXIS);
+		} else {
+			mat4.rotate(mat, mat, myProp.bend, XAXIS);
+		}
+	} else if (myProp.axis.nearly(FLOOR)) {
+		if (myProp.prop.azimuth >= 0.5*Math.PI && myProp.prop.azimuth <= 1.5*Math.PI) {
+			mat4.rotate(mat, mat, myProp.bend, XAXIS);
+		} else {
+			mat4.rotate(mat, mat, -myProp.bend, XAXIS);
+		}
 	}
 	// prop radius should be handled by prop-specific renderers
-	mat4.rotate(mat, mat, myProp.grip, YAXIS);
+	mat4.rotate(mat, mat, myProp.grip, XAXIS);
 	mat4.translate(mat, mat, [0,0,-myProp.choke]);
 	mat4.rotate(mat, mat, myProp.twist, ZAXIS);
 	for (var i=0; i<this.shapes.length; i++) {
@@ -343,17 +352,34 @@ function CanvasPropRenderer(canvas) {
 	this.pixels = 60;
 }
 CanvasPropRenderer.prototype.render = function(myProp) {
+	// does not support grip, choke, or plane-bending;
 	this.context.save();
 	this.context.translate(ORIGINX, ORIGINY);
-	var elements = ["home","pivot","hand"];
-	for (i = 0; i<elements.length; i++) {
-		this.context.rotate(myProp[elements[i]].azimuth);
-		this.context.translate(Math.sin(myProp[elements[i]].zenith)*myProp[elements[i]].radius*this.pixels,0);
-		this.context.rotate(-myProp[elements[i]].azimuth);
+	for (i = HOME; i<=HAND; i++) {
+		this.context.rotate(myProp[ELEMENTS[i]].azimuth);
+		this.context.translate(Math.sin(myProp[ELEMENTS[i]].zenith)*myProp[ELEMENTS[i]].radius*this.pixels,0);
+		this.context.rotate(-myProp[ELEMENTS[i]].azimuth);
 	}
 	this.context.rotate(myProp.prop.azimuth);
-	this.context.translate(myProp.prop.zenith*-myProp.grip.radius*this.pixels,0);
-	// grip rotation does not yet work
+	//if (myProp.axis.nearly(WALL)) {
+	//	mat4.rotate(mat, mat, -myProp.bend, YAXIS);
+	//} else if (myProp.axis.nearly(WHEEL)) {
+	//	if (myProp.prop.azimuth <= 0.5*Math.PI) {
+	//		mat4.rotate(mat, mat, -myProp.bend, XAXIS);
+	//	} else {
+	//		mat4.rotate(mat, mat, myProp.bend, XAXIS);
+	//	}
+	//} else if (myProp.axis.nearly(FLOOR)) {
+	//	if (myProp.prop.azimuth >= 0.5*Math.PI && myProp.prop.azimuth <= 1.5*Math.PI) {
+	//		mat4.rotate(mat, mat, myProp.bend, XAXIS);
+	//	} else {
+	//		mat4.rotate(mat, mat, -myProp.bend, XAXIS);
+	//	}
+	//}
+	// prop radius should be handled by prop-specific renderers
+	//mat4.rotate(mat, mat, myProp.grip, XAXIS);
+	//mat4.translate(mat, mat, [0,0,-myProp.choke]);
+	//mat4.rotate(mat, mat, myProp.twist, ZAXIS);
 	for (var i=0; i<this.shapes.length; i++) {
 		this.shapes[i].draw(this.context, myProp.prop.zenith, myProp.twist, myProp.prop.radius);
 	}
@@ -560,7 +586,7 @@ PropFactory.prototype.hooprender = function(options) {
 		handle_size: 0.025,
 		handle_detail: 6,
 		sections: 18,
-		radius: 0.6,
+		radius: 0.5,
 		wicks: 4,
 		wick_length: 0.4,
 		wick_thickness: 0.001,

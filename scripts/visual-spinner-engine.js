@@ -35,6 +35,7 @@ var STAGGER = 0.5*Math.PI;
 var QUARTER = 0.5*Math.PI;
 var THIRD = (2/3)*Math.PI;
 var DIAMOND = 0;
+var CONTACT = 1;
 var BOX = Math.PI;
 var XAXIS = [1,0,0];
 var ZAXIS = [0,0,1];
@@ -160,6 +161,14 @@ Vector.prototype.nearly = function(vector, delta) {
 		return false;
 	}		
 }
+// Some properties render differently in the WALL plane vs. the WHEEL and FLOOR planes
+// This function tells you, roughly, how WALL-ish the plane is
+Vector.prototype.zsquare = function() {
+	// I think it should be already unitized
+	//var unit = this.unitize();
+	return unit.z*unit.z;
+}
+
 // Convert Vector coordinates to Spherical coordinates
 Vector.prototype.spherify = function() {
 	var r = Math.sqrt(this.x*this.x+this.y*this.y+this.z*this.z);
@@ -505,8 +514,6 @@ function MoveLink() {
 		this.elements[i] = {
 			speed: 0,
 			acc: 0,
-			bend: 0,
-			bend_plane: WALL,
 			linear_angle: THREE,
 			linear_speed: 0,
 			linear_acc: 0,

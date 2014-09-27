@@ -40,9 +40,9 @@ function init() {
 					"1move","2move","3move","4move"];
 	var defaults = ["poi","poi","poi","poi",
 					"wall","wall","wall","wall",
-					"twelve","twelve","twelve","six",
+					"twelve","twelve","six","six",
 					"cw","ccw","cw","ccw",
-					"isop","vcat","hcat","unip"];
+					"antp","vcat","isob","2ant"];
 	for (var i = 0; i<params.length; i++) {
 		var txt = $.urlParam(params[i]);
 		if (txt==0) {txt = defaults[i];}
@@ -355,8 +355,8 @@ Controller.prototype.generateMove = function(n, txt) {
 	} else if (txt=="unip") {
 		move = moves.pendulum({direction: this.spin[n], plane: this.plane[n], extend: 0.5});
 		move.align("hand",this.align[n]);
-	} else if (txt=="isop") {
-		move = moves.pendulum({direction: this.spin[n], spin: ANTISPIN, plane: this.plane[n], extend: 0.5});
+	} else if (txt=="antp") {
+		move = moves.antipendulum({direction: this.spin[n], plane: this.plane[n]});
 		move.align("hand",this.align[n]);
 	} else if (txt=="pext") {
 		move = moves.isolation({pivot: this.align[n], offset: 0, direction: this.spin[n], plane: this.plane[n]});
@@ -402,14 +402,20 @@ Controller.prototype.generateMove = function(n, txt) {
 		move = moves.toroid({entry: this.align[n], pitch: BACKWARD, harmonics: 4, direction: this.spin[n], bend: ISOBEND, plane: this.plane[n]});
 	} else if (txt=="bant") {
 		move = moves.toroid({entry: this.align[n], pitch: BACKWARD, harmonics: 2, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
+	} else if (txt=="1ant") {
+		move = moves.toroid({orient: this.align[n], entry: this.align[n], harmonics: 1, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
 	} else if (txt=="2ant") {
-		move = moves.toroid({entry: this.align[n], harmonics: 2, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
+		move = moves.toroid({orient: this.align[n], entry: this.align[n], harmonics: 2, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
+	} else if (txt=="3ant") {
+		move = moves.toroid({orient: this.align[n], entry: this.align[n], harmonics: 3, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
 	} else if (txt=="4ant") {
-		move = moves.toroid({entry: this.align[n], harmonics: 4, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
+		move = moves.toroid({orient: this.align[n], entry: this.align[n], harmonics: 4, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
 	} else if (txt=="6ant") {
-		move = moves.toroid({entry: this.align[n], harmonics: 6, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
+		move = moves.toroid({orient: this.align[n], entry: this.align[n], harmonics: 6, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
+	} else if (txt=="1pro") {
+		move = moves.toroid({orient: this.align[n], entry: this.align[n], harmonics: 1, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
 	} else if (txt=="2pro") {
-		move = moves.toroid({entry: this.align[n], harmonics: 2, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
+		move = moves.toroid({orient: this.align[n], entry: this.align[n], harmonics: 2, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
 	} else if (txt=="bpro") {
 		move = moves.toroid({entry: this.align[n], pitch: BACKWARD, harmonics: 2, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
 	} else if (txt=="4pro") {
@@ -439,7 +445,8 @@ Controller.prototype.shuffle = function() {
 } 
 </script>
 <body onload="init();">
-<p>Note: Plane bending currently displays wrong for moves in the wheel and floor planes, and in 2D.  Research continues.</p>
+<p>Improved toroids, working in wall, wheel, and floor planes!</p>
+<p>Note: 2D viewing no longer fully supported.</p>
 <a href="http://infiniteperplexity.github.io/visual-spinner-3d/comborific.html">See Drex's "combo-rific" video modeled in VisualSpinner!</a><br>
 <a href="http://infiniteperplexity.github.io/visual-spinner-3d/flower_transitions.html">See a demo of anti-spin flower transitions</a>
 <table>
@@ -658,17 +665,20 @@ First Move:
 		<option value="vcat">Vertical Cat-Eye</option>
 		<option value="hcat">Horizontal Cat-Eye</option>
 		<option value="unip">Unit Pendulum</option>
-		<option value="isop">Iso-Pendulum</option>
+		<option value="antp">Anti-Pendulum</option>
 		<option value="hlex">Horizontal Linear Extension</option>
 		<option value="vlex">Vertical Linear Extension</option>
 		<option value="hlis">Horizontal Linear Isolation</option>
 		<option value="vlis">Vertical Linear Isolation</option>
-		<option value="isob">Four-Lobe Iso-bend Toroid</option>
-		<option value="biso">Backward Iso-bend Toroid</option>
-		<option value="2ant">(2 Harmonic) Anti-Bend Toroid</option>
-		<option value="bant">Backward Anti-Bend Toroid</option>
-		<option value="2pro">(2 Harmonic) Pro-Bend Toroid</option>
-		<option value="bpro">Backward Pro-Bend Toroid</option>
+		<option value="2isb">"Two-Lobe" Iso-bend Toroid</option>
+		<option value="isob">"Four-Lobe" Iso-bend Toroid</option>
+		<option value="1ant">"Triangle" Anti-Bend Toroid</option>
+		<option value="2ant">"Diamond" Anti-Bend Toroid</option>
+		<option value="3ant">"Pentagon" Anti-Bend Toroid</option>
+		<option value="4ant">"Hexagon" Anti-Bend Toroid</option>
+		<option value="6ant">"Four-Lobe" Anti-Bend Toroid</option>
+		<option value="1pro">"Tapedeck" Pro-Bend Toroid</option>
+		<option value="2pro">"Four-Lobe" Pro-Bend Toroid</option>
 		<option value="idia">Zan's Diamond (In-Spin)</option>
 		<option value="adia">Zan's Diamond (Anti-Spin)</option>
 	</select>
@@ -707,17 +717,20 @@ Second Move:
 		<option value="vcat">Vertical Cat-Eye</option>
 		<option value="hcat">Horizontal Cat-Eye</option>
 		<option value="unip">Unit Pendulum</option>
-		<option value="isop">Iso-Pendulum</option>
+		<option value="antp">Anti-Pendulum</option>
 		<option value="hlex">Horizontal Linear Extension</option>
 		<option value="vlex">Vertical Linear Extension</option>
 		<option value="hlis">Horizontal Linear Isolation</option>
 		<option value="vlis">Vertical Linear Isolation</option>
-		<option value="isob">Four-Lobe Iso-bend Toroid</option>
-		<option value="biso">Backward Iso-bend Toroid</option>
-		<option value="2ant">(2 Harmonic) Anti-Bend Toroid</option>
-		<option value="bant">Backward Anti-Bend Toroid</option>
-		<option value="2pro">(2 Harmonic) Pro-Bend Toroid</option>
-		<option value="bpro">Backward Pro-Bend Toroid</option>
+		<option value="2isb">"Two-Lobe" Iso-bend Toroid</option>
+		<option value="isob">"Four-Lobe" Iso-bend Toroid</option>
+		<option value="1ant">"Triangle" Anti-Bend Toroid</option>
+		<option value="2ant">"Diamond" Anti-Bend Toroid</option>
+		<option value="3ant">"Pentagon" Anti-Bend Toroid</option>
+		<option value="4ant">"Hexagon" Anti-Bend Toroid</option>
+		<option value="6ant">"Four-Lobe" Anti-Bend Toroid</option>
+		<option value="1pro">"Tapedeck" Pro-Bend Toroid</option>
+		<option value="2pro">"Four-Lobe" Pro-Bend Toroid</option>
 		<option value="idia">Zan's Diamond (In-Spin)</option>
 		<option value="adia">Zan's Diamond (Anti-Spin)</option>
 </td>
@@ -754,17 +767,20 @@ Third Move:
 		<option value="vcat">Vertical Cat-Eye</option>
 		<option value="hcat">Horizontal Cat-Eye</option>
 		<option value="unip">Unit Pendulum</option>
-		<option value="isop">Iso-Pendulum</option>
+		<option value="antp">Anti-Pendulum</option>
 		<option value="hlex">Horizontal Linear Extension</option>
 		<option value="vlex">Vertical Linear Extension</option>
 		<option value="hlis">Horizontal Linear Isolation</option>
 		<option value="vlis">Vertical Linear Isolation</option>
-		<option value="isob">Four-Lobe Iso-bend Toroid</option>
-		<option value="biso">Backward Iso-bend Toroid</option>
-		<option value="2ant">(2 Harmonic) Anti-Bend Toroid</option>
-		<option value="bant">Backward Anti-Bend Toroid</option>
-		<option value="2pro">(2 Harmonic) Pro-Bend Toroid</option>
-		<option value="bpro">Backward Pro-Bend Toroid</option>
+		<option value="2isb">"Two-Lobe" Iso-bend Toroid</option>
+		<option value="isob">"Four-Lobe" Iso-bend Toroid</option>
+		<option value="1ant">"Triangle" Anti-Bend Toroid</option>
+		<option value="2ant">"Diamond" Anti-Bend Toroid</option>
+		<option value="3ant">"Pentagon" Anti-Bend Toroid</option>
+		<option value="4ant">"Hexagon" Anti-Bend Toroid</option>
+		<option value="6ant">"Four-Lobe" Anti-Bend Toroid</option>
+		<option value="1pro">"Tapedeck" Pro-Bend Toroid</option>
+		<option value="2pro">"Four-Lobe" Pro-Bend Toroid</option>
 		<option value="idia">Zan's Diamond (In-Spin)</option>
 		<option value="adia">Zan's Diamond (Anti-Spin)</option>
 	</select>
@@ -802,17 +818,20 @@ Fourth Move:
 		<option value="vcat">Vertical Cat-Eye</option>
 		<option value="hcat">Horizontal Cat-Eye</option>
 		<option value="unip">Unit Pendulum</option>
-		<option value="isop">Iso-Pendulum</option>
+		<option value="antp">Anti-Pendulum</option>
 		<option value="hlex">Horizontal Linear Extension</option>
 		<option value="vlex">Vertical Linear Extension</option>
 		<option value="hlis">Horizontal Linear Isolation</option>
 		<option value="vlis">Vertical Linear Isolation</option>
-		<option value="isob">Four-Lobe Iso-bend Toroid</option>
-		<option value="biso">Backward Iso-bend Toroid</option>
-		<option value="2ant">(2 Harmonic) Anti-Bend Toroid</option>
-		<option value="bant">Backward Anti-Bend Toroid</option>
-		<option value="2pro">(2 Harmonic) Pro-Bend Toroid</option>
-		<option value="bpro">Backward Pro-Bend Toroid</option>
+		<option value="2isb">"Two-Lobe" Iso-bend Toroid</option>
+		<option value="isob">"Four-Lobe" Iso-bend Toroid</option>
+		<option value="1ant">"Triangle" Anti-Bend Toroid</option>
+		<option value="2ant">"Diamond" Anti-Bend Toroid</option>
+		<option value="3ant">"Pentagon" Anti-Bend Toroid</option>
+		<option value="4ant">"Hexagon" Anti-Bend Toroid</option>
+		<option value="6ant">"Four-Lobe" Anti-Bend Toroid</option>
+		<option value="1pro">"Tapedeck" Pro-Bend Toroid</option>
+		<option value="2pro">"Four-Lobe" Pro-Bend Toroid</option>
 		<option value="idia">Zan's Diamond (In-Spin)</option>
 		<option value="adia">Zan's Diamond (Anti-Spin)</option>
 	</select>
