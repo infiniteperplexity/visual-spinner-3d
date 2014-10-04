@@ -208,9 +208,9 @@ Spherical.prototype.vectorize = function() {
 //// Generally helpful geometry methods
 // Make an angle unique
 function unwind(angle) {
-	while (angle<0) {angle+=UNIT;}
-	angle%UNIT;
-	return angle;
+        while (angle<0) {angle+=UNIT;}
+        while (angle>UNIT) {angle = angle%UNIT;}
+        return angle;
 }
 // Check whether two floating point values are almost equal
 function nearly(n1,n2, delta) {

@@ -800,6 +800,7 @@ MoveFactory.prototype.isobend = function(options) {
                 pitch: FORWARD,
                 harmonics: 4,
                 speed: 1,
+		mode: DIAMOND,
                 orient: THREE,
                 pivot_angle: 0,
                 pivot_radius: 0
@@ -828,6 +829,10 @@ MoveFactory.prototype.isobend = function(options) {
 		move.extend();
 	}
 	move.align("hand", options.entry);
+	if (options.mode == DIAMOND) {
+		//does this require fixing the definition?
+		move.phaseBy(1);
+	}
 	move.build = options.build;
         move.movename = options.movename;
         return move;
@@ -846,37 +851,104 @@ MoveFactory.prototype.antibend = function(options) {
                 harmonics: 4,
                 speed: 1,
                 orient: THREE,
+		mode: DIAMOND,
                 pivot_angle: 0,
                 pivot_radius: 0
         });
-	var segment = new MoveLink();
-	segment.pivot.radius = options.pivot_radius;
+        var segment = new MoveLink();
+        segment.pivot.radius = options.pivot_radius;
         segment.pivot.plane = options.plane;
-	segment.pivot.angle = options.pivot_angle;
+        segment.pivot.angle = options.pivot_angle;
         segment.pivot.speed = 0;
-	
-	segment.prop.bend = 0;
-	segment.bend_speed = 0.5*options.harmonics*options.pitch*options.speed;
-	segment.prop.plane = options.plane;
-	segment.hand.plane = options.plane;
-	segment.prop.speed = 0;
-	// what a mess!
-	segment.hand.radius = 1 / (2*Math.sin(Math.PI/options.harmonics));
-	segment.hand.angle = options.orient;
-	segment.prop.angle = options.orient - QUARTER*options.direction;
-	segment.duration = 1 / options.harmonics;
-	segment.bend_angle = QUARTER;
-	move.add(segment);
-	for (var i = 1; i < options.harmonics; i++) {
-		move.extend();
-		move.tail().hand.angle = unwind(options.orient + i*options.direction*UNIT/options.harmonics);
-		move.tail().prop.angle = unwind(options.orient + ((i%2==0) ? -1 : 1)*QUARTER*options.direction + i*options.direction*UNIT/options.harmonics);
+        var orient = options.orient;
+	var entry = options.entry;
+	if (options.mode==DIAMOND) {
+		orient += SPLIT*options.direction/options.harmonics;
+		entry += SPLIT*options.direction/options.harmonics;
 	}
-	//move.align("hand", options.entry);
-	move.build = options.build;
+        segment.prop.bend = 0;
+        segment.bend_speed = 0.5*options.harmonics*options.pitch*options.speed;
+        segment.prop.plane = options.plane;
+        segment.hand.plane = options.plane;
+        segment.prop.speed = 0;
+        // what a mess!
+        if (options.harmonics === 3) {
+                segment.hand.radius = 1/Math.sqrt(3);
+        } else if (options.harmonics === 4) {
+                segment.hand.radius = 1;
+        } else if (options.harmonics === 5) {
+                segment.hand.radius = 4/3;
+        } else if (options.harmonics === 6) {
+                segment.hand.radius = 7/4;
+        }
+        segment.hand.angle = orient;
+        segment.prop.angle = orient - QUARTER*options.direction;
+        segment.duration = 1 / options.harmonics;
+        segment.bend_angle = QUARTER;
+        move.add(segment);
+        for (var i = 1; i < options.harmonics; i++) {
+                move.extend();
+                move.tail().hand.angle = unwind(orient + i*options.direction*UNIT/options.harmonics);
+                move.tail().prop.angle = unwind(orient + ((i%2==0) ? -1 : 1)*QUARTER*options.direction + i*options.direction*UNIT/options.harmonics);
+        }
+        move.align("hand", entry);
+        move.build = options.build;
         move.movename = options.movename;
         return move;
 }
+
+MoveFactory.prototype.pentagram = function(options) {
+        var move = new MoveChain();
+        move.definition = options;
+        options = this.defaults(options,{
+                build: "pentagram",
+                movename: "Linearized Anti-Bend Toroid",
+                entry: THREE,
+                plane: WALL,
+                direction: CLOCKWISE,
+                pitch: FORWARD,
+                harmonics: 4,
+                speed: 1,
+                orient: THREE,
+		mode: DIAMOND,
+                pivot_angle: 0,
+                pivot_radius: 0
+        });
+        var segment = new MoveLink();
+        segment.pivot.radius = options.pivot_radius;
+        segment.pivot.plane = options.plane;
+        segment.pivot.angle = options.pivot_angle;
+        segment.pivot.speed = 0;
+        var orient = options.orient;
+	var entry = options.entry;
+	if (options.mode==DIAMOND) {
+		orient += SPLIT*options.direction/options.harmonics;
+		entry += SPLIT*options.direction/options.harmonics;
+	}
+        segment.prop.bend = 0;
+        segment.bend_speed = 0.5*options.harmonics*options.pitch*options.speed;
+        segment.prop.plane = options.plane;
+        segment.hand.plane = options.plane;
+        segment.prop.speed = 0;
+        // what a mess!
+	segment.hand.radius = 0.35;
+
+        segment.hand.angle = orient;
+        segment.prop.angle = orient - QUARTER*options.direction;
+        segment.duration = 1 / options.harmonics;
+        segment.bend_angle = QUARTER;
+        move.add(segment);
+        for (var i = 1; i < options.harmonics; i++) {
+                move.extend();
+                move.tail().hand.angle = unwind(orient + 2*i*options.direction*UNIT/options.harmonics);
+                move.tail().prop.angle = unwind(orient + ((i%2==0) ? -1 : 1)*QUARTER*options.direction + 2*i*options.direction*UNIT/options.harmonics);
+        }
+        move.align("hand", entry);
+        move.build = options.build;
+        move.movename = options.movename;
+        return move;
+}
+
 
 MoveFactory.prototype.tapedeck = function(options) {
         var move = new MoveChain();
@@ -891,37 +963,43 @@ MoveFactory.prototype.tapedeck = function(options) {
                 speed: 1,
                 orient: THREE,
                 pivot_angle: 0,
-                pivot_radius: 0,
-		grace: false
+                pivot_radius: 0
         });
-	var segment = new MoveLink();
-	segment.pivot.radius = options.pivot_radius;
+        var segment = new MoveLink();
+        segment.pivot.radius = options.pivot_radius;
         segment.pivot.plane = options.plane;
-	segment.pivot.angle = options.pivot_angle;
+        segment.pivot.angle = options.pivot_angle;
         segment.pivot.speed = 0;
-	
-	segment.prop.bend = 0;
-	
-	// until someone invents something new, the four-lobe version is the only one that exists
-	options.harmonics = 4;
-	segment.bend_speed = 0.5*options.harmonics*options.pitch*options.speed;
-	segment.prop.plane = options.plane;
-	segment.hand.plane = options.plane;
-	segment.prop.speed = 0;
-	
-	segment.hand.radius = 1;
-	segment.hand.angle = options.orient;
-	segment.prop.angle = options.orient - QUARTER;
-	segment.duration = 1 / options.harmonics;
-	segment.bend_angle = QUARTER;
-	move.add(segment);
-	for (var i = 1; i < options.harmonics; i++) {
+       
+        // until someone invents something new, the four-lobe version is the only one that exists
+        options.harmonics = 4;
+        segment.bend = 0;
+        segment.bend_angle = QUARTER;
+        segment.prop.plane = options.plane;
+        segment.hand.plane = options.plane;
+        segment.hand.radius = 1;
+        segment.hand.angle = options.orient;
+        segment.prop.angle = options.orient - options.direction*QUARTER;
+        segment.duration = 0.5 / options.harmonics;
+       
+        segment.prop.speed = 0.5*options.direction*options.harmonics*options.pitch*options.speed;
+        segment.bend_speed = 0;
+        move.add(segment);
+	move.extend();
+        for (var i = 1; i < options.harmonics; i++) {
+                move.extend();
+                segment = move.tail();
+                segment.bend = 0;
+                segment.hand.angle = unwind(options.orient + i*options.direction*UNIT/options.harmonics);
+                segment.prop.angle = segment.hand.angle - options.direction*QUARTER;
+                segment.prop.speed = (i%2==0) ? 0.5*options.direction*options.harmonics*options.pitch*options.speed : 0;
+                segment.bend_speed = (i%2==1) ? 0.5*options.direction*options.harmonics*options.pitch*options.speed : 0;
+		if (i==3) {segment.bend_speed = -segment.bend_speed;}
 		move.extend();
-		move.tail().hand.angle = unwind(options.orient + i*options.direction*UNIT/options.harmonics);
-		move.tail().prop.angle = unwind(options.orient + ((i%2==0) ? -1 : 1)*QUARTER*options.direction + i*options.direction*UNIT/options.harmonics);
 	}
-	//move.align("hand", options.entry);
-	move.build = options.build;
+        move.align("hand", options.entry);
+	move.phaseBy(1);
+        move.build = options.build;
         move.movename = options.movename;
         return move;
 }

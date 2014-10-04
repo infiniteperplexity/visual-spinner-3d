@@ -41,8 +41,8 @@ function init() {
 	var defaults = ["poi","poi","poi","poi",
 					"wall","wall","wall","wall",
 					"twelve","twelve","six","six",
-					"cw","ccw","cw","ccw",
-					"antp","vcat","isob","2ant"];
+					"cw","cw","cw","cw",
+					"isob","lisb","4ant","lnt4"];
 	for (var i = 0; i<params.length; i++) {
 		var txt = $.urlParam(params[i]);
 		if (txt==0) {txt = defaults[i];}
@@ -396,6 +396,8 @@ Controller.prototype.generateMove = function(n, txt) {
 	} else if (txt=="zbnd") {
 		move = moves.toroid({entry: this.align[n], harmonics: 4, direction: this.spin[n], bend: 0, plane: this.plane[n]});
 		move.align("hand",this.align[n]);
+	} else if (txt=="2isb") {
+		move = moves.toroid({entry: this.align[n], harmonics: 2, direction: this.spin[n], bend: ISOBEND, plane: this.plane[n]});
 	} else if (txt=="isob") {
 		move = moves.toroid({entry: this.align[n], harmonics: 4, direction: this.spin[n], bend: ISOBEND, plane: this.plane[n]});
 	} else if (txt=="biso") {
@@ -422,8 +424,22 @@ Controller.prototype.generateMove = function(n, txt) {
 		move = moves.toroid({entry: this.align[n], harmonics: 4, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
 	} else if (txt=="6pro") {
 		move = moves.toroid({entry: this.align[n], harmonics: 6, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
+	} else if (txt=="lisb") {
+		move = moves.isobend({orient: this.align[n], entry: this.align[n], harmonics: 4, direction: this.spin[n],  plane: this.plane[n]});
+	} else if (txt=="lnt3") {
+		move = moves.antibend({orient: this.align[n], entry: this.align[n], harmonics: 3, direction: this.spin[n],  plane: this.plane[n]});
+	} else if (txt=="lnt4") {
+		move = moves.antibend({orient: this.align[n], entry: this.align[n] , harmonics: 4, direction: this.spin[n],  plane: this.plane[n]});
+	} else if (txt=="lnt5") {
+		move = moves.antibend({orient: this.align[n], entry: this.align[n], harmonics: 5, direction: this.spin[n],  plane: this.plane[n]});
+	} else if (txt=="lnt6") {
+		move = moves.antibend({orient: this.align[n], entry: this.align[n], harmonics: 6, direction: this.spin[n],  plane: this.plane[n]});
+	} else if (txt=="pent") {
+		move = moves.pentagram({orient: this.align[n], entry: this.align[n], harmonics: 5, direction: this.spin[n],  plane: this.plane[n]});
 	} else if (txt=="n3bd") {
 		move = moves.toroid({entry: this.align[n], harmonics: 2, direction: this.spin[n], bend: -3, plane: this.plane[n]});
+	} else if (txt=="tape") {
+		move = moves.tapedeck({orient: this.align[n], entry: this.align[n], direction: this.spin[n],  plane: this.plane[n]});
 	} else if (txt=="idia") {
 		move = moves.diamond({entry: this.align[n], direction: this.spin[n], spin: INSPIN, plane: this.plane[n]});
 	} else if (txt=="adia") {
@@ -445,7 +461,7 @@ Controller.prototype.shuffle = function() {
 } 
 </script>
 <body onload="init();">
-<p>Improved toroids, working in wall, wheel, and floor planes!</p>
+<p>Toroids now available in both their "pure" mathematical forms and their more common "linearized" forms.</p>
 <p>Note: 2D viewing no longer fully supported.</p>
 <a href="http://infiniteperplexity.github.io/visual-spinner-3d/comborific.html">See Drex's "combo-rific" video modeled in VisualSpinner!</a><br>
 <a href="http://infiniteperplexity.github.io/visual-spinner-3d/flower_transitions.html">See a demo of anti-spin flower transitions</a>
@@ -672,12 +688,19 @@ First Move:
 		<option value="vlis">Vertical Linear Isolation</option>
 		<option value="2isb">"Two-Lobe" Iso-bend Toroid</option>
 		<option value="isob">"Four-Lobe" Iso-bend Toroid</option>
+		<option value="lisb">Linearized Iso-bend Toroid</option>
 		<option value="1ant">"Triangle" Anti-Bend Toroid</option>
+		<option value="lnt3">"Triangle" Linearized Toroid</option>
 		<option value="2ant">"Diamond" Anti-Bend Toroid</option>
+		<option value="lnt4">"Diamond" Linearized Toroid</option>
 		<option value="3ant">"Pentagon" Anti-Bend Toroid</option>
+		<option value="lnt5">"Pentagon" Linearized Toroid</option>
 		<option value="4ant">"Hexagon" Anti-Bend Toroid</option>
+		<option value="lnt6">"Hexagon" Linearized Toroid</option>
+		<option value="pent">"Pentagram" Linearized Toroid</option>
 		<option value="6ant">"Four-Lobe" Anti-Bend Toroid</option>
 		<option value="1pro">"Tapedeck" Pro-Bend Toroid</option>
+		<option value="tape">"Tapedeck" Linearized Toroid</option>
 		<option value="2pro">"Four-Lobe" Pro-Bend Toroid</option>
 		<option value="idia">Zan's Diamond (In-Spin)</option>
 		<option value="adia">Zan's Diamond (Anti-Spin)</option>
@@ -724,12 +747,19 @@ Second Move:
 		<option value="vlis">Vertical Linear Isolation</option>
 		<option value="2isb">"Two-Lobe" Iso-bend Toroid</option>
 		<option value="isob">"Four-Lobe" Iso-bend Toroid</option>
+		<option value="lisb">Linearized Iso-bend Toroid</option>
 		<option value="1ant">"Triangle" Anti-Bend Toroid</option>
+		<option value="lnt3">"Triangle" Linearized Toroid</option>
 		<option value="2ant">"Diamond" Anti-Bend Toroid</option>
+		<option value="lnt4">"Diamond" Linearized Toroid</option>
 		<option value="3ant">"Pentagon" Anti-Bend Toroid</option>
+		<option value="lnt5">"Pentagon" Linearized Toroid</option>
 		<option value="4ant">"Hexagon" Anti-Bend Toroid</option>
+		<option value="lnt6">"Hexagon" Linearized Toroid</option>
+		<option value="pent">"Pentagram" Linearized Toroid</option>
 		<option value="6ant">"Four-Lobe" Anti-Bend Toroid</option>
 		<option value="1pro">"Tapedeck" Pro-Bend Toroid</option>
+		<option value="tape">"Tapedeck" Linearized Toroid</option>
 		<option value="2pro">"Four-Lobe" Pro-Bend Toroid</option>
 		<option value="idia">Zan's Diamond (In-Spin)</option>
 		<option value="adia">Zan's Diamond (Anti-Spin)</option>
@@ -774,12 +804,19 @@ Third Move:
 		<option value="vlis">Vertical Linear Isolation</option>
 		<option value="2isb">"Two-Lobe" Iso-bend Toroid</option>
 		<option value="isob">"Four-Lobe" Iso-bend Toroid</option>
+		<option value="lisb">Linearized Iso-bend Toroid</option>
 		<option value="1ant">"Triangle" Anti-Bend Toroid</option>
+		<option value="lnt3">"Triangle" Linearized Toroid</option>
 		<option value="2ant">"Diamond" Anti-Bend Toroid</option>
+		<option value="lnt4">"Diamond" Linearized Toroid</option>
 		<option value="3ant">"Pentagon" Anti-Bend Toroid</option>
+		<option value="lnt5">"Pentagon" Linearized Toroid</option>
 		<option value="4ant">"Hexagon" Anti-Bend Toroid</option>
+		<option value="lnt6">"Hexagon" Linearized Toroid</option>
+		<option value="pent">"Pentagram" Linearized Toroid</option>
 		<option value="6ant">"Four-Lobe" Anti-Bend Toroid</option>
 		<option value="1pro">"Tapedeck" Pro-Bend Toroid</option>
+		<option value="tape">"Tapedeck" Linearized Toroid</option>
 		<option value="2pro">"Four-Lobe" Pro-Bend Toroid</option>
 		<option value="idia">Zan's Diamond (In-Spin)</option>
 		<option value="adia">Zan's Diamond (Anti-Spin)</option>
@@ -793,7 +830,7 @@ Fourth Move:
 <form></form>
 <td colspan="3">
 	<select id="4move" onchange="controller.updateParameters()">
-		<option value="stat">Static Spin</option>
+				<option value="stat">Static Spin</option>
 		<option value="2btw">Two-Beat Static Spin</option>
 		<option value="supr">Superman</option>
 		<option value="xtsn">Extension</option>
@@ -825,12 +862,19 @@ Fourth Move:
 		<option value="vlis">Vertical Linear Isolation</option>
 		<option value="2isb">"Two-Lobe" Iso-bend Toroid</option>
 		<option value="isob">"Four-Lobe" Iso-bend Toroid</option>
+		<option value="lisb">Linearized Iso-bend Toroid</option>
 		<option value="1ant">"Triangle" Anti-Bend Toroid</option>
+		<option value="lnt3">"Triangle" Linearized Toroid</option>
 		<option value="2ant">"Diamond" Anti-Bend Toroid</option>
+		<option value="lnt4">"Diamond" Linearized Toroid</option>
 		<option value="3ant">"Pentagon" Anti-Bend Toroid</option>
+		<option value="lnt5">"Pentagon" Linearized Toroid</option>
 		<option value="4ant">"Hexagon" Anti-Bend Toroid</option>
+		<option value="lnt6">"Hexagon" Linearized Toroid</option>
+		<option value="pent">"Pentagram" Linearized Toroid</option>
 		<option value="6ant">"Four-Lobe" Anti-Bend Toroid</option>
 		<option value="1pro">"Tapedeck" Pro-Bend Toroid</option>
+		<option value="tape">"Tapedeck" Linearized Toroid</option>
 		<option value="2pro">"Four-Lobe" Pro-Bend Toroid</option>
 		<option value="idia">Zan's Diamond (In-Spin)</option>
 		<option value="adia">Zan's Diamond (Anti-Spin)</option>
