@@ -1428,8 +1428,11 @@ MoveFactory.prototype.generic = function(options) {
 		hand_rescale_acc: 0,
 		prop_rescale_acc: 0,
 		twist: null,
+		twist_speed: 0,
 		grip: 0,
+		grip_speed: 0,
 		choke: 0,
+		choke_speed: 0, 
 		bend: 0,
 		bend_speed: 0,
 		bend_acc: 0,
@@ -1477,8 +1480,11 @@ MoveFactory.prototype.generic = function(options) {
 	segment.prop.rescale = options.prop_rescale;
 	segment.prop.rescale_acc = options.prop_rescale_acc;
 	segment.twist = options.twist;
+	segment.twist_speed = options.twist_speed;
 	segment.grip = options.grip;
+	segment.grip_speed = options.grip_speed;
 	segment.choke = options.choke;
+	segment.choke_speed = options.choke_speed;
 	segment.bend = options.bend;
 	segment.bend_speed = options.bend_speed;
 	segment.bend_acc = options.bend_acc;

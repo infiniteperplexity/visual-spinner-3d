@@ -430,8 +430,9 @@ Prop.prototype.render = function() {
 	this.renderer.render(this);
 }
 // The optional "fixed" parameter allows you to choose whether the Prop respects the Move's starting position
-Prop.prototype.addMove = function(myMove, fix) {
-	if (fix!==true && fix!=="fixed" && fix!=="fix") {
+//I'm replacing this with the "abrupt" property...eventually refactor it out
+Prop.prototype.addMove = function(myMove) {
+	if (this.abrupt == false) {
 		if (this.move.submoves.length>0) {
 			myMove.adjust(this.move.tail());
 		} else {
@@ -439,9 +440,6 @@ Prop.prototype.addMove = function(myMove, fix) {
 		}
 	}
 	this.move.add(myMove);
-}
-Prop.prototype.addFixedMove = function(move) {
-	this.addMove(move,true);
 }
 
 Prop.prototype.emptyMoves = function() {
@@ -533,8 +531,11 @@ function MoveLink() {
 	this.prop.radius = 1;
 	this.duration = 1;
 	this.twist = null;
+	this.twist_speed = 0;
 	this.grip = 0;
+	this.grip_speed = 0; 
 	this.choke = 0;
+	this.choke_speed = 0; 
 	this.bend = 0;
 	this.bend_angle = 0;
 	this.bend_speed = 0;
@@ -545,6 +546,8 @@ function MoveLink() {
 	this.started = false;
 	// by default, the MoveLink is not removed from the parent queue when finished
 	this.oneshot = false;
+	// determines the default reorientation behavior of the move when added to a Prop
+	this.abrupt = false; 
 }
 // A MoveLink is responsible for directly spinning a Prop
 MoveLink.prototype.spin = function(prop, dummy) {
@@ -573,7 +576,14 @@ MoveLink.prototype.spin = function(prop, dummy) {
 		// ???any sense in setting bend plane manually?
 		prop.twist = this.twist;
 		prop.bend = this.bend;
-		prop.bend_angle = this.bend_angle;
+		prop.bend_angle = this.bend_angle;Spherical.prototype.setRadiusAnglePlane = function(radius, angle, plane) {
+	this.radius = radius;
+	if (plane === undefined) {plane = WALL;}
+	var v = plane.reference().rotate(angle,plane).unitize();
+	this.zenith = unwind(Math.acos(v.z/Math.sqrt(v.x*v.x+v.y*v.y+v.z*v.z)));
+	this.azimuth = unwind(Math.atan2(v.y,v.x));;
+	return this;
+}
 		prop.choke = this.choke;
 		prop.grip = this.grip;
 		prop.axis = this.prop.plane;
@@ -600,6 +610,9 @@ MoveLink.prototype.spin = function(prop, dummy) {
 	//update the prop axis of the current move
 	v = this.bend_speed + this.bend_acc*this.t/BEAT;
 	prop.bend = unwind(prop.bend+v*SPEED);
+	prop.twist = unwind(prop.twist+this.twist_speed);
+	prop.grip = unwind(prop.grip+this.grip_speed);
+	prop.choke += this.choke_speed; 
 	this.t+=1;
 	if (this.t >= this.duration*BEAT) {
 		this.finished = true;
@@ -673,13 +686,16 @@ MoveLink.prototype.clone = function() {
 		newlink.elements[i].rescale_acc = this.elements[i].rescale_acc;
 	}
 	newlink.duration = this.duration;
-	newlink.twist = this.twist;
-	newlink.grip = this.grip;
-	newlink.choke = this.choke;
 	newlink.bend = this.bend;
 	newlink.bend_angle = this.bend_angle;
 	newlink.bend_speed = this.bend_speed;
 	newlink.bend_acc = this.bend_acc;
+	newlink.twist = this.twist;
+	newlink.twist_speed = this.twist_speed;
+	newlink.grip = this.grip;
+	newlink.grip_speed = this.grip_speed;
+	newlink.choke = this.choke;
+	newlink.choke_speed = this.choke_speed; 
 	return newlink;
 }
 
@@ -715,6 +731,9 @@ MoveLink.prototype.socket = function() {
 	}
 	socket.bend = unwind(this.bend + this.bend_speed*this.duration);
 	socket.bend_speed = this.bend_speed + this.bend_acc*this.duration;
+	socket.twist = unwind(this.twist + this.twist_speed*this.duration);
+	socket.grip = unwind(this.grip + this.grip_speed*this.duration);
+	socket.choke = this.choke + this.choke_speed*this.duration; 
 	return socket;
 }
 
@@ -737,15 +756,28 @@ MoveLink.prototype.getVector = function(element) {
 	var e;
 	var v;
 	// skip HOME
+	var radius;
+	var angle;
+	var plane;
 	for (var i = PIVOT; i<=element; i++) {
 		e = new Spherical();
-		e.setRadiusAnglePlane(this.elements[i].radius, this.elements[i].angle, this.elements[i].plane);
+		if (i==HAND) {
+			// account for bend, bend_angle, grip, twist, and choke
+			radius = this.elements[i].radius;
+			angle = this.elements[i].angle;
+			plane = this.elements[i] = plane;
+		} else {
+			radius = this.elements[i].radius;
+			angle = this.elements[i].angle;
+			plane = this.elements[i] = plane;
+		}
+		//e.setRadiusAnglePlane(this.elements[i].radius, this.elements[i].angle, this.elements[i].plane);
+		e.setRadiusAnglePlane(radius, angle, plane);
 		v = e.vectorize();
 		x += v.x;
 		y += v.y;
 		z += v.z;
 	}
-	// should this account for grip, twist, bend, and choke?
 	return (new Vector(x,y,z));
 }
 MoveLink.prototype.handVector = function() {
@@ -809,6 +841,7 @@ function MoveChain() {
 	this.oneshot = false;
 	this.started = false;
 	this.finished = false;
+	this.abrupt = false; 
 	this.submoves = [];
 }
 
@@ -885,7 +918,7 @@ MoveChain.prototype.split = function(t) {
 	var halves;
 	// The split may or may not split a MoveLink or split between two MoveLinks
 	for (var i=0; i<this.submoves.length; i++) {
-		if (tally >= t) {
+		if (tally >= t) {this.abrupt = false; 
 			chain2.add(this.submoves[i]);
 		} else if (tally+this.submoves[i].getDuration()*BEAT > t) {
 			halves = this.submoves[i].split(t-tally);
@@ -1185,10 +1218,25 @@ MoveLink.prototype.modify = function(options) {
 	this.prop.rescale = (options.prop_rescale !== undefined) ? options.prop_rescale : this.prop.rescale;
 	this.prop.rescale_acc = (options.prop_rescale_acc !== undefined) ? options.prop_rescale_acc : this.prop.rescale_acc;
 	this.twist = (options.twist !== undefined) ? options.twist : this.twist;
+	this.twist_speed = (options.twist_speed !== undefined) ? options.twist_speed : this.twist_speed;
 	this.grip = (options.grip !== undefined) ? options.grip : this.grip;
+	this.grip_speed = (options.grip_speed !== undefined) ? options.grip_speed : this.grip_speed;
 	this.choke = (options.choke !== undefined) ? options.choke : this.choke;
+	this.choke_speed = (options.choke_speed !== undefined) ? options.choke_speed : this.choke_speed; 
 	this.bend = (options.bend !== undefined) ? options.bend : this.bend;
 	this.bend_angle = (options.bend_angle !== undefined) ? options.bend_angle : this.bend_angle;
 	this.bend_speed = (options.bend_speed !== undefined) ? options.bend_speed : this.bend_speed;
 	this.bend_acc = (options.bend_acc !== undefined) ? options.bend_acc : this.bend_acc;
+}
+
+MoveChain.prototype.setAbrupt = function(tf) {
+        tf = (tf == undefined) ? true : tf;
+        this.abrupt = tf;
+        return this;
+}
+
+MoveLink.prototype.setAbrupt = function(tf) {
+        tf = (tf == undefined) ? true : tf;
+        this.abrupt = tf;
+        return this;
 }
