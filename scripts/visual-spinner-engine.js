@@ -367,7 +367,19 @@ Prop.prototype.getVector = function(element) {
 	// eventually should handle .twist, .bend, etc.
 	for (var i = PIVOT; i<=element; i++) {
 		// none of these elements should ever have null values
-		e = this.elements[i];
+		//e = this.elements[i];
+		e = new Spherical();
+		if (i==PROP) {
+			// once we get the move comparison working, copy it over
+			radius = this.elements[i].radius;
+			angle = this.elements[i].angle;
+			plane = this.elements[i].plane;
+		} else {
+			radius = this.elements[i].radius;
+			angle = this.elements[i].angle;
+			plane = this.elements[i].plane;
+		}
+		e.setRadiusAnglePlane(radius, angle, plane);
 		v = e.vectorize();
 		x += v.x;
 		y += v.y;
@@ -432,7 +444,7 @@ Prop.prototype.render = function() {
 // The optional "fixed" parameter allows you to choose whether the Prop respects the Move's starting position
 //I'm replacing this with the "abrupt" property...eventually refactor it out
 Prop.prototype.addMove = function(myMove) {
-	if (this.abrupt == false) {
+	if (myMove.abrupt == false) {
 		if (this.move.submoves.length>0) {
 			myMove.adjust(this.move.tail());
 		} else {
@@ -754,6 +766,7 @@ MoveLink.prototype.getVector = function(element) {
 	var y = 0;
 	var z = 0;
 	var e;
+	var s;
 	var v;
 	// skip HOME
 	var radius;
@@ -761,17 +774,23 @@ MoveLink.prototype.getVector = function(element) {
 	var plane;
 	for (var i = PIVOT; i<=element; i++) {
 		e = new Spherical();
-		if (i==HAND) {
+		if (i==PROP) {
 			// account for bend, bend_angle, grip, twist, and choke
 			radius = this.elements[i].radius;
 			angle = this.elements[i].angle;
-			plane = this.elements[i] = plane;
-		} else {
+			plane = this.elements[i].plane;
+		} else if (i==HAND) {
+			// okay this is wrong...but I think I'm on the right trick...
+			// this puts the prop but not the hand in the right spot:
+			radius = this.elements[i].radius - this.choke;
+			//radius = this.elements[i].radius - 0.5*this.prop.radius*(1+Math.cos(this.grip))*this.choke;
+			angle = this.elements[i].angle;
+			plane = this.elements[i].plane;
+		}else {
 			radius = this.elements[i].radius;
 			angle = this.elements[i].angle;
-			plane = this.elements[i] = plane;
+			plane = this.elements[i].plane;
 		}
-		//e.setRadiusAnglePlane(this.elements[i].radius, this.elements[i].angle, this.elements[i].plane);
 		e.setRadiusAnglePlane(radius, angle, plane);
 		v = e.vectorize();
 		x += v.x;
@@ -953,13 +972,13 @@ MoveChain.prototype.adjust = function(target) {
 	var hand;
 	var prop;
 	if (target instanceof Prop) {
+		alert("trying to align to Prop");
 		hand = target.handVector();
 		prop = target.propVector();
 	} else if (target instanceof MoveLink || target instanceof MoveChain) {
 		hand = target.socket().handVector();
 		prop = target.socket().propVector();
 	}
-	
 	for (var i = 0; i<this.submoves.length; i++) {
 		// !!!Eventually we will want to account for grip, twist, choke, and bend
 		if (hand.nearly(this.handVector(),0.05) && prop.nearly(this.propVector(),0.1)) {
@@ -1174,6 +1193,7 @@ MoveChain.prototype.modify = function(options) {
 	for (var i = 0; i < this.submoves.length; i++) {
 		this.submoves[i].modify(options);
 	}
+	return this;
 }
 MoveLink.prototype.modify = function(options) {
 	this.duration = (options.duration !== undefined) ? options.duration : this.duration;
@@ -1227,6 +1247,7 @@ MoveLink.prototype.modify = function(options) {
 	this.bend_angle = (options.bend_angle !== undefined) ? options.bend_angle : this.bend_angle;
 	this.bend_speed = (options.bend_speed !== undefined) ? options.bend_speed : this.bend_speed;
 	this.bend_acc = (options.bend_acc !== undefined) ? options.bend_acc : this.bend_acc;
+	return this;
 }
 
 MoveChain.prototype.setAbrupt = function(tf) {
