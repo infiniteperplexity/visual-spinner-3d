@@ -364,24 +364,10 @@ Prop.prototype.getVector = function(element) {
 	var z = 0;
 	var e;
 	var v;
-	var radius;
-	var angle;
-	var plane;
 	// eventually should handle .twist, .bend, etc.
 	for (var i = PIVOT; i<=element; i++) {
 		// none of these elements should ever have null values
-		e = new Spherical();
-		if (i==PROP) {
-			// once we get the move comparison working, copy it over
-			radius = this.elements[i].radius;
-			angle = this.elements[i].angle;
-			plane = this.elements[i].plane;
-		} else {
-			radius = this.elements[i].radius;
-			angle = this.elements[i].angle;
-			plane = this.elements[i].plane;
-		}
-		e.setRadiusAnglePlane(radius, angle, plane);
+		e = this.elements[i];
 		v = e.vectorize();
 		x += v.x;
 		y += v.y;
@@ -988,8 +974,8 @@ MoveChain.prototype.adjust = function(target) {
 			this.phaseBy(1);
 		}
 	}
-	alert("adjustment failed.");
-	return this;
+	alert("Unable to fit.");
+	return null;
 }
 
 //!!! Problem with this method believed fixed
@@ -1070,6 +1056,7 @@ PropFactory.prototype.defaults = function(options, defaults) {
 }
 PropFactory.prototype.parse = function(json) {
 	var definition = JSON.parse(json);
+	definition.axis = new Vector(definition.axis.x, definition.axis.y, definition.axis.z);
 	return definition;
 }
 Prop.prototype.apply = function(json, fix) {
@@ -1262,4 +1249,13 @@ MoveLink.prototype.setAbrupt = function(tf) {
         tf = (tf == undefined) ? true : tf;
         this.abrupt = tf;
         return this;
+}
+
+function isValidJSON(str) {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
 }

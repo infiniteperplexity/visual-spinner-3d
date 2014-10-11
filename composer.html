@@ -54,6 +54,7 @@ var propOne = props.poi({head_color: "blue", flame_color: "blue", scene: scene})
 var propTwo = props.poi({head_color: "red", flame_color: "red", scene: scene});
 var startingPositions = [props.noprop({scene: scene}),props.noprop({scene: scene})];
 function canvasSetup() {
+	var canvas = document.getElementById("canvas");
 	window.addEventListener("keydown", listenForKey, false);
 	// set up Phoria scene for 3D rendering
 	scene.camera.position = {x:0.0, y:1.0, z:10.0};
@@ -103,6 +104,13 @@ function canvasLoop() {
 	setTimeout(function() {
 		requestAnimationFrame(canvasLoop);
 		redraw();
+		for (var i = 0; i < myProps.length; i++) {
+			if (myProps[i].move.getDuration() === 0) {
+				alert("Can't spin with an empty queue.");
+				paused = true;
+				return;
+			}
+		}
 		advanceFrames(1);
 		for (var i = 0; i < myProps.length; i++) {
 			myProps[i].render();
@@ -129,7 +137,7 @@ function populateMenu() {
 	var option;
 	for (var key in recipes) {
 		if (key !== "add") {
-			option = '<option draggable="true" ondragstart="drag(event)" value="'+key+'">'+key+"</option>";
+			option = '<option draggable="true" ondragstart="dragMenu(event)" value="'+key+'">'+key+"</option>";
 			menu.append(option);
 		}
 	}
@@ -140,38 +148,35 @@ function populateMenu() {
 function allowDrop(event) {
 	event.preventDefault();
 }
-function drag(event) {
+function dragMenu(event) {
 	var movename = event.target.text;
-	event.dataTransfer.setData("Text", movename);
-}
-function drop(event) {
-	event.preventDefault();
-	var target = event.target;
-	if (target.parentNode.className === "queue") {
-		dropQueue(event);
-	} else if (target.id === "thisMove") {
-		dropWorkshop(event, target);
-	} else if (target.parentNode.id === "thisMove") {
-		dropWorkshop(event, target.parentNode);
-	}
+	//event.dataTransfer.setData("Text", movename);
+	event.dataTransfer.setData("Text", JSON.stringify(recipes[movename]));
 }
 function dropQueue(event) {
-	var movename = event.dataTransfer.getData("Text");
-	var build = JSON.stringify(recipes[movename]);
-	addMoveToQueue(build, event.target);
+	event.preventDefault();
+	//var movename = event.dataTransfer.getData("Text");
+	//var build = JSON.stringify(recipes[movename]);
+	var definition= event.dataTransfer.getData("Text");
+	addMoveToQueue(definition, event.target);
 }
-function addMoveToQueue(build, target) {
-	var child = document.createElement("option");
-	child.text = JSON.parse(build).movename;
-	child.value = build;
-	child.draggable = true;
-	child.addEventListener('dragstart',drag);
-	target.appendChild(child);
+function addMoveToQueue(definition, target) {
+	var move = moves.build(definition);
+	var prop;
 	var queue = target.parentNode.id;
 	if (queue === "queue1") {
-		propOne.addMove(moves.build(child.value));
+		prop = propOne;
 	} else if (queue === "queue2") {
-		propTwo.addMove(moves.build(child.value));
+		prop = propTwo;
+	}
+	if (move.adjust(prop) != null) {
+		var child = document.createElement("option");
+		child.text = JSON.parse(definition).movename;
+		child.value = definition;
+		//child.draggable = true;
+		//child.addEventListener('dragstart',drag);
+		target.appendChild(child);
+		prop.addMove(move);
 	}
 	var max;
 	for (var i = 0; i < myProps.length; i++) {
@@ -179,12 +184,22 @@ function addMoveToQueue(build, target) {
 	}
 	document.getElementById("frameN").setAttribute("max", max.toString());
 }
-function dropWorkshop(event, target) {
+function dragWorkshop(event) {
+	var definition = event.target.value;
+	//event.dataTransfer.setData("Text", movename);
+	event.dataTransfer.setData("Text", definition);
+}
+function dropWorkshop(event) {
+	event.preventDefault();
+	var target = event.target;
+	if (target.parentNode != null && target.parentNode.id === "thisMove") {target = target.parentNode;}
 	var child = document.createElement("option");
-	child.text = event.dataTransfer.getData("Text");
-	child.value = JSON.stringify(recipes[child.text]);
+	//child.text = event.dataTransfer.getData("Text");
+	//child.value = JSON.stringify(recipes[child.text]);
+	child.value = event.dataTransfer.getData("Text");
+	child.text = JSON.parse(child.value).movename;
 	child.draggable = true;
-	child.addEventListener('dragstart',drag);
+	child.addEventListener('dragstart',dragWorkshop);
 	child.addEventListener('dragover', allowDrop);
 	target.replaceChild(child, target.childNodes[0]);
 	document.getElementById("json").value = JSON.stringify(recipes[child.text], null, '\n');
@@ -198,9 +213,13 @@ function modifyMove() {
 	alert("not yet implemented");
 }
 function submitChanges() {
-	var build = $("#workshop textarea").get(0);
+	var build = $("#workshop textarea").get(0).value;
 	var current = $("#workshop select option").get(0);
-	current.value = build.text;
+	if (isValidJSON(build)===false) {
+		alert("invalid JSON");
+		return;
+	}
+	current.value = build;
 	current.text = JSON.parse(build).movename;
 }
 
@@ -261,6 +280,10 @@ function listenForKey(e) {
 // currently this doesn't actually check the lower bound
 function checkBounds(n) {
 	var max = document.getElementById("frameN").max;
+	if (max==0) {
+		alert("bad max input value");
+		return 0;
+	}
 	if (n > max) {
 		frameN.value = max.toString();
 		while (n > max) {
@@ -294,6 +317,7 @@ function emptyQueues() {
 	$("#queue2 select").empty();
 	propOne.emptyMoves();
 	propTwo.emptyMoves();
+	totalReset();
 }
 
 //**** functionality for JSON export/import
@@ -327,7 +351,25 @@ function importSubmit() {
 	$("#popimport").toggle();
 }
 function alignSubmit(n) {
-	alert("not yet implemented.");
+	var definition = props.parse($("#popalign"+n+" textarea").val());
+	var prop;
+	if (n===1) {
+		prop = propOne;
+	} else if (n===2) {
+		prop = propTwo;
+	}
+	for (var i = HOME; i<=PROP; i++) {
+		prop[ELEMENTS[i]].radius = definition[ELEMENTS[i]].radius;
+		prop[ELEMENTS[i]].azimuth = definition[ELEMENTS[i]].azimuth;
+		prop[ELEMENTS[i]].zenith = definition[ELEMENTS[i]].zenith;
+	}
+	prop.twist = definition.twist;
+	prop.grip = definition.grip;
+	prop.choke = definition.choke;
+	prop.bend = definition.bend;
+	prop.axis = definition.axis;
+	redraw();
+	$("#popalign"+n).toggle();
 }
 
 </script>
@@ -361,22 +403,23 @@ function alignSubmit(n) {
 		<div id="queue1" class="queue">
 			<h2>Blue Prop</h2>
 			<button type="button" onclick="popAlign(1);">Starting Position</button>
-			<select size="2" ondrop="drop(event)"; ondragover="allowDrop(event);"></select>
+			<select size="2" ondrop="dropQueue(event)"; ondragover="allowDrop(event);"></select>
 		</div>	
 
 		<div id="queue2" class="queue">
 			<h2>Red Prop</h2>
 			<button type="button" onclick="popAlign(2);">Starting Position</button>
-			<select size="2" ondrop="drop(event);" ondragover="allowDrop(event);"></select>
+			<select size="2" ondrop="dropQueue(event);" ondragover="allowDrop(event);"></select>
 		</div>
 		
-		<div id="workshop" ondrop="drop(event);" ondragover="allowDrop(event);">
+		<div id="workshop" ondrop="dropWorkshop(event);" ondragover="allowDrop(event);">
 			<h2>Workshop</h2>
 			<button type="button" onclick="modifyMove();">Modify</button>
 			<br>
-			<select id="thisMove" size = "2"><option ondragover = "allowDrop(event);" ondrop = "drop(event);">Drag move from menu.</option></select>
+			<select id="thisMove" size = "2"><option ondragover = "allowDrop(event);" ondrop = "dropWorkshop(event);">Drag move from menu.</option></select>
 			<textarea id="json" rows="21" cols="22">JSON will appear here.</textarea>
 			<button type="button" onclick="submitChanges();">Submit</button>
+			<button type="button" onclick="nothing();">Save</button>
 		</div>
 		
 		<div id="menu">
