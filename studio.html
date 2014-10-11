@@ -1,0 +1,83 @@
+<!--Distributed under GNU Public License version 3-->
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>VisualSpinner3D v. 3.0, by Glenn Wright</title>
+
+<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="scripts/gl-matrix-min.js"></script>
+<script src="scripts/phoria-min.js"></script>
+<script src="scripts/requestAnimationFrame.js"></script>
+<script src="scripts/visual-spinner-engine.js"></script>
+<script src="scripts/visual-spinner-moves.js"></script>
+<script src="scripts/visual-spinner-renderers.js"></script>
+
+<script>
+// set parameters
+function init() {}
+</script>
+<style>
+	body {margin: 0; padding: 0;}
+	div {padding: 2.5px; border: 5px solid gray; margin: -2.5px;}
+	section {position: absolute;}
+	canvas {height: 400px; width: 400px; background-color: #000;}
+	#display { position: absolute; top: 0; left 0; height: 400px; width: 400px; }
+	#workshop {position: absolute; top: 0; left: 410px; height: 400px; width: 300px;}
+	#library {position: absolute; top: 0; left: 720px; height: 400px; width: 300px;}
+	#tracks {position: absolute; top: 410px; left: 0; height: 200px; width: 1020px;}
+	.track, #icons {list-style: none;}
+	#icons li {position: absolute}
+	.topleft {position: absolute; top: 0, left: 0}
+	.topright {position: absolute; top: 0, right: 0}
+	.bottomleft {position: absolute; bottom: 0, left: 0}
+	.bottomright {position: absolute; bottom: 0, right: 0}
+	.track li {display: inline;}
+	.track li img, #icons li img {height: "45px"; width: "45px";}
+</style>
+
+</head>
+
+<body onload="init();">
+
+<section>
+
+<div id="display">
+	<canvas height="20px" width="20px">
+		Your browser doesn't support the HTML5 element canvas.
+	</canvas>
+</div>
+
+<div id="workshop">
+	<p>workshop</p>
+</div>
+
+<div id="library">
+	<ul id="icons">
+		<li>
+		</li>
+		<li>
+		</li>
+	</ul>
+</div>
+
+<div id="tracks">
+	<ol class="track" id="track1">
+		<li>
+			<img src="tile1.png">
+		</li>
+		<li>
+			<img src="tile2.png">
+		</li>
+	</ol>
+	<ol class="track" id="track2">
+		<li>
+			<img src="tile1.png">
+		</li>
+		<li>
+			<img src="tile2.png">
+		</li>
+	</ol>
+</div>
+</section>
+
+</body>
+</html>

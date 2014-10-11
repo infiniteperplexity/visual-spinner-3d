@@ -364,10 +364,12 @@ Prop.prototype.getVector = function(element) {
 	var z = 0;
 	var e;
 	var v;
+	var radius;
+	var angle;
+	var plane;
 	// eventually should handle .twist, .bend, etc.
 	for (var i = PIVOT; i<=element; i++) {
 		// none of these elements should ever have null values
-		//e = this.elements[i];
 		e = new Spherical();
 		if (i==PROP) {
 			// once we get the move comparison working, copy it over
@@ -972,7 +974,6 @@ MoveChain.prototype.adjust = function(target) {
 	var hand;
 	var prop;
 	if (target instanceof Prop) {
-		alert("trying to align to Prop");
 		hand = target.handVector();
 		prop = target.propVector();
 	} else if (target instanceof MoveLink || target instanceof MoveChain) {
@@ -1100,9 +1101,10 @@ Prop.prototype.stringify = function() {
 	var definition = {	propname: this.propname,
 					home: {},
 					pivot: {},
+					helper: {},
 					hand: {},
-					prop: {},
-					bend: {}};
+					prop: {}
+				};
 	for (var i = HOME; i<=PROP; i++) {
 		definition[ELEMENTS[i]].radius = this[ELEMENTS[i]].radius;
 		definition[ELEMENTS[i]].azimuth = this[ELEMENTS[i]].azimuth;

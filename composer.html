@@ -10,15 +10,19 @@ section {margin: 0; padding: 0}
 header, section div {vertical-align: top; padding: 2.5px; border: 5px solid gray; margin: -2.5px; display: inline-block;}
 #display {width: 400px; height: 400px; float: left}
 #control {position: absolute; top: 520px; left: 0; height: 90px; width: 400px;}
-.queue, #menu, #options {width: 200px; height: 500px; float: left}
+.queue, #menu, #workshop {width: 200px; height: 500px; float: left}
 canvas {width: 400px; height: 400px; background-color: #000;}
-.queue h2, #menu h2, #options h2 {height: 25px; text-decoration: underline}
-.queue select {width: 200px; height: 230px;}
+.queue h2, #menu h2, #workshop h2 {height: 25px; text-decoration: underline}
+.queue select {width: 200px; height: 400px;}
 #menu select {width: 200px; height: 430px;}
+#workshop select {width: 199px; height: 22px;}
 table {position: relative; top: -20px;}
 #popexport {position: fixed; z-index: 1; top: 150px; left: 50px;}
 #popimport {position: fixed; z-index: 1; top: 150px; left: 50px;}
+#popalign1 {position: fixed; z-index: 1; top: 250px; left: 200px;}
+#popalign2 {position: fixed; z-index: 1; top: 250px; left: 630px;}
 #radius1, #radius2 {width: 50px;}
+#frameN {width: 100px;}
 </style>
 
 
@@ -30,238 +34,27 @@ table {position: relative; top: -20px;}
 <script src="scripts/requestAnimationFrame.js"></script>
 <script src="scripts/visual-spinner-engine.js"></script>
 <script src="scripts/visual-spinner-moves.js"></script>
-<script src="scripts/visual-spinner-renderers.js"></script><script>
-// set parameters
-function allowDrop(event) {event.preventDefault();}
-function drag(event) {
-	var def = event.target.value;
-	def = JSON.parse(def);
-	def = augmentDefinition(def);
-	def = JSON.stringify(def);
-	event.dataTransfer.setData("Text",def);
-}
-function drop1(event) {
-	event.preventDefault();
-	var def = event.dataTransfer.getData("Text");
-	var str = moves.parse(def);
-	var child = document.createElement("option");
-	child.text = str.movename;
-	child.value = def;
-	event.target.appendChild(child);
-	rebuildQueues();
-}
-function drop2(event) {
-	event.preventDefault();
-	var def = event.dataTransfer.getData("Text");
-	var str = moves.parse(def);
-	var child = document.createElement("option");
-	child.text = str.movename;
-	child.value= def;
-	event.target.appendChild(child);
-	rebuildQueues();
-}
-    
+<script src="scripts/visual-spinner-renderers.js"></script>
+<script src="scripts/visual-spinner-recipes.js"></script>
+<script>
+
+//**** set parameters and set up environment and display
 var HEIGHT = 400;
 var WIDTH = 400;
 var ORIGINX = WIDTH/2;
 var ORIGINY = HEIGHT/2;
 var BACKGROUND = "black";
-
 var view2d = false;
-
 var myProps = new Array(); 
-//var controller = new Controller();
 var moves = new MoveFactory();
 var props = new PropFactory();
-
-function init() {
-	$("#popexport").hide();
-	$("#popimport").hide();
-	ctx=document.getElementById('canvas').getContext('2d');
-	if( 	navigator.userAgent.match(/Android/i)
-		|| navigator.userAgent.match(/webOS/i)
-		|| navigator.userAgent.match(/iPhone/i)
-		|| navigator.userAgent.match(/iPad/i)
-		|| navigator.userAgent.match(/iPod/i)
-		|| navigator.userAgent.match(/BlackBerry/i)
-		|| navigator.userAgent.match(/Windows Phone/i)) {
-		$("#2d3d").val("2d");
-	} else {
-		$("#2d3d").val("3d");
-	}
-	populateMenu();
-	canvasSetup();
-	//canvasLoop();
-}
-
-function alignElement(prop, element, box) {
-	var val = $('input[name=' + box + ']:checked').val();
-	switch(val) {
-		case "up": prop.setElementAngle(element, TWELVE, WALL); break;
-		case "down": prop.setElementAngle(element, SIX, WALL); break;
-		case "left": prop.setElementAngle(element, NINE, WALL); break;
-		case "right": prop.setElementAngle(element, THREE, WALL); break;
-	}
-}
-function setRadius(prop, box) {
-	var val = $('input[id='+box+']').val();
-	prop.hand.radius = val;
-}
-function buildQueue(prop, queue) {
-	var items = $("#"+queue + " select option");
-	prop.emptyMoves();
-	var def;
-	for (var i = 0; i<items.length; i++) {
-		def = items[i].value;
-		def = moves.parse(def);
-		prop.addMove(buildMove(prop, def));	
-	}
-}
-function buildMove(prop, def) {
-	var predict = prop.predict();
-	// is this sufficiently general? what about linex which tends to use prop angle?
-	def.entry = predict.getHandAngle();
-	var move = moves[def.build](def);
-	return move;
-}
-function augmentDefinition(def) {
-	var val;
-	val = $('input[name=direction]:checked').val();
-	var mydir;
-	switch(val) {
-		case "cw": mydir = CLOCKWISE; break;
-		case "ccw": mydir = COUNTERCLOCKWISE; break;
-	}
-	val = $('input[name=plane]:checked').val();
-	var myplane;
-	switch(val) {
-		case "wall": myplane = WALL; break;
-		case "wheel": myplane = WHEEL; break;
-		case "floor": myplane = FLOOR; break;
-	}
-	val = $('input[name=duration]:checked').val();
-	var mydur;
-	switch(val) {
-		case "full": mydur = 1; break;
-		case "half": mydur = 0.5; break;
-		case "quarter": mydur = 0.25; break;
-	}
-	val = $('input[name=pitch]:checked').val();
-	var mypitch;
-	switch(val) {
-		case "forward": mypitch = FORWARD; break;
-		case "backward": mypitch = BACKWARD; break;
-	}
-	val = $('input[name=pivot]:checked').val();
-	var mypivot;
-	switch(val) {
-		case "up": mypivot = TWELVE; break;
-		case "down": mypivot = SIX; break;
-		case "right": mypivot = THREE; break;
-		case "left": mypivot = NINE; break;
-		case "none": mypivot = null; break; 
-	}
-	def.direction = mydir;
-	def.plane = myplane;
-	def.duration = mydur;
-	if (mypivot!==null) {
-		def.pivot_angle = mypivot;
-		def.pivot_radius = 0.5;
-	}
-	return def;
-}
-function emptyQueues() {
-	$("#queue1 select").empty();
-	$("#queue2 select").empty();
-	propOne.emptyMoves();
-	propTwo.emptyMoves();
-}
-
-//This function gets triggered any time someone touches the prop alignment checkboxes or alters a move queue
-function rebuildQueues() {
-	//Align all the props according to checkboxes
-	alignElement(propOne, "hand", "hand1");
-	alignElement(propOne, "prop", "prop1");
-	alignElement(propTwo, "hand", "hand2");
-	alignElement(propTwo, "prop", "prop2");
-	setRadius(propOne,"radius1");
-	setRadius(propTwo,"radius2");
-	buildQueue(propOne, "queue1");
-	buildQueue(propTwo, "queue2");
-	for (var i = 0; i < myProps.length; i++) {
-		myProps[i].render();
-	}
-	redraw();
-}
-function popExport() {
-	$("#popimport").hide();
-	$("#popexport").toggle();
-	var red = propOne.stringify();
-	var blue = propTwo.stringify();
-	$("#popexport textarea").html('{"red": '+red+', "blue": '+blue+"}");
-}
-function popImport() {
-	$("#popexport").hide();
-	$("#popimport").toggle();
-}
-function importSubmit() {
-	var imported = $("#popimport textarea").val();
-	imported = props.parse(imported);
-	emptyQueues();
-	var newoption;
-	var plane;
-	for (var i = 0; i < imported.red.moves.length; i++) {
-		newoption = document.createElement("option");
-		newoption.value = JSON.stringify(imported.red.moves[i]);
-		newoption.text = imported.red.moves[i].movename;
-		$("#queue1 select").append(newoption);
-
-	}
-	for (var i = 0; i < imported.blue.moves.length; i++) {
-		newoption = document.createElement("option");
-		newoption.value= JSON.stringify(imported.blue.moves[i]);
-		newoption.text = imported.blue.moves[i].movename;
-		$("#queue2 select").append(newoption);
-
-	}
-	rebuildQueues();
-	$("#popimport").toggle();
-}
-
-
-function populateMenu() {
-	var menu = $("#menu").children("select");
-	var options = [
-		{movename: "Extension", build: "flower", spin: INSPIN, petals: 0, entry: null, mode: null},
-		{movename: "One-Petal In-Spin Flower", build: "flower", spin: INSPIN, petals: 1, entry: null, mode: null},
-		{movename: "Two-Petal In-Spin Flower", build: "flower", spin: INSPIN, petals: 2, entry: null, mode: null},
-		{movename: "Four-Petal In-Spin Flower", build: "flower", spin: INSPIN, petals: 4, entry: null, mode: null},
-		{movename: "Three-Petal Anti-Spin Flower", build: "flower", spin: ANTISPIN, petals: 3, entry: null, mode: null},
-		{movename: "Four-Petal Anti-Spin Flower", build: "flower", spin: ANTISPIN, petals: 4, entry: null, mode: null},
-		{movename: "Pendulum", build: "pendulum"},
-		{movename: "1.5", build: "pendulum", onepointfive: true}
-	];
-	var def;
-	for (var i = 0; i<options.length; i++) {
-		def = JSON.stringify(options[i]);
-		menu.append('<option draggable="true" value='+"'"+def+"'"+' ondragstart="drag(event)">'+options[i].movename+"</option");
-	}
-}
-
 var scene = new Phoria.Scene();
 var renderer;
 var propOne = props.poi({head_color: "blue", flame_color: "blue", scene: scene});
 var propTwo = props.poi({head_color: "red", flame_color: "red", scene: scene});
+var startingPositions = [props.noprop({scene: scene}),props.noprop({scene: scene})];
 function canvasSetup() {
-	var prop = new Prop();
-	var link = new MoveLink();
-	var angle = SIX;
-	canvas.height = HEIGHT;
-	canvas.width = WIDTH;
-	ctx.fillStyle = BACKGROUND;
-	ctx.strokeStyle = BACKGROUND;
-	ctx.fillRect(0,0,WIDTH,HEIGHT);
-	
+	window.addEventListener("keydown", listenForKey, false);
 	// set up Phoria scene for 3D rendering
 	scene.camera.position = {x:0.0, y:1.0, z:10.0};
 	scene.perspective.aspect = canvas.width / canvas.height;
@@ -295,21 +88,23 @@ function canvasSetup() {
 	propOne.rotateProp(SPLIT);
 	myProps.push(propOne);
 	myProps.push(propTwo);
-	
+	startingPositions[0].orientToProp(propOne);
+	startingPositions[1].orientToProp(propTwo);
 	redraw();
 }
-
+window.addEventListener("keydown", listenForKey, false);
 Prop.prototype.spinfail = function() {
 	alert("can't spin with an empty queue");
 }
 
-// animation loop
+//**** animation and rendering
 function canvasLoop() {
+	if (paused == true) {return;}
 	setTimeout(function() {
 		requestAnimationFrame(canvasLoop);
 		redraw();
+		advanceFrames(1);
 		for (var i = 0; i < myProps.length; i++) {
-			myProps[i].spin();
 			myProps[i].render();
 		}
 	},1000/BEAT);
@@ -318,27 +113,229 @@ function redraw() {
 	for (var i = 0; i < myProps.length; i++) {
 		myProps[i].render();
 	}
-	if (view2d == true) {
-		ctx.fillStyle = "rgba(0,0,0,0.01)";
-		ctx.strokeStyle=BACKGROUND;
-		ctx.fillRect(0,0,WIDTH,HEIGHT);
-	}
-	else {
-		scene.modelView();
-		renderer.render(scene);
+	scene.modelView();
+	renderer.render(scene);
+}
+
+//**** on load
+function init() {
+	$("#popexport").hide();
+	$("#popimport").hide();
+	populateMenu();
+	canvasSetup();
+}
+function populateMenu() {
+	var menu = $("#menu").children("select");
+	var option;
+	for (var key in recipes) {
+		if (key !== "add") {
+			option = '<option draggable="true" ondragstart="drag(event)" value="'+key+'">'+key+"</option>";
+			menu.append(option);
+		}
 	}
 }
+
+
+//**** handle drag and drop events
+function allowDrop(event) {
+	event.preventDefault();
+}
+function drag(event) {
+	var movename = event.target.text;
+	event.dataTransfer.setData("Text", movename);
+}
+function drop(event) {
+	event.preventDefault();
+	var target = event.target;
+	if (target.parentNode.className === "queue") {
+		dropQueue(event);
+	} else if (target.id === "thisMove") {
+		dropWorkshop(event, target);
+	} else if (target.parentNode.id === "thisMove") {
+		dropWorkshop(event, target.parentNode);
+	}
+}
+function dropQueue(event) {
+	var movename = event.dataTransfer.getData("Text");
+	var build = JSON.stringify(recipes[movename]);
+	addMoveToQueue(build, event.target);
+}
+function addMoveToQueue(build, target) {
+	var child = document.createElement("option");
+	child.text = JSON.parse(build).movename;
+	child.value = build;
+	child.draggable = true;
+	child.addEventListener('dragstart',drag);
+	target.appendChild(child);
+	var queue = target.parentNode.id;
+	if (queue === "queue1") {
+		propOne.addMove(moves.build(child.value));
+	} else if (queue === "queue2") {
+		propTwo.addMove(moves.build(child.value));
+	}
+	var max;
+	for (var i = 0; i < myProps.length; i++) {
+		max = Math.max(myProps[i].move.getDuration()*BEAT);
+	}
+	document.getElementById("frameN").setAttribute("max", max.toString());
+}
+function dropWorkshop(event, target) {
+	var child = document.createElement("option");
+	child.text = event.dataTransfer.getData("Text");
+	child.value = JSON.stringify(recipes[child.text]);
+	child.draggable = true;
+	child.addEventListener('dragstart',drag);
+	child.addEventListener('dragover', allowDrop);
+	target.replaceChild(child, target.childNodes[0]);
+	document.getElementById("json").value = JSON.stringify(recipes[child.text], null, '\n');
+}
+
+//**** placeholder functionality
 function nothing() {
 	alert("not yet implemented");
 }
+function modifyMove() {
+	alert("not yet implemented");
+}
+function submitChanges() {
+	var build = $("#workshop textarea").get(0);
+	var current = $("#workshop select option").get(0);
+	current.value = build.text;
+	current.text = JSON.parse(build).movename;
+}
+
+// animation loop
+var paused = false;
+function startSpin() {
+	paused = false;
+	canvasLoop();
+}
+
+function pauseSpin() {
+	paused = true;
+}
+
+function spinFrames(n) {
+	if (n > 0) {
+		pauseSpin();
+		advanceFrames(n);
+	} else if (n < 0) {
+		var value = parseInt(document.getElementById("frameN").value);
+		totalReset();
+		// This nonsense is necessary because it currently sometimes spins one additional frame after resetting
+		advanceFrames(value + n - parseInt(document.getElementById("frameN").value));
+	}
+	for (var i = 0; i < myProps.length; i++) {
+		myProps[i].render();
+	}
+	redraw();
+}
+
+function totalReset() {
+	pauseSpin();
+	document.getElementById("frameN").value = "0";
+	for (var i= 0; i < myProps.length; i++) {
+		myProps[i].move.reset();
+		myProps[i].orientToProp(startingPositions[i]);
+	}
+	redraw();
+}
+
+function listenForKey(e) {
+	//alert(e.keyCode);
+	if (e.keyCode ===13) {
+		if (document.activeElement == document.getElementById("frameN")) {
+			goToFrame();
+		}
+	} else if (e.keyCode===37) {
+		spinFrames(-12);
+	} else if (e.keyCode===39) {
+		spinFrames(12);
+	} else if (e.keyCode==8 || e.keyCode == 46) {
+		if (document.activeElement.parentNode.className=="queue") {
+			document.activeElement.removeChild(document.activeElement.childNodes[document.activeElement.selectedIndex]);
+		}
+	}
+}
+
+// currently this doesn't actually check the lower bound
+function checkBounds(n) {
+	var max = document.getElementById("frameN").max;
+	if (n > max) {
+		frameN.value = max.toString();
+		while (n > max) {
+			n = n-max;
+		}
+	} else if (n < 0) {
+		alert("You entered a negative frame number and I haven't done error handling for that yet.");
+	}
+	return n;
+}
+function goToFrame() {
+	var value = parseInt(document.getElementById("frameN").value);
+	value = checkBounds(value);
+	totalReset();
+	advanceFrames(value);
+	redraw();
+}
+
+function advanceFrames(n) {
+	var frameN = document.getElementById("frameN");
+	frameN.value = checkBounds((parseInt(frameN.value) + n)).toString();
+	for (var i = 0; i < n; i++) {
+		for (var j = 0;  j < myProps.length; j++) {
+			myProps[j].spin();
+		}
+	}
+}
+
+function emptyQueues() {
+	$("#queue1 select").empty();
+	$("#queue2 select").empty();
+	propOne.emptyMoves();
+	propTwo.emptyMoves();
+}
+
+//**** functionality for JSON export/import
+function popExport() {
+	$("#popimport").hide();
+	$("#popexport").toggle();
+	var red = propOne.stringify();
+	var blue = propTwo.stringify();
+	$("#popexport textarea").html('{"red": '+red+', "blue": '+blue+"}");
+}
+function popImport() {
+	$("#popexport").hide();
+	$("#popimport").toggle();
+}
+function popAlign(n) {
+	$("#popalign"+n).toggle();
+	$("#popalign"+n+ " textarea").val(myProps[n-1].stringify());
+}
+function importSubmit() {
+	var imported = $("#popimport textarea").val();
+	imported = props.parse(imported);
+	emptyQueues();
+	var newoption;
+	var plane;
+	for (var i = 0; i < imported.red.moves.length; i++) {
+		addMoveToQueue(JSON.stringify(imported.red.moves[i]), $("#queue1 select").get(0));
+	}
+	for (var i = 0; i < imported.blue.moves.length; i++) {
+		addMoveToQueue(JSON.stringify(imported.blue.moves[i]), $("#queue2 select").get(0));
+	}
+	$("#popimport").toggle();
+}
+function alignSubmit(n) {
+	alert("not yet implemented.");
+}
+
 </script>
 </head>
 <body onload="init();">
 <header>
 	<h1>Welcome to VisualSpinner3d. </h1>
-	
-	
-	<p>(This interface is deprecated; I don't think it provides a very usable way to interact with the VisualSpinner engine.)</p>
+	<p>(This interface is still in development)</p>
 </header>
 	
 <div id="content">
@@ -349,149 +346,43 @@ function nothing() {
 			</canvas>
 		</div>
 		<div id="control">
-			<button type="button" onclick="canvasLoop();">Start spinning!</button>
-			<button type="button" onclick="emptyQueues();">Reset props</button>
+			<button type="button" onclick="startSpin();">Play</button>
+			<button type="button" onclick="pauseSpin();">Pause</button>
+			<button type="button" onclick="spinFrames(-12)">-</button>
+			<input id="frameN" min="0" value="0" type="number">
+			<button type="button" onclick="spinFrames(12)";>+</button>
+			<button type="button" onclick="totalReset();">Reset Spin</button>
+			<br>
+			<button type="button" onclick="emptyQueues();">Reset Queues</button>
+			<br>
 			<button type="button" onclick="popExport();">Export to JSON</button>
 			<button type="button" onclick="popImport();">Import from JSON</button>
 		</div>
 		<div id="queue1" class="queue">
 			<h2>Blue Prop</h2>
-			<select size="2" ondrop="drop1(event)" ondragover="allowDrop(event)" onclick="alert('reorder and delete not yet implemented');"></select>
-			<p>
-				Hand:
-				</p><table>
-					<tbody><tr>
-						<td></td>
-						<td><input onclick="rebuildQueues();" name="hand1" value="up" type="radio">Up</td>
-						<td></td>
-					</tr>
-					<tr>
-						<td><input onclick="rebuildQueues();" checked="checked" name="hand1" value="left" type="radio">Left</td>
-						<td><input onclick="rebuildQueues();" id="radius1" min="0" max="1" step="0.5" value="1" type="number"></td>
-						<td><input onclick="rebuildQueues();" name="hand1" value="right" type="radio">Right</td>
-					</tr>	
-					<tr>
-						<td></td>
-						<td><input onclick="rebuildQueues();" name="hand1" value="down" type="radio">Down</td>
-						<td></td>
-					</tr>	
-				</tbody></table>	
-				Prop:
-				<table>
-					<tbody><tr>
-						<td></td>
-						<td><input onclick="rebuildQueues();" name="prop1" value="up" type="radio">Up</td>
-						<td></td>
-					</tr>
-					<tr>
-						<td><input onclick="rebuildQueues();" checked="checked" name="prop1" value="left" type="radio">Left</td>
-						<td></td>
-						<td><input onclick="rebuildQueues();" name="prop1" value="right" type="radio">Right</td>
-					</tr>	
-					<tr>
-						<td></td>
-						<td><input onclick="rebuildQueues();" name="prop1" value="down" type="radio">Down</td>
-						<td></td>
-					</tr>	
-				</tbody></table>	
-			<p></p>
+			<button type="button" onclick="popAlign(1);">Starting Position</button>
+			<select size="2" ondrop="drop(event)"; ondragover="allowDrop(event);"></select>
 		</div>	
 
 		<div id="queue2" class="queue">
 			<h2>Red Prop</h2>
-			<select size="2" ondrop="drop2(event)" ondragover="allowDrop(event)" onclick="alert('reorder and delete not yet implemented');"></select>
-			<p>
-				Hand:
-				</p><table>
-					<tbody><tr>
-						<td></td>
-						<td><input onclick="rebuildQueues();" name="hand2" value="up" type="radio">Up</td>
-						<td></td>
-					</tr>
-					<tr>
-						<td><input onclick="rebuildQueues();" name="hand2" value="left" type="radio">Left</td>
-						<td><input onclick="rebuildQueues();" id="radius2" min="0" max="1" step="0.5" value="1" type="number"></td>
-						<td><input onclick="rebuildQueues();" checked="checked" name="hand2" value="right" type="radio">Right</td>
-					</tr>	
-					<tr>
-						<td></td>
-						<td><input onclick="rebuildQueues();" name="hand2" value="down" type="radio">Down</td>
-						<td></td>
-					</tr>	
-				</tbody></table>	
-				Prop:
-				<table>
-					<tbody><tr>
-						<td></td>
-						<td><input onclick="rebuildQueues();" name="prop2" value="up" type="radio">Up</td>
-						<td></td>
-					</tr>
-					<tr>
-						<td><input onclick="rebuildQueues();" name="prop2" value="left" type="radio">Left</td>
-						<td></td>
-						<td><input onclick="rebuildQueues();" checked="checked" name="prop2" value="right" type="radio">Right</td>
-					</tr>	
-					<tr>
-						<td></td>
-						<td><input onclick="rebuildQueues();" name="prop2" value="down" type="radio">Down</td>
-						<td></td>
-					</tr>	
-				</tbody></table>	
-			<p></p>
+			<button type="button" onclick="popAlign(2);">Starting Position</button>
+			<select size="2" ondrop="drop(event);" ondragover="allowDrop(event);"></select>
+		</div>
+		
+		<div id="workshop" ondrop="drop(event);" ondragover="allowDrop(event);">
+			<h2>Workshop</h2>
+			<button type="button" onclick="modifyMove();">Modify</button>
+			<br>
+			<select id="thisMove" size = "2"><option ondragover = "allowDrop(event);" ondrop = "drop(event);">Drag move from menu.</option></select>
+			<textarea id="json" rows="21" cols="22">JSON will appear here.</textarea>
+			<button type="button" onclick="submitChanges();">Submit</button>
 		</div>
 		
 		<div id="menu">
 			<h2>Menu</h2>
 			<select size="2"></select>
 		</div>				
-			
-		<div id="options">
-			<h2>Options</h2>
-			<p>
-				Direction:<br>
-				<input checked="checked" name="direction" value="cw" type="radio">Clockwise<br>
-				<input name="direction" value="ccw" type="radio">Counter<br>
-			</p>
-			<p>
-				Plane:<br>
-				<input checked="checked" name="plane" value="wall" type="radio">Wall<br>
-				<input name="plane" value="wheel" type="radio">Wheel<br>
-				<input name="plane" value="floor" type="radio">Floor<br>
-			</p>
-			<p>
-				Duration:<br>
-				<input checked="checked" name="duration" value="full" type="radio">Full Beat<br>
-				<input name="duration" value="half" type="radio">Half Beat<br>
-				<input name="duration" value="quarter" type="radio">Quarter Beat<br>
-			</p>
-			<p>
-				Pitch (3D moves only):<br>
-				<input checked="checked" name="pitch" value="forward" type="radio">Forward<br>
-				<input name="pitch" value="backward" type="radio">Backward<br>
-			</p>
-			<p>
-				Pivot:
-				</p><table>
-						<tbody>
-							<tr>
-								<td></td>
-								<td><input name="pivot" value="up" type="radio">Up</td>
-								<td></td>
-							</tr>
-							<tr>
-								<td><input name="pivot" value="left" type="radio">Left</td>
-								<td><input checked="checked" name="pivot" value="none" type="radio">None</td>
-								<td><input name="pivot" value="right" type="radio">Right</td>
-							</tr>	
-							<tr>
-								<td></td>
-								<td><input name="pivot" value="down" type="radio">Down</td>
-								<td></td>
-							</tr>	
-						</tbody>
-					</table>	
-			<p></p>	
-		</div>
 	</section>
 </div>
 <div style="display: none;" id="popexport">
@@ -502,5 +393,15 @@ function nothing() {
 	<textarea rows="4" cols="50"></textarea><br>
 	<button type="button" onclick="popImport();">Cancel</button>
 	<button type="button" onclick="importSubmit();">Submit</button>
+</div>
+<div style="display: none;" id="popalign1">
+	<textarea rows="4" cols="50"></textarea><br>
+	<button type="button" onclick="popAlign(1);">Cancel</button>
+	<button type="button" onclick="alignSubmit(1);">Submit</button>
+</div>
+<div style="display: none;" id="popalign2">
+	<textarea rows="4" cols="50"></textarea><br>
+	<button type="button" onclick="popAlign(2);">Cancel</button>
+	<button type="button" onclick="alignSubmit(2);">Submit</button>
 </div>
 </body></html>
