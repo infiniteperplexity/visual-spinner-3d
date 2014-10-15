@@ -116,9 +116,9 @@ function canvasSetup() {
 	myProps.push(bluePoi);
 	myProps.push(greenPoi);
 	
-	redPoi.addFixedMove(moves.pendulum({direction: COUNTERCLOCKWISE, duration: 0.25}));
-	bluePoi.addFixedMove(moves.pendulum({direction: COUNTERCLOCKWISE, duration: 0.25}));
-	greenPoi.addFixedMove(moves.pendulum({direction: COUNTERCLOCKWISE, duration: 0.25}));
+	redPoi.addMove(moves.pendulum({direction: COUNTERCLOCKWISE, duration: 0.25}).setAbrupt());
+	bluePoi.addMove(moves.pendulum({direction: COUNTERCLOCKWISE, duration: 0.25}).setAbrupt());
+	greenPoi.addMove(moves.pendulum({direction: COUNTERCLOCKWISE, duration: 0.25}).setAbrupt());
 	
 	// The toss lasts one beat
 	redPoi.addMove(moves.verticaltoss({direction: COUNTERCLOCKWISE, hand: THREE, extend: 1.5}));

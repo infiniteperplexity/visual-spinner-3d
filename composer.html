@@ -15,14 +15,15 @@ canvas {width: 400px; height: 400px; background-color: #000;}
 .queue h2, #menu h2, #workshop h2 {height: 25px; text-decoration: underline}
 .queue select {width: 200px; height: 400px;}
 #menu select {width: 200px; height: 430px;}
-#workshop select {width: 199px; height: 22px;}
+#workshop select {width: 199px; height: 380px;}
 table {position: relative; top: -20px;}
-#popexport {position: fixed; z-index: 1; top: 150px; left: 50px;}
+#popexport {position: fixed; z-index: 1; top: 150px; left: 50px; }
 #popimport {position: fixed; z-index: 1; top: 150px; left: 50px;}
-#popalign1 {position: fixed; z-index: 1; top: 250px; left: 200px;}
-#popalign2 {position: fixed; z-index: 1; top: 250px; left: 630px;}
+#popalign1 {position: fixed; z-index: 1; top: 250px; left: 420px; background-color: #FFF; padding: 2.5px; border: 5px solid gray; margin: -2.5px;}
+#popalign2 {position: fixed; z-index: 1; top: 250px; left: 630px; background-color: #FFF; padding: 2.5px; border: 5px solid gray; margin: -2.5px;}
 #radius1, #radius2 {width: 50px;}
 #frameN {width: 100px;}
+#movemodify {position: fixed; z-index: 1; top: 150px; left: 550px; width: 400px; background-color: #FFF; padding: 2.5px; border: 5px solid gray; margin: -2.5px;};
 </style>
 
 
@@ -50,6 +51,7 @@ var moves = new MoveFactory();
 var props = new PropFactory();
 var scene = new Phoria.Scene();
 var renderer;
+var predictions = [props.poi({head_color: "0,32,64", scene: scene}),props.poi({head_color: "64,0,0", scene: scene})];
 var propOne = props.poi({head_color: "blue", flame_color: "blue", scene: scene});
 var propTwo = props.poi({head_color: "red", flame_color: "red", scene: scene});
 var startingPositions = [props.noprop({scene: scene}),props.noprop({scene: scene})];
@@ -91,6 +93,10 @@ function canvasSetup() {
 	myProps.push(propTwo);
 	startingPositions[0].orientToProp(propOne);
 	startingPositions[1].orientToProp(propTwo);
+	predictions[0].orientToProp(propOne);
+	predictions[1].orientToProp(propTwo);
+	predictions[0].nudge(-0.1,0,-0.1);
+	predictions[1].nudge(0.1,0,-0.1);
 	redraw();
 }
 window.addEventListener("keydown", listenForKey, false);
@@ -119,6 +125,7 @@ function canvasLoop() {
 }
 function redraw() {
 	for (var i = 0; i < myProps.length; i++) {
+		predictions[i].render();
 		myProps[i].render();
 	}
 	scene.modelView();
@@ -177,12 +184,21 @@ function addMoveToQueue(definition, target) {
 		//child.addEventListener('dragstart',drag);
 		target.appendChild(child);
 		prop.addMove(move);
+		//sloppy programming...
+		if (prop==propOne) {
+			predictions[0].orientToProp(propOne.predict());
+			predictions[0].nudge(-0.1,0,-0.1);
+		} else if (prop==propTwo) {
+			predictions[1].orientToProp(propTwo.predict());
+			predictions[1].nudge(0.1,0,-0.1);
+		}
 	}
 	var max;
 	for (var i = 0; i < myProps.length; i++) {
 		max = Math.max(myProps[i].move.getDuration()*BEAT);
 	}
 	document.getElementById("frameN").setAttribute("max", max.toString());
+	redraw();
 }
 function dragWorkshop(event) {
 	var definition = event.target.value;
@@ -194,33 +210,110 @@ function dropWorkshop(event) {
 	var target = event.target;
 	if (target.parentNode != null && target.parentNode.id === "thisMove") {target = target.parentNode;}
 	var child = document.createElement("option");
-	//child.text = event.dataTransfer.getData("Text");
-	//child.value = JSON.stringify(recipes[child.text]);
 	child.value = event.dataTransfer.getData("Text");
 	child.text = JSON.parse(child.value).movename;
 	child.draggable = true;
 	child.addEventListener('dragstart',dragWorkshop);
 	child.addEventListener('dragover', allowDrop);
-	target.replaceChild(child, target.childNodes[0]);
-	document.getElementById("json").value = JSON.stringify(recipes[child.text], null, '\n');
+	child.addEventListener('dblclick', modifyMove);
+	//target.replaceChild(child, target.childNodes[0]);
+	target.appendChild(child);
+	//document.getElementById("json").value = JSON.stringify(recipes[child.text], null, '\n');
 }
 
 //**** placeholder functionality
 function nothing() {
 	alert("not yet implemented");
 }
-function modifyMove() {
-	alert("not yet implemented");
+
+var moveTarget;
+
+function modifyMove(event) {
+	moveTarget = event.target;
+	$("#moveinner").empty();
+	$("#movemodify").toggle();
+	var definition = moves.parse(event.target.value);
+	addInput(textInput(definition,"movename"));
+	addInput(textInput(definition,"build"));
+	addInput(selectInput(definition,"spin",["In-Spin","Anti-Spin"],[INSPIN, ANTISPIN]));
+	addInput(numberInput(definition,"duration",[0.25,2,0.25]));
+	addInput(selectInput(definition,"orient",["Up","Right","Down","Left"],[TWELVE, THREE, SIX, NINE]));
+	addInput(selectInput(definition,"entry",["Up","Right","Down","Left"],[TWELVE, THREE, SIX, NINE]));
+	addInput(selectInput(definition,"direction",["Clockwise","Counter"],[CLOCKWISE, COUNTERCLOCKWISE]));
+	addInput(numberInput(definition,"extend",[0,1,0.5]));
+	addInput(selectInput(definition,"petals",["Zero","One", "Two", "Three", "Four"],[0,1,2,3,4]));
+	addInput(selectInput(definition,"mode",["Diamond","Box"],[DIAMOND, BOX]));
+}
+
+function addInput(inpt) {
+	if (inpt === null) {return;}
+	var popup = document.getElementById("moveinner");
+	var txt = document.createElement("span");
+	txt.innerHTML = inpt.getAttribute("data-param")+": ";
+	popup.appendChild(document.createElement("br"));
+	popup.appendChild(txt);
+	popup.appendChild(inpt);	
+}
+function textInput(definition, parameter) {
+	if (definition[parameter]===undefined) {return null;}
+	var inpt = document.createElement("input");
+	inpt.type = "text";
+	inpt.value = definition[parameter];
+	inpt.setAttribute("data-param",parameter);
+	return inpt;
+}
+function numberInput(definition, parameter, arr) {
+	if (definition[parameter]===undefined) {return null;}
+	var inpt = document.createElement("input");
+	inpt.type = "number";
+	inpt.min = arr[0].toString();
+	inpt.max = arr[1].toString();
+	inpt.step = arr[2].toString();
+	inpt.value = definition[parameter].toString();
+	inpt.setAttribute("data-param",parameter);
+	return inpt;
+}
+function selectInput(definition, parameter, arr, vals) {
+	if (definition[parameter]===undefined) {return null;}
+	var inpt = document.createElement("select");
+	var optn;
+	for (var i = 0; i< arr.length; i++) {
+		optn = document.createElement("option");
+		optn.text = arr[i];
+		optn.value = vals[i].toString();
+		if (nearly(definition[parameter],vals[i])) {
+			optn.selected = true;
+		}
+		inpt.appendChild(optn);
+	}
+	inpt.setAttribute("data-param",parameter);
+	return inpt;
+}
+
+function isNumber(n) {
+	return !isNaN(parseFloat(n)) && isFinite(n);
 }
 function submitChanges() {
-	var build = $("#workshop textarea").get(0).value;
-	var current = $("#workshop select option").get(0);
-	if (isValidJSON(build)===false) {
-		alert("invalid JSON");
-		return;
+	var move = moveTarget;
+	var olddef = moves.parse(move.value);
+	var newdef = {};
+	var inputs = $("#moveinner").children().toArray();
+	var param;
+	for (var i = 0; i < inputs.length; i++) {
+		if (inputs[i] instanceof HTMLInputElement || inputs[i] instanceof HTMLSelectElement) {
+			param = inputs[i].getAttribute("data-param");
+			newdef[param] = inputs[i].value;
+			if (isNumber(newdef[param])) {
+				newdef[param] = parseFloat(newdef[param]);
+			}
+		}
 	}
-	current.value = build;
-	current.text = JSON.parse(build).movename;
+	for (var p in newdef) {
+		olddef[p] = newdef[p];
+	}
+	move.value = JSON.stringify(olddef);
+	move.text = olddef.movename;
+	$("#movemodify").toggle();
 }
 
 // animation loop
@@ -272,6 +365,13 @@ function listenForKey(e) {
 		spinFrames(12);
 	} else if (e.keyCode==8 || e.keyCode == 46) {
 		if (document.activeElement.parentNode.className=="queue") {
+			document.activeElement.removeChild(document.activeElement.lastChild);
+			if(document.activeElement.parentNode.id == "queue1" && propOne.move.submoves.length > 0) {
+				propOne.move.submoves.pop();
+			} else if (document.activeElement.parentNode.id == "queue2" && propTwo.move.submoves.length > 0) {
+				propTwo.move.submoves.pop();
+			}
+		} else if (document.activeElement.parentNode.id=="workshop") {
 			document.activeElement.removeChild(document.activeElement.childNodes[document.activeElement.selectedIndex]);
 		}
 	}
@@ -334,8 +434,44 @@ function popImport() {
 }
 function popAlign(n) {
 	$("#popalign"+n).toggle();
-	$("#popalign"+n+ " textarea").val(myProps[n-1].stringify());
+	var hand = $('input[name=hand1]').toArray();
+	var handangle = propOne.getHandAngle();
+	for (var i = 0; i < hand.length; i++) {
+		if (nearly(parseFloat(hand[i].value),handangle)) {
+			hand[i].checked = true;
+		} else {
+			hand[i].checked = false;
+		}
+	}
+	hand = $('input[name=hand2]').toArray();
+	handangle = propTwo.getHandAngle();
+	for (var i = 0; i < hand.length; i++) {
+		if (nearly(parseFloat(hand[i].value),handangle)) {
+			hand[i].checked = true;
+		} else {
+			hand[i].checked = false;;
+		}
+	}
+	var prop = $('input[name=prop1]').toArray();
+	var	propangle = propOne.getPropAngle();
+	for (var i = 0; i < prop.length; i++) {
+		if (nearly(parseFloat(prop[i].value),propangle)) {
+			prop[i].checked = true;
+		} else {
+			prop[i].checked = false;
+		}
+	}
+	prop = $('input[name=prop2]').toArray();
+	propangle = propTwo.getPropAngle();
+	for (var i = 0; i < prop.length; i++) {
+		if (nearly(parseFloat(prop[i].value),propangle)) {
+			prop[i].checked = true;
+		} else {
+			prop[i].checked = false;
+		}
+	}
 }
+
 function importSubmit() {
 	var imported = $("#popimport textarea").val();
 	imported = props.parse(imported);
@@ -351,23 +487,19 @@ function importSubmit() {
 	$("#popimport").toggle();
 }
 function alignSubmit(n) {
-	var definition = props.parse($("#popalign"+n+" textarea").val());
 	var prop;
 	if (n===1) {
 		prop = propOne;
 	} else if (n===2) {
 		prop = propTwo;
 	}
-	for (var i = HOME; i<=PROP; i++) {
-		prop[ELEMENTS[i]].radius = definition[ELEMENTS[i]].radius;
-		prop[ELEMENTS[i]].azimuth = definition[ELEMENTS[i]].azimuth;
-		prop[ELEMENTS[i]].zenith = definition[ELEMENTS[i]].zenith;
-	}
-	prop.twist = definition.twist;
-	prop.grip = definition.grip;
-	prop.choke = definition.choke;
-	prop.bend = definition.bend;
-	prop.axis = definition.axis;
+	prop.setHandAngle(parseFloat($('input[name=hand' + n + ']:checked').val()));
+	prop.hand.radius = parseFloat(document.getElementById('radius'+n).value);
+	prop.setPropAngle(parseFloat($('input[name=prop' + n + ']:checked').val()));
+	predictions[0].orientToProp(propOne);
+	predictions[1].orientToProp(propTwo);
+	predictions[0].nudge(-0.1,0,-0.1);
+	predictions[1].nudge(0.1,0,-0.1);
 	redraw();
 	$("#popalign"+n).toggle();
 }
@@ -377,7 +509,7 @@ function alignSubmit(n) {
 <body onload="init();">
 <header>
 	<h1>Welcome to VisualSpinner3d. </h1>
-	<p>(This interface is still in development)</p>
+	<p>(This interface is still in development.  Mess around all you want, but weird sh*t <em>will</em> happen.)</p>
 </header>
 	
 <div id="content">
@@ -392,7 +524,7 @@ function alignSubmit(n) {
 			<button type="button" onclick="pauseSpin();">Pause</button>
 			<button type="button" onclick="spinFrames(-12)">-</button>
 			<input id="frameN" min="0" value="0" type="number">
-			<button type="button" onclick="spinFrames(12)";>+</button>
+			<button type="button" onclick="spinFrames(12)" ;="">+</button>
 			<button type="button" onclick="totalReset();">Reset Spin</button>
 			<br>
 			<button type="button" onclick="emptyQueues();">Reset Queues</button>
@@ -403,7 +535,7 @@ function alignSubmit(n) {
 		<div id="queue1" class="queue">
 			<h2>Blue Prop</h2>
 			<button type="button" onclick="popAlign(1);">Starting Position</button>
-			<select size="2" ondrop="dropQueue(event)"; ondragover="allowDrop(event);"></select>
+			<select size="2" ondrop="dropQueue(event)" ;="" ondragover="allowDrop(event);"></select>
 		</div>	
 
 		<div id="queue2" class="queue">
@@ -414,11 +546,8 @@ function alignSubmit(n) {
 		
 		<div id="workshop" ondrop="dropWorkshop(event);" ondragover="allowDrop(event);">
 			<h2>Workshop</h2>
-			<button type="button" onclick="modifyMove();">Modify</button>
 			<br>
-			<select id="thisMove" size = "2"><option ondragover = "allowDrop(event);" ondrop = "dropWorkshop(event);">Drag move from menu.</option></select>
-			<textarea id="json" rows="21" cols="22">JSON will appear here.</textarea>
-			<button type="button" onclick="submitChanges();">Submit</button>
+			<select id="thisMove" size="2"></select>
 			<button type="button" onclick="nothing();">Save</button>
 		</div>
 		
@@ -438,13 +567,88 @@ function alignSubmit(n) {
 	<button type="button" onclick="importSubmit();">Submit</button>
 </div>
 <div style="display: none;" id="popalign1">
-	<textarea rows="4" cols="50"></textarea><br>
+	Hand:
+				</p><table>
+					<tbody><tr>
+						<td></td>
+						<td><input name="hand1" value="4.712389" type="radio">Up</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td><input checked="checked" name="hand1" value="3.141593" type="radio">Left</td>
+						<td><input id="radius1" min="0" max="1" step="0.5" value="1" type="number"></td>
+						<td><input name="hand1" value="0" type="radio">Right</td>
+					</tr>	
+					<tr>
+						<td></td>
+						<td><input name="hand1" value="1.570796" type="radio">Down</td>
+						<td></td>
+					</tr>	
+				</tbody></table>	
+				Prop:
+				<table>
+					<tbody><tr>
+						<td></td>
+						<td><input name="prop1" value="4.712389" type="radio">Up</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td><input checked="checked" name="prop1" value="3.141593" type="radio">Left</td>
+						<td></td>
+						<td><input name="prop1" value="0" type="radio">Right</td>
+					</tr>	
+					<tr>
+						<td></td>
+						<td><input name="prop1" value="1.570796" type="radio">Down</td>
+						<td></td>
+					</tr>	
+				</tbody></table>
 	<button type="button" onclick="popAlign(1);">Cancel</button>
 	<button type="button" onclick="alignSubmit(1);">Submit</button>
 </div>
 <div style="display: none;" id="popalign2">
-	<textarea rows="4" cols="50"></textarea><br>
+		Hand:
+				</p><table>
+					<tbody><tr>
+						<td></td>
+						<td><input name="hand2" value="4.712389" type="radio">Up</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td><input checked="checked" name="hand2" value="3.141593" type="radio">Left</td>
+						<td><input id="radius2" min="0" max="1" step="0.5" value="1" type="number"></td>
+						<td><input name="hand2" value="0" type="radio">Right</td>
+					</tr>	
+					<tr>
+						<td></td>
+						<td><input name="hand2" value="1.570796" type="radio">Down</td>
+						<td></td>
+					</tr>	
+				</tbody></table>	
+		Prop:
+				<table>
+					<tbody><tr>
+						<td></td>
+						<td><input name="prop2" value="4.712389"" type="radio">Up</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td><input checked="checked" name="prop2" value="3.141593" type="radio">Left</td>
+						<td></td>
+						<td><input name="prop2" value="0" type="radio">Right</td>
+					</tr>	
+					<tr>
+						<td></td>
+						<td><input name="prop2" value="1.570796" type="radio">Down</td>
+						<td></td>
+					</tr>	
+				</tbody></table>
 	<button type="button" onclick="popAlign(2);">Cancel</button>
 	<button type="button" onclick="alignSubmit(2);">Submit</button>
+</div>
+<div style="display: none;" id="movemodify">
+	<button type="button" onclick='$("#movemodify").toggle();'>Cancel</button>
+	<button type="button" onclick="submitChanges();">Submit</button>
+	<div id="moveinner"></div>
 </div>
 </body></html>

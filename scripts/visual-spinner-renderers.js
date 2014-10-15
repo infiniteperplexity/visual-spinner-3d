@@ -139,7 +139,10 @@ PropFactory.prototype.colormap= function(s) {
 		return [255,128,0];
 	} else if (s=="fire") {
 		return [128,64,32];
-	} else {
+	} else if (s.split(",").length === 3) {
+		return [parseInt(s.split(",")[0]), parseInt(s.split(",")[1]), parseInt(s.split(",")[2])];
+	}
+	else {
 		return [255,255,255];
 	}	
 }

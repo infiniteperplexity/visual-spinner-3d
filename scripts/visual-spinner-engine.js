@@ -957,6 +957,7 @@ MoveChain.prototype.align = function(element, angle) {
 // Rotate the move until it matches a target Move or Prop
 	// this tends to be used for the finer points of chaining moves together
 MoveChain.prototype.adjust = function(target) {
+	if (this.abrupt) {return this;}
 	var hand;
 	var prop;
 	if (target instanceof Prop) {
