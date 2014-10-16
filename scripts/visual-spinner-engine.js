@@ -357,8 +357,11 @@ Prop.prototype.getHelperAngle = function(plane) {return this.getElementAngle(HEL
 Prop.prototype.getHandAngle = function(plane) {return this.getElementAngle(HAND, plane);}
 Prop.prototype.getPropAngle = function(plane) {return this.getElementAngle(PROP, plane);}
 // Generate a vector based on an element's cumulative position, skipping the HOME coordinates
-// If you have floating (i.e. null) hand or prop elements, you shouldn't be using this
+// If you have floating (i.e. null) hand or prop elements, you shouldn't be using this (note I think this doesn't exist anymore)
 Prop.prototype.getVector = function(element) {
+	if (this.move.submoves.length>0) {
+		return (this.tail().socket().getVector(element));
+	}
 	var x = 0;
 	var y = 0;
 	var z = 0;
@@ -390,6 +393,11 @@ Prop.prototype.orientToProp = function(prop) {
 		this.elements[i].zenith = prop.elements[i].zenith;
 		this.elements[i].azimuth = prop.elements[i].azimuth;
 	}
+	this.bend = prop.bend;
+	this.axis = prop.axis;
+	this.twist = prop.twist;
+	this.grip = prop.grip;
+	this.choke = prop.choke;
 }
 
 // Move the home coordinate of the prop using vector coordinates
@@ -957,9 +965,17 @@ MoveChain.prototype.align = function(element, angle) {
 // Rotate the move until it matches a target Move or Prop
 	// this tends to be used for the finer points of chaining moves together
 MoveChain.prototype.adjust = function(target) {
+	// If the move is set as "abrupt" it will be added no matter what
 	if (this.abrupt) {return this;}
+	// Otherwise we need to perform checks and adjustments
 	var hand;
 	var prop;
+	hand = this.socket().handVector();
+	prop = this.socket().propVector();
+	// If the move is not "cyclical", then it's useless to try phasing through it, and we should reenter or reorient instead
+	if (hand.nearly(this.handVector(),0.05) == false || prop.nearly(this.propVector(),0.1) == false) {
+		return null;
+	}
 	if (target instanceof Prop) {
 		hand = target.handVector();
 		prop = target.propVector();
@@ -975,7 +991,6 @@ MoveChain.prototype.adjust = function(target) {
 			this.phaseBy(1);
 		}
 	}
-	alert("Unable to fit.");
 	return null;
 }
 
@@ -1057,7 +1072,6 @@ PropFactory.prototype.defaults = function(options, defaults) {
 }
 PropFactory.prototype.parse = function(json) {
 	var definition = JSON.parse(json);
-	definition.axis = new Vector(definition.axis.x, definition.axis.y, definition.axis.z);
 	return definition;
 }
 Prop.prototype.apply = function(json, fix) {
@@ -1071,6 +1085,9 @@ Prop.prototype.apply = function(json, fix) {
 	this.grip = definition.grip;
 	this.choke = definition.choke;
 	this.bend = definition.bend;
+	if (definition.axis !== null) {
+		this.axis = new Vector(definition.axis.x, definition.axis.y, definition.axis.z);
+	}
 	this.axis = definition.axis;
 	this.propname = definition.propname;
 	this.emptyMoves();
@@ -1131,7 +1148,15 @@ MoveFactory.prototype.parse = function(json) {
 MoveFactory.prototype.build = function(json) {
 	var definition = this.parse(json);
 	var move = this[definition.build](definition);
-	// Need to add handling for the "tail_modify" attribute
+	if (definition.abrupt !== undefined) {
+		move.setAbrupt(definition.abrupt);
+	}
+	if (definition.modify !== undefined) {
+		move.modify(definition.modify);
+	}
+	if (definition.mofidy_tail !== undefined) {
+		move.modifyTail(definition.modify_tail);
+	}
 	return move;
 }
 
@@ -1149,6 +1174,7 @@ MoveChain.prototype.stringify = function() {
 // Rotate through submoves, changing which one comes first
 MoveChain.prototype.phaseBy = function(phase) {
 	//this currently trusts that the head and tail of the move fit together
+	//!!!Aha!  I believe this underlies the problem I have been seeing!
 	if (phase==undefined) {phase = 1;}
 	if (this.definition !== undefined) {
 		if (this.definition.phase == undefined) {
@@ -1183,6 +1209,9 @@ MoveChain.prototype.modify = function(options) {
 	for (var i = 0; i < this.submoves.length; i++) {
 		this.submoves[i].modify(options);
 	}
+	if (this.parent !== this.move && this.parent.definition !== undefined) {
+		this.parent.definition.modify = options;
+	} 
 	return this;
 }
 MoveLink.prototype.modify = function(options) {
@@ -1241,15 +1270,18 @@ MoveLink.prototype.modify = function(options) {
 }
 
 MoveChain.prototype.setAbrupt = function(tf) {
-        tf = (tf == undefined) ? true : tf;
-        this.abrupt = tf;
-        return this;
+	tf = (tf == undefined) ? true : tf;
+	this.abrupt = tf;
+	if (this.definition !== undefined) {
+		this.definition.abrupt = tf;
+	} 
+	return this;
 }
 
 MoveLink.prototype.setAbrupt = function(tf) {
-        tf = (tf == undefined) ? true : tf;
-        this.abrupt = tf;
-        return this;
+	tf = (tf == undefined) ? true : tf;
+	this.abrupt = tf;
+	return this;
 }
 
 function isValidJSON(str) {
@@ -1259,4 +1291,56 @@ function isValidJSON(str) {
         return false;
     }
     return true;
+}
+
+MoveChain.prototype.reorient = function(target) {
+	//should we assume we try this from the start, or that we try this only once we have failed once?
+	var retrn = this.adjust(target);
+	if (retrn !== null) {return retrn;}
+	var definition = this.definition;
+	if (definition === undefined) {
+		alert("Cannot reorient a move that has no attached definition.");
+		return null;
+	}
+	var entry = definition.entry;
+	var orient = definition.orient;
+	if (entry === undefined || orient === undefined) {
+		alert("Cannot reorient a move that has no defined orientation or entry.");
+		return null;
+	}
+	//some duplicate code here
+	var hand;
+	var prop;
+	if (target instanceof Prop) {
+		hand = target.handVector();
+		prop = target.propVector();
+	} else if (target instanceof MoveLink || target instanceof MoveChain) {
+		hand = target.socket().handVector();
+		prop = target.socket().propVector();
+	}
+	var redefined;
+	for (var i = 0; i < 4; i++) {
+		for (var j = 0; j < 4; j++) {
+			definition.orient = unwind(orient+i*QUARTER);
+			definition.entry = unwind(entry+j*QUARTER);
+			//definition.phase = 0;
+			redefined = MoveFactory.prototype[definition.build](definition);
+			if (hand.nearly(redefined.handVector(),0.05) && prop.nearly(redefined.propVector(),0.1)) {
+				return redefined;
+			}
+			retrn = redefined.adjust(target);
+			if (retrn !== null) {
+				return retrn;
+			}
+		}
+	}
+	return null;
+}
+
+//!!! Problem with this method believed fixed
+// This convenience method clones the last MoveLink on the queue and adds it to the tail end of the MoveChain
+MoveChain.prototype.extend = function() {
+	var r = this.tail().socket();
+	this.add(r);
+	return r;
 }

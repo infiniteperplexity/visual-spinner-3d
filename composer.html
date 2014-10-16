@@ -19,8 +19,8 @@ canvas {width: 400px; height: 400px; background-color: #000;}
 table {position: relative; top: -20px;}
 #popexport {position: fixed; z-index: 1; top: 150px; left: 50px; }
 #popimport {position: fixed; z-index: 1; top: 150px; left: 50px;}
-#popalign1 {position: fixed; z-index: 1; top: 250px; left: 420px; background-color: #FFF; padding: 2.5px; border: 5px solid gray; margin: -2.5px;}
-#popalign2 {position: fixed; z-index: 1; top: 250px; left: 630px; background-color: #FFF; padding: 2.5px; border: 5px solid gray; margin: -2.5px;}
+#popalign1 {position: fixed; z-index: 1; top: 150px; left: 420px; background-color: #FFF; padding: 2.5px; border: 5px solid gray; margin: -2.5px;}
+#popalign2 {position: fixed; z-index: 1; top: 150px; left: 630px; background-color: #FFF; padding: 2.5px; border: 5px solid gray; margin: -2.5px;}
 #radius1, #radius2 {width: 50px;}
 #frameN {width: 100px;}
 #movemodify {position: fixed; z-index: 1; top: 150px; left: 550px; width: 400px; background-color: #FFF; padding: 2.5px; border: 5px solid gray; margin: -2.5px;};
@@ -29,16 +29,16 @@ table {position: relative; top: -20px;}
 
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>VisualSpinner3D Composer, by Glenn Wright</title>
-<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
-<script src="scripts/gl-matrix-min.js"></script>
-<script src="scripts/phoria-min.js"></script>
-<script src="scripts/requestAnimationFrame.js"></script>
-<script src="scripts/visual-spinner-engine.js"></script>
-<script src="scripts/visual-spinner-moves.js"></script>
-<script src="scripts/visual-spinner-renderers.js"></script>
-<script src="scripts/visual-spinner-recipes.js"></script>
+<script src="VisualSpinner3D%20Composer,%20by%20Glenn%20Wright_files/jquery-1.js"></script>
+<script src="VisualSpinner3D%20Composer,%20by%20Glenn%20Wright_files/gl-matrix-min.js"></script>
+<script src="VisualSpinner3D%20Composer,%20by%20Glenn%20Wright_files/phoria-min.js"></script>
+<script src="VisualSpinner3D%20Composer,%20by%20Glenn%20Wright_files/requestAnimationFrame.js"></script>
+<script src="VisualSpinner3D%20Composer,%20by%20Glenn%20Wright_files/visual-spinner-engine.js"></script>
+<script src="VisualSpinner3D%20Composer,%20by%20Glenn%20Wright_files/visual-spinner-moves.js"></script>
+<script src="VisualSpinner3D%20Composer,%20by%20Glenn%20Wright_files/visual-spinner-renderers.js"></script>
+<script src="VisualSpinner3D%20Composer,%20by%20Glenn%20Wright_files/visual-spinner-recipes.js"></script>
 <script>
-
+"use strict";
 //**** set parameters and set up environment and display
 var HEIGHT = 400;
 var WIDTH = 400;
@@ -93,15 +93,14 @@ function canvasSetup() {
 	myProps.push(propTwo);
 	startingPositions[0].orientToProp(propOne);
 	startingPositions[1].orientToProp(propTwo);
-	predictions[0].orientToProp(propOne);
-	predictions[1].orientToProp(propTwo);
-	predictions[0].nudge(-0.1,0,-0.1);
-	predictions[1].nudge(0.1,0,-0.1);
+	predict();
 	redraw();
 }
 window.addEventListener("keydown", listenForKey, false);
 Prop.prototype.spinfail = function() {
-	alert("can't spin with an empty queue");
+	if (paused == false) {
+		alert("can't spin with an empty queue");
+	}
 }
 
 //**** animation and rendering
@@ -142,6 +141,8 @@ function init() {
 function populateMenu() {
 	var menu = $("#menu").children("select");
 	var option;
+	// this check helps those who save the webpage on their Desktop
+	if ($("#menu").children("select").children().toArray().length>0) {return;}
 	for (var key in recipes) {
 		if (key !== "add") {
 			option = '<option draggable="true" ondragstart="dragMenu(event)" value="'+key+'">'+key+"</option>";
@@ -149,7 +150,6 @@ function populateMenu() {
 		}
 	}
 }
-
 
 //**** handle drag and drop events
 function allowDrop(event) {
@@ -176,22 +176,26 @@ function addMoveToQueue(definition, target) {
 	} else if (queue === "queue2") {
 		prop = propTwo;
 	}
-	if (move.adjust(prop) != null) {
+	//if (move.adjust(prop) != null) {
+	var oriented = move.reorient(prop);
+	var proceed = true;
+	if (oriented === null) {
+		proceed = confirm("The engine believes this move cannot be smoothly attached to the end of the current move sequence.  Do you wish to add it anyway?  Note that the engine is currently confused about contact moves and plane-bending.");
+		if (proceed === true) {
+			oriented = move.setAbrupt();
+		}
+	}
+	if (proceed !== false) {
 		var child = document.createElement("option");
 		child.text = JSON.parse(definition).movename;
 		child.value = definition;
 		//child.draggable = true;
 		//child.addEventListener('dragstart',drag);
 		target.appendChild(child);
-		prop.addMove(move);
-		//sloppy programming...
-		if (prop==propOne) {
-			predictions[0].orientToProp(propOne.predict());
-			predictions[0].nudge(-0.1,0,-0.1);
-		} else if (prop==propTwo) {
-			predictions[1].orientToProp(propTwo.predict());
-			predictions[1].nudge(0.1,0,-0.1);
-		}
+		prop.addMove(oriented);
+		predict();
+	} else {
+		alert("Move not added.");
 	}
 	var max;
 	for (var i = 0; i < myProps.length; i++) {
@@ -216,7 +220,6 @@ function dropWorkshop(event) {
 	child.addEventListener('dragstart',dragWorkshop);
 	child.addEventListener('dragover', allowDrop);
 	child.addEventListener('dblclick', modifyMove);
-	//target.replaceChild(child, target.childNodes[0]);
 	target.appendChild(child);
 	//document.getElementById("json").value = JSON.stringify(recipes[child.text], null, '\n');
 }
@@ -235,14 +238,22 @@ function modifyMove(event) {
 	var definition = moves.parse(event.target.value);
 	addInput(textInput(definition,"movename"));
 	addInput(textInput(definition,"build"));
-	addInput(selectInput(definition,"spin",["In-Spin","Anti-Spin"],[INSPIN, ANTISPIN]));
-	addInput(numberInput(definition,"duration",[0.25,2,0.25]));
+	addInput(selectInput(definition,"direction",["Clockwise","Counter"],[CLOCKWISE, COUNTERCLOCKWISE]));
 	addInput(selectInput(definition,"orient",["Up","Right","Down","Left"],[TWELVE, THREE, SIX, NINE]));
 	addInput(selectInput(definition,"entry",["Up","Right","Down","Left"],[TWELVE, THREE, SIX, NINE]));
-	addInput(selectInput(definition,"direction",["Clockwise","Counter"],[CLOCKWISE, COUNTERCLOCKWISE]));
-	addInput(numberInput(definition,"extend",[0,1,0.5]));
+	addInput(selectInput(definition,"spin",["In-Spin","Anti-Spin"],[INSPIN, ANTISPIN]));
+	addInput(selectInput(definition,"spin1",["In-Spin","Anti-Spin"],[INSPIN, ANTISPIN]));
+	addInput(selectInput(definition,"spin2",["In-Spin","Anti-Spin"],[INSPIN, ANTISPIN]));
+	addInput(selectInput(definition,"bend",["Iso-Bend","Anti-Bend","Pro-Bend"],[ISOBEND, ANTIBEND, PROBEND]));
+	addInput(selectInput(definition,"pitch",["Forward","Backward"],[FORWARD, BACKWARD]));
 	addInput(selectInput(definition,"petals",["Zero","One", "Two", "Three", "Four"],[0,1,2,3,4]));
+	addInput(selectInput(definition,"petals1",["Zero","One", "Two", "Three", "Four"],[0,1,2,3,4]));
+	addInput(selectInput(definition,"petals2",["Zero","One", "Two", "Three", "Four"],[0,1,2,3,4]));
+	addInput(selectInput(definition,"harmonics",["Zero","One", "Two", "Three", "Four"],[0,1,2,3,4]));
 	addInput(selectInput(definition,"mode",["Diamond","Box"],[DIAMOND, BOX]));
+	addInput(numberInput(definition,"duration",[0.25,2,0.25]));
+	addInput(numberInput(definition,"extend",[0,1,0.5]));
+	addInput(vectorInput(definition,"plane",["Wall","Wheel","Floor"],[WALL, WHEEL, FLOOR]));
 }
 
 function addInput(inpt) {
@@ -290,6 +301,24 @@ function selectInput(definition, parameter, arr, vals) {
 	return inpt;
 }
 
+function vectorInput(definition, parameter, arr, vals) {
+	if (definition[parameter]===undefined) {return null;}
+	var inpt = document.createElement("select");
+	var optn;
+	for (var i = 0; i< arr.length; i++) {
+		optn = document.createElement("option");
+		optn.text = arr[i];
+		optn.value = JSON.stringify(vals[i]);
+		if (vals[i].nearly(definition.plane)) {
+			optn.selected = true;
+		}
+		inpt.appendChild(optn);
+	}
+	inpt.setAttribute("data-param",parameter);
+	return inpt;
+}
+
+
 function isNumber(n) {
 	return !isNaN(parseFloat(n)) && isFinite(n);
 }
@@ -298,17 +327,23 @@ function submitChanges() {
 	var olddef = moves.parse(move.value);
 	var newdef = {};
 	var inputs = $("#moveinner").children().toArray();
-	var param;
+	var prmtr;
+	var val;
 	for (var i = 0; i < inputs.length; i++) {
 		if (inputs[i] instanceof HTMLInputElement || inputs[i] instanceof HTMLSelectElement) {
-			param = inputs[i].getAttribute("data-param");
-			newdef[param] = inputs[i].value;
-			if (isNumber(newdef[param])) {
-				newdef[param] = parseFloat(newdef[param]);
+			prmtr = inputs[i].getAttribute("data-param");
+			if (prmtr === "plane") {
+				val = JSON.parse(inputs[i].value);
+				newdef[prmtr] = new Vector(val.x, val.y, val.z);
+			} else {
+				newdef[prmtr] = inputs[i].value;
+				if (isNumber(newdef[prmtr])) {
+					newdef[prmtr] = parseFloat(newdef[prmtr]);
+				}
 			}
 		}
 	}
-	for (var p in newdef) {
+	for (var p in newdef) {	
 		olddef[p] = newdef[p];
 	}
 	move.value = JSON.stringify(olddef);
@@ -353,6 +388,12 @@ function totalReset() {
 	redraw();
 }
 
+function predict() {
+	predictions[0].orientToProp(propOne);
+	predictions[1].orientToProp(propTwo);
+	predictions[0].nudge(-0.1,0,-0.1);
+	predictions[1].nudge(-0.1,0,-0.1);
+}
 function listenForKey(e) {
 	//alert(e.keyCode);
 	if (e.keyCode ===13) {
@@ -371,6 +412,7 @@ function listenForKey(e) {
 			} else if (document.activeElement.parentNode.id == "queue2" && propTwo.move.submoves.length > 0) {
 				propTwo.move.submoves.pop();
 			}
+			predict();
 		} else if (document.activeElement.parentNode.id=="workshop") {
 			document.activeElement.removeChild(document.activeElement.childNodes[document.activeElement.selectedIndex]);
 		}
@@ -413,6 +455,7 @@ function advanceFrames(n) {
 }
 
 function emptyQueues() {
+	pauseSpin();
 	$("#queue1 select").empty();
 	$("#queue2 select").empty();
 	propOne.emptyMoves();
@@ -434,40 +477,60 @@ function popImport() {
 }
 function popAlign(n) {
 	$("#popalign"+n).toggle();
-	var hand = $('input[name=hand1]').toArray();
-	var handangle = propOne.getHandAngle();
-	for (var i = 0; i < hand.length; i++) {
-		if (nearly(parseFloat(hand[i].value),handangle)) {
-			hand[i].checked = true;
+	var element;
+	var angle;
+	element = $('input[name=hand1]').toArray();
+	angle = propOne.getHandAngle();
+	for (var i = 0; i < element.length; i++) {
+		if (nearly(parseFloat(hand[i].value),angle)) {
+			element[i].checked = true;
 		} else {
-			hand[i].checked = false;
+			element[i].checked = false;
 		}
 	}
-	hand = $('input[name=hand2]').toArray();
-	handangle = propTwo.getHandAngle();
-	for (var i = 0; i < hand.length; i++) {
-		if (nearly(parseFloat(hand[i].value),handangle)) {
-			hand[i].checked = true;
+	element = $('input[name=hand2]').toArray();
+	angle = propTwo.getHandAngle();
+	for (var i = 0; i < element.length; i++) {
+		if (nearly(parseFloat(element[i].value),angle)) {
+			element[i].checked = true;
 		} else {
-			hand[i].checked = false;;
+			element[i].checked = false;;
 		}
 	}
-	var prop = $('input[name=prop1]').toArray();
-	var	propangle = propOne.getPropAngle();
-	for (var i = 0; i < prop.length; i++) {
-		if (nearly(parseFloat(prop[i].value),propangle)) {
-			prop[i].checked = true;
+	element = $('input[name=prop1]').toArray();
+	angle = propOne.getPropAngle();
+	for (var i = 0; i < element.length; i++) {
+		if (nearly(parseFloat(element[i].value),angle)) {
+			element[i].checked = true;
 		} else {
-			prop[i].checked = false;
+			element[i].checked = false;
 		}
 	}
-	prop = $('input[name=prop2]').toArray();
-	propangle = propTwo.getPropAngle();
-	for (var i = 0; i < prop.length; i++) {
-		if (nearly(parseFloat(prop[i].value),propangle)) {
-			prop[i].checked = true;
+	element = $('input[name=prop2]').toArray();
+	angle = propTwo.getPropAngle();
+	for (var i = 0; i < element.length; i++) {
+		if (nearly(parseFloat(element[i].value),angle)) {
+			element[i].checked = true;
 		} else {
-			prop[i].checked = false;
+			element[i].checked = false;
+		}
+	}
+	element = $('input[name=pivot1]').toArray();
+	angle = propTwo.getPivotAngle();
+	for (var i = 0; i < element.length; i++) {
+		if (nearly(parseFloat(element[i].value),angle)) {
+			element[i].checked = true;
+		} else {
+			element[i].checked = false;
+		}
+	}
+	element = $('input[name=pivot2]').toArray();
+	angle = propTwo.getPivotAngle();
+	for (var i = 0; i < element.length; i++) {
+		if (nearly(parseFloat(element[i].value),angle)) {
+			element[i].checked = true;
+		} else {
+			element[i].checked = false;
 		}
 	}
 }
@@ -496,10 +559,8 @@ function alignSubmit(n) {
 	prop.setHandAngle(parseFloat($('input[name=hand' + n + ']:checked').val()));
 	prop.hand.radius = parseFloat(document.getElementById('radius'+n).value);
 	prop.setPropAngle(parseFloat($('input[name=prop' + n + ']:checked').val()));
-	predictions[0].orientToProp(propOne);
-	predictions[1].orientToProp(propTwo);
-	predictions[0].nudge(-0.1,0,-0.1);
-	predictions[1].nudge(0.1,0,-0.1);
+	prop.hand.radius = parseFloat(document.getElementById('pradius'+n).value);
+	predict();
 	redraw();
 	$("#popalign"+n).toggle();
 }
@@ -509,7 +570,7 @@ function alignSubmit(n) {
 <body onload="init();">
 <header>
 	<h1>Welcome to VisualSpinner3d. </h1>
-	<p>(This interface is still in development.  Mess around all you want, but weird sh*t <em>will</em> happen.)</p>
+	<p>(This interface is still in development.  Mess around all you want, but weird sh*t might happen.)</p>
 </header>
 	
 <div id="content">
@@ -568,7 +629,7 @@ function alignSubmit(n) {
 </div>
 <div style="display: none;" id="popalign1">
 	Hand:
-				</p><table>
+				<p></p><table>
 					<tbody><tr>
 						<td></td>
 						<td><input name="hand1" value="4.712389" type="radio">Up</td>
@@ -603,12 +664,30 @@ function alignSubmit(n) {
 						<td></td>
 					</tr>	
 				</tbody></table>
+				Pivot:
+				<table>
+					<tbody><tr>
+						<td></td>
+						<td><input name="pivot1" value="4.712389" type="radio">Up</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td><input checked="checked" name="pivot1" value="3.141593" type="radio">Left</td>
+						<td><input id="pradius1" min="0" max="1" step="0.5" value="0" type="number"></td>
+						<td><input name="pivot1" value="0" type="radio">Right</td>
+					</tr>	
+					<tr>
+						<td></td>
+						<td><input name="pivot1" value="1.570796" type="radio">Down</td>
+						<td></td>
+					</tr>	
+				</tbody></table>
 	<button type="button" onclick="popAlign(1);">Cancel</button>
 	<button type="button" onclick="alignSubmit(1);">Submit</button>
 </div>
 <div style="display: none;" id="popalign2">
 		Hand:
-				</p><table>
+				<p></p><table>
 					<tbody><tr>
 						<td></td>
 						<td><input name="hand2" value="4.712389" type="radio">Up</td>
@@ -629,7 +708,7 @@ function alignSubmit(n) {
 				<table>
 					<tbody><tr>
 						<td></td>
-						<td><input name="prop2" value="4.712389"" type="radio">Up</td>
+						<td><input name="prop2" value="4.712389" "="" type="radio">Up</td>
 						<td></td>
 					</tr>
 					<tr>
@@ -640,6 +719,24 @@ function alignSubmit(n) {
 					<tr>
 						<td></td>
 						<td><input name="prop2" value="1.570796" type="radio">Down</td>
+						<td></td>
+					</tr>	
+				</tbody></table>
+			Pivot:
+				<table>
+					<tbody><tr>
+						<td></td>
+						<td><input name="pivot2" value="4.712389" type="radio">Up</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td><input checked="checked" name="pivot2" value="3.141593" type="radio">Left</td>
+						<td><input id="pradius2" min="0" max="1" step="0.5" value="0" type="number"></td>
+						<td><input name="pivot2" value="0" type="radio">Right</td>
+					</tr>	
+					<tr>
+						<td></td>
+						<td><input name="pivot2" value="1.570796" type="radio">Down</td>
 						<td></td>
 					</tr>	
 				</tbody></table>
