@@ -1154,7 +1154,7 @@ MoveFactory.prototype.build = function(json) {
 	if (definition.modify !== undefined) {
 		move.modify(definition.modify);
 	}
-	if (definition.mofidy_tail !== undefined) {
+	if (definition.modify_tail !== undefined) {
 		move.modifyTail(definition.modify_tail);
 	}
 	return move;
@@ -1172,9 +1172,8 @@ MoveChain.prototype.stringify = function() {
 }
 
 // Rotate through submoves, changing which one comes first
+	// Rarely use this on moves that are not "cyclical"; e.g. start and stop in the same position
 MoveChain.prototype.phaseBy = function(phase) {
-	//this currently trusts that the head and tail of the move fit together
-	//!!!Aha!  I believe this underlies the problem I have been seeing!
 	if (phase==undefined) {phase = 1;}
 	if (this.definition !== undefined) {
 		if (this.definition.phase == undefined) {
@@ -1209,9 +1208,13 @@ MoveChain.prototype.modify = function(options) {
 	for (var i = 0; i < this.submoves.length; i++) {
 		this.submoves[i].modify(options);
 	}
-	if (this.parent !== this.move && this.parent.definition !== undefined) {
-		this.parent.definition.modify = options;
-	} 
+	if (this.definition !== undefined) {
+		this.definition.modify = options;
+	}
+	//???What was the point of all this "parent" business?
+	//if (this.parent !== this.move && this.parent.definition !== undefined) {
+	//	this.parent.definition.modify = options;
+	//} 
 	return this;
 }
 MoveLink.prototype.modify = function(options) {
@@ -1324,7 +1327,8 @@ MoveChain.prototype.reorient = function(target) {
 			definition.orient = unwind(orient+i*QUARTER);
 			definition.entry = unwind(entry+j*QUARTER);
 			//definition.phase = 0;
-			redefined = MoveFactory.prototype[definition.build](definition);
+			redefined = MoveFactory.prototype.build(JSON.stringify(definition));
+			//redefined = MoveFactory.prototype[definition.build](definition);
 			if (hand.nearly(redefined.handVector(),0.05) && prop.nearly(redefined.propVector(),0.1)) {
 				return redefined;
 			}

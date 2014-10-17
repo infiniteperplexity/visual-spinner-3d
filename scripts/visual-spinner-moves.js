@@ -1569,6 +1569,10 @@ MoveFactory.prototype.spiral = function(options) {
 	segment.prop.speed = options.direction*options.speed;
 	segment.duration = 1/options.sliceby;
 	segment.prop.rescale = options.rescale;
+	//not sure if I like this...
+	//if (segment.prop.rescale > 0) {
+	//	segment.prop.radius -= options.rescale;
+	//}
 	move.add(segment);
 	for (var i = 1; i<options.sliceby; i++) {
 		move.extend();

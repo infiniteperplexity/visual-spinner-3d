@@ -143,7 +143,8 @@ function populateMenu() {
 	var menu = $("#menu").children("select");
 	var option;
 	// this check helps those who save the webpage on their Desktop
-	if ($("#menu").children("select").children().toArray().length>0) {return;}
+	//if ($("#menu").children("select").children().toArray().length>0) {return;}
+	menu.empty();
 	for (var key in recipes) {
 		if (key !== "add") {
 			option = '<option draggable="true" ondragstart="dragMenu(event)" value="'+key+'">'+key+"</option>";
@@ -242,18 +243,23 @@ function modifyMove(event) {
 	addInput(selectInput(definition,"direction",["Clockwise","Counter"],[CLOCKWISE, COUNTERCLOCKWISE]));
 	addInput(selectInput(definition,"orient",["Up","Right","Down","Left"],[TWELVE, THREE, SIX, NINE]));
 	addInput(selectInput(definition,"entry",["Up","Right","Down","Left"],[TWELVE, THREE, SIX, NINE]));
+	addInput(selectInput(definition,"hand",["Up","Right","Down","Left"],[TWELVE, THREE, SIX, NINE]));
 	addInput(selectInput(definition,"spin",["In-Spin","Anti-Spin"],[INSPIN, ANTISPIN]));
 	addInput(selectInput(definition,"spin1",["In-Spin","Anti-Spin"],[INSPIN, ANTISPIN]));
 	addInput(selectInput(definition,"spin2",["In-Spin","Anti-Spin"],[INSPIN, ANTISPIN]));
 	addInput(selectInput(definition,"bend",["Iso-Bend","Anti-Bend","Pro-Bend"],[ISOBEND, ANTIBEND, PROBEND]));
 	addInput(selectInput(definition,"pitch",["Forward","Backward"],[FORWARD, BACKWARD]));
+	addInput(selectInput(definition,"rescale",["Inward","Outward"],[-1, 1]));
 	addInput(selectInput(definition,"petals",["Zero","One", "Two", "Three", "Four"],[0,1,2,3,4]));
 	addInput(selectInput(definition,"petals1",["Zero","One", "Two", "Three", "Four"],[0,1,2,3,4]));
 	addInput(selectInput(definition,"petals2",["Zero","One", "Two", "Three", "Four"],[0,1,2,3,4]));
 	addInput(selectInput(definition,"harmonics",["Zero","One", "Two", "Three", "Four"],[0,1,2,3,4]));
-	addInput(selectInput(definition,"mode",["Diamond","Box"],[DIAMOND, BOX]));
-	addInput(numberInput(definition,"duration",[0.25,2,0.25]));
 	addInput(numberInput(definition,"extend",[0,1,0.5]));
+	addInput(selectInput(definition,"mode",["Diamond","Box"],[DIAMOND, BOX]));
+	addInput(selectInput(definition,"offset",["Offset","No Offset"],[OFFSET, NOOFFSET]));
+	addInput(numberInput(definition,"duration",[0.25,2,0.25]));
+	addInput(selectInput(definition,"pivot_angle",["Up","Right","Down","Left"],[TWELVE, THREE, SIX, NINE]));
+	addInput(numberInput(definition,"pivot_radius",[0,1,0.5]));
 	addInput(vectorInput(definition,"plane",["Wall","Wheel","Floor"],[WALL, WHEEL, FLOOR]));
 }
 
