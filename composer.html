@@ -489,7 +489,7 @@ function popAlign(n) {
 	element = $('input[name=hand1]').toArray();
 	angle = propOne.getHandAngle();
 	for (var i = 0; i < element.length; i++) {
-		if (nearly(parseFloat(hand[i].value),angle)) {
+		if (nearly(parseFloat(element[i].value),angle)) {
 			element[i].checked = true;
 		} else {
 			element[i].checked = false;
@@ -523,7 +523,7 @@ function popAlign(n) {
 		}
 	}
 	element = $('input[name=pivot1]').toArray();
-	angle = propTwo.getPivotAngle();
+	angle = propOne.getPivotAngle();
 	for (var i = 0; i < element.length; i++) {
 		if (nearly(parseFloat(element[i].value),angle)) {
 			element[i].checked = true;
@@ -564,9 +564,11 @@ function alignSubmit(n) {
 		prop = propTwo;
 	}
 	prop.setHandAngle(parseFloat($('input[name=hand' + n + ']:checked').val()));
-	prop.hand.radius = parseFloat(document.getElementById('radius'+n).value);
+	prop.hand.radius = parseFloat(document.getElementById('hradius'+n).value);
 	prop.setPropAngle(parseFloat($('input[name=prop' + n + ']:checked').val()));
-	prop.hand.radius = parseFloat(document.getElementById('pradius'+n).value);
+	prop.setPivotAngle(parseFloat($('input[name=pivot' + n + ']:checked').val()));
+	prop.pivot.radius = parseFloat(document.getElementById('pradius'+n).value);
+	
 	predict();
 	redraw();
 	$("#popalign"+n).toggle();
@@ -644,7 +646,7 @@ function alignSubmit(n) {
 					</tr>
 					<tr>
 						<td><input checked="checked" name="hand1" value="3.141593" type="radio">Left</td>
-						<td><input id="radius1" min="0" max="1" step="0.5" value="1" type="number"></td>
+						<td><input id="hradius1" min="0" max="1" step="0.5" value="1" type="number"></td>
 						<td><input name="hand1" value="0" type="radio">Right</td>
 					</tr>	
 					<tr>
@@ -702,7 +704,7 @@ function alignSubmit(n) {
 					</tr>
 					<tr>
 						<td><input checked="checked" name="hand2" value="3.141593" type="radio">Left</td>
-						<td><input id="radius2" min="0" max="1" step="0.5" value="1" type="number"></td>
+						<td><input id="hradius2" min="0" max="1" step="0.5" value="1" type="number"></td>
 						<td><input name="hand2" value="0" type="radio">Right</td>
 					</tr>	
 					<tr>

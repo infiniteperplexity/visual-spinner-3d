@@ -49,7 +49,7 @@ var NFLOOR = new Vector(0,-1,0);
 var BEAT = 360;
 var SPEED = UNIT/BEAT;
 var TINY = 0.0001;
-
+var SMALLISH = 0.01;
 var HOME = 0;
 var PIVOT = 1;
 var HELPER = 2;
@@ -149,7 +149,7 @@ Vector.prototype.toArray = function() {
 // Test equality of vectors within rounding error
 Vector.prototype.nearly = function(vector, delta) {
 	if (delta===undefined) {
-		delta = TINY;
+		delta = SMALLISH;
 	}
 	//checks to see whether two vectors or planes are nearly the same
 	if (	Math.abs(this.x-vector.x)<delta
@@ -215,7 +215,7 @@ function unwind(angle) {
 // Check whether two floating point values are almost equal
 function nearly(n1,n2, delta) {
 	if (delta===undefined) {
-		delta = TINY;
+		delta = SMALLISH;
 	}
 	n1 = unwind(n1);
 	n2 = unwind(n2);
