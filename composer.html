@@ -19,8 +19,8 @@ canvas {width: 400px; height: 400px; background-color: #000;}
 table {position: relative; top: -20px;}
 #popexport {position: fixed; z-index: 1; top: 150px; left: 50px; }
 #popimport {position: fixed; z-index: 1; top: 150px; left: 50px;}
-#popalign1 {position: fixed; z-index: 1; top: 150px; left: 420px; background-color: #FFF; padding: 2.5px; border: 5px solid gray; margin: -2.5px;}
-#popalign2 {position: fixed; z-index: 1; top: 150px; left: 630px; background-color: #FFF; padding: 2.5px; border: 5px solid gray; margin: -2.5px;}
+#popalign1 {position: fixed; z-index: 1; top: 100px; left: 420px; background-color: #FFF; padding: 2.5px; border: 5px solid gray; margin: -2.5px;}
+#popalign2 {position: fixed; z-index: 1; top: 100px; left: 630px; background-color: #FFF; padding: 2.5px; border: 5px solid gray; margin: -2.5px;}
 #radius1, #radius2 {width: 50px;}
 #frameN {width: 100px;}
 #movemodify {position: fixed; z-index: 1; top: 150px; left: 550px; width: 400px; background-color: #FFF; padding: 2.5px; border: 5px solid gray; margin: -2.5px;};
@@ -482,6 +482,11 @@ function popImport() {
 	$("#popexport").hide();
 	$("#popimport").toggle();
 }
+
+var prop1 = "poi";
+var prop2 = "poi";
+var color1 = "blue";
+var color2 = "red";
 function popAlign(n) {
 	$("#popalign"+n).toggle();
 	var element;
@@ -540,6 +545,10 @@ function popAlign(n) {
 			element[i].checked = false;
 		}
 	}
+	$("#1prop").val(prop1);
+	$("#2prop").val(prop2);
+	$("#1color").val(color1);
+	$("#2color").val(color2);
 }
 
 function importSubmit() {
@@ -569,6 +578,58 @@ function alignSubmit(n) {
 	prop.setPivotAngle(parseFloat($('input[name=pivot' + n + ']:checked').val()));
 	prop.pivot.radius = parseFloat(document.getElementById('pradius'+n).value);
 	
+	var text = document.getElementById(n+"color").value;
+	var color;
+	var dark;
+	if (text === "red") {
+		color = "red";
+		dark = "64,0,0";
+	} else if (text === "blue") {
+		color = "blue";
+		dark = "0,32,64";
+	} else if (text === "yellow") {
+		color = "yellow";
+		dark = "64,64,0";
+	} else if (text === "green") {
+		color = "green";
+		dark = "0,64,0";
+	} else if (text === "orange") {
+		color = "orange";
+		dark = "64,32,0";
+	} else if (text === "white") {
+		color = "white";
+		dark = "64,64,64";
+	}
+	text =  document.getElementById(n+"prop").value;
+	if (n===1) {
+		color1 = color;
+		prop1 = text;
+	} else if (n===2) {
+		color2 = color;
+		prop2 = text;
+	}
+	var renderer;
+	var predicted;
+	
+	if (text=="poi") {
+		renderer = props.poirender({head_color: color, scene: scene});
+		predicted = props.poirender({head_color: dark, scene: scene});
+	} else if (text=="staff") {
+		renderer = props.staffrender({head_color: color, scene: scene});
+		predicted = props.staffrender({head_color: dark, scene: scene});
+	} else if (text=="hoop") {
+		renderer = props.hooprender({head_color: color, scene: scene});
+		predicted = props.hooprender({head_color: dark, scene: scene});
+	} else if (text=="none") {
+		renderer = props.noproprender({scene: scene});
+		predicted = props.noproprender({scene: scene});
+	}
+	prop.renderer.deactivate();
+	prop.renderer = renderer;
+	prop.renderer.activate();
+	predictions[n-1].renderer.deactivate();
+	predictions[n-1].renderer = predicted;
+	predictions[n-1].renderer.activate();
 	predict();
 	redraw();
 	$("#popalign"+n).toggle();
@@ -579,7 +640,7 @@ function alignSubmit(n) {
 <body onload="init();">
 <header>
 	<h1>Welcome to VisualSpinner3d. </h1>
-	<p>(This interface is still in development.  Mess around all you want, but weird sh*t might happen.)</p>
+	<p>(So far the dragging and dropping works only in Firefox, which makes this page unusable in other browsers.)</p>
 </header>
 	
 <div id="content">
@@ -604,13 +665,13 @@ function alignSubmit(n) {
 		</div>
 		<div id="queue1" class="queue">
 			<h2>Blue Prop</h2>
-			<button type="button" onclick="popAlign(1);">Starting Position</button>
+			<button type="button" onclick="popAlign(1);">Options</button>
 			<select size="2" ondrop="dropQueue(event)" ;="" ondragover="allowDrop(event);"></select>
 		</div>	
 
 		<div id="queue2" class="queue">
 			<h2>Red Prop</h2>
-			<button type="button" onclick="popAlign(2);">Starting Position</button>
+			<button type="button" onclick="popAlign(2);">Options</button>
 			<select size="2" ondrop="dropQueue(event);" ondragover="allowDrop(event);"></select>
 		</div>
 		
@@ -637,7 +698,28 @@ function alignSubmit(n) {
 	<button type="button" onclick="importSubmit();">Submit</button>
 </div>
 <div style="display: none;" id="popalign1">
-	Hand:
+		Prop:
+			<select id="1prop">
+				<option value="poi">Poi</option>
+				<option value="staff">Staff</option>
+				<option value="hoop">Hoop</option>
+				<option value="none">None</option>
+			</select>
+		<br>
+		Color:
+			<select id="1color">
+				<option value="red">Red</option>
+				<option value="blue">Blue</option>
+				<option value="yellow">Yellow</option>
+				<option value="green">Green</option>
+				<option value="orange">Orange</option>
+				<option value="white">White</option>
+			</select>
+		<br>
+		<br>
+		<u>Starting Positions</u>
+		<br>
+		Hand:
 				<p></p><table>
 					<tbody><tr>
 						<td></td>
@@ -655,7 +737,7 @@ function alignSubmit(n) {
 						<td></td>
 					</tr>	
 				</tbody></table>	
-				Prop:
+		Prop:
 				<table>
 					<tbody><tr>
 						<td></td>
@@ -673,7 +755,7 @@ function alignSubmit(n) {
 						<td></td>
 					</tr>	
 				</tbody></table>
-				Pivot:
+		Pivot:
 				<table>
 					<tbody><tr>
 						<td></td>
@@ -695,6 +777,27 @@ function alignSubmit(n) {
 	<button type="button" onclick="alignSubmit(1);">Submit</button>
 </div>
 <div style="display: none;" id="popalign2">
+		Prop:
+			<select id="2prop">
+				<option value="poi">Poi</option>
+				<option value="staff">Staff</option>
+				<option value="hoop">Hoop</option>
+				<option value="none">None</option>
+			</select>
+		<br>
+		Color:
+			<select id="2color">
+				<option value="red">Red</option>
+				<option value="blue">Blue</option>
+				<option value="yellow">Yellow</option>
+				<option value="green">Green</option>
+				<option value="orange">Orange</option>
+				<option value="white">White</option>
+			</select>
+		<br>
+		<br>
+		<u>Starting Positions</u>
+		<br>
 		Hand:
 				<p></p><table>
 					<tbody><tr>
