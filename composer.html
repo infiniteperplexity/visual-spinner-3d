@@ -92,8 +92,7 @@ function canvasSetup() {
 	propOne.rotateProp(SPLIT);
 	myProps.push(propOne);
 	myProps.push(propTwo);
-	startingPositions[0].orientToProp(propOne);
-	startingPositions[1].orientToProp(propTwo);
+	setStart();
 	predict();
 	redraw();
 }
@@ -401,6 +400,10 @@ function predict() {
 	predictions[0].nudge(-0.1,0,-0.1);
 	predictions[1].nudge(-0.1,0,-0.1);
 }
+function setStart() {
+	startingPositions[0].orientToProp(propOne);
+	startingPositions[1].orientToProp(propTwo);
+}
 function listenForKey(e) {
 	//alert(e.keyCode);
 	if (e.keyCode ===13) {
@@ -630,6 +633,7 @@ function alignSubmit(n) {
 	predictions[n-1].renderer.deactivate();
 	predictions[n-1].renderer = predicted;
 	predictions[n-1].renderer.activate();
+	setStart();
 	predict();
 	redraw();
 	$("#popalign"+n).toggle();
