@@ -24,6 +24,7 @@ var NINE = Math.PI;
 var ONETHIRTY = 1.75*Math.PI;
 var FOURTHIRTY = 0.25*Math.PI;
 var SEVENTHIRTY = 0.75*Math.PI;
+var SEVENTHIRTY = 0.75*Math.PI;
 var TENTHIRTY = 1.25*Math.PI;
 var NEAR = 0;
 var FAR = Math.PI;

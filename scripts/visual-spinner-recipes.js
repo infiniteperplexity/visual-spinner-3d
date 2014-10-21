@@ -2,7 +2,6 @@
 var recipes = {};
 recipes.add = function(build) {recipes[build.movename] = build;}
 recipes.add({movename: "Static Spin", build: "staticspin", orient: THREE, entry: THREE, hand: THREE, extend: 0, duration: 1,direction: CLOCKWISE, plane: WALL, pivot_angle: THREE, pivot_radius: 0});
-//recipes.add({movename: "Spiral Wrap", build: "spiral", orient: THREE, entry: THREE, hand: THREE, extend: 0, duration: 1,direction: CLOCKWISE, plane: WALL, pivot_angle: THREE, pivot_radius: 0, rescale: -1});
 recipes.add({movename: "Extension", build: "flower", spin: INSPIN, petals: 0, orient: THREE, entry: THREE, duration: 1, extend: 1, direction: CLOCKWISE, plane: WALL, pivot_angle: THREE, pivot_radius: 0});
 recipes.add({movename: "Point Isolation", mode: BOX, build: "flower", spin: INSPIN, petals: 0, orient: THREE, entry: THREE, duration: 1, extend: 1, direction: CLOCKWISE, pivot_angle: THREE, pivot_radius: 0});	
 recipes.add({movename: "One-Petal In-Spin Flower", build: "flower", spin: INSPIN, petals: 1, orient: THREE, entry: THREE, duration: 1, extend: 1, direction: CLOCKWISE, mode: DIAMOND, plane: WALL, pivot_angle: THREE, pivot_radius: 0});	
@@ -10,9 +9,9 @@ recipes.add({movename: "Two-Petal In-Spin Flower", build: "flower", spin: INSPIN
 recipes.add({movename: "Four-Petal In-Spin Flower", build: "flower", spin: INSPIN, petals: 4, orient: THREE, entry: THREE, duration: 1, extend: 1, direction: CLOCKWISE, mode: DIAMOND, plane: WALL, pivot_angle: THREE, pivot_radius: 0});	
 recipes.add({movename: "Three-Petal Anti-Spin Flower", build: "flower", spin: ANTISPIN, petals: 3, orient: THREE, entry: THREE, duration: 1, extend: 1, direction: CLOCKWISE, mode: DIAMOND, plane: WALL, pivot_angle: THREE, pivot_radius: 0});	
 recipes.add({movename: "Four-Petal Anti-Spin Flower", build: "flower", spin: ANTISPIN, petals: 4, orient: THREE, entry: THREE, duration: 1, extend: 1, direction: CLOCKWISE, mode: DIAMOND, plane: WALL, pivot_angle: THREE, pivot_radius: 0});	
-recipes.add({movename: "Pendulum", build: "pendulum", entry: SIX, duration: 1, extend: 1, direction: CLOCKWISE, spin: INSPIN, plane: WALL, pivot_angle: THREE, pivot_radius: 0});	
-recipes.add({movename: "1.5", build: "onepointfive", entry: SIX, duration: 1, extend: 1, direction: CLOCKWISE, spin: INSPIN, plane: WALL, pivot_angle: THREE, pivot_radius: 0});
-recipes.add({movename: "Anti-Pendulum", build: "antipendulum", entry: SIX, extend: 0.5, duration: 1, direction: CLOCKWISE, spin: ANTISPIN, pivot_angle: THREE, pivot_radius: 0});
+recipes.add({movename: "Pendulum", build: "pendulum", entry: SIX, orient: SIX, duration: 1, extend: 1, direction: CLOCKWISE, spin: INSPIN, plane: WALL, pivot_angle: THREE, pivot_radius: 0});	
+recipes.add({movename: "1.5", build: "onepointfive", entry: SIX, orient: SIX, duration: 1, extend: 1, direction: CLOCKWISE, spin: INSPIN, plane: WALL, pivot_angle: THREE, pivot_radius: 0});
+recipes.add({movename: "Anti-Pendulum", build: "antipendulum", entry: SIX, orient: SIX, extend: 0.5, duration: 1, direction: CLOCKWISE, spin: ANTISPIN, pivot_angle: THREE, pivot_radius: 0});
 recipes.add({movename: "C-CAP", build: "ccap", entry: THREE, orient: THREE, direction: CLOCKWISE, petals1: 0, petals2: 4, spin1: INSPIN, spin2: ANTISPIN, duration: 1, extend: 1, plane: WALL, pivot_angle: THREE, pivot_radius: 0});
 recipes.add({movename: "Isolation", build: "isolation", orient: THREE, entry: THREE, direction: CLOCKWISE, spin: INSPIN, duration: 1, plane: WALL, offset: OFFSET, pivot_angle: THREE, pivot_radius: 0});
 recipes.add({movename: "Cat-Eye", build: "cateye", orient: THREE, entry: THREE, direction: CLOCKWISE, spin: ANTISPIN, duration: 1, plane: WALL, offset: OFFSET, pivot_angle: THREE, pivot_radius: 0});

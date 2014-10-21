@@ -23,7 +23,8 @@ table {position: relative; top: -20px;}
 #popalign2 {position: fixed; z-index: 1; top: 100px; left: 630px; background-color: #FFF; padding: 2.5px; border: 5px solid gray; margin: -2.5px;}
 #radius1, #radius2 {width: 50px;}
 #frameN {width: 100px;}
-#movemodify {position: fixed; z-index: 1; top: 150px; left: 550px; width: 400px; background-color: #FFF; padding: 2.5px; border: 5px solid gray; margin: -2.5px;};
+#moveview {position: fixed; z-index: 1; top: 150px; left: 250px; width: 400px; background-color: #FFF; padding: 2.5px; border: 5px solid gray; margin: -2.5px;}
+#movemodify {position: fixed; z-index: 1; top: 150px; left: 550px; width: 400px; background-color: #FFF; padding: 2.5px; border: 5px solid gray; margin: -2.5px;}
 </style>
 
 
@@ -37,7 +38,6 @@ table {position: relative; top: -20px;}
 <script src="scripts/visual-spinner-moves.js"></script>
 <script src="scripts/visual-spinner-renderers.js"></script>
 <script src="scripts/visual-spinner-recipes.js"></script>
-
 <script>
 "use strict";
 //**** set parameters and set up environment and display
@@ -158,17 +158,15 @@ function allowDrop(event) {
 }
 function dragMenu(event) {
 	var movename = event.target.text;
-	//event.dataTransfer.setData("Text", movename);
 	event.dataTransfer.setData("Text", JSON.stringify(recipes[movename]));
 }
 function dropQueue(event) {
 	event.preventDefault();
-	//var movename = event.dataTransfer.getData("Text");
-	//var build = JSON.stringify(recipes[movename]);
 	var definition= event.dataTransfer.getData("Text");
 	addMoveToQueue(definition, event.target);
 }
 function addMoveToQueue(definition, target) {
+	totalReset();
 	var move = moves.build(definition);
 	var prop;
 	var queue = target.parentNode.id;
@@ -177,7 +175,6 @@ function addMoveToQueue(definition, target) {
 	} else if (queue === "queue2") {
 		prop = propTwo;
 	}
-	//if (move.adjust(prop) != null) {
 	var oriented = move.reorient(prop);
 	var proceed = true;
 	if (oriented === null) {
@@ -190,21 +187,24 @@ function addMoveToQueue(definition, target) {
 		var child = document.createElement("option");
 		child.text = JSON.parse(definition).movename;
 		child.value = definition;
-		//child.draggable = true;
-		//child.addEventListener('dragstart',drag);
+		child.addEventListener('dblclick', viewMove);
 		target.appendChild(child);
 		prop.addMove(oriented);
 		predict();
 	} else {
 		alert("Move not added.");
+		
 	}
 	var max;
 	for (var i = 0; i < myProps.length; i++) {
-		max = Math.max(myProps[i].move.getDuration()*BEAT);
+			max = Math.max(myProps[i].move.getDuration()*BEAT);
 	}
+	
 	document.getElementById("frameN").setAttribute("max", max.toString());
+	
 	redraw();
 }
+
 function dragWorkshop(event) {
 	var definition = event.target.value;
 	//event.dataTransfer.setData("Text", movename);
@@ -237,34 +237,66 @@ function modifyMove(event) {
 	$("#moveinner").empty();
 	$("#movemodify").toggle();
 	var definition = moves.parse(event.target.value);
-	addInput(textInput(definition,"movename"));
-	addInput(textInput(definition,"build"));
-	addInput(selectInput(definition,"direction",["Clockwise","Counter"],[CLOCKWISE, COUNTERCLOCKWISE]));
-	addInput(selectInput(definition,"orient",["Up","Right","Down","Left"],[TWELVE, THREE, SIX, NINE]));
-	addInput(selectInput(definition,"entry",["Up","Right","Down","Left"],[TWELVE, THREE, SIX, NINE]));
-	addInput(selectInput(definition,"hand",["Up","Right","Down","Left"],[TWELVE, THREE, SIX, NINE]));
-	addInput(selectInput(definition,"spin",["In-Spin","Anti-Spin"],[INSPIN, ANTISPIN]));
-	addInput(selectInput(definition,"spin1",["In-Spin","Anti-Spin"],[INSPIN, ANTISPIN]));
-	addInput(selectInput(definition,"spin2",["In-Spin","Anti-Spin"],[INSPIN, ANTISPIN]));
-	addInput(selectInput(definition,"bend",["Iso-Bend","Anti-Bend","Pro-Bend"],[ISOBEND, ANTIBEND, PROBEND]));
-	addInput(selectInput(definition,"pitch",["Forward","Backward"],[FORWARD, BACKWARD]));
-	addInput(selectInput(definition,"rescale",["Inward","Outward"],[-1, 1]));
-	addInput(selectInput(definition,"petals",["Zero","One", "Two", "Three", "Four"],[0,1,2,3,4]));
-	addInput(selectInput(definition,"petals1",["Zero","One", "Two", "Three", "Four"],[0,1,2,3,4]));
-	addInput(selectInput(definition,"petals2",["Zero","One", "Two", "Three", "Four"],[0,1,2,3,4]));
-	addInput(selectInput(definition,"harmonics",["Zero","One", "Two", "Three", "Four"],[0,1,2,3,4]));
-	addInput(numberInput(definition,"extend",[0,1,0.5]));
-	addInput(selectInput(definition,"mode",["Diamond","Box"],[DIAMOND, BOX]));
-	addInput(selectInput(definition,"offset",["Offset","No Offset"],[OFFSET, NOOFFSET]));
-	addInput(numberInput(definition,"duration",[0.25,2,0.25]));
-	addInput(selectInput(definition,"pivot_angle",["Up","Right","Down","Left"],[TWELVE, THREE, SIX, NINE]));
-	addInput(numberInput(definition,"pivot_radius",[0,1,0.5]));
-	addInput(vectorInput(definition,"plane",["Wall","Wheel","Floor"],[WALL, WHEEL, FLOOR]));
+	addInput("moveinner",textInput(definition,"movename"));
+	addInput("moveinner",textInput(definition,"build"));
+	addInput("moveinner",selectInput(definition,"direction",["Clockwise","Counter"],[CLOCKWISE, COUNTERCLOCKWISE]));
+	addInput("moveinner",selectInput(definition,"orient",["Up","Right","Down","Left"],[TWELVE, THREE, SIX, NINE]));
+	addInput("moveinner",selectInput(definition,"entry",["Up","Right","Down","Left"],[TWELVE, THREE, SIX, NINE]));
+	addInput("moveinner",selectInput(definition,"hand",["Up","Right","Down","Left"],[TWELVE, THREE, SIX, NINE]));
+	addInput("moveinner",selectInput(definition,"spin",["In-Spin","Anti-Spin"],[INSPIN, ANTISPIN]));
+	addInput("moveinner",selectInput(definition,"spin1",["In-Spin","Anti-Spin"],[INSPIN, ANTISPIN]));
+	addInput("moveinner",selectInput(definition,"spin2",["In-Spin","Anti-Spin"],[INSPIN, ANTISPIN]));
+	addInput("moveinner",selectInput(definition,"bend",["Iso-Bend","Anti-Bend","Pro-Bend"],[ISOBEND, ANTIBEND, PROBEND]));
+	addInput("moveinner",selectInput(definition,"pitch",["Forward","Backward"],[FORWARD, BACKWARD]));
+	addInput("moveinner",selectInput(definition,"rescale",["Inward","Outward"],[-1, 1]));
+	addInput("moveinner",selectInput(definition,"petals",["Zero","One", "Two", "Three", "Four"],[0,1,2,3,4]));
+	addInput("moveinner",selectInput(definition,"petals1",["Zero","One", "Two", "Three", "Four"],[0,1,2,3,4]));
+	addInput("moveinner",selectInput(definition,"petals2",["Zero","One", "Two", "Three", "Four"],[0,1,2,3,4]));
+	addInput("moveinner",selectInput(definition,"harmonics",["Zero","One", "Two", "Three", "Four"],[0,1,2,3,4]));
+	addInput("moveinner",numberInput(definition,"extend",[0,1,0.5]));
+	addInput("moveinner",selectInput(definition,"mode",["Diamond","Box"],[DIAMOND, BOX]));
+	addInput("moveinner",selectInput(definition,"offset",["Offset","No Offset"],[OFFSET, NOOFFSET]));
+	addInput("moveinner",numberInput(definition,"duration",[0.25,2,0.25]));
+	addInput("moveinner",selectInput(definition,"pivot_angle",["Up","Right","Down","Left"],[TWELVE, THREE, SIX, NINE]));
+	addInput("moveinner",numberInput(definition,"pivot_radius",[0,1,0.5]));
+	addInput("moveinner",vectorInput(definition,"plane",["Wall","Wheel","Floor"],[WALL, WHEEL, FLOOR]));
+}
+function viewMove(event) {
+	moveTarget = event.target;
+	$("#viewinner").empty();
+	$("#moveview").toggle();
+	var definition = moves.parse(event.target.value);
+	addInput("viewinner",textInput(definition,"movename"));
+	addInput("viewinner",textInput(definition,"build"));
+	addInput("viewinner",selectInput(definition,"direction",["Clockwise","Counter"],[CLOCKWISE, COUNTERCLOCKWISE]));
+	addInput("viewinner",selectInput(definition,"orient",["Up","Right","Down","Left"],[TWELVE, THREE, SIX, NINE]));
+	addInput("viewinner",selectInput(definition,"entry",["Up","Right","Down","Left"],[TWELVE, THREE, SIX, NINE]));
+	addInput("viewinner",selectInput(definition,"hand",["Up","Right","Down","Left"],[TWELVE, THREE, SIX, NINE]));
+	addInput("viewinner",selectInput(definition,"spin",["In-Spin","Anti-Spin"],[INSPIN, ANTISPIN]));
+	addInput("viewinner",selectInput(definition,"spin1",["In-Spin","Anti-Spin"],[INSPIN, ANTISPIN]));
+	addInput("viewinner",selectInput(definition,"spin2",["In-Spin","Anti-Spin"],[INSPIN, ANTISPIN]));
+	addInput("viewinner",selectInput(definition,"bend",["Iso-Bend","Anti-Bend","Pro-Bend"],[ISOBEND, ANTIBEND, PROBEND]));
+	addInput("viewinner",selectInput(definition,"pitch",["Forward","Backward"],[FORWARD, BACKWARD]));
+	addInput("viewinner",selectInput(definition,"rescale",["Inward","Outward"],[-1, 1]));
+	addInput("viewinner",selectInput(definition,"petals",["Zero","One", "Two", "Three", "Four"],[0,1,2,3,4]));
+	addInput("viewinner",selectInput(definition,"petals1",["Zero","One", "Two", "Three", "Four"],[0,1,2,3,4]));
+	addInput("viewinner",selectInput(definition,"petals2",["Zero","One", "Two", "Three", "Four"],[0,1,2,3,4]));
+	addInput("viewinner",selectInput(definition,"harmonics",["Zero","One", "Two", "Three", "Four"],[0,1,2,3,4]));
+	addInput("viewinner",numberInput(definition,"extend",[0,1,0.5]));
+	addInput("viewinner",selectInput(definition,"mode",["Diamond","Box"],[DIAMOND, BOX]));
+	addInput("viewinner",selectInput(definition,"offset",["Offset","No Offset"],[OFFSET, NOOFFSET]));
+	addInput("viewinner",numberInput(definition,"duration",[0.25,2,0.25]));
+	addInput("viewinner",selectInput(definition,"pivot_angle",["Up","Right","Down","Left"],[TWELVE, THREE, SIX, NINE]));
+	addInput("viewinner",numberInput(definition,"pivot_radius",[0,1,0.5]));
+	addInput("viewinner",vectorInput(definition,"plane",["Wall","Wheel","Floor"],[WALL, WHEEL, FLOOR]));
 }
 
-function addInput(inpt) {
+function addInput(trgt,inpt) {
 	if (inpt === null) {return;}
-	var popup = document.getElementById("moveinner");
+	if (trgt==="viewinner") {
+		inpt.setAttribute("disabled",true);
+	}
+	var popup = document.getElementById(trgt);
 	var txt = document.createElement("span");
 	txt.innerHTML = inpt.getAttribute("data-param")+": ";
 	popup.appendChild(document.createElement("br"));
@@ -395,8 +427,8 @@ function totalReset() {
 }
 
 function predict() {
-	predictions[0].orientToProp(propOne);
-	predictions[1].orientToProp(propTwo);
+	predictions[0].orientToProp(propOne.predict());
+	predictions[1].orientToProp(propTwo.predict());
 	predictions[0].nudge(-0.1,0,-0.1);
 	predictions[1].nudge(-0.1,0,-0.1);
 }
@@ -491,6 +523,7 @@ var prop2 = "poi";
 var color1 = "blue";
 var color2 = "red";
 function popAlign(n) {
+	totalReset();
 	$("#popalign"+n).toggle();
 	var element;
 	var angle;
@@ -569,6 +602,7 @@ function importSubmit() {
 	$("#popimport").toggle();
 }
 function alignSubmit(n) {
+	totalReset();
 	var prop;
 	if (n===1) {
 		prop = propOne;
@@ -704,7 +738,7 @@ function alignSubmit(n) {
 <div style="display: none;" id="popalign1">
 		Prop:
 			<select id="1prop">
-				<option value="poi">Poi</option>
+				<option selected="selected" value="poi">Poi</option>
 				<option value="staff">Staff</option>
 				<option value="hoop">Hoop</option>
 				<option value="none">None</option>
@@ -712,7 +746,7 @@ function alignSubmit(n) {
 		<br>
 		Color:
 			<select id="1color">
-				<option value="red">Red</option>
+				<option selected="selected" value="red">Red</option>
 				<option value="blue">Blue</option>
 				<option value="yellow">Yellow</option>
 				<option value="green">Green</option>
@@ -783,7 +817,7 @@ function alignSubmit(n) {
 <div style="display: none;" id="popalign2">
 		Prop:
 			<select id="2prop">
-				<option value="poi">Poi</option>
+				<option selected="selected" value="poi">Poi</option>
 				<option value="staff">Staff</option>
 				<option value="hoop">Hoop</option>
 				<option value="none">None</option>
@@ -791,7 +825,7 @@ function alignSubmit(n) {
 		<br>
 		Color:
 			<select id="2color">
-				<option value="red">Red</option>
+				<option selected="selected" value="red">Red</option>
 				<option value="blue">Blue</option>
 				<option value="yellow">Yellow</option>
 				<option value="green">Green</option>
@@ -859,9 +893,14 @@ function alignSubmit(n) {
 	<button type="button" onclick="popAlign(2);">Cancel</button>
 	<button type="button" onclick="alignSubmit(2);">Submit</button>
 </div>
+<div style="display: none;" id="moveview">
+	<button type="button" onclick='$("#moveview").toggle();'>Okay</button>
+	<div id="viewinner"></div>
+</div>
 <div style="display: none;" id="movemodify">
 	<button type="button" onclick='$("#movemodify").toggle();'>Cancel</button>
 	<button type="button" onclick="submitChanges();">Submit</button>
 	<div id="moveinner"></div>
 </div>
+
 </body></html>
