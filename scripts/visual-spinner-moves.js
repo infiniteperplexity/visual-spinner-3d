@@ -300,24 +300,24 @@ MoveFactory.prototype.pendulum = function(options) {
 	move.add(segment);
 	move.tail().prop.acc = -8*options.twirl*options.swing*options.direction*options.speed*options.spin;
 	move.tail().hand.acc = -hybrid;
-	move.tail().hand.rescale = 0;
-	move.tail().hand.rescale_acc = 0;
+	move.tail().helper.rescale = 0;
+	move.tail().helper.rescale_acc = 0;
 	move.extend();
 	move.tail().prop.acc = -8*options.swing*options.direction*options.speed*options.spin;
 	move.tail().hand.acc = -hybrid;
-	move.tail().hand.rescale = 0;
-	move.tail().hand.rescale_acc = 32*options.lift;	
+	move.tail().helper.rescale = 0;
+	move.tail().helper.rescale_acc = 32*options.lift;
 	move.extend();
 	move.tail().prop.acc = 8*options.swing*options.direction*options.speed*options.spin;
 	move.tail().hand.acc = hybrid;
-	move.tail().hand.rescale = -8*options.lift;
-	move.tail().hand.radius = options.extend + options.lift;
-	move.tail().hand.rescale_acc = 32*options.lift;
+	move.tail().helper.rescale = -8*options.lift;
+	move.tail().helper.radius = 2*options.lift;
+	move.tail().helper.rescale_acc = 32*options.lift;
 	move.extend();
 	move.tail().prop.acc = 8*options.twirl*options.swing*options.direction*options.speed*options.spin;
 	move.tail().hand.acc = hybrid;
-	move.tail().hand.rescale = 0;
-	move.tail().hand.rescale_acc = 0;
+	move.tail().helper.rescale = 0;
+	move.tail().helper.rescale_acc = 0;
 	if (options.entry != null) {
 		move.align("hand", options.entry);
 	}
@@ -329,7 +329,6 @@ MoveFactory.prototype.pendulum = function(options) {
 			move.add(move.submoves[4*(i-1)].clone());
 		}
 	}
-	//if (options.flag == 1) {alert(segment.socket().helper.angle);}
 	move.build = options.build;
 	move.movename = options.movename;
 	return move;
@@ -339,7 +338,6 @@ MoveFactory.prototype.antipendulum = function(options) {
 	options = this.defaults(options,{
 		build: "antipendulum",
 		movename: "Anti-Pendulum",
-		helper_angle: TWELVE,
 		helper_radius: 0.5,
 		lift: 0.5,
 		swing: 0.75,
