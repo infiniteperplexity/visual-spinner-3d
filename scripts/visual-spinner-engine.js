@@ -107,6 +107,13 @@ Vector.prototype.rotate = function(angle, axis) {
 	var c = (w*s*(1-cs)+t*z*cs+sq*(u*y-v*x)*sn)/t;
 	return (new Vector(a,b,c));
 }
+// Find the cross product of two Vectors
+Vector.prototype.cross = function(v) {
+        var x = this.y*v.z - this.z*v.y;
+        var y = this.z*v.x - this.x*v.z;
+        var z = this.x*v.y - this.y*v.x;
+        return new Vector(x,y,z);
+}         
 // Project a vector onto a plane (defined by axis)
 Vector.prototype.project = function(axis) {
 	if (axis===undefined) {
@@ -270,7 +277,6 @@ function Prop() {
 			// grip = 0, choke = 1 is basically choking way up on the tether without changing the frame of reference
 	// "bend" is used for plane-bending moves, and represents a bend in the prop's plane relative to the axis of motion
 	this.bend = 0;
-	this.bend_angle = 0;
 	// "axis" tracks the prop's axis of motion, which is useful for rendering .bend and possibly .twist correctly
 		// WALL is an arbitrary default
 	this.axis = WALL;
@@ -505,7 +511,6 @@ Prop.prototype.socket = function(plane) {
 		socket.grip = this.grip;
 		socket.choke = this.choke;
 		socket.bend = this.bend;
-		socket.bend_angle = this.bend_angle;
 		return socket;
 	} else {
 		return this.tail().socket();
@@ -546,7 +551,6 @@ function MoveLink() {
 	this.choke = 0;
 	this.choke_speed = 0; 
 	this.bend = 0;
-	this.bend_angle = 0;
 	this.bend_speed = 0;
 	this.bend_acc = 0;
 	// initialize the move
@@ -582,17 +586,8 @@ MoveLink.prototype.spin = function(prop, dummy) {
 				this.twist = 0;
 			}
 		}
-		// ???any sense in setting bend plane manually?
 		prop.twist = this.twist;
 		prop.bend = this.bend;
-		prop.bend_angle = this.bend_angle;Spherical.prototype.setRadiusAnglePlane = function(radius, angle, plane) {
-	this.radius = radius;
-	if (plane === undefined) {plane = WALL;}
-	var v = plane.reference().rotate(angle,plane).unitize();
-	this.zenith = unwind(Math.acos(v.z/Math.sqrt(v.x*v.x+v.y*v.y+v.z*v.z)));
-	this.azimuth = unwind(Math.atan2(v.y,v.x));;
-	return this;
-}
 		prop.choke = this.choke;
 		prop.grip = this.grip;
 		prop.axis = this.prop.plane;
@@ -696,7 +691,6 @@ MoveLink.prototype.clone = function() {
 	}
 	newlink.duration = this.duration;
 	newlink.bend = this.bend;
-	newlink.bend_angle = this.bend_angle;
 	newlink.bend_speed = this.bend_speed;
 	newlink.bend_acc = this.bend_acc;
 	newlink.twist = this.twist;
@@ -772,7 +766,7 @@ MoveLink.prototype.getVector = function(element) {
 	for (var i = PIVOT; i<=element; i++) {
 		e = new Spherical();
 		if (i==PROP) {
-			// account for bend, bend_angle, grip, twist, and choke
+			// account for bend, grip, twist, and choke
 			radius = this.elements[i].radius;
 			angle = this.elements[i].angle;
 			plane = this.elements[i].plane;
@@ -1267,7 +1261,6 @@ MoveLink.prototype.modify = function(options) {
 	this.choke = (options.choke !== undefined) ? options.choke : this.choke;
 	this.choke_speed = (options.choke_speed !== undefined) ? options.choke_speed : this.choke_speed; 
 	this.bend = (options.bend !== undefined) ? options.bend : this.bend;
-	this.bend_angle = (options.bend_angle !== undefined) ? options.bend_angle : this.bend_angle;
 	this.bend_speed = (options.bend_speed !== undefined) ? options.bend_speed : this.bend_speed;
 	this.bend_acc = (options.bend_acc !== undefined) ? options.bend_acc : this.bend_acc;
 	return this;

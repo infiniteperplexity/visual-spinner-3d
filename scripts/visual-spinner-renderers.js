@@ -15,25 +15,9 @@ PhoriaPropRenderer.prototype.render = function(myProp) {
 		mat4.rotate(mat, mat, -myProp[ELEMENTS[i]].zenith, YAXIS);
 		mat4.rotate(mat, mat, -myProp[ELEMENTS[i]].azimuth, ZAXIS);
 	}
-	mat4.rotate(mat, mat, myProp.prop.azimuth, ZAXIS);
-	mat4.rotate(mat, mat, myProp.prop.zenith, YAXIS);
-	// this should probably go off some kind of unitize, sqrt(x*y),z system...
-	if (myProp.axis.nearly(WALL)) {
-		//mat4.rotate(mat, mat, -myProp.bend, YAXIS);
-		mat4.rotate(mat, mat, -myProp.bend, FLOOR.rotate(myProp.bend_angle, FLOOR).toArray());
-	} else if (myProp.axis.nearly(WHEEL)) {
-		if (myProp.prop.azimuth <= 0.5*Math.PI) {
-			mat4.rotate(mat, mat, -myProp.bend, XAXIS);
-		} else {
-			mat4.rotate(mat, mat, myProp.bend, XAXIS);
-		}
-	} else if (myProp.axis.nearly(FLOOR)) {
-		if (myProp.prop.azimuth >= 0.5*Math.PI && myProp.prop.azimuth <= 1.5*Math.PI) {
-			mat4.rotate(mat, mat, myProp.bend, XAXIS);
-		} else {
-			mat4.rotate(mat, mat, -myProp.bend, XAXIS);
-		}
-	}
+	var s = myProp.prop.vectorize().rotate(myProp.bend,myProp.prop.vectorize().cross(myProp.axis)).spherify();
+        mat4.rotate(mat, mat, s.azimuth, ZAXIS);
+        mat4.rotate(mat, mat, s.zenith, YAXIS);
 	// prop radius should be handled by prop-specific renderers
 	mat4.rotate(mat, mat, myProp.grip, XAXIS);
 	mat4.translate(mat, mat, [0,0,-myProp.choke]);

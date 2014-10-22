@@ -884,7 +884,6 @@ MoveFactory.prototype.antibend = function(options) {
         segment.hand.angle = orient;
         segment.prop.angle = orient - QUARTER*options.direction;
         segment.duration = 1 / options.harmonics;
-        segment.bend_angle = QUARTER;
         move.add(segment);
         for (var i = 1; i < options.harmonics; i++) {
                 move.extend();
@@ -936,7 +935,6 @@ MoveFactory.prototype.pentagram = function(options) {
         segment.hand.angle = orient;
         segment.prop.angle = orient - QUARTER*options.direction;
         segment.duration = 1 / options.harmonics;
-        segment.bend_angle = QUARTER;
         move.add(segment);
         for (var i = 1; i < options.harmonics; i++) {
                 move.extend();
@@ -974,7 +972,6 @@ MoveFactory.prototype.tapedeck = function(options) {
         // until someone invents something new, the four-lobe version is the only one that exists
         options.harmonics = 4;
         segment.bend = 0;
-        segment.bend_angle = QUARTER;
         segment.prop.plane = options.plane;
         segment.hand.plane = options.plane;
         segment.hand.radius = 1;
