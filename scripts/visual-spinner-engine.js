@@ -1342,3 +1342,58 @@ MoveChain.prototype.extend = function() {
 	this.add(r);
 	return r;
 }
+
+//MoveChain.prototype.handVector = function() {
+//	return this.socket().getPositionVectors().handle;
+//}
+//MoveChain.prototype.propVector = function() {
+//	return this.socket().getPositionVectors().prophead;
+//}
+//MoveLink.prototype.handVector = function() {
+//	return this.socket().getPositionVectors().handle;
+//}
+//MoveLink.prototype.propVector = function() {
+//	return this.socket().getPositionVectors().prophead;
+//}
+//Prop.prototype.handVector = function() {
+//	return this.socket().getPositionVectors().handle;
+//}
+//Prop.prototype.propVector = function() {
+//	return this.socket().getPositionVectors().prophead;
+//}
+
+MoveChain.prototype.getPositionVectors = function() {
+	return this.socket().getPositionVectors();
+}
+Prop.prototype.getPositionVectors = function() {
+	return this.socket().getPositionVectors();
+}
+
+MoveLink.prototype.getPositionVectors = function() {
+	//Calculate HAND and PROP vectors
+	var p = new Prop();
+	this.spin(p);
+	
+	var x = 0;
+	var y = 0;
+	var z = 0;
+	var v;
+	var v1;
+	var v2;
+	// ignore HOME
+	for (var i = PIVOT; i<=PROP; i++) {
+		v = p.elements[i].vectorize();
+		x += v.x;
+		y += v.y;
+		z += v.z;
+		if (i===HAND) {v1 = new Vector(v.x,v.y,v.z);}
+		else if (i===PROP) {v2 = new Vector(v.x,v.y,v.z);}
+	}
+	// BEND
+		// don't implement yet
+	//var bent = v2.rotate(this.bend,v2.vectorize().cross(this.axis));
+	// GRIP and CHOKE
+		// don't implement yet
+	// ignore TWIST until further notice
+	return {handle: v1, prophead: v2};
+}
