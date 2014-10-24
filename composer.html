@@ -189,7 +189,7 @@ function addMoveToQueue(definition, target) {
 	var oriented = move.reorient(prop);
 	var proceed = true;
 	if (oriented === null) {
-		proceed = confirm("The engine believes this move cannot be smoothly attached to the end of the current move sequence.  Do you wish to add it anyway?  Note that the engine is currently confused about contact moves and plane-bending.");
+		proceed = confirm("The engine believes this move cannot be smoothly attached to the end of the current move sequence.  Do you wish to add it anyway?");
 		if (proceed === true) {
 			oriented = move.setAbrupt();
 		}
@@ -528,8 +528,8 @@ function advanceFrames(n) {
 
 function emptyQueues() {
 	pauseSpin();
-	$("#queue1 select").empty();
-	$("#queue2 select").empty();
+	$("#queue1 ul").empty();
+	$("#queue2 ul").empty();
 	propOne.emptyMoves();
 	propTwo.emptyMoves();
 	totalReset();
@@ -708,7 +708,7 @@ function alignSubmit(n) {
 <body onload="init();">
 <header>
 	<h1>Welcome to VisualSpinner3d. </h1>
-	<p>(So far the dragging and dropping works only in Firefox, which makes this page unusable in other browsers.)</p>
+	<p>(Cross-browser compatibility is here!  And so is "mostly correct" position-matching for contact and plane-bending moves.)</p>
 </header>
 	
 <div id="content">

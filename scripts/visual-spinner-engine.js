@@ -1397,3 +1397,76 @@ MoveLink.prototype.getPositionVectors = function() {
 	// ignore TWIST until further notice
 	return {handle: v1, prophead: v2};
 }
+
+Prop.prototype.getVector = function(element) {
+	if (this.move.submoves.length>0) {
+		return (this.tail().socket().getVector(element));
+	}
+	var x = 0;
+	var y = 0;
+	var z = 0;
+	var e;
+	var v;
+	if (nearly(this.grip,OFFSET) && nearly(this.choke,1)) {
+		if (element === HAND) {
+			element = PROP;
+		} else if (element === PROP) {
+			element = HAND;
+		}
+	}
+	// eventually should handle .twist, .bend, etc.
+	for (var i = PIVOT; i<=PROP; i++) {
+		e = this.elements[i];
+		v = e.vectorize();
+		// BEND
+		if (i===PROP) {
+			v = v.rotate(this.bend,v.cross(this.axis));
+		}
+		x += v.x;
+		y += v.y;
+		z += v.z;
+		if (element===i) {
+			break;
+		}
+	}
+	return (new Vector(x,y,z));
+}
+
+MoveLink.prototype.getVector = function(element) {
+	var x = 0;
+	var y = 0;
+	var z = 0;
+	var e;
+	var s;
+	var v;
+	// skip HOME
+	var radius;
+	var angle;
+	var plane;
+	if (nearly(this.grip,OFFSET) && nearly(this.choke,1)) {
+		if (element === HAND) {
+			element = PROP;
+		} else if (element === PROP) {
+			element = HAND;
+		}
+	}
+	for (var i = PIVOT; i<=PROP; i++) {
+		e = new Spherical();
+		radius = this.elements[i].radius;
+		angle = this.elements[i].angle;
+		plane = this.elements[i].plane;
+		e.setRadiusAnglePlane(radius, angle, plane);
+		v = e.vectorize();
+		// BEND
+		if (i===PROP) {
+			v = v.rotate(this.bend,v.cross(this.prop.plane));
+		}
+		x += v.x;
+		y += v.y;
+		z += v.z;
+		if (element===i) {
+			break;
+		}
+	}
+	return (new Vector(x,y,z));
+}
