@@ -218,6 +218,8 @@ function addMoveToQueue(definition, target) {
 }
 
 function dragWorkshop(event) {
+	$(".active").removeClass("active");
+	event.target.setAttribute("class","active");
 	var definition = event.target.getAttribute("data-value");
 	event.dataTransfer.setData("Text", definition);
 }
@@ -708,7 +710,7 @@ function alignSubmit(n) {
 <body onload="init();">
 <header>
 	<h1>Welcome to VisualSpinner3d. </h1>
-	<p>(Cross-browser compatibility is here!  And so is "mostly correct" position-matching for contact and plane-bending moves.)</p>
+	<p>Drag moves from the menu to the prop queues, or drag them to the workshop and double-click to modify.</p>
 </header>
 	
 <div id="content">

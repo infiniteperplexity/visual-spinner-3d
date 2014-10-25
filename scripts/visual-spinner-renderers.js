@@ -8,7 +8,7 @@ PhoriaPropRenderer.prototype.render = function(myProp) {
 	// new matrix centered on the origin
 	var mat = mat4.create();
 	// rotate and translate according to "home", "pivot", "helper", and "hand"
-	for (i = 0; i<=HAND; i++) {
+	for (i = HOME; i<=HAND; i++) {
 		mat4.rotate(mat, mat, myProp[ELEMENTS[i]].azimuth, ZAXIS);
 		mat4.rotate(mat, mat, myProp[ELEMENTS[i]].zenith, YAXIS);
 		mat4.translate(mat, mat, [0,0,myProp[ELEMENTS[i]].radius]);
@@ -16,17 +16,51 @@ PhoriaPropRenderer.prototype.render = function(myProp) {
 		mat4.rotate(mat, mat, -myProp[ELEMENTS[i]].azimuth, ZAXIS);
 	}
 	var s = myProp.prop.vectorize().rotate(myProp.bend,myProp.prop.vectorize().cross(myProp.axis)).spherify();
-        mat4.rotate(mat, mat, s.azimuth, ZAXIS);
-        mat4.rotate(mat, mat, s.zenith, YAXIS);
-	// prop radius should be handled by prop-specific renderers
+	// BEND
+	mat4.rotate(mat, mat, s.azimuth, ZAXIS);
+	mat4.rotate(mat, mat, s.zenith, YAXIS);
+	// GRIP and CHOKE
+	mat4.translate(mat, mat, [0,0,0.5*myProp.prop.radius]);
 	mat4.rotate(mat, mat, myProp.grip, XAXIS);
-	mat4.translate(mat, mat, [0,0,-myProp.choke]);
-	mat4.rotate(mat, mat, myProp.twist, ZAXIS);
+	mat4.translate(mat, mat, [0,0,(-myProp.choke-0.5)*myProp.prop.radius]);
+	// TWIST
+	if (myProp.prop.vectorize().nearly(WALL)) {
+		// handle the weird cusp
+		mat4.rotate(mat, mat, myProp.twist+WHEEL.between(myProp.axis), ZAXIS);
+	} else {
+		// use the rest of the time
+		mat4.rotate(mat, mat, myProp.twist+WALL.between(myProp.axis), ZAXIS);
+	}
 	for (var i=0; i<this.shapes.length; i++) {
 		this.shapes[i].matrix = mat;
 		PropFactory.prototype.rescale(this.shapes[i], myProp.prop.radius);
 	}
 }
+
+CanvasPropRenderer.prototype.render = function(myProp) {
+	// does not support grip or choke
+	this.context.save();
+	this.context.translate(ORIGINX, ORIGINY);
+	for (i = HOME; i<=HAND; i++) {
+		this.context.rotate(myProp[ELEMENTS[i]].azimuth);
+		this.context.translate(Math.sin(myProp[ELEMENTS[i]].zenith)*myProp[ELEMENTS[i]].radius*this.pixels,0);
+		this.context.rotate(-myProp[ELEMENTS[i]].azimuth);
+	}
+	// BEND
+	var s = myProp.prop.vectorize().rotate(myProp.bend,myProp.prop.vectorize().cross(myProp.axis)).spherify();
+	//this.context.rotate(myProp.prop.azimuth);
+	this.context.rotate(s.azimuth);
+	// GRIP and CHOKE
+	this.context.translate(Math.sin(s.zenith)*0.5*myProp.prop.radius*this.pixels,0);
+	this.context.rotate(myProp.grip);
+	this.context.translate(Math.sin(s.zenith)*(-myProp.choke-0.5)*myProp.prop.radius*this.pixels,0);
+	for (var i=0; i<this.shapes.length; i++) {
+		//this.shapes[i].draw(this.context, myProp.prop.zenith, myProp.twist, myProp.prop.radius);
+		this.shapes[i].draw(this.context, s.zenith, myProp.twist, myProp.prop.radius);
+	}
+	this.context.restore();
+}
+
 PhoriaPropRenderer.prototype.activate = function(scene) {
 	for (var i = 0; i<this.shapes.length; i++) {
 		this.scene.graph.push(this.shapes[i]);
@@ -338,40 +372,6 @@ function CanvasPropRenderer(canvas) {
 	this.shapes = [];
 	this.options = {};
 	this.pixels = 60;
-}
-CanvasPropRenderer.prototype.render = function(myProp) {
-	// does not support grip, choke, or plane-bending;
-	this.context.save();
-	this.context.translate(ORIGINX, ORIGINY);
-	for (i = HOME; i<=HAND; i++) {
-		this.context.rotate(myProp[ELEMENTS[i]].azimuth);
-		this.context.translate(Math.sin(myProp[ELEMENTS[i]].zenith)*myProp[ELEMENTS[i]].radius*this.pixels,0);
-		this.context.rotate(-myProp[ELEMENTS[i]].azimuth);
-	}
-	this.context.rotate(myProp.prop.azimuth);
-	//if (myProp.axis.nearly(WALL)) {
-	//	mat4.rotate(mat, mat, -myProp.bend, YAXIS);
-	//} else if (myProp.axis.nearly(WHEEL)) {
-	//	if (myProp.prop.azimuth <= 0.5*Math.PI) {
-	//		mat4.rotate(mat, mat, -myProp.bend, XAXIS);
-	//	} else {
-	//		mat4.rotate(mat, mat, myProp.bend, XAXIS);
-	//	}
-	//} else if (myProp.axis.nearly(FLOOR)) {
-	//	if (myProp.prop.azimuth >= 0.5*Math.PI && myProp.prop.azimuth <= 1.5*Math.PI) {
-	//		mat4.rotate(mat, mat, myProp.bend, XAXIS);
-	//	} else {
-	//		mat4.rotate(mat, mat, -myProp.bend, XAXIS);
-	//	}
-	//}
-	// prop radius should be handled by prop-specific renderers
-	//mat4.rotate(mat, mat, myProp.grip, XAXIS);
-	//mat4.translate(mat, mat, [0,0,-myProp.choke]);
-	//mat4.rotate(mat, mat, myProp.twist, ZAXIS);
-	for (var i=0; i<this.shapes.length; i++) {
-		this.shapes[i].draw(this.context, myProp.prop.zenith, myProp.twist, myProp.prop.radius);
-	}
-	this.context.restore();
 }
 CanvasPropRenderer.prototype.activate = function(scene) {}
 CanvasPropRenderer.prototype.deactivate = function(scene) {}

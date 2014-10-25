@@ -193,7 +193,6 @@ function canvasSetup() {
 	orangePoi.modifyTail({pivot_angle: TWELVE, pivot_rescale: 4});
 	whitePoi.addMove(moves.isolation({direction: COUNTERCLOCKWISE, entry: THREE, duration: 0.25}));
 	whitePoi.modifyTail({pivot_angle: TWELVE, pivot_rescale: 4});
-	
 	//  Triquetra vs. Anti-pendulum
 		// Note that a hybrid anti-pendulum does a couple of weird things...
 			// The top half of it drifts up about half an extension
@@ -244,7 +243,7 @@ function canvasSetup() {
 		// We have to do some custom slicing and dicing to make the transition work	
 	orangePoi.addMove(moves.antipendulum({entry: NINE, pivot_angle: NINE, pivot_radius: 1, helper_radius: 0, swing: 1, duration: 0.25}));
 		// ??? Strange bug: workaround is to set helper_angle explicitly
-	orangePoi.modifyTail({helper_rescale: 4, helper_rescale_acc: -16, helper_angle: TWELVE});
+	orangePoi.modifyTail({helper_rescale: 6, helper_rescale_acc: -16, helper_angle: TWELVE});
 	orangePoi.addMove(moves.antipendulum({entry: TWELVE, pivot_angle: NINE, pivot_radius: 1, duration: 0.75}));
 	// And then a little more slicing and dicing to prepare for the point iso
 	orangePoi.modifyTail({prop_acc: 4, helper_rescale_acc: -16}); 
@@ -261,7 +260,7 @@ function canvasSetup() {
 		// More custom slicing and dicing
 	whitePoi.addMove(moves.antipendulum({direction: COUNTERCLOCKWISE, entry: THREE, helper_radius: 0, swing: 1, duration: 0.25}));
 		//??? Again, workaround for that strange bug
-	whitePoi.modifyTail({helper_rescale: 4, helper_rescale_acc: -16, helper_angle: TWELVE});
+	whitePoi.modifyTail({helper_rescale: 6, helper_rescale_acc: -16, helper_angle: TWELVE});
 	whitePoi.addMove(moves.antipendulum({direction: COUNTERCLOCKWISE, entry: TWELVE, duration: 0.75}));
 	whitePoi.modifyTail({prop_acc: -4, helper_rescale_acc: -16});
 	
@@ -525,8 +524,8 @@ function redraw() {
 			// The default (hybrid: false) instead spins at a constant speed that will match a static spin or flower
 			// Note that the constant THREE, SIX, NINE, and TWELVE refer to the clock points (directions)
 		// Pendulum paths are not true to real-world gravity, because I use a simplified function
-	orangePoi.addFixedMove(moves.pendulum({hybrid: true, direction: COUNTERCLOCKWISE, extend: 1, duration: 0.5, entry: NINE}));
-	whitePoi.addFixedMove(moves.pendulum({direction: COUNTERCLOCKWISE, extend: TINY, duration: 0.5, entry: NINE}));
+	orangePoi.addMove(moves.pendulum({hybrid: true, direction: COUNTERCLOCKWISE, extend: 1, duration: 0.5, entry: NINE}).setAbrupt());
+	whitePoi.addMove(moves.pendulum({direction: COUNTERCLOCKWISE, extend: TINY, duration: 0.5, entry: NINE}).setAbrupt());
 	
 	
 	// Next Drex does a clockwise pendulum vs. antispin hybrid.  
@@ -598,7 +597,6 @@ function redraw() {
 	orangePoi.modifyTail({pivot_angle: TWELVE, pivot_rescale: 4});
 	whitePoi.addMove(moves.isolation({direction: COUNTERCLOCKWISE, entry: THREE, duration: 0.25}));
 	whitePoi.modifyTail({pivot_angle: TWELVE, pivot_rescale: 4});
-	
 	//  Triquetra vs. Anti-pendulum
 		// Note that a hybrid anti-pendulum does a couple of weird things...
 			// The top half of it drifts up about half an extension
@@ -649,7 +647,7 @@ function redraw() {
 		// We have to do some custom slicing and dicing to make the transition work	
 	orangePoi.addMove(moves.antipendulum({entry: NINE, pivot_angle: NINE, pivot_radius: 1, helper_radius: 0, swing: 1, duration: 0.25}));
 		// ??? Strange bug: workaround is to set helper_angle explicitly
-	orangePoi.modifyTail({helper_rescale: 4, helper_rescale_acc: -16, helper_angle: TWELVE});
+	orangePoi.modifyTail({helper_rescale: 6, helper_rescale_acc: -16, helper_angle: TWELVE});
 	orangePoi.addMove(moves.antipendulum({entry: TWELVE, pivot_angle: NINE, pivot_radius: 1, duration: 0.75}));
 	// And then a little more slicing and dicing to prepare for the point iso
 	orangePoi.modifyTail({prop_acc: 4, helper_rescale_acc: -16}); 
@@ -666,7 +664,7 @@ function redraw() {
 		// More custom slicing and dicing
 	whitePoi.addMove(moves.antipendulum({direction: COUNTERCLOCKWISE, entry: THREE, helper_radius: 0, swing: 1, duration: 0.25}));
 		//??? Again, workaround for that strange bug
-	whitePoi.modifyTail({helper_rescale: 4, helper_rescale_acc: -16, helper_angle: TWELVE});
+	whitePoi.modifyTail({helper_rescale: 6, helper_rescale_acc: -16, helper_angle: TWELVE});
 	whitePoi.addMove(moves.antipendulum({direction: COUNTERCLOCKWISE, entry: TWELVE, duration: 0.75}));
 	whitePoi.modifyTail({prop_acc: -4, helper_rescale_acc: -16});
 	
