@@ -1186,7 +1186,22 @@ MoveFactory.prototype.defaults = function(options, defaults) {
 }
 
 //// Serialization methods on factories, props, and moves
-Prop.prototype.apply = function(json, fix) {
+PropFactory.prototype.setPosition = function(prop, json) {
+	var definition = PropFactory.prototype.parse(json);
+	for (var i = HOME; i<=PROP; i++) {
+		prop[ELEMENTS[i]].radius = definition[ELEMENTS[i]].radius;
+		prop[ELEMENTS[i]].azimuth = definition[ELEMENTS[i]].azimuth;
+		prop[ELEMENTS[i]].zenith = definition[ELEMENTS[i]].zenith;
+	}
+	prop.twist = definition.twist;
+	prop.grip = definition.grip;
+	prop.choke = definition.choke;
+	prop.bend = definition.bend;
+	prop.axis = new Vector(definition.axis.x, definition.axis.y, definition.axis.z);
+}
+
+// This does both moves and position, I want one that just does position
+Prop.prototype.apply = function(json) {
 	var definition = PropFactory.prototype.parse(json);
 	for (var i = HOME; i<=PROP; i++) {
 		this[ELEMENTS[i]].radius = definition[ELEMENTS[i]].radius;
@@ -1202,16 +1217,18 @@ Prop.prototype.apply = function(json, fix) {
 	}
 	this.axis = definition.axis;
 	this.propname = definition.propname;
+}
+Prop.prototype.applyMoves = function(json) {
 	this.emptyMoves();
+	var definition = PropFactory.prototype.parse(json);
 	var jmove;
 	for (var i = 0; i<definition.moves.length; i++) {
 		jmove = JSON.stringify(definition.moves[i]);
-		this.addMove(MoveFactory.prototype.build(jmove),fix);
+		this.addMove(MoveFactory.prototype.build(jmove));
 	}
 }
-Prop.prototype.applyFix = function(json) {
-	this.apply(json,true);
-}
+
+
 ///these methods should not be on the factories
 Prop.prototype.stringify = function() {
 	// This currently won't exist
