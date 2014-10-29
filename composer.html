@@ -447,8 +447,8 @@ function totalReset() {
 	document.getElementById("frameN").value = "0";
 	for (var i= 0; i < myProps.length; i++) {
 		myProps[i].move.reset();
+		myProps[i].orientToProp(startingPositions[i]);
 	}
-	setStart();
 	predict();
 	redraw();
 }
@@ -462,10 +462,6 @@ function predict() {
 function setStart() {
 	startingPositions[0].orientToProp(propOne);
 	startingPositions[1].orientToProp(propTwo);
-}
-function startPositions() {
-	propOne.orientToProp(startingPositions[0]);
-	propTwo.orientToProp(startingPositions[1]);
 }
 function listenForKey(e) {
 	//alert(e.keyCode);
@@ -546,9 +542,9 @@ function popExport() {
 	totalReset();
 	$("#popimport").hide();
 	$("#popexport").toggle();
-	var red = propOne.stringify();
-	var blue = propTwo.stringify();
-	$("#popexport textarea").html('{"red": '+red+', "blue": '+blue+"}");
+	var blue = propOne.stringify();
+	var red = propTwo.stringify();
+	$("#popexport textarea").html('{"blue": '+blue+', "red": '+red+"}");
 }
 function popImport() {
 	$("#popexport").hide();
@@ -633,11 +629,11 @@ function importSubmit() {
 	setStart();
 	propOne.apply(JSON.stringify(imported.red));
 	propTwo.apply(JSON.stringify(imported.blue));
-	for (var i = 0; i < imported.red.moves.length; i++) {
-		addMoveToQueue(JSON.stringify(imported.red.moves[i]), $("#queue1 ul").get(0));
-	}
 	for (var i = 0; i < imported.blue.moves.length; i++) {
-		addMoveToQueue(JSON.stringify(imported.blue.moves[i]), $("#queue2 ul").get(0));
+		addMoveToQueue(JSON.stringify(imported.blue.moves[i]), $("#queue1 ul").get(0));
+	}
+	for (var i = 0; i < imported.red.moves.length; i++) {
+		addMoveToQueue(JSON.stringify(imported.red.moves[i]), $("#queue2 ul").get(0));
 	}
 	$("#popimport").toggle();
 	predict();
