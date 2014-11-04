@@ -1,4 +1,17 @@
+VS3D = (function (VS3D) {
 "use strict";
+//Bring some Constants into the current namespace, for convenience
+var PropFactory = VS3D.PropFactory().constructor;
+var ELEMENTS = VS3D.Constants.ELEMENTS;
+var HOME = VS3D.Constants.HOME;
+var HAND = VS3D.Constants.HAND;
+var XAXIS = VS3D.Constants.XAXIS;
+var YAXIS = VS3D.Constants.YAXIS;
+var ZAXIS = VS3D.Constants.ZAXIS;
+var WALL = VS3D.Constants.WALL;
+var WHEEL = VS3D.Constants.WHEEL;
+var FLOOR = VS3D.Constants.FLOOR;
+
 function PhoriaPropRenderer(scene) {
 	this.scene = scene;
 	this.shapes = [];
@@ -259,7 +272,7 @@ PropFactory.prototype.sphere = function(size, facets) {
 }
 
 PropFactory.prototype.poi = function(options) {
-	var p = new Prop();
+	var p = VS3D.Prop();
 	p.renderer = this.poirender(options);
 	p.renderer.activate();
 	return p;
@@ -306,7 +319,7 @@ PropFactory.prototype.poirender = function(options) {
 }
 
 PropFactory.prototype.staff = function(options) {
-	var p = new Prop();
+	var p = VS3D.Prop();
 	p.renderer = this.staffrender(options);
 	p.renderer.activate();
 	return p;
@@ -346,7 +359,7 @@ PropFactory.prototype.staffrender = function(options) {
 }
 
 PropFactory.prototype.noprop = function(options) {
-	var p = new Prop();
+	var p = VS3D.Prop();
 	p.renderer = this.noproprender(options);
 	p.renderer.activate();
 	return p;
@@ -357,7 +370,7 @@ PropFactory.prototype.noproprender = function(options) {
 	return r;
 }
 PropFactory.prototype.noprop2d = function(options) {
-	var p = new Prop();
+	var p = VS3D.Prop();
 	p.renderer = this.noproprender2d(options);
 	return p;
 }
@@ -377,7 +390,7 @@ CanvasPropRenderer.prototype.activate = function(scene) {}
 CanvasPropRenderer.prototype.deactivate = function(scene) {}
 
 PropFactory.prototype.poi2d= function(options) {
-	var p = new Prop();
+	var p = VS3D.Prop();
 	p.renderer = this.poirender2d(options);
 	p.renderer.activate();
 	return p;
@@ -522,7 +535,7 @@ canvasFlame.prototype.draw = function(context, zenith, roll, scale) {
 }
 
 PropFactory.prototype.staff2d = function(options) {
-	var p = new Prop();
+	var p = VS3D.Prop();
 	p.renderer = this.staffrender2d(options);
 	p.renderer.activate();
 	return p;
@@ -557,7 +570,7 @@ PropFactory.prototype.staffrender2d = function(options) {
 }
 
 PropFactory.prototype.hoop = function(options) {
-	var p = new Prop();
+	var p = VS3D.Prop();
 	p.renderer = this.hooprender(options);
 	p.renderer.activate();
 	return p;
@@ -646,7 +659,7 @@ PropFactory.prototype.rotatePoints = function(shape, angle, a, b) {
 
 
 PropFactory.prototype.hoop2d = function(options) {
-	var p = new Prop();
+	var p = VS3D.Prop();
 	p.renderer = this.hooprender2d(options);
 	p.renderer.activate();
 	return p;
@@ -691,3 +704,5 @@ PropFactory.prototype.hooprender2d = function(options) {
 	return r;
 }
 
+return VS3D;
+})(VS3D);

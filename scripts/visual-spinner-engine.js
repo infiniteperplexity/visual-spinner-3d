@@ -1,71 +1,92 @@
+var VS3D = (function () {
 "use strict";
 //// Human-readable constants used by the VisualSpinner3D engine
 // Constants related to speed and radians
-var UNIT = 2 * Math.PI;
-var BEAT = 360;
-var SPEED = UNIT/BEAT;
+var Constants = {};
+var UNIT = Constants.UNIT = 2 * Math.PI;
+var BEAT = Constants.BEAT = 360;
+var SPEED = Constants.SPEED = UNIT/BEAT;
 // Constants used to prevent rounding errors
-var TINY = 0.0001;
-var SMALLISH = 0.01;
+var TINY = Constants.TINY = 0.0001;
+var SMALLISH = Constants.SMALLISH = 0.01;
 // Constants referring to the five spherical prop elements
-var HOME = 0;
-var PIVOT = 1;
-var HELPER = 2;
-var HAND = 3;
-var PROP = 4;
-var ELEMENTS = ["home","pivot","helper","hand","prop"];
+var HOME = Constants.HOME = 0;
+var PIVOT = Constants.PIVOT = 1;
+var HELPER = Constants.HELPER = 2;
+var HAND = Constants.HAND = 3;
+var PROP = Constants.PROP = 4;
+var ELEMENTS = Constants.ELEMENTS = ["home","pivot","helper","hand","prop"];
 // Constants referring to directions
-var TWELVE = 1.5*Math.PI;
-var THREE = 0;
-var SIX = 0.5*Math.PI;
-var NINE = Math.PI;
-var ONETHIRTY = 1.75*Math.PI;
-var FOURTHIRTY = 0.25*Math.PI;
-var SEVENTHIRTY = 0.75*Math.PI;
-var SEVENTHIRTY = 0.75*Math.PI;
-var TENTHIRTY = 1.25*Math.PI;
-var NEAR = 0;
-var FAR = Math.PI;
-var DOWN = 0.5*Math.PI;
-var UP = 1.5*Math.PI;
-var HALF = 0.5*Math.PI;
-var QUARTER = 0.5*Math.PI;
-var THIRD = (2/3)*Math.PI;
-var STAGGER = 0.5*Math.PI;
+var TWELVE = Constants.TWELVE = 1.5*Math.PI;
+var THREE = Constants.THREE = 0;
+var SIX = Constants.SIX = 0.5*Math.PI;
+var NINE = Constants.NINE = Math.PI;
+var ONETHIRTY = Constants.ONETHIRTY = 1.75*Math.PI;
+var FOURTHIRTY = Constants.FOURTHIRTY = 0.25*Math.PI;
+var SEVENTHIRTY = Constants.SEVENTHIRTY = 0.75*Math.PI;
+var TENTHIRTY = Constants.TENTHIRTY = 1.25*Math.PI;
+var NEAR = Constants.NEAR = 0;
+var FAR = Constants.FAR = Math.PI;
+var DOWN = Constants.DOWN = 0.5*Math.PI;
+var UP = Constants.UP = 1.5*Math.PI;
+var HALF = Constants.HALF = 0.5*Math.PI;
+var QUARTER = Constants.QUARTER = 0.5*Math.PI;
+var THIRD = Constants.THIRD = (2/3)*Math.PI;
+var STAGGER = Constants.STAGGER = 0.5*Math.PI;
 // Constants referring to planes and axes
-var XAXIS = [1,0,0];
-var ZAXIS = [0,0,1];
-var YAXIS = [0,-1,0];
-var WALL = new Vector(0,0,1);
-var WHEEL = new Vector(1,0,0);
-var FLOOR = new Vector(0,1,0);
-var NWALL = new Vector(0,0,-1);
-var NWHEEL = new Vector(-1,0,0);
-var NFLOOR = new Vector(0,-1,0);
+var XAXIS = Constants.XAXIS = [1,0,0];
+var ZAXIS = Constants.ZAXIS = [0,0,1];
+var YAXIS = Constants.YAXIS = [0,-1,0];
+var WALL = Constants.WALL = new Vector(0,0,1);
+var WHEEL = Constants.WHEEL = new Vector(1,0,0);
+var FLOOR = Constants.FLOOR = new Vector(0,1,0);
 // Constants used to parameterize moves
-var SAME = 0;
-var SPLIT = Math.PI;
-var TOGETHER = 0;
-var OPPOSITE = Math.PI;
-var DIAMOND = 0;
-var BOX = Math.PI;
-var NOOFFSET = 0;
-var OFFSET = Math.PI;
-var CLOCKWISE = 1;
-var COUNTERCLOCKWISE = -1;
-var INSPIN = 1;
-var NOSPIN = 0;
-var ANTISPIN = -1;
-var CATEYE = -1;
-var FORWARD = 1;
-var BACKWARD = -1;
-var PROBEND = 3; 
-var ISOBEND = 1;
-var ANTIBEND = -1;
-var STATIC = 0;
-var CONTACT = Math.PI;
-var GUNSLINGER = 0.5;
+var SAME = Constants.SAME = 0;
+var SPLIT = Constants.SPLIT = Math.PI;
+var TOGETHER = Constants.TOGETHER = 0;
+var OPPOSITE = Constants.OPPOSITE = Math.PI;
+var DIAMOND = Constants.DIAMOND = 0;
+var BOX = Constants.BOX = Math.PI;
+var NOOFFSET = Constants.NOOFFSET = 0;
+var OFFSET = Constants.OFFSET = Math.PI;
+var CLOCKWISE = Constants.CLOCKWISE = 1;
+var COUNTERCLOCKWISE = Constants.COUNTERCLOCKWISE = -1;
+var INSPIN = Constants.INSPIN = 1;
+var NOSPIN = Constants.NOSPIN = 0;
+var ANTISPIN = Constants.ANTISPIN = -1;
+var CATEYE = Constants.CATEYE = -1;
+var FORWARD = Constants.FORWARD = 1;
+var BACKWARD = Constants.BACKWARD = -1;
+var PROBEND = Constants.PROBEND = 3; 
+var ISOBEND = Constants.ISOBEND = 1;
+var ANTIBEND = Constants.ANTIBEND = -1;
+var STATIC = Constants.STATIC = 0;
+var CONTACT = Constants.CONTACT = Math.PI;
+var GUNSLINGER = Constants.GUNSLINGER = 0.5;
 
+//attempt to re-scope constants into another namespace
+Constants.rescope = function (scope) {
+	scope = scope || window;
+	for (var c in this) {
+		if (scope[c] !== undefined && c !== "rescope") {
+			alert("Constant-naming conflict in enclosing namespace.  Must use explicit 'VS3D.Constant' reference for this session.");
+			return;
+		}
+	}
+	for (var c in this)  {
+		if (c !== "rescope") {
+			scope[c] = this[c];
+		}
+	}
+}
+Constants.descope = function (scope) {
+	scope = scope || window;
+	for (var c in this) {
+		if (c !== "rescope") {
+			scope[c] = undefined;
+		}
+	}
+}
 
 //// A Vector can represent either a point or a plane, in 3D Cartesian coordinates
 function Vector(x,y,z) {
@@ -240,14 +261,7 @@ function nearly(n1,n2, delta) {
 	else if (Math.abs(Math.abs(n1-n2)-2*Math.PI)<delta) {return true;}
 	else {return false;}
 }
-function addLinear(angle1, radius1, angle2, radius2) {
-	var results = {};
-	var x = radius1*Math.cos(angle1) + radius2*Math.cos(angle2);
-	var y = radius1*Math.sin(angle1) + radius2*Math.sin(angle2);;
-	results.radius = Math.sqrt(x*x+y*y);
-	results.angle = Math.atan2(y,x);
-	return results;
-}
+
 
 //// A Prop handles the geometry for a number of spherical coordinates, a renderer, and a move queue
 // Note that Props and Moves use different coordinate systems for three-dimensional angles.
@@ -1296,4 +1310,16 @@ function isValidJSON(str) {
     }
     return true;
 }
-
+return {
+	MoveChain: function() {return new MoveChain();},
+	MoveLink: function() {return new MoveLink();},
+	Prop: function() {return new Prop();},
+	PropFactory: function() {return new PropFactory();},
+	MoveFactory: function() {return new MoveFactory();},
+	Vector: function(x,y,z) {return new Vector(x,y,z);},
+	Spherical: function(r,z,a) {return new Spherical(r,z,a);},
+	Constants: Constants,
+	Utilities: {unwind, nearly, isValidJSON},
+	spinfail: Prop.prototype.spinfail
+}
+})();

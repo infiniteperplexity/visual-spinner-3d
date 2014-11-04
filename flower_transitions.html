@@ -18,9 +18,10 @@ var BACKGROUND = "black";
 
 var view2d = true;
 
+VS3D.Constants.rescope();
 var myProps = new Array(); 
-var moves = new MoveFactory();
-var props = new PropFactory();
+var moves = VS3D.MoveFactory();
+var props = VS3D.PropFactory();
 
 function init() {
 	ctx=document.getElementById('canvas').getContext('2d');

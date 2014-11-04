@@ -1,4 +1,5 @@
 "use strict";
+VS3D.Constants.rescope();
 var recipes = {};
 recipes.add = function(build) {recipes[build.movename] = build;}
 recipes.add({movename: "Static Spin", build: "staticspin", orient: THREE, entry: THREE, hand: THREE, extend: 0, duration: 1,direction: CLOCKWISE, plane: WALL, pivot_angle: THREE, pivot_radius: 0});
@@ -25,3 +26,4 @@ recipes.add({movename: "Tapedeck Toroid", build: "tapedeck", orient: THREE, entr
 recipes.add({movename: "Pro-Bend Toroid", build: "toroid", orient: THREE, entry: THREE, mode: DIAMOND, direction: CLOCKWISE, pitch: FORWARD, harmonics: 1, bend: PROBEND, duration: 1, extend: 1, plane: WALL, pivot_angle: THREE, pivot_radius: 0});
 recipes.add({movename: "ad hoc Contact C-CAP", build: "ccap", entry: THREE, orient: THREE, direction: CLOCKWISE, petals1: 0, petals2: 4, spin1: INSPIN, spin2: ANTISPIN, duration: 1, extend: 1, plane: WALL, pivot_angle: THREE, pivot_radius: 0, modify: {grip: CONTACT}});
 recipes.add({movename: "ad hoc Contact Roll", orient: THREE, entry: THREE, build: "linex", petals: 0, mode: DIAMOND, spin: INSPIN, direction: CLOCKWISE, duration: 1, plane: WALL, pivot_angle: THREE, pivot_radius: 0, modify: {grip: CONTACT}});
+	VS3D.Constants.descope();

@@ -1,8 +1,77 @@
+VS3D = (function (VS3D) {
+
+//Bring all Constants into the current namespace, for convenience
+var Constants = VS3D.Constants;
+var UNIT = Constants.UNIT;
+var BEAT = Constants.BEAT;
+var SPEED = Constants.SPEED;
+// Constants used to prevent rounding errors
+var TINY = Constants.TINY;
+var SMALLISH = Constants.SMALLISH;
+// Constants referring to the five spherical prop elements
+var HOME = Constants.HOME;
+var PIVOT = Constants.PIVOT;
+var HELPER = Constants.HELPER
+var HAND = Constants.HAND;
+var PROP = Constants.PROP;
+var ELEMENTS = Constants.ELEMENTS;
+// Constants referring to directions
+var TWELVE = Constants.TWELVE;
+var THREE = Constants.THREE;
+var SIX = Constants.SIX;
+var NINE = Constants.NINE;
+var ONETHIRTY = Constants.ONETHIRTY;
+var FOURTHIRTY = Constants.FOURTHIRTY;
+var SEVENTHIRTY = Constants.SEVENTHIRTY;
+var TENTHIRTY = Constants.TENTHIRTY;
+var NEAR = Constants.NEAR;
+var FAR = Constants.FAR;
+var DOWN = Constants.DOWN;
+var UP = Constants.UP;
+var HALF = Constants.HALF;
+var QUARTER = Constants.QUARTER;
+var THIRD = Constants.THIRD;
+var STAGGER = Constants.STAGGER;
+// Constants referring to planes and axes
+var XAXIS = Constants.XAXIS;
+var ZAXIS = Constants.ZAXIS;
+var YAXIS = Constants.YAXIS;
+var WALL = Constants.WALL;
+var WHEEL = Constants.WHEEL;
+var FLOOR = Constants.FLOOR;
+// Constants used to parameterize moves
+var SAME = Constants.SAME;
+var SPLIT = Constants.SPLIT;
+var TOGETHER = Constants.TOGETHER;
+var OPPOSITE = Constants.OPPOSITE;
+var DIAMOND = Constants.DIAMOND;
+var BOX = Constants.BOX;
+var NOOFFSET = Constants.NOOFFSET;
+var OFFSET = Constants.OFFSET;
+var CLOCKWISE = Constants.CLOCKWISE;
+var COUNTERCLOCKWISE = Constants.COUNTERCLOCKWISE;
+var INSPIN = Constants.INSPIN;
+var NOSPIN = Constants.NOSPIN;
+var ANTISPIN = Constants.ANTISPIN;
+var CATEYE = Constants.CATEYE;
+var FORWARD = Constants.FORWARD;
+var BACKWARD = Constants.BACKWARD;
+var PROBEND = Constants.PROBEND; 
+var ISOBEND = Constants.ISOBEND;
+var ANTIBEND = Constants.ANTIBEND;
+var STATIC = Constants.STATIC;
+var CONTACT = Constants.CONTACT;
+var GUNSLINGER = Constants.GUNSLINGER;	
+
+var MoveFactory = VS3D.MoveFactory().constructor;
+var unwind = VS3D.Utilities.unwind;
+var nearly = VS3D.Utilities.nearly;
+
 "use strict";
 ///Fixes...get rid of most nulls...
 ///But make entry typically null and rely on orient more
 MoveFactory.prototype.staticspin= function(options) {
-	var move = new MoveChain();
+	var move = VS3D.MoveChain();
 	move.definition = options;
 	options = this.defaults(options,{
 		build: "staticspin",
@@ -18,7 +87,7 @@ MoveFactory.prototype.staticspin= function(options) {
 		duration: 1,
 		sliceby: 4
 	});
-	var segment = new MoveLink();
+	var segment = VS3D.MoveLink();
 	segment.hand.angle = options.entry;
 	segment.pivot.angle = options.pivot_angle;
 	segment.pivot.radius = options.pivot_radius;
@@ -50,7 +119,7 @@ MoveFactory.prototype.staticspin= function(options) {
 }
 
 MoveFactory.prototype.superman = function(options) {
-	var move = new MoveChain();
+	var move = VS3D.MoveChain();
 	move.definition = options;
 	options = this.defaults(options,{
 		build: "superman",
@@ -60,7 +129,7 @@ MoveFactory.prototype.superman = function(options) {
 		direction: CLOCKWISE,
 		speed: 1
 	});
-	var segment = new MoveLink();
+	var segment = VS3D.MoveLink();
 	segment.duration = 0.25;
 	segment.prop.angle = options.orient;
 	segment.prop.plane = options.plane;
@@ -82,7 +151,7 @@ MoveFactory.prototype.superman = function(options) {
 }
 
 MoveFactory.prototype.flower = function(options) {
-	var move = new MoveChain();
+	var move = VS3D.MoveChain();
 	move.definition = options;
 	options = this.defaults(options,{
 		build: "flower",
@@ -101,7 +170,7 @@ MoveFactory.prototype.flower = function(options) {
 		duration: 1,
 		sliceby: 4
 	});
-	var segment = new MoveLink();
+	var segment = VS3D.MoveLink();
 	if (options.spin==INSPIN) {
 		segment.prop.speed = (options.petals+1)*options.spin*options.direction*options.speed;
 	} else {
@@ -197,7 +266,7 @@ MoveFactory.prototype.twoPropFlower = function(options) {
 
 
 MoveFactory.prototype.ccap = function(options) {
-	var move = new MoveChain();
+	var move = VS3D.MoveChain();
 	move.definition = options;
 	options = this.defaults(options,{
 		build: "ccap",
@@ -214,7 +283,7 @@ MoveFactory.prototype.ccap = function(options) {
 		// need to add "entry"
 		duration: 1
 	});
-	var segment = new MoveLink();
+	var segment = VS3D.MoveLink();
 	segment.duration = 0.25;
 	segment.hand.radius = options.extend;
 	segment.hand.plane = options.plane;
@@ -249,7 +318,7 @@ MoveFactory.prototype.ccap = function(options) {
 }
 
 MoveFactory.prototype.pendulum = function(options) {
-	var move = new MoveChain();
+	var move = VS3D.MoveChain();
 	move.definition = options;
 	options = this.defaults(options,{
 		build: "pendulum",
@@ -276,7 +345,7 @@ MoveFactory.prototype.pendulum = function(options) {
 		// swing = 0.75 for antibrid pendulums
 		swing: 1
 	});
-	var segment = new MoveLink();
+	var segment = VS3D.MoveLink();
 	segment.pivot.angle = options.pivot_angle;
 	segment.pivot.radius = options.pivot_radius;
 	segment.pivot.plane = options.plane;
@@ -359,7 +428,7 @@ MoveFactory.prototype.onepointfive = function(options) {
 
 //the goofy, wobbly kind
 MoveFactory.prototype.isopendulum = function(options) {
-	var segment = new MoveLink();
+	var segment = VS3D.MoveLink();
 	segment.definition = options;
 	options = this.defaults(options,{
 		build: "isopendulum",
@@ -394,7 +463,7 @@ MoveFactory.prototype.isopendulum = function(options) {
 
 // This move could possibly be re-done using "helper"
 MoveFactory.prototype.oval = function(options) {
-	var move = new MoveChain();
+	var move = VS3D.MoveChain();
 	move.definition = options;
 	options = this.defaults(options,{
 		build: "oval",
@@ -413,7 +482,7 @@ MoveFactory.prototype.oval = function(options) {
 		pivot_radius: 0,
 		duration: 1
 	});
-	var segment = new MoveLink();
+	var segment = VS3D.MoveLink();
 	if (options.spin==INSPIN) {
 		segment.prop.speed = (options.petals+1)*options.spin*options.direction*options.speed;
 	} else {
@@ -464,7 +533,7 @@ MoveFactory.prototype.oval = function(options) {
 }
 
 MoveFactory.prototype.linex = function(options) {
-	var move = new MoveChain();
+	var move = VS3D.MoveChain();
 	move.definition = options;
 	options = this.defaults(options,{
 		build: "linex",
@@ -482,7 +551,7 @@ MoveFactory.prototype.linex = function(options) {
 		pivot_radius: 0,
 		duration: 1
 	});
-	var segment = new MoveLink();
+	var segment = VS3D.MoveLink();
 	if (options.spin==INSPIN) {
 		segment.prop.speed = (options.petals+1)*options.spin*options.direction*options.speed;
 	} else {
@@ -546,7 +615,7 @@ MoveFactory.prototype.linex = function(options) {
 
 
 MoveFactory.prototype.old_linex = function(options) {
-	var move = new MoveChain();
+	var move = VS3D.MoveChain();
 	move.definition = options;
 	// A linex with harmonics = 1 is a linear extension.  harmonics = 2 is a linear isolation;
 	options = this.defaults(options,{
@@ -566,7 +635,7 @@ MoveFactory.prototype.old_linex = function(options) {
 		pivot_radius: 0,
 		phase: 0
 	});
-	segment = new MoveLink();
+	segment = VS3D.MoveLink();
 	segment.pivot.angle = options.pivot_angle;
 	segment.pivot.radius = options.pivot_radius;
 	segment.pivot.plane = options.plane;
@@ -610,7 +679,7 @@ MoveFactory.prototype.old_linex = function(options) {
 
 // haven't done much work on this yet
 MoveFactory.prototype.linearfloat = function(options) {
-	var move = new MoveChain();
+	var move = VS3D.MoveChain();
 	move.definition = options;
 	options = this.defaults(options,{
 		build: "linearfloat",
@@ -627,7 +696,7 @@ MoveFactory.prototype.linearfloat = function(options) {
 		pivot_radius: 0,
 		phase: 0
 	});
-	segment = new MoveLink();
+	segment = VS3D.MoveLink();
 	segment.pivot.angle = options.pivot_angle;
 	segment.pivot.radius = options.pivot_radius;
 	segment.pivot.plane = options.plane;
@@ -671,7 +740,7 @@ MoveFactory.prototype.linearfloat = function(options) {
 
 //It's kind of odd that cat-eyes don't have an "orient" argument...
 MoveFactory.prototype.isolation = function(options) {
-	var move = new MoveChain();
+	var move = VS3D.MoveChain();
 	move.definition = options;
 	// A no-offset isolation is a unit-circle extension. An anti-spin isolation is a cateye;
 	options = this.defaults(options,{
@@ -689,7 +758,7 @@ MoveFactory.prototype.isolation = function(options) {
 		phase: 0,
 		duration: 1
 	});
-	var segment = new MoveLink();
+	var segment = VS3D.MoveLink();
 	segment.pivot.angle = options.pivot_angle;
 	segment.pivot.radius = options.pivot_radius;
 	segment.pivot.plane = options.plane;
@@ -733,7 +802,7 @@ MoveFactory.prototype.cateye = function(options) {
 }
 
 MoveFactory.prototype.toroid = function(options) {
-        var move = new MoveChain();
+        var move = VS3D.MoveChain();
         move.definition = options;
         options = this.defaults(options,{
                 build: "toroid",
@@ -753,7 +822,7 @@ MoveFactory.prototype.toroid = function(options) {
                 duration: 1,
                 sliceby: 4
         });
-        var segment = new MoveLink();
+        var segment = VS3D.MoveLink();
         segment.prop.speed = options.bend*options.direction*options.speed;
         segment.bend_speed = options.harmonics*options.pitch*options.speed;
         segment.pivot.angle = options.pivot_angle;
@@ -787,7 +856,7 @@ MoveFactory.prototype.toroid = function(options) {
 }
 
 MoveFactory.prototype.isobend = function(options) {
-        var move = new MoveChain();
+        var move = VS3D.MoveChain();
         move.definition = options;
         options = this.defaults(options,{
                 build: "isobend",
@@ -803,7 +872,7 @@ MoveFactory.prototype.isobend = function(options) {
                 pivot_angle: 0,
                 pivot_radius: 0
         });
-	var segment = new MoveLink();
+	var segment = VS3D.MoveLink();
 	segment.pivot.radius = options.pivot_radius;
         segment.pivot.plane = options.plane;
 	segment.pivot.angle = options.pivot_angle;
@@ -837,7 +906,7 @@ MoveFactory.prototype.isobend = function(options) {
 }
 
 MoveFactory.prototype.antibend = function(options) {
-        var move = new MoveChain();
+        var move = VS3D.MoveChain();
         move.definition = options;
         options = this.defaults(options,{
                 build: "antibend",
@@ -853,7 +922,7 @@ MoveFactory.prototype.antibend = function(options) {
                 pivot_angle: 0,
                 pivot_radius: 0
         });
-        var segment = new MoveLink();
+        var segment = VS3D.MoveLink();
         segment.pivot.radius = options.pivot_radius;
         segment.pivot.plane = options.plane;
         segment.pivot.angle = options.pivot_angle;
@@ -895,7 +964,7 @@ MoveFactory.prototype.antibend = function(options) {
 }
 
 MoveFactory.prototype.pentagram = function(options) {
-        var move = new MoveChain();
+        var move = VS3D.MoveChain();
         move.definition = options;
         options = this.defaults(options,{
                 build: "pentagram",
@@ -911,7 +980,7 @@ MoveFactory.prototype.pentagram = function(options) {
                 pivot_angle: 0,
                 pivot_radius: 0
         });
-        var segment = new MoveLink();
+        var segment = VS3D.MoveLink();
         segment.pivot.radius = options.pivot_radius;
         segment.pivot.plane = options.plane;
         segment.pivot.angle = options.pivot_angle;
@@ -947,7 +1016,7 @@ MoveFactory.prototype.pentagram = function(options) {
 
 
 MoveFactory.prototype.tapedeck = function(options) {
-        var move = new MoveChain();
+        var move = VS3D.MoveChain();
         move.definition = options;
         options = this.defaults(options,{
                 build: "tapedeck",
@@ -961,7 +1030,7 @@ MoveFactory.prototype.tapedeck = function(options) {
                 pivot_angle: 0,
                 pivot_radius: 0
         });
-        var segment = new MoveLink();
+        var segment = VS3D.MoveLink();
         segment.pivot.radius = options.pivot_radius;
         segment.pivot.plane = options.plane;
         segment.pivot.angle = options.pivot_angle;
@@ -1001,7 +1070,7 @@ MoveFactory.prototype.tapedeck = function(options) {
 
 //***obscure moves***
 MoveFactory.prototype.fractal = function(options) {
-	var move = new MoveChain();
+	var move = VS3D.MoveChain();
 	move.definition = options;
 	options = this.defaults(options,{
 		build: "fractal",
@@ -1019,7 +1088,7 @@ MoveFactory.prototype.fractal = function(options) {
 		helper_mode: DIAMOND,
 		speed: 1
 	});
-	var segment = new MoveLink();
+	var segment = VS3D.MoveLink();
 	if (options.spin==INSPIN) {
 		segment.prop.speed = (options.petals+1)*options.spin*options.direction*options.speed;
 	} else {
@@ -1055,7 +1124,7 @@ MoveFactory.prototype.fractal = function(options) {
 
 
 MoveFactory.prototype.scap = function(options) {
-	var move = new MoveChain();
+	var move = VS3D.MoveChain();
 	move.definition = options;
 	options = this.defaults(options,{
 		build: "scap",
@@ -1068,7 +1137,7 @@ MoveFactory.prototype.scap = function(options) {
 		extend: 1,
 		speed: 2,
 	});
-	segment = new MoveLink();
+	segment = VS3D.MoveLink();
 	segment.duration = 0.25;
 	segment.hand.radius = options.extend;
 	segment.hand.plane = options.plane;
@@ -1101,7 +1170,7 @@ MoveFactory.prototype.scap = function(options) {
 
 
 MoveFactory.prototype.isopop = function(options) {
-	var move = new MoveChain();
+	var move = VS3D.MoveChain();
 	move.definition = options;
 	// An isopop with options.pop: ANTISPIN is an isobreak
 	options = this.defaults(options,{
@@ -1117,7 +1186,7 @@ MoveFactory.prototype.isopop = function(options) {
 		pivot_radius: 0,
 		pivot_angle: 0
 	});
-	var segment = new MoveLink();
+	var segment = VS3D.MoveLink();
 	segment.pivot.angle = options.pivot_angle;
 	segment.pivot.radius = options.pivot_radius;
 	segment.pivot.plane = options.plane;
@@ -1143,7 +1212,7 @@ MoveFactory.prototype.isopop = function(options) {
 }
 
 MoveFactory.prototype.diamond = function(options) {
-	var move = new MoveChain();
+	var move = VS3D.MoveChain();
 	move.definition = options;
 	options = this.defaults(options,{
 		build: "diamond",
@@ -1157,7 +1226,7 @@ MoveFactory.prototype.diamond = function(options) {
 		pivot_radius: 0,
 		pivot_angle: 0
 	});
-	var segment = new MoveLink();
+	var segment = VS3D.MoveLink();
 	segment.pivot.angle = options.pivot_angle;
 	segment.pivot.radius = options.pivot_radius;
 	segment.pivot.plane = options.plane;
@@ -1206,7 +1275,7 @@ MoveFactory.prototype.diamond = function(options) {
 }
 
 MoveFactory.prototype.triangle = function(options) {
-	var move = new MoveChain();
+	var move = VS3D.MoveChain();
 	move.definition = options;
 	options = this.defaults(options,{
 		build: "triangle",
@@ -1220,7 +1289,7 @@ MoveFactory.prototype.triangle = function(options) {
 		pivot_radius: 0,
 		pivot_angle: 0
 	});
-	var segment = new MoveLink();
+	var segment = VS3D.MoveLink();
 	segment.pivot.angle = options.pivot_angle;
 	segment.pivot.radius = options.pivot_radius;
 	segment.pivot.plane = options.plane;
@@ -1268,7 +1337,7 @@ MoveFactory.prototype.triangle = function(options) {
 }
 
 MoveFactory.prototype.stallchaser = function(options) {
-	var move = new MoveChain();
+	var move = VS3D.MoveChain();
 	move.definition = options;
 	options = this.defaults(options,{
 		build: "stallchaser",
@@ -1281,7 +1350,7 @@ MoveFactory.prototype.stallchaser = function(options) {
 		phase: 0,
 		variant: true, //not implemented
 	});
-	var segment = new MoveLink();
+	var segment = VS3D.MoveLink();
 	segment.duration = 0.5/options.speed;
 	segment.hand.plane = options.plane;
 	segment.prop.plane = options.plane;
@@ -1316,7 +1385,7 @@ MoveFactory.prototype.stallchaser = function(options) {
 
 
 MoveFactory.prototype.spirograph = function(options) {
-	var segment = new MoveLink();
+	var segment = VS3D.MoveLink();
 	segment.definition = options;
 	options = this.defaults(options,{
 		build: "spirograph",
@@ -1365,7 +1434,7 @@ MoveFactory.prototype.spirograph = function(options) {
 
 
 MoveFactory.prototype.generic = function(options) {
-	var segment = new MoveLink();
+	var segment = VS3D.MoveLink();
 	segment.definition = options;
 	options = this.defaults(options,{
 		build: "generic",
@@ -1490,7 +1559,7 @@ MoveFactory.prototype.generic = function(options) {
 }
 	
 MoveFactory.prototype.spiralwrap = function(options) {
-	var move = new MoveChain();
+	var move = VS3D.MoveChain();
 	move.definition = options;
 	options = this.defaults(options,{
 		build: "spiralwrap",
@@ -1503,7 +1572,7 @@ MoveFactory.prototype.spiralwrap = function(options) {
 		speed: 1,
 		duration: 1
 	});
-	var segment = new MoveLink();
+	var segment = VS3D.MoveLink();
 	segment.hand.plane = options.plane;
 	segment.prop.plane = options.plane;
 	// should specify an angle?
@@ -1527,7 +1596,7 @@ MoveFactory.prototype.spiralwrap = function(options) {
 }
 
 MoveFactory.prototype.spiral = function(options) {
-	var move = new MoveChain();
+	var move = VS3D.MoveChain();
 	move.definition = options;
 	options = this.defaults(options,{
 		build: "spiral",
@@ -1544,7 +1613,7 @@ MoveFactory.prototype.spiral = function(options) {
 		duration: 1,
 		sliceby: 4
 	});
-	var segment = new MoveLink();
+	var segment = VS3D.MoveLink();
 	if (options.entry != null) {
 		segment.hand.angle = options.entry;
 	}
@@ -1586,7 +1655,7 @@ MoveFactory.prototype.spiral = function(options) {
 
 
 MoveFactory.prototype.stall = function(options) {
-	var segment = new MoveLink();
+	var segment = VS3D.MoveLink();
 	segment.definition = options;
 	options = this.defaults(options,{
 		build: "stall",
@@ -1632,7 +1701,7 @@ MoveFactory.prototype.stall = function(options) {
 
 
 MoveFactory.prototype.verticaltoss = function(options) {
-	var move = new MoveChain();
+	var move = VS3D.MoveChain();
 	move.definition = options;
 	
 	options = this.defaults(options,{
@@ -1649,7 +1718,7 @@ MoveFactory.prototype.verticaltoss = function(options) {
 		pivot_angle: 0,
 		pivot_radius: 0
 	});
-	var segment = new MoveLink();
+	var segment = VS3D.MoveLink();
 	segment.pivot.angle = options.pivot_angle;
 	segment.pivot.radius = options.pivot_radius;
 	
@@ -1681,3 +1750,6 @@ MoveFactory.prototype.verticaltoss = function(options) {
 	move.movename = options.movename;
 	return move;
 }
+
+return VS3D;
+})(VS3D);

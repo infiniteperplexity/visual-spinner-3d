@@ -44,6 +44,9 @@ table {position: relative; top: -20px;}
 <script src="scripts/visual-spinner-recipes.js"></script>
 <script>
 "use strict";
+VS3D.Constants.rescope();
+var nearly = VS3D.Utilities.nearly;
+var unwind = VS3D.Utilities.unwind;
 //**** set parameters and set up environment and display
 var HEIGHT = 400;
 var WIDTH = 400;
@@ -52,8 +55,8 @@ var ORIGINY = HEIGHT/2;
 var BACKGROUND = "black";
 var view2d = false;
 var myProps = new Array(); 
-var moves = new MoveFactory();
-var props = new PropFactory();
+var moves = VS3D.MoveFactory();
+var props = VS3D.PropFactory();
 var scene = new Phoria.Scene();
 var renderer;
 var predictions = [props.poi({head_color: "0,32,64", scene: scene}),props.poi({head_color: "64,0,0", scene: scene})];
@@ -101,7 +104,7 @@ function canvasSetup() {
 	redraw();
 }
 window.addEventListener("keydown", listenForKey, false);
-Prop.prototype.spinfail = function() {
+VS3D.spinfail = function() {
 	if (paused == false) {
 		alert("can't spin with an empty queue");
 	}
@@ -398,7 +401,7 @@ function submitChanges() {
 			prmtr = inputs[i].getAttribute("data-param");
 			if (prmtr === "plane") {
 				val = JSON.parse(inputs[i].value);
-				newdef[prmtr] = new Vector(val.x, val.y, val.z);
+				newdef[prmtr] = VS3D.Vector(val.x, val.y, val.z);
 			} else {
 				newdef[prmtr] = inputs[i].value;
 				if (isNumber(newdef[prmtr])) {

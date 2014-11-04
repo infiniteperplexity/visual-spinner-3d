@@ -11,6 +11,7 @@
 <script src="scripts/visual-spinner-renderers.js"></script><script>
 // set parameters
 
+VS3D.Constants.rescope();
 var HEIGHT = 400;
 var WIDTH = 400;
 var ORIGINX = WIDTH/2;
@@ -21,8 +22,9 @@ var view2d = false;
 
 var myProps = new Array(); 
 var controller = new Controller();
-var moves = new MoveFactory();
-var props = new PropFactory();
+var moves = VS3D.MoveFactory();
+var props = VS3D.PropFactory();
+var Prop = VS3D.Prop().constructor;
 
 $.urlParam = function(name){
 	var results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(window.location.href);

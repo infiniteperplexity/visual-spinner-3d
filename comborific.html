@@ -25,6 +25,7 @@ header, section div {vertical-align: top; padding: 2.5px; border: 5px solid gray
 <script src="scripts/visual-spinner-moves.js"></script>
 <script src="scripts/visual-spinner-renderers.js"></script><script>
 // set parameters
+VS3D.Constants.rescope();
 
 var HEIGHT = 400;
 var WIDTH = 400;
@@ -35,8 +36,8 @@ var BACKGROUND = "black";
 var view2d = false;
 
 var myProps = new Array(); 
-var moves = new MoveFactory();
-var props = new PropFactory();
+var moves = VS3D.MoveFactory();
+var props = VS3D.PropFactory();
 
 function init() {
 	ctx=document.getElementById('canvas').getContext('2d');
@@ -63,9 +64,6 @@ var whitePoi = props.poi({head_color: "white", scene: scene});
 var startingPositions = [props.noprop({scene: scene}),props.noprop({scene: scene})];
 
 function canvasSetup() {
-	var prop = new Prop();
-	var link = new MoveLink();
-	var angle = SIX;
 	canvas.height = HEIGHT;
 	canvas.width = WIDTH;
 	ctx.fillStyle = BACKGROUND;
@@ -379,10 +377,6 @@ function canvasSetup() {
 	redraw();
 }
 
-Prop.prototype.spinfail = function() {
-	alert("can't spin with an empty queue");
-}
-
 // animation loop
 var paused = false;
 
@@ -471,7 +465,7 @@ function canvasLoop() {
 		for (var i = 0; i < myProps.length; i++) {
 			myProps[i].render();
 		}
-	},1000/BEAT);
+	},100/BEAT);
 }
 
 function redraw() {
