@@ -21,17 +21,15 @@ function VisualSpinnerWidget(options) {
 	this.paused = true;
 	this.padding = 1;
 	this.frame = 0;
+	this.speed = 1;
 	this.canvas = document.createElement("canvas");
 	this.canvas.height = this.height;
 	this.canvas.width = this.width;0
 	this.context = this.canvas.getContext('2d');
-	this.context.fillStyle = "black";
 	this.svg = document.createElement("svg"); // build a new one
 	this.scene = new VisualSpinnerScene(); //can be reassigned
 	//this.renderer = new HTML5Canvas2dRenderer(); // for now;
 	this.renderer = new Phoria3dRenderer();
-	this.renderer.originX = this.width/2;
-	this.renderer.originY = this.height/2;
 	this.controls = []; // a list of control elements
 }
 
@@ -51,8 +49,8 @@ VisualSpinnerWidget.prototype.embedById = function(id) {
 VisualSpinnerWidget.prototype.ready = function() {
 	this.renderer.render(this.scene);
 }
-function dummyRenderer() {
-}
+// this only necessary until we refactor Prop
+function dummyRenderer() {}
 dummyRenderer.prototype.render = function() {}
 
 VisualSpinnerWidget.prototype.addProp = function() {
@@ -70,14 +68,11 @@ VisualSpinnerWidget.prototype.addProp = function() {
 	o.fire = false;
 	o.shadow = true;
 	o.renderer = new dummyRenderer();
-	this.scene.predicts.push(o);
-	o = VS3D.Prop();
-	o.propType = "noprop"
 	this.scene.starting.push(o);
 	return p;
 }
 VisualSpinnerWidget.prototype.play = function() {
-	// not a terribly good approach
+	if (this.paused === false) {return;} // don't want multiple animation loops going
 	if (this.frame===0) {
 		for (var i = 0; i<this.scene.props.length; i++) {
 			this.scene.starting[i].orientToProp(this.scene.props[i]);
@@ -147,67 +142,97 @@ VisualSpinnerWidget.prototype.maxFrame = function() {
 }
 
 VisualSpinnerWidget.prototype.addControl = function(s) {
-	var button;
-	var inpt;
-	var frm;
+	var control;
 	switch (s) {
 		case "play":
-			button = document.createElement("button");
-			$(button).data("widget", this);
-			button.type = "button";
-			button.innerHTML = "Play";
-			button.onclick = function(){$(this).data("widget").play();}
-			this.controls.push(button);
-			this.div.appendChild(button);
+			control = document.createElement("button");
+			$(control).data("widget", this);
+			control.type = "button";
+			control.innerHTML = "Play";
+			control.onclick = function(){$(this).data("widget").play();}
+			this.controls.push(control);
+			this.div.appendChild(control);
 		break;
 		case "pause":
-			button = document.createElement("button");
-			$(button).data("widget", this);
-			button.type = "button";
-			button.innerHTML = "Pause";
-			button.onclick = function(){$(this).data("widget").pause();}
-			this.controls.push(button);
-			this.div.appendChild(button);
+			control = document.createElement("button");
+			$(control).data("widget", this);
+			control.type = "button";
+			control.innerHTML = "Pause";
+			control.onclick = function(){$(this).data("widget").pause();}
+			this.controls.push(control);
+			this.div.appendChild(control);
 		break;
 		case "rewind":
-			button = document.createElement("button");
-			$(button).data("widget", this);
-			button.type = "button";
-			button.innerHTML = "-";
-			button.onclick = function(){$(this).data("widget").rewind(5);}
-			this.controls.push(button);
-			this.div.appendChild(button);
+			control = document.createElement("button");
+			$(control).data("widget", this);
+			control.type = "button";
+			control.innerHTML = "-";
+			control.onclick = function(){$(this).data("widget").rewind(5);}
+			this.controls.push(control);
+			this.div.appendChild(control);
 		break;
 		case "forward":
-			button = document.createElement("button");
-			$(button).data("widget", this);
-			button.type = "button";
-			button.innerHTML = "+";
-			button.onclick = function(){$(this).data("widget").forward(5);}
-			this.controls.push(button);
-			this.div.appendChild(button);
+			control = document.createElement("button");
+			$(control).data("widget", this);
+			control.type = "button";
+			control.innerHTML = "+";
+			control.onclick = function(){$(this).data("widget").forward(5);}
+			this.controls.push(control);
+			this.div.appendChild(control);
 		break;
 		case "frame":
-			inpt = document.createElement("input");	
-			inpt.type = "number";
-			inpt.class = "vs3d-frame-listener";
-			inpt.value= "0";
-			inpt.min = "0";
-			inpt.max = String(this.maxFrame());
-			$(inpt).data("widget", this);
-			inpt.onchange = function() {$(this).data("widget").goto(this.value); this.value = $(this).data("widget").frame;}
-			this.controls.push(inpt);
-			this.div.appendChild(inpt);
+			control = document.createElement("input");	
+			control.type = "number";
+			control.class = "vs3d-frame-listener";
+			control.value= "0";
+			control.min = "0";
+			control.max = String(this.maxFrame());
+			control.style.width = "100px";
+			$(control).data("widget", this);
+			control.onchange = function() {$(this).data("widget").goto(this.value); this.value = $(this).data("widget").frame;}
+			this.controls.push(control);
+			this.div.appendChild(control);
 		break;
 		case "reset":
-			button = document.createElement("button");
-			$(button).data("widget", this);
-			button.type = "button";
-			button.innerHTML = "Reset";
-			button.onclick = function(){$(this).data("widget").reset(); $(this).data("widget").renderer.render($(this).data("widget").scene);}
-			this.controls.push(button);
-			this.div.appendChild(button);
+			control = document.createElement("button");
+			$(control).data("widget", this);
+			control.type = "button";
+			control.innerHTML = "Reset";
+			control.onclick = function(){$(this).data("widget").reset(); $(this).data("widget").renderer.render($(this).data("widget").scene);}
+			this.controls.push(control);
+			this.div.appendChild(control);
 		break;
+		case "speed":
+			control = document.createElement("input");	
+			control.type = "number";
+			control.value= "1";
+			control.min = "1";
+			control.max = "12";
+			control.style.width = "50px";
+			$(control).data("widget", this);
+			control.onchange = function() {$(this).data("widget").speed = this.value;}
+			this.controls.push(control);
+			this.div.appendChild(control);
+		break;
+			case "2d3d":
+			control = document.createElement("select");	
+			control.appendChild(document.createElement("option"));
+			control.appendChild(document.createElement("option"));
+			control.options[0].text = "2d";
+			control.options[0].value = "2d";
+			control.options[1].text = "3d";
+			control.options[1].text = "3d";
+			control.options[1].selected = "selected";
+			control.style.width = "50px";
+			$(control).data("widget", this);
+			$(control).data("2d", new HTML5Canvas2dRenderer());
+			$(control).data("3d", new Phoria3dRenderer());
+			//control.onchange = function() {alert($(this).data(this.options[this.selectedIndex].value));}
+			control.onchange = function() {$(this).data("widget").swapRenderer($(this).data(this.options[this.selectedIndex].value));}
+			this.controls.push(control);
+			this.div.appendChild(control);
+		break;
+		
 	}
 }
 VisualSpinnerWidget.prototype.addControls = function(args) {
@@ -223,7 +248,7 @@ VisualSpinnerWidget.prototype.animationLoop = function(caller) {
 		requestAnimationFrame(function() {
 			caller.animationLoop(caller);
 			if (caller.padding <= 0) {
-				caller.advance(1);
+				caller.advance(caller.speed);
 			} else {
 				caller.padding -= 1;
 			}
@@ -246,9 +271,9 @@ function VisualSpinnerScene() {
 VisualSpinnerWidget.prototype.Moves = VS3D.MoveFactory();
 VisualSpinnerWidget.prototype.Props = VS3D.PropFactory();
 VisualSpinnerWidget.prototype.swapRenderer = function(r) {
-	this.renderer.deactivate();
+	this.renderer.deactivate(this);
 	this.renderer = r;
-	r.activate();
+	r.activate(this);
 }
 
 VisualSpinnerWidget.prototype.populateFromJSON = function(json) {
@@ -279,7 +304,7 @@ HTML5Canvas2dRenderer.prototype.render = function(scene) {
 	for (var i = 0; i < scene.props.length; i++) {
 		prop = scene.props[i];
 		this.context.save();
-		this.context.translate(this.originX, this.originY);
+		this.context.translate(this.canvas.width/2, this.canvas.height/2);
 		for (var j = HOME; j<=HAND; j++) {
 			this.context.rotate(prop[ELEMENTS[j]].azimuth);
 			this.context.translate(Math.sin(prop[ELEMENTS[j]].zenith)*prop[ELEMENTS[j]].radius*60,0);
@@ -445,6 +470,8 @@ Phoria3dRenderer.prototype.activate = function(widget) {
 	this.scene.graph.push(light);
 	this.props = [];
 }
+Phoria3dRenderer.prototype.deactivate = function(widget) {
+}
 
 Phoria3dRenderer.prototype.clean = function() {
 	//do nothing
@@ -480,6 +507,20 @@ Phoria3dRenderer.prototype.render = function(scene) {
 			this.scene.graph = this.scene.graph.concat(newProp.shapes);
 		}
 	}
+	// rebuild any renderers whose properties have changed
+	for (var i = 0; i < this.props.length; i++) {
+		if (	this.props[i].propType !== this.props[i].prop.propType
+				|| this.props[i].color !== this.props[i].prop.color
+				||	this.props[i].fire !== this.props[i].prop.fire)	{
+			for (var j = 0; j<this.props[i].shapes.length; j++) {
+				this.scene.graph.splice(this.scene.graph.indexOf(this.props[i].shapes[j],1));
+			}
+			newProp = new PhoriaProp(this.props[i].prop);
+			this.props[i] = newProp;
+			this.scene.graph = this.scene.graph.concat(newProp.shapes);
+		}
+	}
+	// we should also check to see if any props have changed type or color...
 	var mat;
 	for (var i = 0; i < this.props.length; i++) {
 		// new matrix centered on the origin
@@ -523,6 +564,9 @@ Phoria3dRenderer.prototype.render = function(scene) {
 
 function PhoriaProp(myProp) {
 	this.prop = myProp;
+	this.propType = myProp.propType;
+	this.color = myProp.color;
+	this.fire = myProp.fire;
 	if (myProp.propType === "poi") {
 		this.shapes = this.poiShapes(myProp);
 	} else if (myProp.propType === "staff") {
@@ -745,5 +789,7 @@ function PhoriaFlame(size) {
 //*** End Phoria3dRenderer;
 
 VS3D.VisualSpinnerWidget = function(options) {return new VisualSpinnerWidget(options);}
+VS3D.HTML5Canvas2dRenderer = function(options) {return new HTML5Canvas2dRenderer();}
+VS3D.Phoria3dRenderer = function(options) {return new Phoria3dRenderer();}
 return VS3D;
 })(VS3D);
