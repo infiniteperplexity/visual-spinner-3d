@@ -106,7 +106,7 @@ VisualSpinnerWidget.prototype.advance = function(n) {
 	}
 	this.frame = (this.frame + n)%this.maxFrame();
 	for (var i = 0; i < this.controls.length; i++) {
-		if (this.controls[i].class === "vs3d-frame-listener") {
+		if (this.controls[i].class === "vs3d-frame-control") {
 			this.controls[i].value = this.frame;
 		}
 	}
@@ -127,7 +127,7 @@ VisualSpinnerWidget.prototype.reset = function() {
 	}
 	this.padding = 1;
 	for (var i = 0; i < this.controls.length; i++) {
-		if (this.controls[i].class === "vs3d-frame-listener") {
+		if (this.controls[i].class === "vs3d-frame-control") {
 			this.controls[i].value = 0;
 		}
 	}
@@ -147,6 +147,7 @@ VisualSpinnerWidget.prototype.addControl = function(s) {
 		case "play":
 			control = document.createElement("button");
 			$(control).data("widget", this);
+			control.class = "vs3d-play-control";
 			control.type = "button";
 			control.innerHTML = "Play";
 			control.onclick = function(){$(this).data("widget").play();}
@@ -156,6 +157,7 @@ VisualSpinnerWidget.prototype.addControl = function(s) {
 		case "pause":
 			control = document.createElement("button");
 			$(control).data("widget", this);
+			control.class = "vs3d-pause-control";
 			control.type = "button";
 			control.innerHTML = "Pause";
 			control.onclick = function(){$(this).data("widget").pause();}
@@ -165,6 +167,7 @@ VisualSpinnerWidget.prototype.addControl = function(s) {
 		case "rewind":
 			control = document.createElement("button");
 			$(control).data("widget", this);
+			control.class = "vs3d-rewind-control";
 			control.type = "button";
 			control.innerHTML = "-";
 			control.onclick = function(){$(this).data("widget").rewind(5);}
@@ -174,6 +177,7 @@ VisualSpinnerWidget.prototype.addControl = function(s) {
 		case "forward":
 			control = document.createElement("button");
 			$(control).data("widget", this);
+			control.class = "vs3d-forward-control";
 			control.type = "button";
 			control.innerHTML = "+";
 			control.onclick = function(){$(this).data("widget").forward(5);}
@@ -183,7 +187,7 @@ VisualSpinnerWidget.prototype.addControl = function(s) {
 		case "frame":
 			control = document.createElement("input");	
 			control.type = "number";
-			control.class = "vs3d-frame-listener";
+			control.class = "vs3d-frame-control";
 			control.value= "0";
 			control.min = "0";
 			control.max = String(this.maxFrame());
@@ -196,6 +200,7 @@ VisualSpinnerWidget.prototype.addControl = function(s) {
 		case "reset":
 			control = document.createElement("button");
 			$(control).data("widget", this);
+			control.class = "vs3d-reset-control";
 			control.type = "button";
 			control.innerHTML = "Reset";
 			control.onclick = function(){$(this).data("widget").reset(); $(this).data("widget").renderer.render($(this).data("widget").scene);}
@@ -204,6 +209,7 @@ VisualSpinnerWidget.prototype.addControl = function(s) {
 		break;
 		case "speed":
 			control = document.createElement("input");	
+			control.class = "vs3d-speed-control";
 			control.type = "number";
 			control.value= "1";
 			control.min = "1";
@@ -218,6 +224,7 @@ VisualSpinnerWidget.prototype.addControl = function(s) {
 			control = document.createElement("select");	
 			control.appendChild(document.createElement("option"));
 			control.appendChild(document.createElement("option"));
+			control.class = "vs3d-2d3d-control";
 			control.options[0].text = "2d";
 			control.options[0].value = "2d";
 			control.options[1].text = "3d";
