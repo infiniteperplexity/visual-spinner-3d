@@ -263,7 +263,7 @@ function nearly(n1,n2, delta) {
 }
 
 
-//// A Prop handles the geometry for a number of spherical coordinates, a renderer, and a move queue
+//// A Prop handles the geometry for a number of spherical coordinates, some ad hoc coordinates, and a move queue
 // Note that Props and Moves use different coordinate systems for three-dimensional angles.
 	// Props define angles uniquely in terms of spherical coordinates: zenith and azimuth
 	// Moves define angles in spinner's terms: distance from a reference angle in the wall, wheel, or floor plane 
@@ -292,16 +292,11 @@ function Prop() {
 	// "axis" tracks the prop's axis of motion, which is useful for rendering .bend and possibly .twist correctly
 		// WALL is an arbitrary default
 	this.axis = WALL;
-	// "renderer" is specific to a type of prop and a viewing interface
-	this.renderer = null;
 	// "move" is the queue of moves associated with the Prop
 	this.move = new MoveChain();
 }
 //// Primary methods
 // Call the renderer
-Prop.prototype.render = function() {
-	this.renderer.render(this);
-}
 // Tell the prop to spin
 Prop.prototype.spin = function() {
 	if (this.move.submoves.length==0) {

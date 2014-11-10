@@ -8,43 +8,41 @@
 <script src="scripts/requestAnimationFrame.js"></script>
 <script src="scripts/visual-spinner-engine.js"></script>
 <script src="scripts/visual-spinner-moves.js"></script>
-<script src="scripts/visual-spinner-renderers.js"></script><script>
+<script src="scripts/visual-spinner-ui.js"></script>
+<script>
 // set parameters
 
 VS3D.Constants.rescope();
-var HEIGHT = 400;
-var WIDTH = 400;
-var ORIGINX = WIDTH/2;
-var ORIGINY = HEIGHT/2;
-var BACKGROUND = "black";
 
-var view2d = false;
-
-var myProps = new Array(); 
 var controller = new Controller();
 var moves = VS3D.MoveFactory();
 var props = VS3D.PropFactory();
 var Prop = VS3D.Prop().constructor;
-
+var vs;
 $.urlParam = function(name){
 	var results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(window.location.href);
 	if (!results) {return 0;}
 	return results[1] || 0;
 }
-		
+
+var twoD;
+var threeD;
 function init() {
-	ctx=document.getElementById('canvas').getContext('2d');
+	vs = VS3D.VisualSpinnerWidget();
+	vs.embedById("vs-div");
+	twoD = VS3D.HTML5Canvas2dRenderer();
+	threeD = vs.renderer;
 	// optionally, pull parameters from URL
 	var params = [	"1prop","2prop","3prop","4prop",
 					"1plane","2plane","3plane","4plane",
 					"1align","2align","3align","4align",
 					"1spin","2spin","3spin","4spin",
 					"1move","2move","3move","4move"];
-	var defaults = ["poi","poi","poi","poi",
+	var defaults = ["poi","poi","poi","none",
 					"wall","wall","wall","wall",
-					"twelve","twelve","six","six",
-					"cw","cw","cw","cw",
-					"isob","lisb","2ant","lnt4"];
+					"twelve","twelve","twelve","twelve",
+					"cw","ccw","cw","ccw",
+					"vcat","antp","ucex","unip"];
 	for (var i = 0; i<params.length; i++) {
 		var txt = $.urlParam(params[i]);
 		if (txt==0) {txt = defaults[i];}
@@ -61,80 +59,17 @@ function init() {
 	} else {
 		$("#2d3d").val("3d");
 	}
-	canvasSetup();
-	canvasLoop();
-}
-
-var scene;
-var renderer;
-function canvasSetup() {
-	canvas.height = HEIGHT;
-	canvas.width = WIDTH;
-	ctx.fillStyle = BACKGROUND;
-	ctx.strokeStyle = BACKGROUND;
-	ctx.fillRect(0,0,WIDTH,HEIGHT);
-	
-	// set up Phoria scene for 3D rendering
-	scene = new Phoria.Scene();
-	scene.camera.position = {x:0.0, y:1.0, z:10.0};
-	scene.perspective.aspect = canvas.width / canvas.height;
-	scene.viewport.width = canvas.width;
-	scene.viewport.height = canvas.height;
-	renderer = new Phoria.CanvasRenderer(canvas);
-	var plane = Phoria.Util.generateTesselatedPlane(8,8,0,20);
-	scene.graph.push(Phoria.Entity.create({
-		points: plane.points,
-		edges: plane.edges,
-		polygons: plane.polygons,
-		style: {
-				 drawmode: "wireframe",
-				 shademode: "plain",
-				 linewidth: 0.5,
-				 objectsortmode: "back"
-			}}));
-	scene.graph.push(new Phoria.DistantLight());
-	var light = new Phoria.DistantLight();
-	light.direction.x = 1;
-	light.direction.z = 0;
-	scene.graph.push(light);
-	light = new Phoria.DistantLight();
-	light.direction.y = 1;
-	light.direction.z = 0;
-	scene.graph.push(light);
-	// set up props
-	var propOne = props.poi({head_color: "red", flame_color: "red", scene: scene});
-	var propTwo = props.poi({head_color: "blue", flame_color: "blue", scene: scene});
-	var propThree = props.poi({head_color: "yellow", flame_color: "yellow", scene: scene});
-	var propFour = props.poi({head_color: "green", flame_color: "green", scene: scene});
-	myProps.push(propOne);
-	myProps.push(propTwo);
-	myProps.push(propThree);
-	myProps.push(propFour);
+	var propOne = vs.addProp();
+	var propTwo = vs.addProp();
+	var propThree = vs.addProp();
+	var propFour = vs.addProp();
+	propOne.color = "red";
+	propTwo.color = "blue";
+	propThree.color = "yellow";
+	propFour.color = "green";
 	// set up controller	
 	controller.updateParameters();
-}
-	
-// animation loop
-function canvasLoop() {
-	setTimeout(function() {
-		requestAnimationFrame(canvasLoop);
-		redraw();
-		for (var i = 0; i < myProps.length; i++) {
-			myProps[i].spin();
-			myProps[i].render();
-		}
-	},1000/BEAT);
-}
-function redraw() {
-	if (view2d == true) {
-		ctx.fillStyle = "rgba(0,0,0,0.01)";
-		ctx.strokeStyle=BACKGROUND;
-		ctx.fillRect(0,0,WIDTH,HEIGHT);
-	}
-	else {
-		scene.modelView();
-		renderer.render(scene);
-	}
+	vs.play();
 }
 
 function Controller() {
@@ -159,58 +94,38 @@ Controller.prototype.updateParameters = function() {
 	//Check 2D vs. 3D
 	list = document.getElementById("2d3d");
 	txt = list.options[list.selectedIndex].value;
-	if (txt=="2d") {view2d = true;}
-	else if (txt=="3d") {view2d = false;}
+	if (txt=="2d") {vs.swapRenderer(twoD);}
+	else if (txt=="3d") {vs.swapRenderer(threeD);}
 			
 	//Update prop types
-	for(var i = 1; i<=myProps.length; i++) {
+	for(var i = 1; i<=vs.scene.props.length; i++) {
 		list = document.getElementById(i+"prop");
 		txt = list.options[list.selectedIndex].value;
-		//if this is undefined will it throw an error?
-		if (this.prop[i-1]!==txt || this.view2d !== view2d) {
-			this.prop[i-1]=txt;
-			pcolor = myProps[i-1].renderer.options.head_color;
-			fcolor = myProps[i-1].renderer.options.flame_color;
-			if (view2d==true) {
-				if (txt=="poi") {
-					renderer = props.poirender2d({head_color: pcolor, flame_color: fcolor, canvas: canvas});
-				} else if (txt=="fpoi") {
-					renderer = props.poirender2d({head_color: pcolor, flame_color: fcolor, fire: true, canvas: canvas});
-				} else if (txt=="staff") {
-					renderer = props.staffrender2d({head_color: pcolor, flame_color: fcolor, scene: scene});
-				} else if (txt=="fstaff") {
-					renderer = props.staffrender2d({head_color: pcolor, flame_color: fcolor, fire: true, canvas: canvas});
-				} else if (txt=="hoop") {
-					renderer = props.hooprender2d({head_color: pcolor, flame_color: fcolor, scene: scene});
-				} else if (txt=="fhoop") {
-					renderer = props.hooprender2d({head_color: pcolor, flame_color: fcolor, fire: true, canvas: canvas});
-				} else if (txt=="none") {
-					renderer = props.noproprender2d({head_color: pcolor, flame_color: fcolor, canvas: canvas});
-				}
-			} else {
-				if (txt=="poi") {
-					renderer = props.poirender({head_color: pcolor, flame_color: fcolor, scene: scene});
-				} else if (txt=="fpoi") {
-					renderer = props.poirender({head_color: pcolor, flame_color: fcolor, fire: true, scene: scene});
-				} else if (txt=="staff") {
-					renderer = props.staffrender({head_color: pcolor, flame_color: fcolor, scene: scene});
-				} else if (txt=="fstaff") {
-					renderer = props.staffrender({head_color: pcolor, flame_color: fcolor, fire: true, scene: scene});
-				} else if (txt=="hoop") {
-					renderer = props.hooprender({head_color: pcolor, flame_color: fcolor, scene: scene});
-				} else if (txt=="none") {
-					renderer = props.noproprender({head_color: pcolor, flame_color: fcolor, scene: scene});
-				}
-			}
-			myProps[i-1].renderer.deactivate();
-			myProps[i-1].renderer = renderer;
-			renderer.activate();
+		if (txt==="poi") {	
+			vs.scene.props[i-1].propType = "poi";
+			vs.scene.props[i-1].fire = false;
+		} else if (txt==="fpoi") {	
+			vs.scene.props[i-1].propType = "poi";
+			vs.scene.props[i-1].fire = true;
+		} else if (txt==="staff") {	
+			vs.scene.props[i-1].propType = "staff";
+			vs.scene.props[i-1].fire = false;
+		} else if (txt==="fstaff") {	
+			vs.scene.props[i-1].propType = "staff";
+			vs.scene.props[i-1].fire = true;
+		} else if (txt==="hoop") {	
+			vs.scene.props[i-1].propType = "hoop";
+			vs.scene.props[i-1].fire = false;
+		} else if (txt==="fhoop") {	
+			vs.scene.props[i-1].propType = "hoop";
+			vs.scene.props[i-1].fire = true;
+		} else if (txt==="none") {
+			vs.scene.props[i-1].propType = "noprop";
 		}
 	}
-	this.view2d = view2d;
 	
 	//Update alignment and planes
-	for (var i = 1; i<=myProps.length; i++) {
+	for (var i = 1; i<=vs.scene.props.length; i++) {
 		list = document.getElementById(i+"plane");
 		txt = list.options[list.selectedIndex].value;
 		if (txt=="wall") {
@@ -241,17 +156,16 @@ Controller.prototype.updateParameters = function() {
 	}	
 	//Generate moves
 	var submoves;
-	for (var i = 1; i<=myProps.length; i++) {
+	for (var i = 1; i<=vs.scene.props.length; i++) {
 		list = document.getElementById(i+"move");
 		txt = list.options[list.selectedIndex].value;
 		move = this.generateMove(i-1,txt);
-		submoves = myProps[i-1].move.submoves;
+		submoves = vs.scene.props[i-1].move.submoves;
 		while (submoves.length > 1) {
 			submoves.pop();
 		}
 		if (submoves[0] !== undefined) {submoves[0].oneshot = true;}
-		//myProps[i-1].addFixedMove(move);
-		myProps[i-1].addMove(move.setAbrupt());
+		vs.scene.props[i-1].addMove(move.setAbrupt());
 	}
 	var linktxt = "http://infiniteperplexity.github.io/visual-spinner-3d/";
 	var params = [	"1prop","2prop","3prop","4prop",
@@ -463,25 +377,23 @@ Controller.prototype.shuffle = function() {
         this.updateParameters();
 } 
 </script>
-<body onload="init();">
+</head><body onload="init();">
 <p>Toroids now available in both their "pure" mathematical forms and their more common "linearized" forms.</p>
 <a href="http://infiniteperplexity.github.io/visual-spinner-3d/comborific.html">See Drex's "combo-rific" video modeled in VisualSpinner!</a><br>
 <a href="http://infiniteperplexity.github.io/visual-spinner-3d/flower_transitions.html">See a demo of anti-spin flower transitions.</a><br>
 <a href="http://infiniteperplexity.github.io/visual-spinner-3d/composer.html">See the new composer interface, under development.</a>
 <table>
 <tbody><tr>
-<td rowspan="9" colspan="2">
-	<canvas width="400" height="400" id="canvas" style="background-color: #000">
-		Your browser doesn't support the HTML5 element canvas.
-	</canvas>
+<td rowspan="8" colspan="2">
+	<div id="vs-div">
+	</div>
 </td>
 <td>
-First Prop:
+Props:
 </td>
-<form></form>
 <td>
 	<select id="1prop" onchange="controller.updateParameters()">
-		<option value="poi">Poi</option>
+		<option selected="selected" value="poi">Poi</option>
 		<option value="fpoi">Fire Poi</option>
 		<option value="staff">Staff</option>
 		<option value="fstaff">Fire Staff</option>
@@ -491,32 +403,9 @@ First Prop:
 	</select>
 
 </td>
-
-<td>
-Third Prop:
-</td>
-<form></form>
-<td>
-	<select id="3prop" onchange="controller.updateParameters()">
-		<option value="poi">Poi</option>
-		<option value="fpoi">Fire Poi</option>
-		<option value="staff">Staff</option>
-		<option value="fstaff">Fire Staff</option>
-		<option value="hoop">Hoop</option>
-		<option value="fhoop">Fire Hoop</option>
-		<option value="none">None</option>
-	</select>
-</td>
-
-</tr>
-<tr>
-<td>
-Second Prop:
-</td>
-<form></form>
 <td>
 	<select id="2prop" onchange="controller.updateParameters()">
-		<option value="poi">Poi</option>
+		<option selected="selected" value="poi">Poi</option>
 		<option value="fpoi">Fire Poi</option>
 		<option value="staff">Staff</option>
 		<option value="fstaff">Fire Staff</option>
@@ -525,14 +414,20 @@ Second Prop:
 		<option value="none">None</option>
 	</select>
 </td>
-
 <td>
-Fourth Prop:
+	<select id="3prop" onchange="controller.updateParameters()">
+		<option selected="selected" value="poi">Poi</option>
+		<option value="fpoi">Fire Poi</option>
+		<option value="staff">Staff</option>
+		<option value="fstaff">Fire Staff</option>
+		<option value="hoop">Hoop</option>
+		<option value="fhoop">Fire Hoop</option>
+		<option value="none">None</option>
+	</select>
 </td>
-<form></form>
 <td>
 	<select id="4prop" onchange="controller.updateParameters()">
-		<option value="poi">Poi</option>
+		<option selected="selected" value="poi">Poi</option>
 		<option value="fpoi">Fire Poi</option>
 		<option value="staff">Staff</option>
 		<option value="fstaff">Fire Staff</option>
@@ -549,7 +444,7 @@ Planes:
 <form></form>
 <td>
 	<select id="1plane" onchange="controller.updateParameters()">
-		<option value="wall">Wall</option>
+		<option selected="selected" value="wall">Wall</option>
 		<option value="wheel">Wheel</option>
 		<option value="floor">Floor</option>
 	</select>
@@ -557,7 +452,7 @@ Planes:
 <form></form>
 <td>
 	<select id="2plane" onchange="controller.updateParameters()">
-		<option value="wall">Wall</option>
+		<option selected="selected" value="wall">Wall</option>
 		<option value="wheel">Wheel</option>
 		<option value="floor">Floor</option>
 	</select>
@@ -565,7 +460,7 @@ Planes:
 <form></form>
 <td>
 	<select id="3plane" onchange="controller.updateParameters()">
-		<option value="wall">Wall</option>
+		<option selected="selected" value="wall">Wall</option>
 		<option value="wheel">Wheel</option>
 		<option value="floor">Floor</option>
 	</select>
@@ -573,7 +468,7 @@ Planes:
 <form></form>
 <td>
 	<select id="4plane" onchange="controller.updateParameters()">
-		<option value="wall">Wall</option>
+		<option selected="selected" value="wall">Wall</option>
 		<option value="wheel">Wheel</option>
 		<option value="floor">Floor</option>
 	</select>
@@ -586,7 +481,7 @@ Alignment:
 <form></form>
 <td>
 	<select id="1align" onchange="controller.updateParameters()">
-		<option value="twelve">Up</option>
+		<option selected="selected" value="twelve">Up</option>
 		<option value="six">Down</option>
 		<option value="three">Right</option>
 		<option value="nine">Left</option>
@@ -595,7 +490,7 @@ Alignment:
 <form></form>
 <td>
 	<select id="2align" onchange="controller.updateParameters()">
-		<option value="twelve">Up</option>
+		<option selected="selected" value="twelve">Up</option>
 		<option value="six">Down</option>
 		<option value="three">Right</option>
 		<option value="nine">Left</option>
@@ -605,7 +500,7 @@ Alignment:
 <td>
 	<select id="3align" onchange="controller.updateParameters()">
 		<option value="twelve">Up</option>
-		<option value="six">Down</option>
+		<option selected="selected" value="six">Down</option>
 		<option value="three">Right</option>
 		<option value="nine">Left</option>
 	</select>
@@ -614,7 +509,7 @@ Alignment:
 <td>
 	<select id="4align" onchange="controller.updateParameters()">
 		<option value="twelve">Up</option>
-		<option value="six">Down</option>
+		<option selected="selected" value="six">Down</option>
 		<option value="three">Right</option>
 		<option value="nine">Left</option>
 	</select>
@@ -627,25 +522,25 @@ Spin:
 <form></form>
 <td>
 	<select id="1spin" onchange="controller.updateParameters()">
-		<option value="cw">Clockwise</option>
+		<option selected="selected" value="cw">Clockwise</option>
 		<option value="ccw">Counter</option>
 	</select>
 </td>
 <td>
 	<select id="2spin" onchange="controller.updateParameters()">
-		<option value="cw">Clockwise</option>
+		<option selected="selected" value="cw">Clockwise</option>
 		<option value="ccw">Counter</option>
 	</select>
 </td>
 <td>
 	<select id="3spin" onchange="controller.updateParameters()">
-		<option value="cw">Clockwise</option>
+		<option selected="selected" value="cw">Clockwise</option>
 		<option value="ccw">Counter</option>
 	</select>
 </td>
 <td>
 	<select id="4spin" onchange="controller.updateParameters()">
-		<option value="cw">Clockwise</option>
+		<option selected="selected" value="cw">Clockwise</option>
 		<option value="ccw">Counter</option>
 	</select>
 </td>
@@ -690,7 +585,7 @@ First Move:
 		<option value="hlis">Horizontal Linear Isolation</option>
 		<option value="vlis">Vertical Linear Isolation</option>
 		<option value="2isb">"Two-Lobe" Iso-bend Toroid</option>
-		<option value="isob">"Four-Lobe" Iso-bend Toroid</option>
+		<option selected="selected" value="isob">"Four-Lobe" Iso-bend Toroid</option>
 		<option value="lisb">Linearized Iso-bend Toroid</option>
 		<option value="1ant">"Triangle" Anti-Bend Toroid</option>
 		<option value="lnt3">"Triangle" Linearized Toroid</option>
@@ -750,7 +645,7 @@ Second Move:
 		<option value="vlis">Vertical Linear Isolation</option>
 		<option value="2isb">"Two-Lobe" Iso-bend Toroid</option>
 		<option value="isob">"Four-Lobe" Iso-bend Toroid</option>
-		<option value="lisb">Linearized Iso-bend Toroid</option>
+		<option selected="selected" value="lisb">Linearized Iso-bend Toroid</option>
 		<option value="1ant">"Triangle" Anti-Bend Toroid</option>
 		<option value="lnt3">"Triangle" Linearized Toroid</option>
 		<option value="2ant">"Diamond" Anti-Bend Toroid</option>
@@ -766,7 +661,7 @@ Second Move:
 		<option value="2pro">"Four-Lobe" Pro-Bend Toroid</option>
 		<option value="idia">Zan's Diamond (In-Spin)</option>
 		<option value="adia">Zan's Diamond (Anti-Spin)</option>
-</td>
+</select></td>
 </tr>
 <tr>
 <td>
@@ -810,7 +705,7 @@ Third Move:
 		<option value="lisb">Linearized Iso-bend Toroid</option>
 		<option value="1ant">"Triangle" Anti-Bend Toroid</option>
 		<option value="lnt3">"Triangle" Linearized Toroid</option>
-		<option value="2ant">"Diamond" Anti-Bend Toroid</option>
+		<option selected="selected" value="2ant">"Diamond" Anti-Bend Toroid</option>
 		<option value="lnt4">"Diamond" Linearized Toroid</option>
 		<option value="3ant">"Pentagon" Anti-Bend Toroid</option>
 		<option value="lnt5">"Pentagon" Linearized Toroid</option>
@@ -869,7 +764,7 @@ Fourth Move:
 		<option value="1ant">"Triangle" Anti-Bend Toroid</option>
 		<option value="lnt3">"Triangle" Linearized Toroid</option>
 		<option value="2ant">"Diamond" Anti-Bend Toroid</option>
-		<option value="lnt4">"Diamond" Linearized Toroid</option>
+		<option selected="selected" value="lnt4">"Diamond" Linearized Toroid</option>
 		<option value="3ant">"Pentagon" Anti-Bend Toroid</option>
 		<option value="lnt5">"Pentagon" Linearized Toroid</option>
 		<option value="4ant">"Hexagon" Anti-Bend Toroid</option>
@@ -892,8 +787,8 @@ View in...
 <td>
 	<select id="2d3d" onchange="controller.updateParameters()">
 		<option value="3d" selected="selected">3D</option>
-		<option value="2d" >2D</option>
-</td>
+		<option value="2d">2D</option>
+</select></td>
 <td>
         <button type="button" onclick="controller.shuffle()">Shuffle Moves</button>       
 </td>
@@ -902,7 +797,8 @@ View in...
 
 <p></p>
 Pasteable link to these settings:
-<p id="myLink"></p>
+
 <p>Source: https://github.com/infiniteperplexity/visual-spinner-3d</p>
 <p>Questions, comments, and suggestions: infinite DOT perplexity AT gmail DOT com</p>
+
 </body></html>

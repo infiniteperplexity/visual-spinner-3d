@@ -23,8 +23,6 @@ function VisualSpinnerWidget(options) {
 	this.frame = 0;
 	this.speed = 1;
 	this.canvas = document.createElement("canvas");
-	this.canvas.height = this.height;
-	this.canvas.width = this.width;0
 	this.context = this.canvas.getContext('2d');
 	this.svg = document.createElement("svg"); // build a new one
 	this.scene = new VisualSpinnerScene(); //can be reassigned
@@ -39,6 +37,8 @@ VisualSpinnerWidget.prototype.embedById = function(id) {
 	this.div.height = this.height;
 	this.div.width = this.width;
 	this.div.appendChild(this.canvas);
+	this.canvas.height = this.height;
+	this.canvas.width = this.width;
 	this.div.appendChild(document.createElement("br"));
 	this.context.fillRect(0,0,this.width,this.height);
 	this.renderer.activate(this);
@@ -48,10 +48,10 @@ VisualSpinnerWidget.prototype.embedById = function(id) {
 }
 VisualSpinnerWidget.prototype.ready = function() {
 	this.renderer.render(this.scene);
+	for (var i = 0; i<this.scene.props.length; i++) {
+		this.scene.starting[i].orientToProp(this.scene.props[i]);
+	}
 }
-// this only necessary until we refactor Prop
-function dummyRenderer() {}
-dummyRenderer.prototype.render = function() {}
 
 VisualSpinnerWidget.prototype.addProp = function() {
 	var p = VS3D.Prop();
@@ -60,14 +60,12 @@ VisualSpinnerWidget.prototype.addProp = function() {
 	p.propType = "poi";
 	p.color = "red";
 	p.fire = false;
-	p.renderer = new dummyRenderer();
 	this.scene.props.push(p);
 	o = VS3D.Prop();
 	o.propType = "poi";
 	o.color = "red";
 	o.fire = false;
 	o.shadow = true;
-	o.renderer = new dummyRenderer();
 	this.scene.starting.push(o);
 	return p;
 }
@@ -101,7 +99,9 @@ VisualSpinnerWidget.prototype.advance = function(n) {
 	n = n || 1;
 	for (var i = 0; i<n; i++) {
 		for (var j = 0;  j < this.scene.props.length; j++) {
-			this.scene.props[j].spin();
+			if (!this.scene.props[j].dummy) {
+				this.scene.props[j].spin();
+			}
 		}	
 	}
 	this.frame = (this.frame + n)%this.maxFrame();
@@ -331,6 +331,10 @@ HTML5Canvas2dRenderer.prototype.render = function(scene) {
 			this.renderHoop(prop);
 		} else if (prop.propType === "staff") {
 			this.renderStaff(prop);
+		} else if (prop.propType === "noprop") {
+			//do not render
+		} else {
+			this.renderPoi(prop);
 		}
 		this.context.restore();
 	}
@@ -341,7 +345,7 @@ HTML5Canvas2dRenderer.prototype.renderPoi = function(prop) {
 	var bend = prop.prop.vectorize().rotate(prop.bend,prop.prop.vectorize().cross(prop.axis)).spherify();
 	this.context.beginPath();
 	this.context.arc(0,0,3,0,2*Math.PI);
-	this.context.fillStyle = prop.color;
+	this.context.fillStyle = this.color(prop.color);
 	this.context.fill();
 	this.context.lineWidth = 1;
 	this.context.strokeStyle = "gray";
@@ -358,7 +362,7 @@ HTML5Canvas2dRenderer.prototype.renderPoi = function(prop) {
 		this.context.beginPath();
 		// could do this in a different order depending on the zenith value...
 		this.context.arc(60*Math.sin(bend.zenith)*prop.prop.radius,0,12,0,2*Math.PI);
-		this.context.fillStyle = prop.color;
+		this.context.fillStyle = this.color(prop.color);
 		this.context.fill();
 		this.context.lineWidth = 1;
 		this.context.strokeStyle = "gray";
@@ -366,6 +370,12 @@ HTML5Canvas2dRenderer.prototype.renderPoi = function(prop) {
 	}
 }
 
+HTML5Canvas2dRenderer.prototype.color = function(s) {
+	if (s.split(",").length === 3) {
+		s = "rgb("+s+")";
+	}
+	return s;
+}
 	
 HTML5Canvas2dRenderer.prototype.renderHoop = function(prop) {
 	// Redundant calculation, could pass this as a parameter if necessary
@@ -392,7 +402,7 @@ HTML5Canvas2dRenderer.prototype.renderHoop = function(prop) {
 	    }
 	}
 	this.context.lineWidth = 2;
-	this.context.strokeStyle = prop.color;
+	this.context.strokeStyle = this.color(prop.color);
 	this.fillStyle = "transparent";
 	this.context.stroke();
 	if (prop.fire === true) {
@@ -412,7 +422,7 @@ HTML5Canvas2dRenderer.prototype.renderStaff = function(prop) {
 	this.context.moveTo(-60*Math.sin(bend.zenith)*prop.prop.radius,0);
 	this.context.lineTo(60*Math.sin(bend.zenith)*prop.prop.radius,0);
 	this.context.lineWidth = 3;
-	this.context.strokeStyle = prop.color;
+	this.context.strokeStyle = this.color(prop.color);
 	this.context.stroke();
 	this.context.beginPath();
 	this.context.moveTo(-3*Math.sin(bend.zenith)*prop.prop.radius,0);
@@ -520,7 +530,7 @@ Phoria3dRenderer.prototype.render = function(scene) {
 				|| this.props[i].color !== this.props[i].prop.color
 				||	this.props[i].fire !== this.props[i].prop.fire)	{
 			for (var j = 0; j<this.props[i].shapes.length; j++) {
-				this.scene.graph.splice(this.scene.graph.indexOf(this.props[i].shapes[j],1));
+				this.scene.graph.splice(this.scene.graph.indexOf(this.props[i].shapes[j]),1);
 			}
 			newProp = new PhoriaProp(this.props[i].prop);
 			this.props[i] = newProp;
@@ -580,8 +590,10 @@ function PhoriaProp(myProp) {
 		this.shapes = this.staffShapes(myProp);
 	} else if (myProp.propType === "hoop") {
 		this.shapes = this.hoopShapes(myProp);
-	} else {
+	} else if (myProp.propType === "noprop") {
 		this.shapes = [];
+	} else {
+		this.shapes = this.poiShapes(myProp);
 	}
 	this.currentScale = myProp.prop.radius; //???
 }
@@ -600,8 +612,26 @@ PhoriaProp.prototype.poiShapes = function(myProp) {
 		return [handle,tether,ball];
 	} else {
 		ball.style.color = PhoriaColor("fire");
+		alert(ball.style.color);
 		return [handle,tether,ball,flame];
 	}
+}
+PhoriaProp.prototype.updatePoi = function(myProp) {
+	var tether = this.shapes[1].points;
+	for (var i = 0; i<tether.length; i++) {
+		tether[i].z = myProp.prop.radius*tether[i].z / this.currentScale;
+	}
+	var head = this.shapes[2].points;
+	for (var i=0; i<head.length; i++) {
+		head[i].z = head[i].z - this.currentScale + myProp.prop.radius;
+	}
+	if (myProp.fire === true) {
+		var flame = this.shapes[3].points;
+		for (var i=0; i<flame.length; i++) {
+			flame[i].z = flame[i].z - this.currentScale + myProp.prop.radius;
+		}
+	}
+	this.currentScale = myProp.prop.radius;
 }
 PhoriaProp.prototype.staffShapes = function(myProp) {
 	var staff= PhoriaCylinder(0.025, 2, 8);
@@ -651,23 +681,7 @@ PhoriaProp.prototype.hoopShapes = function(myProp) {
 	return shapes;
 }
 
-PhoriaProp.prototype.updatePoi = function(myProp) {
-	var tether = this.shapes[1].points;
-	for (var i = 0; i<tether.length; i++) {
-		tether[i].z = myProp.prop.radius*tether[i].z / this.currentScale;
-	}
-	var head = this.shapes[2].points;
-	for (var i=0; i<head.length; i++) {
-		head[i].z = head[i].z - this.currentScale + myProp.prop.radius;
-	}
-	if (myProp.fire === true) {
-		var flame = this.shapes[3].points;
-		for (var i=0; i<flame.length; i++) {
-			flame[i].z = flame[i].z - this.currentScale + myProp.prop.radius;
-		}
-	}
-	this.currentScale = myProp.prop.radius;
-}
+
 
 // Helper methods for Phoria
 function PhoriaSwapPoints(shape, a, b) {

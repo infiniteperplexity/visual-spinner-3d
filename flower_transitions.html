@@ -8,74 +8,32 @@
 <script src="scripts/requestAnimationFrame.js"></script>
 <script src="scripts/visual-spinner-engine.js"></script>
 <script src="scripts/visual-spinner-moves.js"></script>
-<script src="scripts/visual-spinner-renderers.js"></script><script>
+<script src="scripts/visual-spinner-ui.js"></script>
+<script>
 // set parameters
-var HEIGHT = 400;
-var WIDTH = 800;
-var ORIGINX = WIDTH/2;
-var ORIGINY = HEIGHT/2;
-var BACKGROUND = "black";
-
-var view2d = true;
-
 VS3D.Constants.rescope();
 var myProps = new Array(); 
 var moves = VS3D.MoveFactory();
 var props = VS3D.PropFactory();
 
+var vs;
 function init() {
-	ctx=document.getElementById('canvas').getContext('2d');
-	canvasSetup();
-	canvasLoop();
-}
-
-var scene;
-var renderer;
-function canvasSetup() {
-	canvas.height = HEIGHT;
-	canvas.width = WIDTH;
-	ctx.fillStyle = BACKGROUND;
-	ctx.strokeStyle = BACKGROUND;
-	ctx.fillRect(0,0,WIDTH,HEIGHT);
-	
-	// set up Phoria scene for 3D rendering
-	scene = new Phoria.Scene();
-	scene.camera.position = {x:0.0, y:1.0, z:10.0};
-	scene.perspective.aspect = canvas.width / canvas.height;
-	scene.viewport.width = canvas.width;
-	scene.viewport.height = canvas.height;
-	renderer = new Phoria.CanvasRenderer(canvas);
-	var plane = Phoria.Util.generateTesselatedPlane(8,8,0,20);
-	scene.graph.push(Phoria.Entity.create({
-		points: plane.points,
-		edges: plane.edges,
-		polygons: plane.polygons,
-		style: {
-				 drawmode: "wireframe",
-				 shademode: "plain",
-				 linewidth: 0.5,
-				 objectsortmode: "back"
-			}}));
-	scene.graph.push(new Phoria.DistantLight());
-	var light = new Phoria.DistantLight();
-	light.direction.x = 1;
-	light.direction.z = 0;
-	scene.graph.push(light);
-	light = new Phoria.DistantLight();
-	light.direction.y = 1;
-	light.direction.z = 0;
-	scene.graph.push(light);
-	// set up props
-	var propOne = props.poi2d({head_color: "red", scene: scene});
-	var propTwo = props.poi2d({head_color: "blue", scene: scene});
+	vs = VS3D.VisualSpinnerWidget();
+	vs.width = 800;
+	vs.renderer = VS3D.HTML5Canvas2dRenderer();
+	vs.embedById("vs-div");
+	var propOne = vs.addProp();
+	propOne.color = "red";
+	var propTwo = vs.addProp();
+	propTwo.color = "blue";
 	propOne.nudge(3,0,0);
 	propTwo.nudge(3.1,0,0);
 	propOne.hand.radius = 1;
 	propTwo.hand.radius = 1;
-	myProps.push(propOne);
-	myProps.push(propTwo);
-	var propThree = props.poi2d({head_color: "yellow", scene: scene});
-	var propFour = props.poi2d({head_color: "green", scene: scene});
+	var propThree = vs.addProp();
+	propThree.color = "yellow";
+	var propFour = vs.addProp();
+	propFour.color = "green";
 	propThree.nudge(-3,0,0);
 	propFour.nudge(-3.1,0,0);
 	propThree.hand.angle = NINE;
@@ -84,57 +42,40 @@ function canvasSetup() {
 	propFour.prop.angle = NINE;
 	propThree.hand.radius = 1;
 	propFour.hand.radius = 1;
-	myProps.push(propThree);
-	myProps.push(propFour);
 	for (var i = 0; i<8; i++) {
 		propOne.addMove(moves.flower({direction: CLOCKWISE, entry: propOne.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
 		propTwo.addMove(moves.flower({direction: 1-(i%2)*2, entry: propTwo.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
 		propThree.addMove(moves.flower({direction: COUNTERCLOCKWISE, entry: propThree.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
 		propFour.addMove(moves.flower({direction: (i%2)*2-1, entry: propFour.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
 	}
+	vs.ready();
+	vs.play();
 }
-	
-// animation loop
-function canvasLoop() {
-	setTimeout(function() {
-		requestAnimationFrame(canvasLoop);
-		redraw();
-		for (var i = 0; i < myProps.length; i++) {
-			myProps[i].spin();
-			myProps[i].render();
-		}
-	},1000/BEAT);
-}
-function redraw() {
-	if (view2d == true) {
-		ctx.fillStyle = "rgba(0,0,0,0.03)";
-		ctx.strokeStyle=BACKGROUND;
-		ctx.fillRect(0,0,WIDTH,HEIGHT);
-	}
-	else {
-		scene.modelView();
-		renderer.render(scene);
-	}
-}
-
 </script>
 </head><body onload="init();">
 <table>
 <tbody><tr>
 <td rowspan="9" colspan="2">
-	<canvas width="400" height="400" id="canvas" style="background-color: #000">
-		Your browser doesn't support the HTML5 element canvas.
-	</canvas>
+	<div id="vs-div"></div>
 </td>
 </tr>
 </tbody></table>
 <p>Using the VisualSpinner Engine, someone with basic programming knowledge can easily create complex patterns.</p>
 <p>Here is the code that drives the entire pattern:</p>
 <p></p>
-<p>for (var i = 0; i<8; i++) {</p>
-<p>&nbsp;&nbsp;&nbsp;&nbsp;propOne.addMove(moves.flower({direction: CLOCKWISE, entry: propOne.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));</p>
-<p>&nbsp;&nbsp;&nbsp;&nbsp;propTwo.addMove(moves.flower({direction: 1-(i%2)*2, entry: propTwo.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));</p>
-<p>&nbsp;&nbsp;&nbsp;&nbsp;propThree.addMove(moves.flower({direction: COUNTERCLOCKWISE, entry: propThree.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));</p>
-<p>&nbsp;&nbsp;&nbsp;&nbsp;propFour.addMove(moves.flower({direction: (i%2)*2-1, entry: propFour.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));</p>
+<p>for (var i = 0; i&lt;8; i++) {</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;propOne.addMove(moves.flower({direction: 
+CLOCKWISE, entry: propOne.socket().hand.angle, spin: ANTISPIN, duration:
+  (i==4) ? 1 : 1.25}));</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;propTwo.addMove(moves.flower({direction: 
+1-(i%2)*2, entry: propTwo.socket().hand.angle, spin: ANTISPIN, duration:
+  (i==4) ? 1 : 1.25}));</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;propThree.addMove(moves.flower({direction: 
+COUNTERCLOCKWISE, entry: propThree.socket().hand.angle, spin: ANTISPIN, 
+duration:  (i==4) ? 1 : 1.25}));</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;propFour.addMove(moves.flower({direction: 
+(i%2)*2-1, entry: propFour.socket().hand.angle, spin: ANTISPIN, 
+duration:  (i==4) ? 1 : 1.25}));</p>
 <p>}</p>
+
 </body></html>

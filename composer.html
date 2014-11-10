@@ -9,7 +9,7 @@ header {width: 1240px; height: 100px}
 section {margin: 0; padding: 0}
 header, section div {vertical-align: top; padding: 2.5px; border: 5px solid gray; margin: -2.5px; display: inline-block;}
 #display {width: 400px; height: 400px; float: left}
-#control {position: absolute; top: 520px; left: 0; height: 90px; width: 400px;}
+#control {position: absolute; top: 550px; left: 0; height: 60px; width: 400px;}
 .queue, #menu, #workshop {width: 200px; height: 500px; float: left}
 canvas {width: 400px; height: 400px; background-color: #000;}
 ul {background-color: #FFF;  list-style-type: none; padding-left: 0; overflow-y: scroll; overflow-x: hidden;}
@@ -40,102 +40,52 @@ table {position: relative; top: -20px;}
 <script src="scripts/requestAnimationFrame.js"></script>
 <script src="scripts/visual-spinner-engine.js"></script>
 <script src="scripts/visual-spinner-moves.js"></script>
-<script src="scripts/visual-spinner-renderers.js"></script>
+<script src="scripts/visual-spinner-ui.js"></script>
 <script src="scripts/visual-spinner-recipes.js"></script>
+
 <script>
 "use strict";
 VS3D.Constants.rescope();
 var nearly = VS3D.Utilities.nearly;
 var unwind = VS3D.Utilities.unwind;
-//**** set parameters and set up environment and display
-var HEIGHT = 400;
-var WIDTH = 400;
-var ORIGINX = WIDTH/2;
-var ORIGINY = HEIGHT/2;
-var BACKGROUND = "black";
-var view2d = false;
-var myProps = new Array(); 
 var moves = VS3D.MoveFactory();
 var props = VS3D.PropFactory();
-var scene = new Phoria.Scene();
-var renderer;
-var predictions = [props.poi({head_color: "0,32,64", scene: scene}),props.poi({head_color: "64,0,0", scene: scene})];
-var propOne = props.poi({head_color: "blue", flame_color: "blue", scene: scene});
-var propTwo = props.poi({head_color: "red", flame_color: "red", scene: scene});
-var startingPositions = [props.noprop({scene: scene}),props.noprop({scene: scene})];
+var predictions;
+
+var vs;
+var propOne;
+var propTwo;
 function canvasSetup() {
-	var canvas = document.getElementById("canvas");
+	vs = VS3D.VisualSpinnerWidget();
+	vs.embedById("display");
+	vs.addControls("play","pause","rewind","frame","forward","reset");
 	window.addEventListener("keydown", listenForKey, false);
-	// set up Phoria scene for 3D rendering
-	scene.camera.position = {x:0.0, y:1.0, z:10.0};
-	scene.perspective.aspect = canvas.width / canvas.height;
-	scene.viewport.width = canvas.width;
-	scene.viewport.height = canvas.height;
-	renderer = new Phoria.CanvasRenderer(canvas);
-	var plane = Phoria.Util.generateTesselatedPlane(8,8,0,20);
-	scene.graph.push(Phoria.Entity.create({
-		points: plane.points,
-		edges: plane.edges,
-		polygons: plane.polygons,
-		style: {
-				 drawmode: "wireframe",
-				 shademode: "plain",
-				 linewidth: 0.5,
-				 objectsortmode: "back"
-			}}));
-	scene.graph.push(new Phoria.DistantLight());
-	var light = new Phoria.DistantLight();
-	light.direction.x = 1;
-	light.direction.z = 0;
-	scene.graph.push(light);
-	light = new Phoria.DistantLight();
-	light.direction.y = 1;
-	light.direction.z = 0;
-	scene.graph.push(light);
+	predictions = [vs.addProp(),vs.addProp()];
+	predictions[0].color = "0,32,64";
+	predictions[1].color = "64,0,0";
+	predictions[0].dummy = true;
+	predictions[1].dummy = true;
+	propOne = vs.addProp();
+	propOne.color = "blue";
+	propTwo = vs.addProp();
+	propTwo.color = "red";
 	// set up props
 	propOne.hand.radius = 1;
 	propTwo.hand.radius = 1;
 	propOne.rotateHand(SPLIT);
 	propOne.rotateProp(SPLIT);
-	myProps.push(propOne);
-	myProps.push(propTwo);
-	setStart();
 	predict();
-	redraw();
+	vs.ready();
 }
 window.addEventListener("keydown", listenForKey, false);
 VS3D.spinfail = function() {
-	if (paused == false) {
+	//if (paused == false) {
 		alert("can't spin with an empty queue");
-	}
+	//}
 }
 
-//**** animation and rendering
-function canvasLoop() {
-	if (paused == true) {return;}
-	setTimeout(function() {
-		requestAnimationFrame(canvasLoop);
-		redraw();
-		for (var i = 0; i < myProps.length; i++) {
-			if (myProps[i].move.getDuration() === 0) {
-				alert("Can't spin with an empty queue.");
-				paused = true;
-				return;
-			}
-		}
-		advanceFrames(1);
-		for (var i = 0; i < myProps.length; i++) {
-			myProps[i].render();
-		}
-	},1000/BEAT);
-}
 function redraw() {
-	for (var i = 0; i < myProps.length; i++) {
-		predictions[i].render();
-		myProps[i].render();
-	}
-	scene.modelView();
-	renderer.render(scene);
+	vs.renderer.render(vs.scene);
 }
 
 //**** on load
@@ -153,7 +103,6 @@ function populateMenu() {
 	menu.empty();
 	for (var key in recipes) {
 		if (key !== "add") {
-			// need to add an equivalent of 'value' to this.
 			option = '<li draggable="true" ondragstart="dragMenu(event)" data-value="'+key+'">'+key+"</li>";
 			menu.append(option);
 		}
@@ -210,13 +159,8 @@ function addMoveToQueue(definition, target) {
 		alert("Move not added.");
 		
 	}
-	var max;
-	for (var i = 0; i < myProps.length; i++) {
-			max = Math.max(myProps[i].move.getDuration()*BEAT);
-	}
-	
-	document.getElementById("frameN").setAttribute("max", max.toString());
-	
+	predict();
+	vs.ready();
 	redraw();
 }
 
@@ -418,40 +362,8 @@ function submitChanges() {
 	$("#movemodify").toggle();
 }
 
-// animation loop
-var paused = false;
-function startSpin() {
-	paused = false;
-	canvasLoop();
-}
-
-function pauseSpin() {
-	paused = true;
-}
-
-function spinFrames(n) {
-	if (n > 0) {
-		pauseSpin();
-		advanceFrames(n);
-	} else if (n < 0) {
-		var value = parseInt(document.getElementById("frameN").value);
-		totalReset();
-		// This nonsense is necessary because it currently sometimes spins one additional frame after resetting
-		advanceFrames(value + n - parseInt(document.getElementById("frameN").value));
-	}
-	for (var i = 0; i < myProps.length; i++) {
-		myProps[i].render();
-	}
-	redraw();
-}
-
 function totalReset() {
-	pauseSpin();
-	document.getElementById("frameN").value = "0";
-	for (var i= 0; i < myProps.length; i++) {
-		myProps[i].move.reset();
-		myProps[i].orientToProp(startingPositions[i]);
-	}
+	vs.reset();
 	predict();
 	redraw();
 }
@@ -462,20 +374,12 @@ function predict() {
 	predictions[0].nudge(-0.1,0,-0.1);
 	predictions[1].nudge(-0.1,0,-0.1);
 }
-function setStart() {
-	startingPositions[0].orientToProp(propOne);
-	startingPositions[1].orientToProp(propTwo);
-}
 function listenForKey(e) {
 	//alert(e.keyCode);
-	if (e.keyCode ===13) {
-		if (document.activeElement == document.getElementById("frameN")) {
-			goToFrame();
-		}
-	} else if (e.keyCode===37) {
-		spinFrames(-12);
+	if (e.keyCode===37) {
+		vs.rewind(-12);
 	} else if (e.keyCode===39) {
-		spinFrames(12);
+		vs.forward(12);
 	} else if (e.keyCode==8 || e.keyCode == 46) {
 		deleteItem();
 	}
@@ -494,45 +398,11 @@ function deleteItem() {
 			propTwo.move.submoves.pop();
 		}
 	}
-}
-
-// currently this doesn't actually check the lower bound
-function checkBounds(n) {
-	var max = document.getElementById("frameN").max;
-	if (max==0) {
-		alert("bad max input value");
-		return 0;
-	}
-	if (n > max) {
-		frameN.value = max.toString();
-		while (n > max) {
-			n = n-max;
-		}
-	} else if (n < 0) {
-		alert("You entered a negative frame number and I haven't done error handling for that yet.");
-	}
-	return n;
-}
-function goToFrame() {
-	var value = parseInt(document.getElementById("frameN").value);
-	value = checkBounds(value);
-	totalReset();
-	advanceFrames(value);
-	redraw();
-}
-
-function advanceFrames(n) {
-	var frameN = document.getElementById("frameN");
-	frameN.value = checkBounds((parseInt(frameN.value) + n)).toString();
-	for (var i = 0; i < n; i++) {
-		for (var j = 0;  j < myProps.length; j++) {
-			myProps[j].spin();
-		}
-	}
+	predict();
 }
 
 function emptyQueues() {
-	pauseSpin();
+	vs.pause();
 	$("#queue1 ul").empty();
 	$("#queue2 ul").empty();
 	propOne.emptyMoves();
@@ -547,7 +417,7 @@ function popExport() {
 	$("#popexport").toggle();
 	var blue = propOne.stringify();
 	var red = propTwo.stringify();
-	$("#popexport textarea").html('{"blue": '+blue+', "red": '+red+"}");
+	$("#popexport textarea").html('{"one": '+blue+', "two": '+red+"}");
 }
 function popImport() {
 	$("#popexport").hide();
@@ -621,22 +491,25 @@ function popAlign(n) {
 	$("#2prop").val(prop2);
 	$("#1color").val(color1);
 	$("#2color").val(color2);
+	predict();
+	vs.ready();
+	redraw();
 }
 
 function importSubmit() {
 	var imported = $("#popimport textarea").val();
 	imported = props.parse(imported);
 	emptyQueues();
-	props.setPosition(propOne, JSON.stringify(imported.blue));
-	props.setPosition(propTwo, JSON.stringify(imported.red));
-	setStart();
-	propOne.apply(JSON.stringify(imported.red));
-	propTwo.apply(JSON.stringify(imported.blue));
-	for (var i = 0; i < imported.blue.moves.length; i++) {
-		addMoveToQueue(JSON.stringify(imported.blue.moves[i]), $("#queue1 ul").get(0));
+	props.setPosition(propOne, JSON.stringify(imported.one));
+	props.setPosition(propTwo, JSON.stringify(imported.two));
+	propOne.apply(JSON.stringify(imported.one));
+	propTwo.apply(JSON.stringify(imported.two));
+	vs.ready();
+	for (var i = 0; i < imported.one.moves.length; i++) {
+		addMoveToQueue(JSON.stringify(imported.one.moves[i]), $("#queue1 ul").get(0));
 	}
-	for (var i = 0; i < imported.red.moves.length; i++) {
-		addMoveToQueue(JSON.stringify(imported.red.moves[i]), $("#queue2 ul").get(0));
+	for (var i = 0; i < imported.two.moves.length; i++) {
+		addMoveToQueue(JSON.stringify(imported.two.moves[i]), $("#queue2 ul").get(0));
 	}
 	$("#popimport").toggle();
 	predict();
@@ -678,7 +551,7 @@ function alignSubmit(n) {
 		color = "white";
 		dark = "64,64,64";
 	}
-	text =  document.getElementById(n+"prop").value;
+	text = document.getElementById(n+"prop").value;
 	if (n===1) {
 		color1 = color;
 		prop1 = text;
@@ -686,30 +559,29 @@ function alignSubmit(n) {
 		color2 = color;
 		prop2 = text;
 	}
-	var renderer;
-	var predicted;
-	
 	if (text=="poi") {
-		renderer = props.poirender({head_color: color, scene: scene});
-		predicted = props.poirender({head_color: dark, scene: scene});
+		prop.propType = "poi";
+		prop.color = color;
+		predictions[n-1].propType = "poi";
+		predictions[n-1].color = dark;
 	} else if (text=="staff") {
-		renderer = props.staffrender({head_color: color, scene: scene});
-		predicted = props.staffrender({head_color: dark, scene: scene});
+		prop.propType = "staff";
+		prop.color = color;
+		predictions[n-1].propType = "staff";
+		predictions[n-1].color = dark;
 	} else if (text=="hoop") {
-		renderer = props.hooprender({head_color: color, scene: scene});
-		predicted = props.hooprender({head_color: dark, scene: scene});
+		prop.propType = "hoop";
+		prop.color = color;
+		predictions[n-1].propType = "hoop";
+		predictions[n-1].color = dark;
 	} else if (text=="none") {
-		renderer = props.noproprender({scene: scene});
-		predicted = props.noproprender({scene: scene});
+		prop.propType = "noprop";
+		prop.color = color;
+		predictions[n-1].propType = "noprop";
+		predictions[n-1].color = dark;
 	}
-	prop.renderer.deactivate();
-	prop.renderer = renderer;
-	prop.renderer.activate();
-	predictions[n-1].renderer.deactivate();
-	predictions[n-1].renderer = predicted;
-	predictions[n-1].renderer.activate();
-	setStart();
 	predict();
+	vs.ready();
 	redraw();
 	$("#popalign"+n).toggle();
 }
@@ -725,20 +597,9 @@ function alignSubmit(n) {
 <div id="content">
 	<section>
 		<div id="display">
-			<canvas width="400" height="400" id="canvas">
-				Your browser doesn't support the HTML5 element canvas.
-			</canvas>
 		</div>
 		<div id="control">
-			<button type="button" onclick="startSpin();">Play</button>
-			<button type="button" onclick="pauseSpin();">Pause</button>
-			<button type="button" onclick="spinFrames(-12)">-</button>
-			<input id="frameN" min="0" value="0" type="number">
-			<button type="button" onclick="spinFrames(12)" ;="">+</button>
-			<button type="button" onclick="totalReset();">Reset Spin</button>
-			<br>
 			<button type="button" onclick="emptyQueues();">Reset Queues</button>
-			<br>
 			<button type="button" onclick="popExport();">Export to JSON</button>
 			<button type="button" onclick="popImport();">Import from JSON</button>
 		</div>
