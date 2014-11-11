@@ -612,7 +612,6 @@ PhoriaProp.prototype.poiShapes = function(myProp) {
 		return [handle,tether,ball];
 	} else {
 		ball.style.color = PhoriaColor("fire");
-		alert(ball.style.color);
 		return [handle,tether,ball,flame];
 	}
 }

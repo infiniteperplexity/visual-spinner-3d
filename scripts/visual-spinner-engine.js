@@ -294,19 +294,22 @@ function Prop() {
 	this.axis = WALL;
 	// "move" is the queue of moves associated with the Prop
 	this.move = new MoveChain();
+	// for rendering...
+	this.propType = "poi"; //or "hoop" or "staff" so far
+	this.color = "red";
+	this.fire = false;
 }
 //// Primary methods
-// Call the renderer
 // Tell the prop to spin
 Prop.prototype.spin = function() {
 	if (this.move.submoves.length==0) {
-		this.spinfail();
+		this.spinfail(this);
 	} else {
 		this.move.spin(this);
 	}
 }
 // Trying to spin with an empty queue might produce different results in different implementations, e.g. populating with a default move
-Prop.prototype.spinfail = function() {
+Prop.prototype.spinfail = function(me) {
 	alert("please override spinfail()");
 	//user should override
 }
@@ -693,6 +696,9 @@ MoveLink.prototype.getDuration = function() {
 }
 // Choose whether the MoveLink removes itself from the parent queue when finished
 MoveLink.prototype.setOneShot = function(tf) {
+	if (tf===undefined) {
+		tf = true;
+	}
 	this.oneshot = tf;
 	return this;
 }
@@ -1148,6 +1154,9 @@ MoveChain.prototype.refit = function() {
 
 // A few handy setters and getters
 MoveChain.prototype.setOneShot = function(tf) {
+	if (tf===undefined) {
+		tf = true;
+	}
 	this.oneshot = tf;
 	return this;
 }

@@ -1,0 +1,68 @@
+<!--Distributed under GNU Public License version 3-->
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>VisualSpinner3D v. 3.0, by Glenn Wright</title>
+<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="scripts/gl-matrix-min.js"></script>
+<script src="scripts/phoria-min.js"></script>
+<script src="scripts/requestAnimationFrame.js"></script>
+<script src="scripts/visual-spinner-engine.js"></script>
+<script src="scripts/visual-spinner-moves.js"></script>
+<script src="scripts/visual-spinner-ui.js"></script>
+<script>
+var vs;
+function init() {
+	vs = VS3D.VisualSpinnerWidget();
+	VS3D.Constants.rescope(vs);
+	vs.embedById("vs-div");
+	vs.renderer.scene.camera.position = {x:4.0, y:2.0, z:10.0};
+	var propOne = vs.addProp();
+	var propTwo = vs.addProp();
+	propTwo.nudge(-0.1,0,-0.1);
+	propOne.color = "red";
+	propTwo.color = "blue";
+	propOne.fire = true;
+	propTwo.fire = true;
+	propOne.hand.radius = 1;
+	propTwo.hand.radius = 1;
+	propTwo.setHandAngle(vs.NINE);
+	propTwo.setPropAngle(vs.NINE);
+	propOne.addMove(vs.Moves.flower({build: "flower", spin: vs.ANTISPIN, duration: 0.25, orient: vs.THREE, entry: vs.THREE}).reorient(propOne).setOneShot());
+	propTwo.addMove(vs.Moves.flower({build: "flower", spin: vs.ANTISPIN, duration: 0.25, orient: vs.THREE, entry: vs.THREE}).reorient(propTwo).setOneShot());
+	vs.ready();
+	vs.play();
+}
+var RIGHT = new VS3D.Vector(1,0,0);
+var LEFT = new VS3D.Vector(-1,0,0);
+var UP = new VS3D.Vector(0,1,0);
+var DOWN = new VS3D.Vector(0,-1,0);
+var BACK = new VS3D.Vector(0,0,1);
+var FRONT = new VS3D.Vector(0,0,-1);
+VS3D.Prop().constructor.prototype.spinfail = function() {
+	if (	this.hand.vectorize().nearly(RIGHT)
+		|| this.hand.vectorize().nearly(LEFT)) {
+		this.addMove(randomMove(vs.WALL, vs.FLOOR).reorient(this).setOneShot());
+	} else if (this.hand.vectorize().nearly(UP)
+		|| this.hand.vectorize().nearly(DOWN)) {
+		this.addMove(randomMove(vs.WALL, vs.WHEEL).reorient(this).setOneShot());
+	} else if (this.hand.vectorize().nearly(BACK)
+		|| this.hand.vectorize().nearly(FRONT)) {
+		this.addMove(randomMove(this, vs.WHEEL, vs.FLOOR).reorient(this).setOneShot());
+	} else {
+		alert("What is going on?");
+	}
+}
+function randomMove(prop, plane1, plane2) {
+	var r;
+	r = Math.random()*2;
+	var p = (r < 1) ? plane1 : plane2;
+	r = Math.random()*2;
+	var d = (r < 1) ? vs.CLOCKWISE : vs.COUNTERCLOCKWISE; 
+	return vs.Moves.flower({plane: p, direction: d, build: "flower", spin: vs.ANTISPIN, duration: 0.25, orient: vs.THREE, entry: vs.THREE});
+}
+
+</script>
+<body onload="init();">
+<div id="vs-div">
+</div>
+</body></html>
