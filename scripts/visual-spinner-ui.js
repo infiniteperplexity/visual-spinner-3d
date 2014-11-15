@@ -23,6 +23,7 @@ function VisualSpinnerWidget(options) {
 	this.frame = 0;
 	this.speed = 1;
 	this.canvas = document.createElement("canvas");
+	this.canvas.innerHTML = "Your browser does not support HTML5 Canvas.";
 	this.context = this.canvas.getContext('2d');
 	this.svg = document.createElement("svg"); // build a new one
 	this.scene = new VisualSpinnerScene(); //can be reassigned
@@ -262,6 +263,24 @@ VisualSpinnerWidget.prototype.animationLoop = function(caller) {
 			caller.renderer.render(caller.scene);
 		})
 	}, 1);
+}
+
+VisualSpinnerWidget.prototype.stringify = function() {
+        if (this.scene.props.length===0) {return "";}
+        var json = '{"prop1": '+this.scene.props[0].stringify();
+        for (var i = 1; i<this.scene.props.length; i++) {
+                json += ', "prop' + (i+1) + '": ' + this.scene.props[i].stringify();
+        }
+        json += "}";
+        return json;
+}
+VisualSpinnerWidget.prototype.parse = function(json) {
+        this.scene.props = [];
+        this.scene.starting = [];
+        var jsonprops = JSON.parse(json);
+        for (var prop in jsonprops) {
+                this.addProp(props.build(prop));
+        }
 }
 
 function VisualSpinnerScene() {

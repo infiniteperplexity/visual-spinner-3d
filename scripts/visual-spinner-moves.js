@@ -74,7 +74,7 @@ MoveFactory.prototype.staticspin= function(options) {
 	var move = VS3D.MoveChain();
 	move.definition = options;
 	options = this.defaults(options,{
-		build: "staticspin",
+		recipe: "staticspin",
 		movename: "Static Spin",
 		entry: THREE,
 		hand: THREE,
@@ -113,7 +113,7 @@ MoveFactory.prototype.staticspin= function(options) {
 			move.add(move.submoves[options.sliceby*(i-1)].clone());
 		}
 	}
-	move.build = options.build;
+	move.recipe = options.recipe;
 	move.movename = options.movename;
 	return move;
 }
@@ -122,7 +122,7 @@ MoveFactory.prototype.superman = function(options) {
 	var move = VS3D.MoveChain();
 	move.definition = options;
 	options = this.defaults(options,{
-		build: "superman",
+		recipe: "superman",
 		movename: "Superman",
 		orient: THREE,
 		plane: FLOOR,
@@ -145,7 +145,7 @@ MoveFactory.prototype.superman = function(options) {
 	move.extend();
 	move.tail().prop.speed = 2*options.speed*options.direction;
 	//move.tail().prop.acc = 16*options.speed*options.direction;
-	move.build = options.build;
+	move.recipe = options.recipe;
 	move.movename = options.movename;
 	return move;
 }
@@ -154,7 +154,7 @@ MoveFactory.prototype.flower = function(options) {
 	var move = VS3D.MoveChain();
 	move.definition = options;
 	options = this.defaults(options,{
-		build: "flower",
+		recipe: "flower",
 		movename: "Flower",
 		entry: THREE,
 		plane: WALL,
@@ -201,7 +201,7 @@ MoveFactory.prototype.flower = function(options) {
 			move.add(move.submoves[options.sliceby*(i-1)].clone());
 		}
 	}
-	move.build = options.build;
+	move.recipe = options.recipe;
 	move.movename = options.movename;
 	return move;
 }
@@ -269,7 +269,7 @@ MoveFactory.prototype.ccap = function(options) {
 	var move = VS3D.MoveChain();
 	move.definition = options;
 	options = this.defaults(options,{
-		build: "ccap",
+		recipe: "ccap",
 		movename: "C-CAP",
 		plane: WALL,
 		orient: THREE,
@@ -312,7 +312,7 @@ MoveFactory.prototype.ccap = function(options) {
 			move.add(move.submoves[4*(i-1)].clone());
 		}
 	}
-	move.build = options.build;
+	move.recipe = options.recipe;
 	move.movename = options.movename;
 	return move;
 }
@@ -321,7 +321,7 @@ MoveFactory.prototype.pendulum = function(options) {
 	var move = VS3D.MoveChain();
 	move.definition = options;
 	options = this.defaults(options,{
-		build: "pendulum",
+		recipe: "pendulum",
 		movename: "Pendulum",
 		orient: SIX,
 		entry: SIX,
@@ -369,24 +369,24 @@ MoveFactory.prototype.pendulum = function(options) {
 	move.add(segment);
 	move.tail().prop.acc = -8*options.twirl*options.swing*options.direction*options.speed*options.spin;
 	move.tail().hand.acc = -hybrid;
-	move.tail().helper.rescale = 0;
-	move.tail().helper.rescale_acc = 0;
+	move.tail().helper.stretch = 0;
+	move.tail().helper.stretch_acc = 0;
 	move.extend();
 	move.tail().prop.acc = -8*options.swing*options.direction*options.speed*options.spin;
 	move.tail().hand.acc = -hybrid;
-	move.tail().helper.rescale = 0;
-	move.tail().helper.rescale_acc = 32*options.lift;
+	move.tail().helper.stretch = 0;
+	move.tail().helper.stretch_acc = 32*options.lift;
 	move.extend();
 	move.tail().prop.acc = 8*options.swing*options.direction*options.speed*options.spin;
 	move.tail().hand.acc = hybrid;
-	move.tail().helper.rescale = -8*options.lift;
+	move.tail().helper.stretch = -8*options.lift;
 	move.tail().helper.radius = 2*options.lift;
-	move.tail().helper.rescale_acc = 32*options.lift;
+	move.tail().helper.stretch_acc = 32*options.lift;
 	move.extend();
 	move.tail().prop.acc = 8*options.twirl*options.swing*options.direction*options.speed*options.spin;
 	move.tail().hand.acc = hybrid;
-	move.tail().helper.rescale = 0;
-	move.tail().helper.rescale_acc = 0;
+	move.tail().helper.stretch = 0;
+	move.tail().helper.stretch_acc = 0;
 	if (options.entry != null) {
 		move.align("hand", options.entry);
 	}
@@ -398,14 +398,14 @@ MoveFactory.prototype.pendulum = function(options) {
 			move.add(move.submoves[4*(i-1)].clone());
 		}
 	}
-	move.build = options.build;
+	move.recipe = options.recipe;
 	move.movename = options.movename;
 	return move;
 }
 // try doing the extra pivot with helper instead of pivot
 MoveFactory.prototype.antipendulum = function(options) {
 	options = this.defaults(options,{
-		build: "antipendulum",
+		recipe: "antipendulum",
 		movename: "Anti-Pendulum",
 		helper_radius: 0.5,
 		lift: 0.5,
@@ -418,7 +418,7 @@ MoveFactory.prototype.antipendulum = function(options) {
 
 MoveFactory.prototype.onepointfive = function(options) {
 	options = this.defaults(options,{
-		build: "onepointfive",
+		recipe: "onepointfive",
 		movename: "One Point Five",
 		twirl: 3
 	});
@@ -431,7 +431,7 @@ MoveFactory.prototype.isopendulum = function(options) {
 	var segment = VS3D.MoveLink();
 	segment.definition = options;
 	options = this.defaults(options,{
-		build: "isopendulum",
+		recipe: "isopendulum",
 		movename: "Iso-Pendulum",
 		orient: SIX,
 		plane: WALL,
@@ -456,7 +456,7 @@ MoveFactory.prototype.isopendulum = function(options) {
 	segment.prop.plane = options.plane;
 	segment.prop.angle = (options.direction == CLOCKWISE) ? options.orient - QUARTER : options.orient + QUARTER;
 	segment.hand.angle = segment.prop.angle + OFFSET;
-	segment.build = options.build;
+	segment.recipe = options.recipe;
 	segment.movename = options.movename;
 	return segment;
 }
@@ -466,7 +466,7 @@ MoveFactory.prototype.oval = function(options) {
 	var move = VS3D.MoveChain();
 	move.definition = options;
 	options = this.defaults(options,{
-		build: "oval",
+		recipe: "oval",
 		movename: "Linear Isolation",
 		plane: WALL,
 		direction: CLOCKWISE,
@@ -503,20 +503,20 @@ MoveFactory.prototype.oval = function(options) {
 	segment.duration = 0.25;
 	move.add(segment);
 	move.tail().hand.radius = options.major;
-	move.tail().hand.rescale = -(options.major-options.minor)*8;
-	move.tail().hand.rescale_acc = (options.major-options.minor)*32;
+	move.tail().hand.stretch = -(options.major-options.minor)*8;
+	move.tail().hand.stretch_acc = (options.major-options.minor)*32;
 	move.extend();
 	move.tail().hand.radius = options.minor;
-	move.tail().hand.rescale = 0;
-	move.tail().hand.rescale_acc = (options.major-options.minor)*32;
+	move.tail().hand.stretch = 0;
+	move.tail().hand.stretch_acc = (options.major-options.minor)*32;
 	move.extend();
 	move.tail().hand.radius = options.major;
-	move.tail().hand.rescale = -(options.major-options.minor)*8;
-	move.tail().hand.rescale_acc = (options.major-options.minor)*32;
+	move.tail().hand.stretch = -(options.major-options.minor)*8;
+	move.tail().hand.stretch_acc = (options.major-options.minor)*32;
 	move.extend();
 	move.tail().hand.radius = options.minor;
-	move.tail().hand.rescale = 0;
-	move.tail().hand.rescale_acc = (options.major-options.minor)*32;
+	move.tail().hand.stretch = 0;
+	move.tail().hand.stretch_acc = (options.major-options.minor)*32;
 	if (options.entry != null) {
 		move.align("hand",options.entry);
 	}
@@ -527,7 +527,7 @@ MoveFactory.prototype.oval = function(options) {
 			move.add(move.submoves[4*(i-1)].clone());
 		}
 	}
-	move.build = options.build;
+	move.recipe = options.recipe;
 	move.movename = options.movename;
 	return move;
 }
@@ -536,7 +536,7 @@ MoveFactory.prototype.linex = function(options) {
 	var move = VS3D.MoveChain();
 	move.definition = options;
 	options = this.defaults(options,{
-		build: "linex",
+		recipe: "linex",
 		movename: "Linear Extension",
 		plane: WALL,
 		direction: CLOCKWISE,
@@ -570,23 +570,23 @@ MoveFactory.prototype.linex = function(options) {
 	move.add(segment);
 	move.tail().hand.angle = options.orient;
 	move.tail().hand.radius = options.extend;
-	move.tail().hand.rescale = 0;
-	move.tail().hand.rescale_acc = -32;
+	move.tail().hand.stretch = 0;
+	move.tail().hand.stretch_acc = -32;
 	move.extend();
 	move.tail().hand.angle = options.orient+OFFSET;
 	move.tail().hand.radius = 0;
-	move.tail().hand.rescale = 8;
-	move.tail().hand.rescale_acc = -32;
+	move.tail().hand.stretch = 8;
+	move.tail().hand.stretch_acc = -32;
 	move.extend();
 	move.tail().hand.angle = options.orient+OFFSET;
 	move.tail().hand.radius = options.extend;
-	move.tail().hand.rescale = 0;
-	move.tail().hand.rescale_acc = -32;
+	move.tail().hand.stretch = 0;
+	move.tail().hand.stretch_acc = -32;
 	move.extend();
 	move.tail().hand.angle = options.orient;
 	move.tail().hand.radius = 0;
-	move.tail().hand.rescale = 8;
-	move.tail().hand.rescale_acc = -32;
+	move.tail().hand.stretch = 8;
+	move.tail().hand.stretch_acc = -32;
 	//do we need to do some crazy thing here?
 	if (options.entry != null) {
 		if (nearly(options.entry,options.orient)) {
@@ -608,7 +608,7 @@ MoveFactory.prototype.linex = function(options) {
 			move.add(move.submoves[4*(i-1)].clone());
 		}
 	}
-	move.build = options.build;
+	move.recipe = options.recipe;
 	move.movename = options.movename;
 	return move;
 }
@@ -619,7 +619,7 @@ MoveFactory.prototype.old_linex = function(options) {
 	move.definition = options;
 	// A linex with harmonics = 1 is a linear extension.  harmonics = 2 is a linear isolation;
 	options = this.defaults(options,{
-		build: "linex",
+		recipe: "linex",
 		movename: "Linear Extension",
 		orient: THREE,
 		//entry: THREE,
@@ -669,7 +669,7 @@ MoveFactory.prototype.old_linex = function(options) {
 			move.add(move.submoves[4*(i-1)].clone());
 		}
 	}
-	move.build = options.build;
+	move.recipe = options.recipe;
 	move.movename = options.movename;
 	if (options.harmonics == 2) {
 		move.definition.movename = "Linear Isolation";
@@ -682,7 +682,7 @@ MoveFactory.prototype.linearfloat = function(options) {
 	var move = VS3D.MoveChain();
 	move.definition = options;
 	options = this.defaults(options,{
-		build: "linearfloat",
+		recipe: "linearfloat",
 		movename: "Float",
 		orient: TWELVE,
 		//entry: THREE,
@@ -730,7 +730,7 @@ MoveFactory.prototype.linearfloat = function(options) {
 			move.add(move.submoves[4*(i-1)].clone());
 		}
 	}
-	move.build = options.build;
+	move.recipe = options.recipe;
 	move.movename = options.movename;
 	if (options.harmonics == 2) {
 		move.definition.movename = "Linear Isolation";
@@ -744,7 +744,7 @@ MoveFactory.prototype.isolation = function(options) {
 	move.definition = options;
 	// A no-offset isolation is a unit-circle extension. An anti-spin isolation is a cateye;
 	options = this.defaults(options,{
-		build: "isolation",
+		recipe: "isolation",
 		movename: "Isolation",
 		orient: THREE,
 		entry: THREE,
@@ -787,7 +787,7 @@ MoveFactory.prototype.isolation = function(options) {
 			move.add(move.submoves[4*(i-1)].clone());
 		}
 	}
-	move.build = options.build;
+	move.recipe = options.recipe;
 	move.movename = options.movename;
 	if (options.spin == ANTISPIN) {
 		move.definition.movename = "Cat-Eye";
@@ -805,7 +805,7 @@ MoveFactory.prototype.toroid = function(options) {
         var move = VS3D.MoveChain();
         move.definition = options;
         options = this.defaults(options,{
-                build: "toroid",
+                recipe: "toroid",
                 movename: "Toroid",
                 entry: THREE,
                 plane: WALL,
@@ -850,7 +850,7 @@ MoveFactory.prototype.toroid = function(options) {
                         move.add(move.submoves[options.sliceby*(i-1)].clone());
                 }
         }
-        move.build = options.build;
+        move.recipe = options.recipe;
         move.movename = options.movename;
         return move;
 }
@@ -859,7 +859,7 @@ MoveFactory.prototype.isobend = function(options) {
         var move = VS3D.MoveChain();
         move.definition = options;
         options = this.defaults(options,{
-                build: "isobend",
+                recipe: "isobend",
                 movename: "Linearized Iso-Bend Toroid",
                 entry: THREE,
                 plane: WALL,
@@ -900,7 +900,7 @@ MoveFactory.prototype.isobend = function(options) {
 		//does this require fixing the definition?
 		move.phaseBy(1);
 	}
-	move.build = options.build;
+	move.recipe = options.recipe;
         move.movename = options.movename;
         return move;
 }
@@ -909,7 +909,7 @@ MoveFactory.prototype.antibend = function(options) {
         var move = VS3D.MoveChain();
         move.definition = options;
         options = this.defaults(options,{
-                build: "antibend",
+                recipe: "antibend",
                 movename: "Linearized Anti-Bend Toroid",
                 entry: THREE,
                 plane: WALL,
@@ -958,7 +958,7 @@ MoveFactory.prototype.antibend = function(options) {
                 move.tail().prop.angle = unwind(orient + ((i%2==0) ? -1 : 1)*QUARTER*options.direction + i*options.direction*UNIT/options.harmonics);
         }
         move.align("hand", entry);
-        move.build = options.build;
+        move.recipe = options.recipe;
         move.movename = options.movename;
         return move;
 }
@@ -967,7 +967,7 @@ MoveFactory.prototype.pentagram = function(options) {
         var move = VS3D.MoveChain();
         move.definition = options;
         options = this.defaults(options,{
-                build: "pentagram",
+                recipe: "pentagram",
                 movename: "Linearized Anti-Bend Toroid",
                 entry: THREE,
                 plane: WALL,
@@ -1009,7 +1009,7 @@ MoveFactory.prototype.pentagram = function(options) {
                 move.tail().prop.angle = unwind(orient + ((i%2==0) ? -1 : 1)*QUARTER*options.direction + 2*i*options.direction*UNIT/options.harmonics);
         }
         move.align("hand", entry);
-        move.build = options.build;
+        move.recipe = options.recipe;
         move.movename = options.movename;
         return move;
 }
@@ -1019,7 +1019,7 @@ MoveFactory.prototype.tapedeck = function(options) {
         var move = VS3D.MoveChain();
         move.definition = options;
         options = this.defaults(options,{
-                build: "tapedeck",
+                recipe: "tapedeck",
                 movename: "Tapedeck (Linearized Pro-Bend) Toroid",
                 entry: THREE,
                 plane: WALL,
@@ -1063,7 +1063,7 @@ MoveFactory.prototype.tapedeck = function(options) {
 	}
         move.align("hand", options.entry);
 	move.phaseBy(1);
-        move.build = options.build;
+        move.recipe = options.recipe;
         move.movename = options.movename;
         return move;
 }
@@ -1073,7 +1073,7 @@ MoveFactory.prototype.fractal = function(options) {
 	var move = VS3D.MoveChain();
 	move.definition = options;
 	options = this.defaults(options,{
-		build: "fractal",
+		recipe: "fractal",
 		movename: "Fractal",
 		entry: THREE,
 		plane: WALL,
@@ -1117,7 +1117,7 @@ MoveFactory.prototype.fractal = function(options) {
 	for (var i = 1; i<options.petals*options.helper_petals; i++) {
 		move.extend();
 	}
-	move.build = options.build;
+	move.recipe = options.recipe;
 	move.movename = options.movename;
 	return move;
 }
@@ -1127,7 +1127,7 @@ MoveFactory.prototype.scap = function(options) {
 	var move = VS3D.MoveChain();
 	move.definition = options;
 	options = this.defaults(options,{
-		build: "scap",
+		recipe: "scap",
 		movename: "S-CAP",
 		plane: WALL,
 		orient: THREE,
@@ -1163,7 +1163,7 @@ MoveFactory.prototype.scap = function(options) {
 	move.tail().prop.speed = (options.antipetals-1)*options.speed*options.direction;
 	move.tail().helper.angle = options.orient;
 	move.tail().hand.angle = options.orient + OFFSET;
-	move.build = options.build;
+	move.recipe = options.recipe;
 	move.movename = options.movename;
 	return move;
 }
@@ -1174,7 +1174,7 @@ MoveFactory.prototype.isopop = function(options) {
 	move.definition = options;
 	// An isopop with options.pop: ANTISPIN is an isobreak
 	options = this.defaults(options,{
-		build: "isopop",
+		recipe: "isopop",
 		movename: "Iso-Pop",
 		orient: THREE,
 		plane: WALL,
@@ -1203,7 +1203,7 @@ MoveFactory.prototype.isopop = function(options) {
 	move.extend();
 	move.tail().hand.speed = 0;
 	move.tail().prop.speed = options.spin*options.direction*options.speed*options.pop;
-	move.build = options.build;
+	move.recipe = options.recipe;
 	move.movename = options.movename;
 	if (options.spin == ANTISPIN) {
 		move.movename = "Iso-Break";
@@ -1215,7 +1215,7 @@ MoveFactory.prototype.diamond = function(options) {
 	var move = VS3D.MoveChain();
 	move.definition = options;
 	options = this.defaults(options,{
-		build: "diamond",
+		recipe: "diamond",
 		movename: "Zan's Diamond",
 		entry: THREE,
 		plane: WALL,
@@ -1269,7 +1269,7 @@ MoveFactory.prototype.diamond = function(options) {
 	move.tail().hand.linear_angle = options.entry + options.direction*STAGGER/2;
 	move.tail().hand.linear_speed = 8*Math.sqrt(2)*options.extend*options.speed;
 	move.tail().prop.speed = ((-2*options.spin)+4)*options.spin*options.speed*options.direction;
-	move.build = options.build;
+	move.recipe = options.recipe;
 	move.movename = options.movename;
 	return move;
 }
@@ -1278,7 +1278,7 @@ MoveFactory.prototype.triangle = function(options) {
 	var move = VS3D.MoveChain();
 	move.definition = options;
 	options = this.defaults(options,{
-		build: "triangle",
+		recipe: "triangle",
 		movename: "Triangle",
 		entry: THREE,
 		plane: WALL,
@@ -1331,7 +1331,7 @@ MoveFactory.prototype.triangle = function(options) {
 	move.extend();
 	move.tail().hand.linear_angle = options.entry + options.direction*5*UNIT/12;
 	move.tail().prop.speed = (6*options.spin+2)*options.speed*options.direction/3;
-	move.build = options.build;
+	move.recipe = options.recipe;
 	move.movename = options.movename;
 	return move;
 }
@@ -1340,7 +1340,7 @@ MoveFactory.prototype.stallchaser = function(options) {
 	var move = VS3D.MoveChain();
 	move.definition = options;
 	options = this.defaults(options,{
-		build: "stallchaser",
+		recipe: "stallchaser",
 		movename: "Stall Chaser",
 		orient: DOWN,
 		plane: WALL,
@@ -1378,7 +1378,7 @@ MoveFactory.prototype.stallchaser = function(options) {
 	move.tail().hand.speed = 0;
 	move.tail().prop.speed = 0;
 	move.phaseby(options.phase);
-	move.build = options.build;
+	move.recipe = options.recipe;
 	move.movename = options.movename;
 	return move;
 }
@@ -1388,7 +1388,7 @@ MoveFactory.prototype.spirograph = function(options) {
 	var segment = VS3D.MoveLink();
 	segment.definition = options;
 	options = this.defaults(options,{
-		build: "spirograph",
+		recipe: "spirograph",
 		movename: "(generic spirograph component)",
 		entry: null,
 		plane: WALL,
@@ -1427,7 +1427,7 @@ MoveFactory.prototype.spirograph = function(options) {
 		}
 	}
 	segment.duration = options.duration;
-	segment.build = options.build;
+	segment.recipe = options.recipe;
 	segment.movename = options.movename;
 	return segment;
 }
@@ -1437,7 +1437,7 @@ MoveFactory.prototype.generic = function(options) {
 	var segment = VS3D.MoveLink();
 	segment.definition = options;
 	options = this.defaults(options,{
-		build: "generic",
+		recipe: "generic",
 		movename: "(fully generic movement)",
 		// I think I can get away with being lazy and not adding defaults for "helper"
 		home_angle: null,
@@ -1481,16 +1481,16 @@ MoveFactory.prototype.generic = function(options) {
 		helper_linear_acc: 0,
 		hand_linear_acc: 0,
 		prop_linear_acc: 0,
-		home_rescale: 0,
-		pivot_rescale: 0,
-		helper_rescale: 0,
-		hand_rescale: 0,
-		prop_rescale: 0,
-		home_rescale_acc: 0,
-		pivot_rescale_acc: 0,
-		helper_rescale_acc: 0,
-		hand_rescale_acc: 0,
-		prop_rescale_acc: 0,
+		home_stretch: 0,
+		pivot_stretch: 0,
+		helper_stretch: 0,
+		hand_stretch: 0,
+		prop_stretch: 0,
+		home_stretch_acc: 0,
+		pivot_stretch_acc: 0,
+		helper_stretch_acc: 0,
+		hand_stretch_acc: 0,
+		prop_stretch_acc: 0,
 		twist: null,
 		twist_speed: 0,
 		grip: 0,
@@ -1511,8 +1511,8 @@ MoveFactory.prototype.generic = function(options) {
 	segment.pivot.linear_angle = options.pivot_linear_angle;
 	segment.pivot.linear_speed = options.pivot_linear_speed;
 	segment.pivot.linear_acc = options.pivot_linear_acc;
-	segment.pivot.rescale = options.pivot_rescale;
-	segment.pivot.rescale_acc = options.pivot_rescale_acc;
+	segment.pivot.stretch = options.pivot_stretch;
+	segment.pivot.stretch_acc = options.pivot_stretch_acc;
 	segment.helper.angle = options.helper_angle;
 	segment.helper.plane = (options.helper_plane != null) ? options.helper_plane : options.plane;
 	segment.helper.radius = options.helper_radius;
@@ -1521,8 +1521,8 @@ MoveFactory.prototype.generic = function(options) {
 	segment.helper.linear_angle = options.helper_linear_angle;
 	segment.helper.linear_speed = options.helper_linear_speed;
 	segment.helper.linear_acc = options.helper_linear_acc;
-	segment.helper.rescale = options.helper_rescale;
-	segment.helper.rescale_acc = options.helper_rescale_acc;
+	segment.helper.stretch = options.helper_stretch;
+	segment.helper.stretch_acc = options.helper_stretch_acc;
 	segment.hand.angle = options.hand_angle;
 	segment.hand.plane = (options.hand_plane != null) ? options.hand_plane : options.plane;
 	segment.hand.radius = options.hand_radius;
@@ -1531,8 +1531,8 @@ MoveFactory.prototype.generic = function(options) {
 	segment.hand.linear_angle = options.hand_linear_angle;
 	segment.hand.linear_speed = options.hand_linear_speed;
 	segment.hand.linear_acc = options.hand_linear_acc;
-	segment.hand.rescale = options.hand_rescale;
-	segment.hand.rescale_acc = options.hand_rescale_acc;
+	segment.hand.stretch = options.hand_stretch;
+	segment.hand.stretch_acc = options.hand_stretch_acc;
 	segment.prop.angle = options.prop_angle;
 	segment.prop.plane = (options.prop_plane != null) ? options.prop_plane : options.plane;
 	segment.prop.radius = options.prop_radius;
@@ -1541,8 +1541,8 @@ MoveFactory.prototype.generic = function(options) {
 	segment.prop.linear_angle = options.prop_linear_angle;
 	segment.prop.linear_speed = options.prop_linear_speed;
 	segment.prop.linear_acc = options.prop_linear_acc;
-	segment.prop.rescale = options.prop_rescale;
-	segment.prop.rescale_acc = options.prop_rescale_acc;
+	segment.prop.stretch = options.prop_stretch;
+	segment.prop.stretch_acc = options.prop_stretch_acc;
 	segment.twist = options.twist;
 	segment.twist_speed = options.twist_speed;
 	segment.grip = options.grip;
@@ -1552,8 +1552,8 @@ MoveFactory.prototype.generic = function(options) {
 	segment.bend = options.bend;
 	segment.bend_speed = options.bend_speed;
 	segment.bend_acc = options.bend_acc;
-	segment.definition.movename = options.movename;
-	segment.definition.build = options.build;
+	segment.movename = options.movename;
+	segment.recipe = options.recipe;
 	//add stuff back in in a bit
 	return segment;
 }
@@ -1562,12 +1562,12 @@ MoveFactory.prototype.spiralwrap = function(options) {
 	var move = VS3D.MoveChain();
 	move.definition = options;
 	options = this.defaults(options,{
-		build: "spiralwrap",
+		recipe: "spiralwrap",
 		movename: "Spiral Wrap",
 		entry: THREE,
 		plane: WALL,
 		direction: CLOCKWISE,
-		rescale: -1,
+		stretch: -1,
 		extend: 0,
 		speed: 1,
 		duration: 1
@@ -1580,7 +1580,7 @@ MoveFactory.prototype.spiralwrap = function(options) {
 	segment.prop.radius = 1;
 	segment.hand.speed = 0;
 	segment.prop.speed = options.speed*options.direction;
-	segment.prop.rescale = options.rescale;
+	segment.prop.stretch = options.stretch;
 	if (options.entry != null) {
 		segment.prop.angle = options.entry;
 	}
@@ -1588,9 +1588,9 @@ MoveFactory.prototype.spiralwrap = function(options) {
 	move.add(segment);
 	move.extend();
 	move.tail().prop.radius = 0;
-	move.tail().rescale = -options.rescale;
+	move.tail().stretch = -options.stretch;
 	move.tail().speed = -options.speed*options.direction;
-	move.build = options.build;
+	move.recipe = options.recipe;
 	move.movename = options.movename;
 	return move;
 }
@@ -1599,7 +1599,7 @@ MoveFactory.prototype.spiral = function(options) {
 	var move = VS3D.MoveChain();
 	move.definition = options;
 	options = this.defaults(options,{
-		build: "spiral",
+		recipe: "spiral",
 		movename: "Spiral Wrap",
 		entry: null,
 		hand: THREE,
@@ -1607,7 +1607,7 @@ MoveFactory.prototype.spiral = function(options) {
 		plane: WALL,
 		direction: CLOCKWISE,
 		speed: 1,
-		rescale: -1,
+		stretch: -1,
 		pivot_angle: 0,
 		pivot_radius: 0,
 		duration: 1,
@@ -1632,10 +1632,10 @@ MoveFactory.prototype.spiral = function(options) {
 	segment.prop.plane = options.plane;
 	segment.prop.speed = options.direction*options.speed;
 	segment.duration = 1/options.sliceby;
-	segment.prop.rescale = options.rescale;
+	segment.prop.stretch = options.stretch;
 	//not sure if I like this...
-	//if (segment.prop.rescale > 0) {
-	//	segment.prop.radius -= options.rescale;
+	//if (segment.prop.stretch > 0) {
+	//	segment.prop.radius -= options.stretch;
 	//}
 	move.add(segment);
 	for (var i = 1; i<options.sliceby; i++) {
@@ -1648,7 +1648,7 @@ MoveFactory.prototype.spiral = function(options) {
 			move.add(move.submoves[options.sliceby*(i-1)].clone());
 		}
 	}
-	move.build = options.build;
+	move.recipe = options.recipe;
 	move.movename = options.movename;
 	return move;
 }
@@ -1658,7 +1658,7 @@ MoveFactory.prototype.stall = function(options) {
 	var segment = VS3D.MoveLink();
 	segment.definition = options;
 	options = this.defaults(options,{
-		build: "stall",
+		recipe: "stall",
 		movename: "Stall",
 		exit: false,
 		entry: THREE,
@@ -1694,7 +1694,7 @@ MoveFactory.prototype.stall = function(options) {
 		}
 	}
 	segment.duration = options.duration;
-	segment.build = options.build;
+	segment.recipe = options.recipe;
 	segment.movename = options.movename;
 	return segment;
 }
@@ -1705,7 +1705,7 @@ MoveFactory.prototype.verticaltoss = function(options) {
 	move.definition = options;
 	
 	options = this.defaults(options,{
-		build: "verticaltoss",
+		recipe: "verticaltoss",
 		movename: "Vertical Toss",
 		speed: 0.5,
 		duration: 1,
@@ -1746,7 +1746,7 @@ MoveFactory.prototype.verticaltoss = function(options) {
 	segment.duration = options.duration;
 	
 	move.add(segment);
-	move.build = options.build;
+	move.recipe = options.recipe;
 	move.movename = options.movename;
 	return move;
 }

@@ -27,8 +27,8 @@ function init() {
 	propTwo.hand.radius = 1;
 	propTwo.setHandAngle(vs.NINE);
 	propTwo.setPropAngle(vs.NINE);
-	propOne.addMove(vs.Moves.flower({build: "flower", spin: vs.ANTISPIN, duration: 0.25, orient: vs.THREE, entry: vs.THREE}).reorient(propOne).setOneShot());
-	propTwo.addMove(vs.Moves.flower({build: "flower", spin: vs.ANTISPIN, duration: 0.25, orient: vs.THREE, entry: vs.THREE}).reorient(propTwo).setOneShot());
+	propOne.addMove(vs.Moves.flower({recipe: "flower", spin: vs.ANTISPIN, duration: 0.25, orient: vs.THREE, entry: vs.THREE}).reorient(propOne).setOneShot());
+	propTwo.addMove(vs.Moves.flower({recipe: "flower", spin: vs.ANTISPIN, duration: 0.25, orient: vs.THREE, entry: vs.THREE}).reorient(propTwo).setOneShot());
 	vs.ready();
 	vs.play();
 }
@@ -58,7 +58,7 @@ function randomMove(prop, plane1, plane2) {
 	var p = (r < 1) ? plane1 : plane2;
 	r = Math.random()*2;
 	var d = (r < 1) ? vs.CLOCKWISE : vs.COUNTERCLOCKWISE; 
-	return vs.Moves.flower({plane: p, direction: d, build: "flower", spin: vs.ANTISPIN, duration: 0.25, orient: vs.THREE, entry: vs.THREE});
+	return vs.Moves.flower({plane: p, direction: d, recipe: "flower", spin: vs.ANTISPIN, duration: 0.25, orient: vs.THREE, entry: vs.THREE});
 }
 
 </script>

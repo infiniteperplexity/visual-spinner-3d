@@ -85,11 +85,11 @@ function canvasSetup() {
 		// As Drex transitions to the next move, he distorts the second half of the hybrid in various ways
 			// The orange poi stops and reverses direction (much more slowly) and the hand holding it drifts to the right
 			// (I don't think the pivoting here is essential to Drex's intent for the move...basically it switches from triquetra to cateye partway through)
-	orangePoi.modifyTail({prop_speed: -1, prop_acc: 0, hand_rescale: -2});
+	orangePoi.modifyTail({prop_speed: -1, prop_acc: 0, hand_stretch: -2});
 	whitePoi.addMove(moves.pendulum({direction: CLOCKWISE, extend: 0, duration: 0.5, entry: THREE}));
 			// The white poi drifts to the right so Drex can spin moves that are not centered on his body
 				// VisualSpinner handles this sort of thing using the "pivot" element to recenter the move
-	whitePoi.modifyTail({pivot_rescale: 2});
+	whitePoi.modifyTail({pivot_stretch: 2});
 
 	
 	// The next move is point isolation vs. static spin.  A point isolation can be modeled as a box-mode, zero-petal, in-spin flower.
@@ -108,8 +108,8 @@ function canvasSetup() {
 	// Next comes static spin vs. extension, starting pivoted but recentering quickly
 	orangePoi.addMove(moves.staticspin({entry: NINE, direction: COUNTERCLOCKWISE, duration: 0.5, pivot_angle: THREE, pivot_radius: 0.5}));;
 	whitePoi.addMove(moves.flower({mode: BOX, entry: THREE, direction: COUNTERCLOCKWISE, petals: 0, duration: 0.5, pivot_angle: THREE, pivot_radius: 0.5}));
-	orangePoi.modifyTail({pivot_rescale: 2});
-	whitePoi.modifyTail({pivot_rescale: 2});
+	orangePoi.modifyTail({pivot_stretch: 2});
+	whitePoi.modifyTail({pivot_stretch: 2});
 	orangePoi.addMove(moves.flower({entry: THREE, direction: COUNTERCLOCKWISE, petals: 0, duration: 0.5}));
 	whitePoi.addMove(moves.staticspin({entry: THREE, direction: COUNTERCLOCKWISE, duration: 0.5}));
 	
@@ -123,7 +123,7 @@ function canvasSetup() {
 	orangePoi.addMove(moves.ccap({orient: TWELVE, direction: COUNTERCLOCKWISE, phase: 1, duration: 0.25}));
 	whitePoi.addMove(moves.pendulum({direction: CLOCKWISE, extend:0, entry: NINE, duration: 0.25}));
 	// The white poi drifts down to prepare for the next move
-	whitePoi.modifyTail({hand_angle: SIX, hand_speed: 0, hand_rescale: 4});
+	whitePoi.modifyTail({hand_angle: SIX, hand_speed: 0, hand_stretch: 4});
 
 	// The next move is a split pair of linear isolations
 		// These have oval hand paths, which are a little tricky to model
@@ -137,9 +137,9 @@ function canvasSetup() {
 		// These isolations drift upwards to prepare for the next combo
 		// Drex actually does this a little earlier but it's way easier to model this way
 	orangePoi.addMove(moves.isolation({direction: COUNTERCLOCKWISE, entry: NINE, duration: 0.25}));
-	orangePoi.modifyTail({pivot_angle: TWELVE, pivot_rescale: 4});
+	orangePoi.modifyTail({pivot_angle: TWELVE, pivot_stretch: 4});
 	whitePoi.addMove(moves.isolation({direction: COUNTERCLOCKWISE, entry: THREE, duration: 0.25}));
-	whitePoi.modifyTail({pivot_angle: TWELVE, pivot_rescale: 4});
+	whitePoi.modifyTail({pivot_angle: TWELVE, pivot_stretch: 4});
 	//  Triquetra vs. Anti-pendulum
 		// Note that a hybrid anti-pendulum does a couple of weird things...
 			// The top half of it drifts up about half an extension
@@ -153,7 +153,7 @@ function canvasSetup() {
 		// The white poi drifts upward to prepare for a centered isolation.
 	orangePoi.addMove(moves.flower({orient: TWELVE, spin: ANTISPIN, petals: 3, extend: 0.5, entry: TWELVE, mode: DIAMOND, duration: 0.5}));
 	whitePoi.addMove(moves.antipendulum({direction: COUNTERCLOCKWISE, entry: TWELVE, duration: 0.5}));
-	whitePoi.modifyTail({helper_rescale: 2});
+	whitePoi.modifyTail({helper_stretch: 2});
 	
 	// Isolation vs. Horizontal Cat-Eye
 	orangePoi.addMove(moves.isolation({spin: CATEYE, entry: SIX}));
@@ -190,10 +190,10 @@ function canvasSetup() {
 		// We have to do some custom slicing and dicing to make the transition work	
 	orangePoi.addMove(moves.antipendulum({entry: NINE, pivot_angle: NINE, pivot_radius: 1, helper_radius: 0, swing: 1, duration: 0.25}));
 		// ??? Strange bug: workaround is to set helper_angle explicitly
-	orangePoi.modifyTail({helper_rescale: 6, helper_rescale_acc: -16, helper_angle: TWELVE});
+	orangePoi.modifyTail({helper_stretch: 6, helper_stretch_acc: -16, helper_angle: TWELVE});
 	orangePoi.addMove(moves.antipendulum({entry: TWELVE, pivot_angle: NINE, pivot_radius: 1, duration: 0.75}));
 	// And then a little more slicing and dicing to prepare for the point iso
-	orangePoi.modifyTail({prop_acc: 4, helper_rescale_acc: -16}); 
+	orangePoi.modifyTail({prop_acc: 4, helper_stretch_acc: -16}); 
 	// The white poi is much more straightforward
 	whitePoi.addMove(moves.isolation({spin: CATEYE, direction: COUNTERCLOCKWISE, entry: NINE, pivot_angle: NINE, pivot_radius: 1, duration: 1.5}));
 
@@ -207,9 +207,9 @@ function canvasSetup() {
 		// More custom slicing and dicing
 	whitePoi.addMove(moves.antipendulum({direction: COUNTERCLOCKWISE, entry: THREE, helper_radius: 0, swing: 1, duration: 0.25}));
 		//??? Again, workaround for that strange bug
-	whitePoi.modifyTail({helper_rescale: 6, helper_rescale_acc: -16, helper_angle: TWELVE});
+	whitePoi.modifyTail({helper_stretch: 6, helper_stretch_acc: -16, helper_angle: TWELVE});
 	whitePoi.addMove(moves.antipendulum({direction: COUNTERCLOCKWISE, entry: TWELVE, duration: 0.75}));
-	whitePoi.modifyTail({prop_acc: -4, helper_rescale_acc: -16});
+	whitePoi.modifyTail({prop_acc: -4, helper_stretch_acc: -16});
 	
 	// Point Iso v. Static Spin
 	orangePoi.addMove(moves.staticspin({hand: NINE, direction: COUNTERCLOCKWISE, extend: 0.5, duration: 0.5}));
@@ -220,8 +220,8 @@ function canvasSetup() {
 	whitePoi.addMove(moves.isolation({spin: CATEYE, direction: COUNTERCLOCKWISE, entry: NINE, pivot_angle: NINE, pivot_radius: 1, duration: 1.5}));
 	// Point Iso v. Static Spin
 		// The complicated pivot going on here makes it easier to just use generic movements
-	orangePoi.addMove(moves.generic({hand_angle: NINE, prop_angle: THREE, pivot_angle: NINE, pivot_radius: 1, pivot_rescale: -3, hand_radius: 0.5, hand_speed: -1, prop_speed: -1, duration: 0.5}));
-	whitePoi.addMove(moves.generic({hand_angle: THREE, prop_angle: NINE, pivot_angle: NINE, pivot_radius: 1, pivot_rescale: -3, hand_radius: 0.5, hand_speed: -1, prop_speed: -1, duration: 0.5}));
+	orangePoi.addMove(moves.generic({hand_angle: NINE, prop_angle: THREE, pivot_angle: NINE, pivot_radius: 1, pivot_stretch: -3, hand_radius: 0.5, hand_speed: -1, prop_speed: -1, duration: 0.5}));
+	whitePoi.addMove(moves.generic({hand_angle: THREE, prop_angle: NINE, pivot_angle: NINE, pivot_radius: 1, pivot_stretch: -3, hand_radius: 0.5, hand_speed: -1, prop_speed: -1, duration: 0.5}));
 
 	// Iso v. V. Cat-eye
 	orangePoi.addMove(moves.isolation({spin: CATEYE, entry: THREE, pivot_angle: THREE, pivot_radius: 0.5, duration: 1.5}));
@@ -230,10 +230,10 @@ function canvasSetup() {
 	// Pendulum v. Two-Petal transition
 		// The first "petal" weirdly pendulum-like and distorted so it's best handled as a generic move
 	orangePoi.addMove(moves.generic({hand_angle: NINE, prop_angle: THREE, hand_radius: 1, pivot_angle: THREE, pivot_radius: 1, hand_speed: 0, hand_acc: -8, prop_speed: 0, prop_acc: -24, duration: 0.25}));
-	orangePoi.addMove(moves.generic({hand_angle: SIX, prop_angle: SIX, hand_radius: 1, pivot_angle: THREE, pivot_radius: 1, hand_speed: -2, hand_acc: 8, prop_speed: -6, prop_acc: 24, duration: 0.25, pivot_rescale: -4}));
+	orangePoi.addMove(moves.generic({hand_angle: SIX, prop_angle: SIX, hand_radius: 1, pivot_angle: THREE, pivot_radius: 1, hand_speed: -2, hand_acc: 8, prop_speed: -6, prop_acc: 24, duration: 0.25, pivot_stretch: -4}));
 	whitePoi.addMove(moves.pendulum({extend: 0, duration: 0.5, entry: NINE, pivot_angle: THREE, pivot_radius: 1}));
 		// Put a bit of "isolation" into the pendulum to recenter it.
-	whitePoi.modifyTail({pivot_rescale: -4});
+	whitePoi.modifyTail({pivot_stretch: -4});
 	
 	
 	// Five repetitions of static pendulum vs. inside stalls
@@ -268,8 +268,8 @@ function canvasSetup() {
 	orangePoi.addMove(moves.staticspin({entry: NINE, direction: COUNTERCLOCKWISE, duration: 2.75}));
 	whitePoi.addMove(moves.flower({entry: NINE, mode: -QUARTER, petals: 1, direction: COUNTERCLOCKWISE, duration: 2.75}));
 	// At the end, drift down to do some crank isolations
-	orangePoi.modifyTail({pivot_angle: SIX, pivot_rescale: 2});
-	whitePoi.modifyTail({pivot_angle: SIX, pivot_rescale: 2});
+	orangePoi.modifyTail({pivot_angle: SIX, pivot_stretch: 2});
+	whitePoi.modifyTail({pivot_angle: SIX, pivot_stretch: 2});
 	
 	// One and a half beats of crank isolations
 	orangePoi.addMove(moves.isolation({entry: SIX, direction: COUNTERCLOCKWISE,duration: 1.5}));
@@ -290,16 +290,16 @@ function canvasSetup() {
 	whitePoi.addMove(moves.oval({direction: COUNTERCLOCKWISE, entry: SEVENTHIRTY, orient: FOURTHIRTY, duration: 0.5}));
 	
 	// This set of linear isolations is extremely distorted, and threw me for quite a loop
-	orangePoi.addMove(moves.generic({hand_angle: SEVENTHIRTY, prop_angle: ONETHIRTY, hand_radius: 0.5, hand_rescale: 2, prop_speed: -2, duration: 0.25}));
-	whitePoi.addMove(moves.generic({hand_angle: ONETHIRTY, prop_angle: SEVENTHIRTY, hand_radius: 0.5, hand_rescale: 2, prop_speed: -2, duration: 0.25}));
+	orangePoi.addMove(moves.generic({hand_angle: SEVENTHIRTY, prop_angle: ONETHIRTY, hand_radius: 0.5, hand_stretch: 2, prop_speed: -2, duration: 0.25}));
+	whitePoi.addMove(moves.generic({hand_angle: ONETHIRTY, prop_angle: SEVENTHIRTY, hand_radius: 0.5, hand_stretch: 2, prop_speed: -2, duration: 0.25}));
 	orangePoi.addMove(moves.oval({direction: COUNTERCLOCKWISE, petals: 1, minor: 0.075, entry: SEVENTHIRTY, orient: SEVENTHIRTY, duration: 0.25}));
 	whitePoi.addMove(moves.oval({direction: COUNTERCLOCKWISE, petals: 1, minor: 0.075, entry: ONETHIRTY, orient: ONETHIRTY, duration: 0.25}));
 	orangePoi.modifyTail({duration: 0.125});
 	whitePoi.modifyTail({duration: 0.125});
 	
 	// Another weird "linear" transition
-	orangePoi.addMove(moves.generic({hand_angle: SIX, prop_angle: FOURTHIRTY, hand_radius: 0.25, hand_rescale: 3, prop_speed: -3.5, duration: 0.25}));
-	whitePoi.addMove(moves.generic({hand_angle: TWELVE, prop_angle: TENTHIRTY, hand_radius: 0.25, hand_rescale: 3, prop_speed: -3.5, duration: 0.25}));
+	orangePoi.addMove(moves.generic({hand_angle: SIX, prop_angle: FOURTHIRTY, hand_radius: 0.25, hand_stretch: 3, prop_speed: -3.5, duration: 0.25}));
+	whitePoi.addMove(moves.generic({hand_angle: TWELVE, prop_angle: TENTHIRTY, hand_radius: 0.25, hand_stretch: 3, prop_speed: -3.5, duration: 0.25}));
 	
 	// True linear isolations
 	orangePoi.addMove(moves.linex({direction: COUNTERCLOCKWISE, petals: 2, entry: SIX, orient: SIX, duration: 0.5}));
@@ -318,8 +318,8 @@ function canvasSetup() {
 	whitePoi.addMove(moves.linex({direction: COUNTERCLOCKWISE, petals: 2, entry: SIX, orient: SIX, duration: 0.25}));
 	
 	// Finish with a spiral wrap
-	orangePoi.addMove(moves.spiral({speed: 2, direction: COUNTERCLOCKWISE, entry: THREE, rescale: -1.5,duration: 0.5}));
-	whitePoi.addMove(moves.spiral({speed: 2, direction: COUNTERCLOCKWISE, entry: NINE, rescale: -1.5, duration: 0.5}));
+	orangePoi.addMove(moves.spiral({speed: 2, direction: COUNTERCLOCKWISE, entry: THREE, stretch: -1.5,duration: 0.5}));
+	whitePoi.addMove(moves.spiral({speed: 2, direction: COUNTERCLOCKWISE, entry: NINE, stretch: -1.5, duration: 0.5}));
 	
 	// Finally, the madness is over!
 	vs.ready();

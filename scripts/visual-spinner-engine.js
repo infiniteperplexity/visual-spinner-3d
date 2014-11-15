@@ -1,3 +1,4 @@
+var global = (1,eval)("this");
 var VS3D = (function () {
 "use strict";
 //// Human-readable constants used by the VisualSpinner3D engine
@@ -66,7 +67,7 @@ var GUNSLINGER = Constants.GUNSLINGER = 0.5;
 
 //attempt to re-scope constants into another namespace
 Constants.rescope = function (scope) {
-	scope = scope || window;
+	scope = scope || global;
 	for (var c in this) {
 		if (scope[c] !== undefined && c !== "rescope") {
 			alert("Constant-naming conflict in enclosing namespace.  Must use explicit 'VS3D.Constant' reference for this session.");
@@ -80,7 +81,7 @@ Constants.rescope = function (scope) {
 	}
 }
 Constants.descope = function (scope) {
-	scope = scope || window;
+	scope = scope || global;
 	for (var c in this) {
 		if (c !== "rescope") {
 			scope[c] = undefined;
@@ -472,7 +473,7 @@ Prop.prototype.socket = function(plane) {
 			socket.elements[i].speed = 0;
 			socket.elements[i].linear_speed = 0;
 			socket.elements[i].linear_angle = 0;
-			socket.elements[i].rescale = 0;
+			socket.elements[i].stretch = 0;
 			// this is clearly not ideal...maybe there should be a pickValidPlane?
 			socket.elements[i].plane = plane;
 			socket.elements[i].angle = this.getElementAngle(i, plane);
@@ -542,8 +543,8 @@ function MoveLink() {
 			linear_angle: THREE,
 			linear_speed: 0,
 			linear_acc: 0,
-			rescale: 0,
-			rescale_acc: 0,
+			stretch: 0,
+			stretch_acc: 0,
 			plane: WALL,
 			radius: 0,
 			angle: THREE
@@ -585,8 +586,8 @@ MoveLink.prototype.modify = function(options) {
 	this.pivot.linear_angle = (options.pivot_linear_angle !== undefined) ? options.pivot_linear_angle : this.pivot.linear_angle;
 	this.pivot.linear_speed = (options.pivot_linear_speed !== undefined) ? options.pivot_linear_speed : this.pivot.linear_speed;
 	this.pivot.linear_acc = (options.pivot_linear_acc !== undefined) ? options.pivot_linear_acc : this.pivot.linear_acc;
-	this.pivot.rescale = (options.pivot_rescale !== undefined) ? options.pivot_rescale : this.pivot.rescale;
-	this.pivot.rescale_acc = (options.pivot_rescale_acc !== undefined) ? options.pivot_rescale_acc : this.pivot.rescale_acc;
+	this.pivot.stretch = (options.pivot_stretch !== undefined) ? options.pivot_stretch : this.pivot.stretch;
+	this.pivot.stretch_acc = (options.pivot_stretch_acc !== undefined) ? options.pivot_stretch_acc : this.pivot.stretch_acc;
 	this.helper.angle = (options.helper_angle!== undefined) ? options.helper_angle : this.helper.angle;
 	this.helper.plane = (options.helper_plane !== undefined) ? options.helper_plane : this.helper.plane;
 	this.helper.radius = (options.helper_radius !== undefined) ? options.helper_radius : this.helper.radius;
@@ -595,8 +596,8 @@ MoveLink.prototype.modify = function(options) {
 	this.helper.linear_angle = (options.helper_linear_angle !== undefined) ? options.helper_linear_angle : this.helper.linear_angle;
 	this.helper.linear_speed = (options.helper_linear_speed !== undefined) ? options.helper_linear_speed : this.helper.linear_speed;
 	this.helper.linear_acc = (options.helper_linear_acc !== undefined) ? options.helper_linear_acc : this.helper.linear_acc;
-	this.helper.rescale = (options.helper_rescale !== undefined) ? options.helper_rescale : this.helper.rescale;
-	this.helper.rescale_acc = (options.helper_rescale_acc !== undefined) ? options.helper_rescale_acc : this.helper.rescale_acc;
+	this.helper.stretch = (options.helper_stretch !== undefined) ? options.helper_stretch : this.helper.stretch;
+	this.helper.stretch_acc = (options.helper_stretch_acc !== undefined) ? options.helper_stretch_acc : this.helper.stretch_acc;
 	this.hand.angle = (options.hand_angle!== undefined) ? options.hand_angle : this.hand.angle;
 	this.hand.plane = (options.hand_plane !== undefined) ? options.hand_plane : this.hand.plane;
 	this.hand.radius = (options.hand_radius !== undefined) ? options.hand_radius : this.hand.radius;
@@ -605,8 +606,8 @@ MoveLink.prototype.modify = function(options) {
 	this.hand.linear_angle = (options.hand_linear_angle !== undefined) ? options.hand_linear_angle : this.hand.linear_angle;
 	this.hand.linear_speed = (options.hand_linear_speed !== undefined) ? options.hand_linear_speed : this.hand.linear_speed;
 	this.hand.linear_acc = (options.hand_linear_acc !== undefined) ? options.hand_linear_acc : this.hand.linear_acc;
-	this.hand.rescale = (options.hand_rescale !== undefined) ? options.hand_rescale : this.hand.rescale;
-	this.hand.rescale_acc = (options.hand_rescale_acc !== undefined) ? options.hand_rescale_acc : this.hand.rescale_acc;
+	this.hand.stretch = (options.hand_stretch !== undefined) ? options.hand_stretch : this.hand.stretch;
+	this.hand.stretch_acc = (options.hand_stretch_acc !== undefined) ? options.hand_stretch_acc : this.hand.stretch_acc;
 	this.prop.angle = (options.prop_angle!== undefined) ? options.prop_angle : this.prop.angle;
 	this.prop.plane = (options.prop_plane !== undefined) ? options.prop_plane : this.prop.plane;
 	this.prop.radius = (options.prop_radius !== undefined) ? options.prop_radius : this.prop.radius;
@@ -615,8 +616,8 @@ MoveLink.prototype.modify = function(options) {
 	this.prop.linear_angle = (options.prop_linear_angle !== undefined) ? options.prop_linear_angle : this.prop.linear_angle;
 	this.prop.linear_speed = (options.prop_linear_speed !== undefined) ? options.prop_linear_speed : this.prop.linear_speed;
 	this.prop.linear_acc = (options.prop_linear_acc !== undefined) ? options.prop_linear_acc : this.prop.linear_acc;
-	this.prop.rescale = (options.prop_rescale !== undefined) ? options.prop_rescale : this.prop.rescale;
-	this.prop.rescale_acc = (options.prop_rescale_acc !== undefined) ? options.prop_rescale_acc : this.prop.rescale_acc;
+	this.prop.stretch = (options.prop_stretch !== undefined) ? options.prop_stretch : this.prop.stretch;
+	this.prop.stretch_acc = (options.prop_stretch_acc !== undefined) ? options.prop_stretch_acc : this.prop.stretch_acc;
 	this.twist = (options.twist !== undefined) ? options.twist : this.twist;
 	this.twist_speed = (options.twist_speed !== undefined) ? options.twist_speed : this.twist_speed;
 	this.grip = (options.grip !== undefined) ? options.grip : this.grip;
@@ -656,8 +657,8 @@ MoveLink.prototype.spin = function(prop, dummy) {
 	// If we keep the default null "home" plane, we skip the entire "home" element
 	for (var i = HOME; i<=PROP; i++) {
 		if (this.elements[i].plane != null) {
-			// rescale
-			v = this.elements[i].rescale + this.elements[i].rescale_acc*this.t/BEAT;
+			// stretch
+			v = this.elements[i].stretch + this.elements[i].stretch_acc*this.t/BEAT;
 			prop.elements[i].radius += v/BEAT;
 			// rotation
 			v = this.elements[i].speed + this.elements[i].acc*this.t/BEAT;
@@ -762,8 +763,8 @@ MoveLink.prototype.clone = function() {
 		newlink.elements[i].linear_angle = this.elements[i].linear_angle;
 		newlink.elements[i].linear_speed = this.elements[i].linear_speed;
 		newlink.elements[i].linear_acc = this.elements[i].linear_acc;
-		newlink.elements[i].rescale = this.elements[i].rescale;
-		newlink.elements[i].rescale_acc = this.elements[i].rescale_acc;
+		newlink.elements[i].stretch = this.elements[i].stretch;
+		newlink.elements[i].stretch_acc = this.elements[i].stretch_acc;
 	}
 	newlink.duration = this.duration;
 	newlink.bend = this.bend;
@@ -809,7 +810,7 @@ MoveLink.prototype.socket = function() {
 		socket.elements[i].speed = this.elements[i].speed + this.duration * this.elements[i].acc;
 		socket.elements[i].linear_speed = this.elements[i].linear_speed + this.duration * this.elements[i].linear_acc;
 		socket.elements[i].linear_angle = this.elements[i].linear_angle;
-		socket.elements[i].rescale = this.elements[i].rescale + this.duration * this.elements[i].rescale_acc;
+		socket.elements[i].stretch = this.elements[i].stretch + this.duration * this.elements[i].stretch_acc;
 		if (this.elements[i].plane != null) {
 			if (this.elements[i].angle !== null) {
 				socket.elements[i].angle = dummy.getElementAngle(i, this.elements[i].plane);
@@ -1236,13 +1237,34 @@ Prop.prototype.apply = function(json) {
 	this.axis = definition.axis;
 	this.propname = definition.propname;
 }
+Prop.prototype.build = function(json) {
+	var definition = PropFactory.prototype.parse(json);
+	for (var i = HOME; i<=PROP; i++) {
+		this[ELEMENTS[i]].radius = definition[ELEMENTS[i]].radius;
+		this[ELEMENTS[i]].azimuth = definition[ELEMENTS[i]].azimuth;
+		this[ELEMENTS[i]].zenith = definition[ELEMENTS[i]].zenith;
+	}
+	this.twist = definition.twist;
+	this.grip = definition.grip;
+	this.choke = definition.choke;
+	this.bend = definition.bend;
+	if (definition.axis !== null) {
+		this.axis = new Vector(definition.axis.x, definition.axis.y, definition.axis.z);
+	}
+	this.axis = definition.axis;
+	this.propname = definition.propname;
+	this.propType = definition.propType;
+	this.color = definition.color;
+	this.fire = definition.fire;
+}
 Prop.prototype.applyMoves = function(json) {
 	this.emptyMoves();
 	var definition = PropFactory.prototype.parse(json);
 	var jmove;
 	for (var i = 0; i<definition.moves.length; i++) {
 		jmove = JSON.stringify(definition.moves[i]);
-		this.addMove(MoveFactory.prototype.build(jmove));
+		jmove = MoveFactory.prototype.build(jmove);
+		this.addMove(jmove);
 	}
 }
 
@@ -1267,11 +1289,14 @@ Prop.prototype.stringify = function() {
 	definition.choke = this.choke;
 	definition.bend = this.bend;
 	definition.axis = this.axis;
+	definition.propType = this.propType;
+	definition.color = this.color;
+	definition.fire = this.fire;
 	definition.moves = [];
 	for (var i = 0; i<this.move.submoves.length; i++) {
-		definition.moves[i] = this.move.submoves[i].definition;
+		definition.moves[i] = this.move.submoves[i].define();
 	}
-	return JSON.stringify(definition);
+	return JSON.stringify(definition,undefined,2);
 }
 
 MoveFactory.prototype.parse = function(json) {
@@ -1284,7 +1309,8 @@ MoveFactory.prototype.parse = function(json) {
 }
 MoveFactory.prototype.build = function(json) {
 	var definition = this.parse(json);
-	var move = this[definition.build](definition);
+	if (definition.recipe == undefined) {alert(json);}
+	var move = this[definition.recipe](definition);
 	if (definition.abrupt !== undefined) {
 		move.setAbrupt(definition.abrupt);
 	}
@@ -1298,13 +1324,39 @@ MoveFactory.prototype.build = function(json) {
 }
 MoveLink.prototype.stringify = function() {
 	if (this.definition !== undefined) {
-		return JSON.stringify(this.definition);
+		return JSON.stringify(this.define(),undefined,2);
 	}
 }
 MoveChain.prototype.stringify = function() {
 	if (this.definition !== undefined) {
-		return JSON.stringify(this.definition);
+		return JSON.stringify(this.define(),undefined,2);
 	}
+}
+MoveLink.prototype.define = function() {
+	this.definition.recipe = this.recipe;
+	this.definition.movename = this.movename;
+	return this.definition;
+}
+MoveChain.prototype.define = function() {
+	this.definition.recipe = this.recipe;
+	this.definition.movename = this.movename;
+	return this.definition;
+}
+MoveChain.prototype.modifyTail = function(options) {
+	var tail = this.tail();
+	var parent = tail.parent;
+	if (parent !== this.move && parent.definition !== undefined) {
+		parent.definition.modify_tail = options;
+	}
+	tail.modify(options);
+}
+MoveLink.prototype.modifyTail = function(options) {
+	var tail = this;
+	var parent = tail.parent;
+	if (parent !== this.move && parent.definition !== undefined) {
+		parent.definition.modify_tail = options;
+	}
+	tail.modify(options);
 }
 function isValidJSON(str) {
     try {
@@ -1323,7 +1375,7 @@ return {
 	Vector: function(x,y,z) {return new Vector(x,y,z);},
 	Spherical: function(r,z,a) {return new Spherical(r,z,a);},
 	Constants: Constants,
-	Utilities: {unwind, nearly, isValidJSON},
+	Utilities: {unwind: unwind, nearly: nearly, isValidJSON: isValidJSON},
 	spinfail: Prop.prototype.spinfail
 }
 })();
