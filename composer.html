@@ -215,11 +215,11 @@ function modifyMove(event) {
 	addInput(which,selectInput(definition,"petals2",["Zero","One", "Two", "Three", "Four"],[0,1,2,3,4]));
 	addInput(which,selectInput(definition,"harmonics",["Zero","One", "Two", "Three", "Four"],[0,1,2,3,4]));
 	addInput(which,numberInput(definition,"extend",[0,1,0.5]));
-	addInput(which,selectInput(definition,"mode",["Diamond","Box"],[DIAMOND, BOX]));
+	addInput(which,selectInput(definition,"mode",["Diamond","Box","Drag","Follow"],[DIAMOND, BOX, DRAG, FOLLOW]));
 	addInput(which,selectInput(definition,"offset",["Offset","No Offset"],[OFFSET, NOOFFSET]));
 	addInput(which,numberInput(definition,"duration",[0.25,2,0.25]));
 	addInput(which,selectInput(definition,"pivot_angle",["Up","Right","Down","Left"],[TWELVE, THREE, SIX, NINE]));
-	addInput(which,numberInput(definition,"pivot_radius",[0,1,0.5]));
+	addInput(which,numberInput(definition,"pivot_radius",[0,1.5,0.5]));
 	addInput(which,vectorInput(definition,"plane",["Wall","Wheel","Floor"],[WALL, WHEEL, FLOOR]));
 	addInput(which,selectInput(definition,"helper_angle",["Up","Right","Down","Left"],[TWELVE, THREE, SIX, NINE]));
 	addInput(which,numberInput(definition,"helper_radius",[0,1,0.5]));
@@ -245,20 +245,18 @@ function viewMove(event) {
 	addInput(which,selectInput(definition,"spin2",["In-Spin","Anti-Spin"],[INSPIN, ANTISPIN]));
 	addInput(which,selectInput(definition,"bend",["Iso-Bend","Anti-Bend","Pro-Bend"],[ISOBEND, ANTIBEND, PROBEND]));
 	addInput(which,selectInput(definition,"pitch",["Forward","Backward"],[FORWARD, BACKWARD]));
-	addInput(which,selectInput(definition,"rescale",["Inward","Outward"],[-1, 1]));
+	addInput(which,selectInput(definition,"stretch",["Inward","Outward"],[-1, 1]));
 	addInput(which,selectInput(definition,"petals",["Zero","One", "Two", "Three", "Four"],[0,1,2,3,4]));
 	addInput(which,selectInput(definition,"petals1",["Zero","One", "Two", "Three", "Four"],[0,1,2,3,4]));
 	addInput(which,selectInput(definition,"petals2",["Zero","One", "Two", "Three", "Four"],[0,1,2,3,4]));
 	addInput(which,selectInput(definition,"harmonics",["Zero","One", "Two", "Three", "Four"],[0,1,2,3,4]));
 	addInput(which,numberInput(definition,"extend",[0,1,0.5]));
-	addInput(which,selectInput(definition,"mode",["Diamond","Box"],[DIAMOND, BOX]));
+	addInput(which,selectInput(definition,"mode",["Diamond","Box","Drag","Follow"],[DIAMOND, BOX, DRAG, FOLLOW]));
 	addInput(which,selectInput(definition,"offset",["Offset","No Offset"],[OFFSET, NOOFFSET]));
 	addInput(which,numberInput(definition,"duration",[0.25,2,0.25]));
 	addInput(which,selectInput(definition,"pivot_angle",["Up","Right","Down","Left"],[TWELVE, THREE, SIX, NINE]));
-	addInput(which,numberInput(definition,"pivot_radius",[0,1,0.5]));
+	addInput(which,numberInput(definition,"pivot_radius",[0,1.5,0.5]));
 	addInput(which,vectorInput(definition,"plane",["Wall","Wheel","Floor"],[WALL, WHEEL, FLOOR]));
-	addInput(which,selectInput(definition,"helper_angle",["Up","Right","Down","Left"],[TWELVE, THREE, SIX, NINE]));
-	addInput(which,numberInput(definition,"helper_radius",[0,1,0.5]));
 	addInput(which,numberInput(definition,"lift",[0,0.5,0.5]));
 	addInput(which,numberInput(definition,"swing",[0.75,1,0.25]));
 	addInput(which,selectInput(definition,"hybrid",["Pendulum-y","Flower-y"],[true, false]));
@@ -417,7 +415,7 @@ function popExport() {
 	$("#popexport").toggle();
 	var blue = propOne.stringify();
 	var red = propTwo.stringify();
-	$("#popexport textarea").html('{"one": '+blue+', "two": '+red+"}");
+	$("#popexport textarea").html('{"prop1": '+blue+', "prop2": '+red+"}");
 }
 function popImport() {
 	$("#popexport").hide();
@@ -500,16 +498,16 @@ function importSubmit() {
 	var imported = $("#popimport textarea").val();
 	imported = props.parse(imported);
 	emptyQueues();
-	props.setPosition(propOne, JSON.stringify(imported.one));
-	props.setPosition(propTwo, JSON.stringify(imported.two));
-	propOne.apply(JSON.stringify(imported.one));
-	propTwo.apply(JSON.stringify(imported.two));
+	props.setPosition(propOne, JSON.stringify(imported.prop1));
+	props.setPosition(propTwo, JSON.stringify(imported.prop2));
+	propOne.apply(JSON.stringify(imported.prop1));
+	propTwo.apply(JSON.stringify(imported.prop2));
 	vs.ready();
-	for (var i = 0; i < imported.one.moves.length; i++) {
-		addMoveToQueue(JSON.stringify(imported.one.moves[i]), $("#queue1 ul").get(0));
+	for (var i = 0; i < imported.prop1.moves.length; i++) {
+		addMoveToQueue(JSON.stringify(imported.prop1.moves[i]), $("#queue1 ul").get(0));
 	}
-	for (var i = 0; i < imported.two.moves.length; i++) {
-		addMoveToQueue(JSON.stringify(imported.two.moves[i]), $("#queue2 ul").get(0));
+	for (var i = 0; i < imported.prop2.moves.length; i++) {
+		addMoveToQueue(JSON.stringify(imported.prop2.moves[i]), $("#queue2 ul").get(0));
 	}
 	$("#popimport").toggle();
 	predict();

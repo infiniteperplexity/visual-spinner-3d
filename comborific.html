@@ -184,13 +184,11 @@ function canvasSetup() {
 
 	// Pivoted Cat-Eyes vs. Anti-Pendulums
 		// ...attention folks, the storm clouds are about to roll in...
-	
 	// The orange poi turns half an isolation and then does an anti-pendulum
 	orangePoi.addMove(moves.isolation({direction: COUNTERCLOCKWISE, entry: THREE, pivot_angle: NINE, pivot_radius: 1, duration: 0.5}));
 		// We have to do some custom slicing and dicing to make the transition work	
-	orangePoi.addMove(moves.antipendulum({entry: NINE, pivot_angle: NINE, pivot_radius: 1, helper_radius: 0, swing: 1, duration: 0.25}));
-		// ??? Strange bug: workaround is to set helper_angle explicitly
-	orangePoi.modifyTail({helper_stretch: 6, helper_stretch_acc: -16, helper_angle: TWELVE});
+	orangePoi.addMove(moves.antipendulum({entry: NINE, pivot_angle: NINE, pivot_radius: 1, swing: 1, duration: 0.25}));
+	orangePoi.modifyTail({helper_radius: 0, helper_stretch: 6, helper_stretch_acc: -16});
 	orangePoi.addMove(moves.antipendulum({entry: TWELVE, pivot_angle: NINE, pivot_radius: 1, duration: 0.75}));
 	// And then a little more slicing and dicing to prepare for the point iso
 	orangePoi.modifyTail({prop_acc: 4, helper_stretch_acc: -16}); 
@@ -205,9 +203,8 @@ function canvasSetup() {
 	orangePoi.addMove(moves.isolation({spin: CATEYE, entry: THREE, duration: 1.5}));
 	whitePoi.addMove(moves.isolation({entry: NINE, duration: 0.5}));
 		// More custom slicing and dicing
-	whitePoi.addMove(moves.antipendulum({direction: COUNTERCLOCKWISE, entry: THREE, helper_radius: 0, swing: 1, duration: 0.25}));
-		//??? Again, workaround for that strange bug
-	whitePoi.modifyTail({helper_stretch: 6, helper_stretch_acc: -16, helper_angle: TWELVE});
+	whitePoi.addMove(moves.antipendulum({direction: COUNTERCLOCKWISE, entry: THREE, swing: 1, duration: 0.25}));
+	whitePoi.modifyTail({helper_radius: 0, helper_stretch: 6, helper_stretch_acc: -16});
 	whitePoi.addMove(moves.antipendulum({direction: COUNTERCLOCKWISE, entry: TWELVE, duration: 0.75}));
 	whitePoi.modifyTail({prop_acc: -4, helper_stretch_acc: -16});
 	

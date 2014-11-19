@@ -48,6 +48,8 @@ var TOGETHER = Constants.TOGETHER = 0;
 var OPPOSITE = Constants.OPPOSITE = Math.PI;
 var DIAMOND = Constants.DIAMOND = 0;
 var BOX = Constants.BOX = Math.PI;
+var DRAG = Constants.DRAG = 1.5*Math.PI;
+var FOLLOW = Constants.FOLLOW = 0.5*Math.PI;
 var NOOFFSET = Constants.NOOFFSET = 0;
 var OFFSET = Constants.OFFSET = Math.PI;
 var CLOCKWISE = Constants.CLOCKWISE = 1;

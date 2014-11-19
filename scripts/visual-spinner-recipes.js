@@ -3,8 +3,11 @@ VS3D.Constants.rescope();
 var recipes = {};
 recipes.add = function(recipe) {recipes[recipe.movename] = recipe;}
 recipes.add({movename: "Static Spin", recipe: "staticspin", orient: THREE, entry: THREE, hand: THREE, extend: 0, duration: 1,direction: CLOCKWISE, plane: WALL, pivot_angle: THREE, pivot_radius: 0});
+recipes.add({movename: "Hold", recipe: "staticspin", speed: 0, orient: THREE, entry: THREE, hand: THREE, extend: 0, duration: 1,direction: CLOCKWISE, plane: WALL, pivot_angle: THREE, pivot_radius: 0});
 recipes.add({movename: "Extension", recipe: "flower", spin: INSPIN, petals: 0, orient: THREE, entry: THREE, duration: 1, extend: 1, direction: CLOCKWISE, plane: WALL, pivot_angle: THREE, pivot_radius: 0});
-recipes.add({movename: "Point Isolation", mode: BOX, recipe: "flower", spin: INSPIN, petals: 0, orient: THREE, entry: THREE, duration: 1, extend: 1, direction: CLOCKWISE, pivot_angle: THREE, pivot_radius: 0});	
+recipes.add({movename: "Point Isolation", mode: BOX, recipe: "flower", spin: INSPIN, petals: 0, orient: THREE, entry: THREE, duration: 1, extend: 1, direction: CLOCKWISE, pivot_angle: THREE, pivot_radius: 0});
+recipes.add({movename: "Drag Stall", mode: DRAG, recipe: "flower", spin: INSPIN, petals: 0, orient: THREE, entry: THREE, duration: 1, extend: 1, direction: CLOCKWISE, pivot_angle: THREE, pivot_radius: 0});
+recipes.add({movename: "Follow Stall", mode: FOLLOW, recipe: "flower", spin: INSPIN, petals: 0, orient: THREE, entry: THREE, duration: 1, extend: 1, direction: CLOCKWISE, pivot_angle: THREE, pivot_radius: 0});	
 recipes.add({movename: "One-Petal In-Spin Flower", recipe: "flower", spin: INSPIN, petals: 1, orient: THREE, entry: THREE, duration: 1, extend: 1, direction: CLOCKWISE, mode: DIAMOND, plane: WALL, pivot_angle: THREE, pivot_radius: 0});	
 recipes.add({movename: "Two-Petal In-Spin Flower", recipe: "flower", spin: INSPIN, petals: 2, orient: THREE, entry: THREE, duration: 1, extend: 1, direction: CLOCKWISE, mode: DIAMOND, plane: WALL, pivot_angle: THREE, pivot_radius: 0});	
 recipes.add({movename: "Four-Petal In-Spin Flower", recipe: "flower", spin: INSPIN, petals: 4, orient: THREE, entry: THREE, duration: 1, extend: 1, direction: CLOCKWISE, mode: DIAMOND, plane: WALL, pivot_angle: THREE, pivot_radius: 0});	
@@ -12,7 +15,7 @@ recipes.add({movename: "Three-Petal Anti-Spin Flower", recipe: "flower", spin: A
 recipes.add({movename: "Four-Petal Anti-Spin Flower", recipe: "flower", spin: ANTISPIN, petals: 4, orient: THREE, entry: THREE, duration: 1, extend: 1, direction: CLOCKWISE, mode: DIAMOND, plane: WALL, pivot_angle: THREE, pivot_radius: 0});	
 recipes.add({movename: "Pendulum", recipe: "pendulum", entry: SIX, orient: SIX, duration: 1, extend: 1, direction: CLOCKWISE, spin: INSPIN, plane: WALL, pivot_angle: THREE, pivot_radius: 0, helper_radius: 0, lift: 0, swing: 1, hybrid: false});	
 recipes.add({movename: "1.5", recipe: "onepointfive", entry: SIX, orient: SIX, duration: 1, extend: 1, direction: CLOCKWISE, spin: INSPIN, plane: WALL, pivot_angle: THREE, pivot_radius: 0,  helper_radius: 0, lift: 0, swing: 1, hybrid: false});
-recipes.add({movename: "Anti-Pendulum", recipe: "antipendulum", entry: SIX, orient: SIX, extend: 0.5, duration: 1, direction: CLOCKWISE, spin: ANTISPIN, pivot_angle: THREE, helper_radius: 0.5, pivot_radius: 0, lift: 0.5, swing: 0.75, hybrid: false});
+recipes.add({movename: "Anti-Pendulum", recipe: "antipendulum", entry: SIX, orient: SIX, extend: 0.5, duration: 1, direction: CLOCKWISE, spin: ANTISPIN, pivot_angle: THREE, pivot_radius: 0, lift: 0.5, swing: 0.75, hybrid: false});
 recipes.add({movename: "C-CAP", recipe: "ccap", entry: THREE, orient: THREE, direction: CLOCKWISE, petals1: 0, petals2: 4, spin1: INSPIN, spin2: ANTISPIN, duration: 1, extend: 1, plane: WALL, pivot_angle: THREE, pivot_radius: 0});
 recipes.add({movename: "Isolation", recipe: "isolation", orient: THREE, entry: THREE, direction: CLOCKWISE, spin: INSPIN, duration: 1, plane: WALL, offset: OFFSET, pivot_angle: THREE, pivot_radius: 0});
 recipes.add({movename: "Cat-Eye", recipe: "cateye", orient: THREE, entry: THREE, direction: CLOCKWISE, spin: ANTISPIN, duration: 1, plane: WALL, offset: OFFSET, pivot_angle: THREE, pivot_radius: 0});

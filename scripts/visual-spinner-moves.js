@@ -46,6 +46,8 @@ var TOGETHER = Constants.TOGETHER;
 var OPPOSITE = Constants.OPPOSITE;
 var DIAMOND = Constants.DIAMOND;
 var BOX = Constants.BOX;
+var DRAG = Constants.DRAG;
+var FOLLOW = Constants.FOLLOW;
 var NOOFFSET = Constants.NOOFFSET;
 var OFFSET = Constants.OFFSET;
 var CLOCKWISE = Constants.CLOCKWISE;
@@ -187,7 +189,7 @@ MoveFactory.prototype.flower = function(options) {
 	segment.hand.radius = options.extend;
 	
 	segment.hand.angle = options.orient;
-	segment.prop.angle = options.orient + options.mode;
+	segment.prop.angle = options.orient + options.direction*options.mode;
 	segment.duration = 1/options.sliceby;
 	move.add(segment);
 	for (var i = 1; i<options.sliceby; i++) {
@@ -330,10 +332,8 @@ MoveFactory.prototype.pendulum = function(options) {
 		speed: 1,
 		extend: 1, 
 		spin: INSPIN,
-		pivot_angle: THREE,
+		pivot_angle: TWELVE,
 		pivot_radius: 0,
-		helper_angle: TWELVE,
-		helper_radius: 0,
 		duration: 1,
 		phase: 0,
 		// governs whether the hand path is "pendulous" or not
@@ -350,8 +350,8 @@ MoveFactory.prototype.pendulum = function(options) {
 	segment.pivot.radius = options.pivot_radius;
 	segment.pivot.plane = options.plane;
 	segment.pivot.speed = 0;
-	segment.helper.angle = options.helper_angle;
-	segment.helper.radius = options.helper_radius;
+	segment.helper.angle = TWELVE;
+	segment.helper.radius = options.lift;
 	segment.helper.plane = options.plane;
 	segment.helper.speed = 0;
 	segment.duration = 0.25;
@@ -407,7 +407,6 @@ MoveFactory.prototype.antipendulum = function(options) {
 	options = this.defaults(options,{
 		recipe: "antipendulum",
 		movename: "Anti-Pendulum",
-		helper_radius: 0.5,
 		lift: 0.5,
 		swing: 0.75,
 		spin: ANTISPIN,
@@ -498,7 +497,7 @@ MoveFactory.prototype.oval = function(options) {
 	segment.hand.plane = options.plane;
 	segment.hand.angle = options.orient;
 	if (options.mode != null) {
-		segment.prop.angle = options.orient + options.mode;
+		segment.prop.angle = options.orient + options.direction*options.mode;
 	}
 	segment.duration = 0.25;
 	move.add(segment);
@@ -565,7 +564,7 @@ MoveFactory.prototype.linex = function(options) {
 	segment.hand.speed = 0;
 	segment.prop.plane = options.plane;
 	segment.hand.plane = options.plane;
-	segment.prop.angle = options.orient + options.mode;
+	segment.prop.angle = options.orient + options.direction*options.mode;
 	segment.duration = 0.25;
 	move.add(segment);
 	move.tail().hand.angle = options.orient;
@@ -836,7 +835,8 @@ MoveFactory.prototype.toroid = function(options) {
         segment.hand.radius = options.extend;
        
         segment.hand.angle = options.orient;
-        segment.prop.angle = options.orient + options.mode;
+        segment.prop.angle = options.orient;
+        segment.bend = options.direction*options.mode;
         segment.duration = 1/options.sliceby;
         move.add(segment);
         for (var i = 1; i<options.sliceby; i++) {
@@ -874,9 +874,9 @@ MoveFactory.prototype.isobend = function(options) {
         });
 	var segment = VS3D.MoveLink();
 	segment.pivot.radius = options.pivot_radius;
-        segment.pivot.plane = options.plane;
+    segment.pivot.plane = options.plane;
 	segment.pivot.angle = options.pivot_angle;
-        segment.pivot.speed = 0;
+    segment.pivot.speed = 0;
 	
 	segment.prop.bend = 0;
 	segment.bend_speed = options.harmonics*options.pitch*options.speed;
@@ -1398,7 +1398,7 @@ MoveFactory.prototype.spirograph = function(options) {
 		extend: 1,
 		speed: 1,
 		mode: DIAMOND,
-		pivot_angle: THREE,
+		pivot_angle: TWELVE,
 		pivot_radius: 0,
 		duration: 1
 	});
@@ -1441,7 +1441,7 @@ MoveFactory.prototype.generic = function(options) {
 		movename: "(fully generic movement)",
 		// I think I can get away with being lazy and not adding defaults for "helper"
 		home_angle: null,
-		pivot_angle: THREE,
+		pivot_angle: TWELVE,
 		helper_angle: THREE,
 		hand_angle: THREE,
 		prop_angle: THREE,
