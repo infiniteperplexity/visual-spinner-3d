@@ -1,0 +1,107 @@
+<!--Distributed under GNU Public License version 3-->
+<!DOCTYPE html>
+<html><head>
+<style>
+body {margin: 0; padding: 0; background-color: #679}
+h1, h2, header p {text-align: center}
+header {width: 1840px; height: 100px}
+#content {width: 1800px; height: 510px;}
+canvas {width: 400px; height: 400px; background-color: #000;}
+section {margin: 0; padding: 0}
+header, section div {vertical-align: top; padding: 2.5px; border: 5px solid gray; margin: -2.5px; display: inline-block;}
+#display {width: 400px; height: 400px; float: left}
+#popimport {height: 240px; width: 400px}
+#frameN {width: 100px}
+</style>
+
+
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Drex's "combo-rific" video modeled in VisualSpinner, by Glenn Wright)</title>
+<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="scripts/gl-matrix-min.js"></script>
+<script src="scripts/phoria-min.js"></script>
+<script src="scripts/requestAnimationFrame.js"></script>
+<script src="scripts/visual-spinner-engine.js"></script>
+<script src="scripts/visual-spinner-moves.js"></script>
+<script src="scripts/visual-spinner-ui.js"></script>
+<script>
+// set parameters
+VS3D.Constants.rescope();
+
+var view2d = false;
+
+var myProps = new Array(); 
+var moves = VS3D.MoveFactory();
+var props = VS3D.PropFactory();
+
+function init() {
+	canvasSetup();
+}
+
+var vs;
+function canvasSetup() {
+	vs = VS3D.VisualSpinnerWidget();
+	vs.embedById("display");
+	var onePoi = vs.addProp();
+	var twoPoi = vs.addProp();
+	var threePoi = vs.addProp();
+	onePoi.color = "0,150,150";
+	twoPoi.color = "white";
+	threePoi.color = "150,150,0";
+	vs.addControls("play","pause","rewind","frame","forward","reset","2d3d");
+	//$("#display select").val("2d");
+	//$("#display select").get(0).onchange.apply($("#display select").get(0));
+	//$(vs).children("select").val("2d");
+	//window.addEventListener("keydown", listenForKey, false);
+	
+	
+	// set up props
+	onePoi.hand.radius = 1;
+	onePoi.setHandAngle(SIX);
+	onePoi.setPropAngle(SIX);
+	twoPoi.hand.radius = 1;
+	twoPoi.setHandAngle(SIX);
+	twoPoi.setPropAngle(SIX);
+	twoPoi.nudge(-0.1,0,0.1);
+	threePoi.hand.radius = 1;
+	threePoi.setHandAngle(SIX);
+	threePoi.setPropAngle(SIX);
+	threePoi.nudge(0.1,0,-0.1);
+	
+	onePoi.addMove(moves.extension({duration: 0.25, orient: SIX, entry: SIX}));
+	onePoi.addMove(moves.staticspin({hand: NINE, extend: 1, speed: 2, duration: 0.5}));
+	twoPoi.addMove(moves.extension({duration: 0.25, orient: SIX, entry: SIX}));
+	twoPoi.addMove(moves.isolation({pivot_angle: NINE, pivot_radius: 1.5, speed: 2, duration: 0.5}));
+	threePoi.addMove(moves.flower({petals: 1, orient: SIX, entry: SIX}));
+	vs.ready();
+}
+
+
+function listenForKey(e) {
+	if (e.keyCode===37) {
+		vs.rewind(12);
+	} else if (e.keyCode===39) {
+		vs.forward(12);
+	}
+}
+
+
+</script>
+</head>
+<body onload="init();">
+<header>
+	<h1>Welcome to VisualSpinner3D. </h1>
+	<p>(we have successfully digitized Timmehtek.)</p>
+</header>
+	<section>
+<div id="display">
+</div>
+<div id="vid">
+	<video id="drex" width="1000px" controls>
+		<source src="timmehtek.mp4" type="video/mp4">
+		Your browser does not support HTML5 video.
+	</video>
+</div>
+
+</section>
+</body></html>
