@@ -1700,55 +1700,45 @@ MoveFactory.prototype.stall = function(options) {
 }
 
 
-MoveFactory.prototype.verticaltoss = function(options) {
-	var move = VS3D.MoveChain();
-	move.definition = options;
-	
+MoveFactory.prototype.toss = function(options) {
+	var segment = VS3D.MoveLink();
+	segment.definition = options;
 	options = this.defaults(options,{
-		recipe: "verticaltoss",
+		recipe: "toss",
 		movename: "Vertical Toss",
 		speed: 0.5,
 		duration: 1,
-		gravity: 20,
+		gravity: 50,
 		direction: CLOCKWISE,
-		hand: THREE,
+		orient: NINE,
+		entry: NINE,
 		extend: 0,
 		plane: WALL,
-		entry: THREE,
-		pivot_angle: 0,
-		pivot_radius: 0
+		pivot_radius: 0,
+		pivot_angle: THREE,
+		drift: 0
 	});
-	var segment = VS3D.MoveLink();
+	segment.choke = 0.5;
+	segment.hand.speed = 0;
+	segment.prop.speed = options.direction*options.speed;
+	
+	segment.hand.angle = options.orient;
+	segment.hand.radius = options.extend + 0.5;
+	segment.prop.angle = options.entry;
+	segment.helper.linear_angle = TWELVE;
+	var CORRECTION = 0.93; // there seems to be a rounding error if I don't include this
+	segment.helper.linear_speed = (0.5*options.gravity*options.duration)*CORRECTION;
+	segment.helper.linear_acc = -options.gravity;
 	segment.pivot.angle = options.pivot_angle;
 	segment.pivot.radius = options.pivot_radius;
+	segment.pivot.linear_angle = THREE;
+	segment.pivot.linear_speed = options.drift;
 	
-	segment.hand.angle = options.hand;
-	segment.hand.radius = options.extend;
-	segment.grip.radius = 0.5;
-	
-	if (options.entry != null) {
-		segment.prop.angle = options.entry;
-		segment.hand.angle = options.entry;
-	}
-	segment.pivot.plane = options.plane;
-	segment.pivot.speed = 0;
-	segment.pivot.linear_angle = TWELVE;
-	segment.pivot.linear_speed = 0.5*options.gravity*options.duration;
-	segment.pivot.linear_acc = -options.gravity;
-	
-	segment.prop.speed = options.direction*options.speed;
-	segment.hand.speed = 0;
-	segment.grip.plane = options.plane;
-	segment.prop.plane = options.plane;
-	segment.hand.plane = options.plane;
-	
-
 	segment.duration = options.duration;
 	
-	move.add(segment);
-	move.recipe = options.recipe;
-	move.movename = options.movename;
-	return move;
+	segment.movename = options.movename;
+	segment.definition.recipe = options.recipe;
+	return segment;
 }
 
 return VS3D;
