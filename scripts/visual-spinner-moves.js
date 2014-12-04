@@ -79,7 +79,7 @@ MoveFactory.prototype.staticspin= function(options) {
 		recipe: "staticspin",
 		movename: "Static Spin",
 		entry: THREE,
-		hand: THREE,
+		orient: THREE,
 		extend: TINY,
 		plane: WALL,
 		direction: CLOCKWISE,
@@ -98,7 +98,7 @@ MoveFactory.prototype.staticspin= function(options) {
 	
 	segment.hand.plane = options.plane;
 	segment.hand.radius = options.extend;
-	segment.hand.angle = options.hand;
+	segment.hand.angle = options.orient;
 	segment.hand.speed = 0;
 	segment.prop.angle = options.entry;
 	segment.prop.plane = options.plane;
@@ -116,6 +116,7 @@ MoveFactory.prototype.staticspin= function(options) {
 		}
 	}
 	move.recipe = options.recipe;
+	move.definition.recipe = options.recipe;
 	move.movename = options.movename;
 	return move;
 }
@@ -149,6 +150,7 @@ MoveFactory.prototype.superman = function(options) {
 	//move.tail().prop.acc = 16*options.speed*options.direction;
 	move.recipe = options.recipe;
 	move.movename = options.movename;
+	move.definition.recipe = options.recipe;
 	return move;
 }
 
@@ -204,6 +206,7 @@ MoveFactory.prototype.flower = function(options) {
 		}
 	}
 	move.recipe = options.recipe;
+	move.definition.recipe = options.recipe;
 	move.movename = options.movename;
 	return move;
 }
@@ -315,6 +318,7 @@ MoveFactory.prototype.ccap = function(options) {
 		}
 	}
 	move.recipe = options.recipe;
+	move.definition.recipe = options.recipe;
 	move.movename = options.movename;
 	return move;
 }
@@ -399,6 +403,7 @@ MoveFactory.prototype.pendulum = function(options) {
 		}
 	}
 	move.recipe = options.recipe;
+	move.definition.recipe = options.recipe;
 	move.movename = options.movename;
 	return move;
 }
@@ -456,6 +461,7 @@ MoveFactory.prototype.isopendulum = function(options) {
 	segment.prop.angle = (options.direction == CLOCKWISE) ? options.orient - QUARTER : options.orient + QUARTER;
 	segment.hand.angle = segment.prop.angle + OFFSET;
 	segment.recipe = options.recipe;
+	segment.definition.recipe = options.recipe;
 	segment.movename = options.movename;
 	return segment;
 }
@@ -527,6 +533,7 @@ MoveFactory.prototype.oval = function(options) {
 		}
 	}
 	move.recipe = options.recipe;
+	move.definition.recipe = options.recipe;
 	move.movename = options.movename;
 	return move;
 }
@@ -608,6 +615,7 @@ MoveFactory.prototype.linex = function(options) {
 		}
 	}
 	move.recipe = options.recipe;
+	move.definition.recipe = options.recipe;
 	move.movename = options.movename;
 	return move;
 }
@@ -669,6 +677,7 @@ MoveFactory.prototype.old_linex = function(options) {
 		}
 	}
 	move.recipe = options.recipe;
+	move.definition.recipe = options.recipe;
 	move.movename = options.movename;
 	if (options.harmonics == 2) {
 		move.definition.movename = "Linear Isolation";
@@ -730,6 +739,7 @@ MoveFactory.prototype.linearfloat = function(options) {
 		}
 	}
 	move.recipe = options.recipe;
+	move.definition.recipe = options.recipe;
 	move.movename = options.movename;
 	if (options.harmonics == 2) {
 		move.definition.movename = "Linear Isolation";
@@ -787,6 +797,7 @@ MoveFactory.prototype.isolation = function(options) {
 		}
 	}
 	move.recipe = options.recipe;
+	move.definition.recipe = options.recipe;
 	move.movename = options.movename;
 	if (options.spin == ANTISPIN) {
 		move.definition.movename = "Cat-Eye";
@@ -851,6 +862,7 @@ MoveFactory.prototype.toroid = function(options) {
                 }
         }
         move.recipe = options.recipe;
+        move.definition.recipe = options.recipe;
         move.movename = options.movename;
         return move;
 }
@@ -901,8 +913,9 @@ MoveFactory.prototype.isobend = function(options) {
 		move.phaseBy(1);
 	}
 	move.recipe = options.recipe;
-        move.movename = options.movename;
-        return move;
+	move.definition.recipe = options.recipe;
+	move.movename = options.movename;
+	return move;
 }
 
 MoveFactory.prototype.antibend = function(options) {
@@ -959,6 +972,7 @@ MoveFactory.prototype.antibend = function(options) {
         }
         move.align("hand", entry);
         move.recipe = options.recipe;
+        move.definition.recipe = options.recipe;
         move.movename = options.movename;
         return move;
 }
@@ -1010,6 +1024,7 @@ MoveFactory.prototype.pentagram = function(options) {
         }
         move.align("hand", entry);
         move.recipe = options.recipe;
+        move.definition.recipe = options.recipe;
         move.movename = options.movename;
         return move;
 }
@@ -1062,8 +1077,9 @@ MoveFactory.prototype.tapedeck = function(options) {
 		move.extend();
 	}
         move.align("hand", options.entry);
-	move.phaseBy(1);
+		move.phaseBy(1);
         move.recipe = options.recipe;
+        move.definition.recipe = options.recipe;
         move.movename = options.movename;
         return move;
 }
@@ -1118,6 +1134,7 @@ MoveFactory.prototype.fractal = function(options) {
 		move.extend();
 	}
 	move.recipe = options.recipe;
+	move.definition.recipe = options.recipe;
 	move.movename = options.movename;
 	return move;
 }
@@ -1164,6 +1181,7 @@ MoveFactory.prototype.scap = function(options) {
 	move.tail().helper.angle = options.orient;
 	move.tail().hand.angle = options.orient + OFFSET;
 	move.recipe = options.recipe;
+	move.definition.recipe = options.recipe;
 	move.movename = options.movename;
 	return move;
 }
@@ -1204,6 +1222,7 @@ MoveFactory.prototype.isopop = function(options) {
 	move.tail().hand.speed = 0;
 	move.tail().prop.speed = options.spin*options.direction*options.speed*options.pop;
 	move.recipe = options.recipe;
+	move.definition.recipe = options.recipe;
 	move.movename = options.movename;
 	if (options.spin == ANTISPIN) {
 		move.movename = "Iso-Break";
@@ -1270,6 +1289,7 @@ MoveFactory.prototype.diamond = function(options) {
 	move.tail().hand.linear_speed = 8*Math.sqrt(2)*options.extend*options.speed;
 	move.tail().prop.speed = ((-2*options.spin)+4)*options.spin*options.speed*options.direction;
 	move.recipe = options.recipe;
+	move.definition.recipe = options.recipe;
 	move.movename = options.movename;
 	return move;
 }
@@ -1332,6 +1352,7 @@ MoveFactory.prototype.triangle = function(options) {
 	move.tail().hand.linear_angle = options.entry + options.direction*5*UNIT/12;
 	move.tail().prop.speed = (6*options.spin+2)*options.speed*options.direction/3;
 	move.recipe = options.recipe;
+	move.definition.recipe = options.recipe;
 	move.movename = options.movename;
 	return move;
 }
@@ -1379,59 +1400,10 @@ MoveFactory.prototype.stallchaser = function(options) {
 	move.tail().prop.speed = 0;
 	move.phaseby(options.phase);
 	move.recipe = options.recipe;
+	move.definition.recipe = options.recipe;
 	move.movename = options.movename;
 	return move;
 }
-
-
-MoveFactory.prototype.spirograph = function(options) {
-	var segment = VS3D.MoveLink();
-	segment.definition = options;
-	options = this.defaults(options,{
-		recipe: "spirograph",
-		movename: "(generic spirograph component)",
-		entry: null,
-		plane: WALL,
-		direction: CLOCKWISE,
-		spin: INSPIN,
-		petals: 0,
-		extend: 1,
-		speed: 1,
-		mode: DIAMOND,
-		pivot_angle: TWELVE,
-		pivot_radius: 0,
-		duration: 1
-	});
-	
-	if (options.spin==INSPIN) {
-		segment.prop.speed = (options.petals+1)*options.spin*options.direction*options.speed;
-	} else {
-		segment.prop.speed = (options.petals-1)*options.spin*options.direction*options.speed;
-	}
-	
-	segment.pivot.angle = options.pivot_angle;
-	segment.pivot.radius = options.pivot_radius;
-	segment.pivot.plane = options.plane;
-	segment.pivot.speed = 0;
-	
-	segment.hand.speed = options.direction*options.speed;
-	segment.prop.plane = options.plane;
-	segment.hand.plane = options.plane;
-	if (options.extend != null) {
-		segment.hand.radius = options.extend;
-	}
-	if (options.entry != null) {
-		segment.hand.angle = options.entry;
-		if (options.mode != null) {
-			segment.prop.angle = options.entry + options.mode;
-		}
-	}
-	segment.duration = options.duration;
-	segment.recipe = options.recipe;
-	segment.movename = options.movename;
-	return segment;
-}
-
 
 MoveFactory.prototype.generic = function(options) {
 	var segment = VS3D.MoveLink();
@@ -1554,45 +1526,9 @@ MoveFactory.prototype.generic = function(options) {
 	segment.bend_acc = options.bend_acc;
 	segment.movename = options.movename;
 	segment.recipe = options.recipe;
+	segment.definition.recipe = options.recipe;
 	//add stuff back in in a bit
 	return segment;
-}
-	
-MoveFactory.prototype.spiralwrap = function(options) {
-	var move = VS3D.MoveChain();
-	move.definition = options;
-	options = this.defaults(options,{
-		recipe: "spiralwrap",
-		movename: "Spiral Wrap",
-		entry: THREE,
-		plane: WALL,
-		direction: CLOCKWISE,
-		stretch: -1,
-		extend: 0,
-		speed: 1,
-		duration: 1
-	});
-	var segment = VS3D.MoveLink();
-	segment.hand.plane = options.plane;
-	segment.prop.plane = options.plane;
-	// should specify an angle?
-	segment.hand.radius = options.extend;
-	segment.prop.radius = 1;
-	segment.hand.speed = 0;
-	segment.prop.speed = options.speed*options.direction;
-	segment.prop.stretch = options.stretch;
-	if (options.entry != null) {
-		segment.prop.angle = options.entry;
-	}
-	segment.duration = options.duration;
-	move.add(segment);
-	move.extend();
-	move.tail().prop.radius = 0;
-	move.tail().stretch = -options.stretch;
-	move.tail().speed = -options.speed*options.direction;
-	move.recipe = options.recipe;
-	move.movename = options.movename;
-	return move;
 }
 
 MoveFactory.prototype.spiral = function(options) {
@@ -1602,7 +1538,7 @@ MoveFactory.prototype.spiral = function(options) {
 		recipe: "spiral",
 		movename: "Spiral Wrap",
 		entry: null,
-		hand: THREE,
+		orient: THREE,
 		extend: TINY,
 		plane: WALL,
 		direction: CLOCKWISE,
@@ -1624,7 +1560,7 @@ MoveFactory.prototype.spiral = function(options) {
 	
 	segment.hand.plane = options.plane;
 	segment.hand.radius = options.extend;
-	segment.hand.angle = options.hand;
+	segment.hand.angle = options.orient;
 	segment.hand.speed = 0;
 	if (options.entry != null) {
 		segment.prop.angle = options.entry;
@@ -1649,6 +1585,7 @@ MoveFactory.prototype.spiral = function(options) {
 		}
 	}
 	move.recipe = options.recipe;
+	move.definition.recipe = options.recipe;
 	move.movename = options.movename;
 	return move;
 }
@@ -1695,6 +1632,7 @@ MoveFactory.prototype.stall = function(options) {
 	}
 	segment.duration = options.duration;
 	segment.recipe = options.recipe;
+	segment.definition.recipe = options.recipe;
 	segment.movename = options.movename;
 	return segment;
 }
@@ -1718,26 +1656,28 @@ MoveFactory.prototype.toss = function(options) {
 		pivot_angle: THREE,
 		drift: 0
 	});
-	segment.choke = 0.5;
+	segment.hand.plane = options.plane;
+	segment.prop.plane = options.plane;
+	segment.helper.plane = options.plane;
+	segment.pivot.plane = options.plane;
+	
 	segment.hand.speed = 0;
 	segment.prop.speed = options.direction*options.speed;
 	
 	segment.hand.angle = options.orient;
-	segment.hand.radius = options.extend + 0.5;
+	segment.hand.radius = options.extend;
 	segment.prop.angle = options.entry;
 	segment.helper.linear_angle = TWELVE;
-	var CORRECTION = 0.93; // there seems to be a rounding error if I don't include this
-	segment.helper.linear_speed = (0.5*options.gravity*options.duration)*CORRECTION;
+	segment.helper.linear_speed = 0.5*options.gravity*options.duration;
 	segment.helper.linear_acc = -options.gravity;
 	segment.pivot.angle = options.pivot_angle;
 	segment.pivot.radius = options.pivot_radius;
 	segment.pivot.linear_angle = THREE;
 	segment.pivot.linear_speed = options.drift;
-	
 	segment.duration = options.duration;
-	
 	segment.movename = options.movename;
 	segment.definition.recipe = options.recipe;
+	segment.recipe = options.recipe;
 	return segment;
 }
 
