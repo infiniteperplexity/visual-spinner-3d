@@ -404,7 +404,8 @@ MoveFactory.prototype.pendulum = function(options) {
 	}
 	move.recipe = options.recipe;
 	move.definition.recipe = options.recipe;
-	move.movename = options.movename;
+	move.definition.movename = options.movename;
+	move.definition.orient = options.orient || SIX;
 	return move;
 }
 // try doing the extra pivot with helper instead of pivot
