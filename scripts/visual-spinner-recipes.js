@@ -29,4 +29,6 @@ recipes.add({movename: "Tapedeck Toroid", recipe: "tapedeck", orient: THREE, ent
 recipes.add({movename: "Pro-Bend Toroid", recipe: "toroid", orient: THREE, entry: THREE, mode: DIAMOND, direction: CLOCKWISE, pitch: FORWARD, harmonics: 1, bend: PROBEND, duration: 1, extend: 1, plane: WALL, pivot_angle: THREE, pivot_radius: 0});
 recipes.add({movename: "ad hoc Contact C-CAP", recipe: "ccap", entry: THREE, orient: THREE, direction: CLOCKWISE, petals1: 0, petals2: 4, spin1: INSPIN, spin2: ANTISPIN, duration: 1, extend: 1, plane: WALL, pivot_angle: THREE, pivot_radius: 0, modify: {grip: CONTACT}});
 recipes.add({movename: "ad hoc Contact Roll", orient: THREE, entry: THREE, recipe: "linex", petals: 0, mode: DIAMOND, spin: INSPIN, direction: CLOCKWISE, duration: 1, plane: WALL, pivot_angle: THREE, pivot_radius: 0, modify: {grip: CONTACT}});
-	VS3D.Constants.descope();
+recipes.add({movename: "fully generic move", recipe: "generic"});
+
+VS3D.Constants.descope();

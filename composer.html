@@ -29,6 +29,7 @@ table {position: relative; top: -20px;}
 #frameN {width: 100px;}
 #moveview {position: fixed; z-index: 1; top: 150px; left: 250px; width: 400px; background-color: #FFF; padding: 2.5px; border: 5px solid gray; margin: -2.5px;}
 #movemodify {position: fixed; z-index: 1; top: 150px; left: 550px; width: 400px; background-color: #FFF; padding: 2.5px; border: 5px solid gray; margin: -2.5px;}
+#jsonmodify {position: fixed; z-index: 1; top: 150px; left: 550px; width: 400px; background-color: #FFF; padding: 2.5px; border: 5px solid gray; margin: -2.5px;}
 </style>
 
 
@@ -79,9 +80,10 @@ function canvasSetup() {
 }
 window.addEventListener("keydown", listenForKey, false);
 VS3D.spinfail = function() {
-	//if (paused == false) {
+	if (paused == false) {
 		alert("can't spin with an empty queue");
-	//}
+		this.paused = true;
+	}
 }
 
 function redraw() {
@@ -191,6 +193,35 @@ function nothing() {
 }
 
 var moveTarget;
+
+function modifyJSON() {
+	var active = $(".active").get(0);
+	if (active===undefined) {
+		alert("Please select a move in the workshop."); return;
+	}
+	var parent = active.parentNode;
+	var definition;
+	if (parent.parentNode.id === "workshop") {
+		definition = moves.parse(active.getAttribute("data-value"));
+		moveTarget = active;
+	} else {alert("Please select a move in the workshop."); return;}
+	$("#jsonmodify").toggle();
+	if (definition.modify === undefined) {
+		definition.modify = {};
+	}
+	if (definition.modify_tail === undefined) {
+		definition.modify_tail = {};
+	}
+	$("#jsonmodify textarea").html(JSON.stringify(definition,undefined,2));
+}
+
+function submitJSON() {
+	var move = moveTarget;
+	var definition = $("#jsonmodify textarea").val();
+	move.setAttribute("data-value",definition);
+	move.innerHTML = JSON.parse(definition).movename;
+	$("#jsonmodify").toggle();
+}
 
 function modifyMove(event) {
 	moveTarget = event.target;
@@ -616,6 +647,7 @@ function alignSubmit(n) {
 		<div id="workshop" ondrop="dropWorkshop(event);" ondragover="allowDrop(event);">
 			<h2>Workshop</h2>
 			<ul id="thisMove"></ul>
+			<button type="button" onclick='modifyJSON();'>Modify JSON</button>
 			<button type="button" onclick="nothing();">Save</button>
 		</div>
 		
@@ -800,6 +832,11 @@ function alignSubmit(n) {
 	<button type="button" onclick='$("#movemodify").toggle();'>Cancel</button>
 	<button type="button" onclick="submitChanges();">Submit</button>
 	<div id="moveinner"></div>
+</div>
+<div style="display: none;" id="jsonmodify">
+	<button type="button" onclick='$("#jsonmodify").toggle();'>Cancel</button>
+	<button type="button" onclick="submitJSON()">Submit</button>
+	<br><textarea rows="16" cols="46"></textarea>
 </div>
 
 </body></html>
