@@ -1170,7 +1170,7 @@ Prop.prototype.stringify = function() {
 	definition.fire = this.fire;
 	definition.moves = [];
 	for (var i = 0; i<this.move.submoves.length; i++) {
-		definition.moves[i] = this.move.submoves[i].define();
+		definition.moves[i] = this.move.submoves[i].definition;
 	}
 	return JSON.stringify(definition,undefined,2);
 }

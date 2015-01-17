@@ -225,23 +225,20 @@ function canvasSetup() {
 		// one
 	orangePoi.addMove(moves.stall({exit: true, mode: BOX, entry: THREE, petals: 2, direction: COUNTERCLOCKWISE, duration: 0.25}));
 	orangePoi.addMove(moves.stall({exit: false, entry: TWELVE, petals: 2, direction: COUNTERCLOCKWISE, duration: 0.25}));
+	whitePoi.addMove(moves.pendulum({extend: 0, duration: 2}));
 	whitePoi.addMove(moves.pendulum({extend: 0, duration: 0.5}));
 		// two
 	orangePoi.addMove(moves.stall({exit: true, mode: BOX, entry: NINE, petals: 2, duration: 0.25}));
 	orangePoi.addMove(moves.stall({exit: false, entry: TWELVE, petals: 2, duration: 0.25}));
-	whitePoi.addMove(moves.pendulum({extend: 0, duration: 0.5}));
 		// three
 	orangePoi.addMove(moves.stall({exit: true, mode: BOX, entry: THREE, petals: 2, direction: COUNTERCLOCKWISE, duration: 0.25}));
 	orangePoi.addMove(moves.stall({exit: false, entry: TWELVE, petals: 2, direction: COUNTERCLOCKWISE, duration: 0.25}));
-	whitePoi.addMove(moves.pendulum({extend: 0, duration: 0.5}));
 		// four
 	orangePoi.addMove(moves.stall({exit: true, mode: BOX, entry: NINE, petals: 2, duration: 0.25}));
 	orangePoi.addMove(moves.stall({exit: false, entry: TWELVE, petals: 2, duration: 0.25}));
-	whitePoi.addMove(moves.pendulum({extend: 0, duration: 0.5}));
 		// five
 	orangePoi.addMove(moves.stall({exit: true, mode: BOX, entry: THREE, petals: 2, direction: COUNTERCLOCKWISE, duration: 0.25}));
 	orangePoi.addMove(moves.stall({exit: false, entry: TWELVE, petals: 2, direction: COUNTERCLOCKWISE, duration: 0.25}));
-	whitePoi.addMove(moves.pendulum({extend: 0, duration: 0.5}));
 	
 	// Two and a half beats of good old fashioned crank isolations
 	orangePoi.addMove(moves.isolation({direction: COUNTERCLOCKWISE, pivot_angle: NINE, pivot_radius: 0.5, duration: 2.5}));
