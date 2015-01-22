@@ -38,11 +38,11 @@ function init() {
 					"1align","2align","3align","4align",
 					"1spin","2spin","3spin","4spin",
 					"1move","2move","3move","4move"];
-	var defaults = ["poi","poi","poi","none",
+	var defaults = ["poi","poi","poi","poi",
 					"wall","wall","wall","wall",
 					"twelve","twelve","twelve","twelve",
 					"cw","ccw","cw","ccw",
-					"vcat","antp","ucex","unip"];
+					"xtsn","xtsn","3paf","3paf"];
 	for (var i = 0; i<params.length; i++) {
 		var txt = $.urlParam(params[i]);
 		if (txt==0) {txt = defaults[i];}
@@ -189,34 +189,34 @@ Controller.prototype.generateMove = function(n, txt) {
 	if (txt=="stat") {
 		move = moves.staticspin({direction: this.spin[n], plane: this.plane[n], entry: this.align[n]});
 	} else if (txt=="xtsn") {
-		move = moves.flower({entry: this.align[n], direction: this.spin[n], plane: this.plane[n], mode: DIAMOND, petals: 0});
+		move = moves.flower({entry: this.align[n], orient: this.align[n], direction: this.spin[n], plane: this.plane[n], mode: DIAMOND, petals: 0});
 		move.align("hand",this.align[n]);
 	} else if (txt=="1pif") {
-		move = moves.flower({entry: this.align[n], direction: this.spin[n], mode: DIAMOND, plane: this.plane[n], petals: 1});
+		move = moves.flower({entry: this.align[n], orient: this.align[n], direction: this.spin[n], mode: DIAMOND, plane: this.plane[n], petals: 1});
 		move.align("hand",this.align[n]);
 	} else if (txt=="o1if") {
-		move = moves.flower({entry: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n], petals: 1});
+		move = moves.flower({entry: this.align[n], orient: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n], petals: 1});
 		move.align("hand",this.align[n]);
 	} else if (txt=="2pif") {
-		move = moves.flower({entry: this.align[n], mode: DIAMOND, direction: this.spin[n], plane: this.plane[n], petals: 2});
+		move = moves.flower({entry: this.align[n], orient: this.align[n], mode: DIAMOND, direction: this.spin[n], plane: this.plane[n], petals: 2});
 		move.align("hand",this.align[n]);
 	} else if (txt=="o2if") {
-		move = moves.flower({entry: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n], petals: 2});
+		move = moves.flower({entry: this.align[n], orient: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n], petals: 2});
 		move.align("hand",this.align[n]);
 	} else if (txt=="4pif") {
-		move = moves.flower({entry: this.align[n], mode: DIAMOND, direction: this.spin[n], plane: this.plane[n]});
+		move = moves.flower({entry: this.align[n], orient: this.align[n], mode: DIAMOND, direction: this.spin[n], plane: this.plane[n]});
 		move.align("hand",this.align[n]);
 	} else if (txt=="b4if") {
-		move = moves.flower({entry: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n]});
+		move = moves.flower({entry: this.align[n], orient: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n]});
 		move.align("hand",this.align[n]);
 	} else if (txt=="3paf") {
-		move = moves.flower({entry: this.align[n], mode: DIAMOND, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN, petals: 3});
+		move = moves.flower({entry: this.align[n], orient: this.align[n], mode: DIAMOND, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN, petals: 3});
 		move.align("hand",this.align[n]);
 	} else if (txt=="o3af") {
-		move = moves.flower({entry: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN, petals: 3});
+		move = moves.flower({entry: this.align[n], orient: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN, petals: 3});
 		move.align("hand",this.align[n]);
 	} else if (txt=="4paf") {
-		move = moves.flower({entry: this.align[n], mode: DIAMOND, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
+		move = moves.flower({entry: this.align[n], orient: this.align[n], mode: DIAMOND, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
 		move.align("hand",this.align[n]);
 	} else if (txt=="b4af") {
 		move = moves.flower({entry: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
