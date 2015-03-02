@@ -48,17 +48,7 @@ function init() {
 		if (txt==0) {txt = defaults[i];}
 		$("#"+params[i]).val(txt);
 	}
-	if( 	navigator.userAgent.match(/Android/i)
-		|| navigator.userAgent.match(/webOS/i)
-		|| navigator.userAgent.match(/iPhone/i)
-		|| navigator.userAgent.match(/iPad/i)
-		|| navigator.userAgent.match(/iPod/i)
-		|| navigator.userAgent.match(/BlackBerry/i)
-		|| navigator.userAgent.match(/Windows Phone/i)) {
-		$("#2d3d").val("2d");
-	} else {
-		$("#2d3d").val("3d");
-	}
+
 	var propOne = vs.addProp();
 	var propTwo = vs.addProp();
 	var propThree = vs.addProp();
@@ -67,9 +57,25 @@ function init() {
 	propTwo.color = "blue";
 	propThree.color = "yellow";
 	propFour.color = "green";
+	if( 	navigator.userAgent.match(/Android/i)
+		|| navigator.userAgent.match(/webOS/i)
+		|| navigator.userAgent.match(/iPhone/i)
+		|| navigator.userAgent.match(/iPad/i)
+		|| navigator.userAgent.match(/iPod/i)
+		|| navigator.userAgent.match(/BlackBerry/i)
+		|| navigator.userAgent.match(/Windows Phone/i)) {
+		$("#2d3d").val("2d");
+		propOne.nudge(-0.75,0,0);
+		propTwo.nudge(-0.75,0,0);
+		propThree.nudge(-0.75,0,0);
+		propFour.nudge(-0.75,0,0);
+	} else {
+		$("#2d3d").val("3d");
+	}
 	// set up controller	
 	controller.updateParameters();
 	vs.play();
+	
 }
 
 function Controller() {
