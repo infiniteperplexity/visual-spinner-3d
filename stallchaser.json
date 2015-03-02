@@ -1,0 +1,294 @@
+{"prop1": {
+  "propname": "not defined",
+  "home": {
+    "radius": 0.0001,
+    "azimuth": 0.0001,
+    "zenith": 1.5707963267948966
+  },
+  "pivot": {
+    "radius": 0,
+    "azimuth": 0,
+    "zenith": 1.5707963267948966
+  },
+  "helper": {
+    "radius": 0.0001,
+    "azimuth": 0.0001,
+    "zenith": 1.5707963267948966
+  },
+  "hand": {
+    "radius": 1,
+    "azimuth": 3.1415929999999994,
+    "zenith": 1.5707963267948966
+  },
+  "prop": {
+    "radius": 1,
+    "azimuth": 1.570796,
+    "zenith": 1.5707963267948966
+  },
+  "twist": 0,
+  "grip": 0,
+  "choke": 0,
+  "bend": 0,
+  "axis": {
+    "x": 0,
+    "y": 0,
+    "z": 1
+  },
+  "propType": "poi",
+  "color": "blue",
+  "fire": false,
+  "moves": [
+    {
+      "movename": "Hold",
+      "recipe": "staticspin",
+      "speed": 0,
+      "orient": 0,
+      "entry": 1.5707963267948966,
+      "hand": 3.141592653589793,
+      "extend": 1,
+      "duration": 0.5,
+      "direction": 1,
+      "plane": {
+        "x": 0,
+        "y": 0,
+        "z": 1
+      },
+      "pivot_angle": 0,
+      "pivot_radius": 0
+    },
+    {
+      "movename": "Drag Stall",
+      "mode": 4.71238898038469,
+      "recipe": "flower",
+      "spin": 1,
+      "petals": 0,
+      "orient": 0,
+      "entry": 3.141592653589793,
+      "duration": 0.5,
+      "extend": 1,
+      "direction": 1,
+      "pivot_angle": 0,
+      "pivot_radius": 0,
+      "phase": 1
+    },
+    {
+      "movename": "One-Petal In-Spin Flower",
+      "recipe": "flower",
+      "spin": 1,
+      "petals": 1,
+      "orient": 1.5707963267948966,
+      "entry": 0,
+      "duration": 0.5,
+      "extend": 1,
+      "direction": 1,
+      "mode": 0,
+      "plane": {
+        "x": 0,
+        "y": 0,
+        "z": 1
+      },
+      "pivot_angle": 0,
+      "pivot_radius": 0,
+      "phase": 0
+    },
+    {
+      "movename": "One-Petal In-Spin Flower",
+      "recipe": "flower",
+      "spin": 1,
+      "petals": 1,
+      "orient": 1.5707963267948966,
+      "entry": 3.141592653589793,
+      "duration": 0.5,
+      "extend": 1,
+      "direction": -1,
+      "mode": 0,
+      "plane": {
+        "x": 0,
+        "y": 0,
+        "z": 1
+      },
+      "pivot_angle": 0,
+      "pivot_radius": 0,
+      "phase": 0
+    },
+    {
+      "movename": "Follow Stall",
+      "mode": 1.5707963267948966,
+      "recipe": "flower",
+      "spin": 1,
+      "petals": 0,
+      "orient": 0,
+      "entry": 0,
+      "duration": 0.5,
+      "extend": 1,
+      "direction": -1,
+      "pivot_angle": 0,
+      "pivot_radius": 0
+    },
+    {
+      "movename": "Hold",
+      "recipe": "staticspin",
+      "speed": 0,
+      "orient": 0,
+      "entry": 1.5707963267948966,
+      "hand": 3.141592653589793,
+      "extend": 1,
+      "duration": 0.5,
+      "direction": 1,
+      "plane": {
+        "x": 0,
+        "y": 0,
+        "z": 1
+      },
+      "pivot_angle": 0,
+      "pivot_radius": 0,
+      "phase": 1
+    }
+  ]
+}, "prop2": {
+  "propname": "not defined",
+  "home": {
+    "radius": 0.0001,
+    "azimuth": 0.0001,
+    "zenith": 1.5707963267948966
+  },
+  "pivot": {
+    "radius": 0,
+    "azimuth": 0,
+    "zenith": 1.5707963267948966
+  },
+  "helper": {
+    "radius": 0.0001,
+    "azimuth": 0.0001,
+    "zenith": 1.5707963267948966
+  },
+  "hand": {
+    "radius": 1,
+    "azimuth": 0,
+    "zenith": 1.5707963267948966
+  },
+  "prop": {
+    "radius": 1,
+    "azimuth": 4.712389,
+    "zenith": 1.5707963267948966
+  },
+  "twist": 0,
+  "grip": 0,
+  "choke": 0,
+  "bend": 0,
+  "axis": {
+    "x": 0,
+    "y": 0,
+    "z": 1
+  },
+  "propType": "poi",
+  "color": "red",
+  "fire": false,
+  "moves": [
+    {
+      "movename": "One-Petal In-Spin Flower",
+      "recipe": "flower",
+      "spin": 1,
+      "petals": 1,
+      "orient": 1.5707963267948966,
+      "entry": 0,
+      "duration": 0.5,
+      "extend": 1,
+      "direction": 1,
+      "mode": 0,
+      "plane": {
+        "x": 0,
+        "y": 0,
+        "z": 1
+      },
+      "pivot_angle": 0,
+      "pivot_radius": 0,
+      "phase": 0
+    },
+    {
+      "movename": "Follow Stall",
+      "mode": 1.5707963267948966,
+      "recipe": "flower",
+      "spin": 1,
+      "petals": 0,
+      "orient": 0,
+      "entry": 3.141592653589793,
+      "duration": 0.5,
+      "extend": 1,
+      "direction": 1,
+      "pivot_angle": 0,
+      "pivot_radius": 0,
+      "phase": 1
+    },
+    {
+      "movename": "Hold",
+      "recipe": "staticspin",
+      "speed": 0,
+      "orient": 0,
+      "entry": 1.5707963267948966,
+      "hand": 0,
+      "extend": 1,
+      "duration": 0.5,
+      "direction": 1,
+      "plane": {
+        "x": 0,
+        "y": 0,
+        "z": 1
+      },
+      "pivot_angle": 0,
+      "pivot_radius": 0
+    },
+    {
+      "movename": "Hold",
+      "recipe": "staticspin",
+      "speed": 0,
+      "orient": 0,
+      "entry": 1.5707963267948966,
+      "hand": 0,
+      "extend": 1,
+      "duration": 0.5,
+      "direction": 1,
+      "plane": {
+        "x": 0,
+        "y": 0,
+        "z": 1
+      },
+      "pivot_angle": 0,
+      "pivot_radius": 0
+    },
+    {
+      "movename": "Drag Stall",
+      "mode": 4.71238898038469,
+      "recipe": "flower",
+      "spin": 1,
+      "petals": 0,
+      "orient": 0,
+      "entry": 0,
+      "duration": 0.5,
+      "extend": 1,
+      "direction": -1,
+      "pivot_angle": 0,
+      "pivot_radius": 0
+    },
+    {
+      "movename": "One-Petal In-Spin Flower",
+      "recipe": "flower",
+      "spin": 1,
+      "petals": 1,
+      "orient": 1.5707963267948966,
+      "entry": 3.141592653589793,
+      "duration": 0.5,
+      "extend": 1,
+      "direction": -1,
+      "mode": 0,
+      "plane": {
+        "x": 0,
+        "y": 0,
+        "z": 1
+      },
+      "pivot_angle": 0,
+      "pivot_radius": 0,
+      "phase": 2
+    }
+  ]
+}}
