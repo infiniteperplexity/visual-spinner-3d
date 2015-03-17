@@ -1,0 +1,81 @@
+<!--Distributed under GNU Public License version 3-->
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>VisualSpinner3D v. 3.0, by Glenn Wright</title>
+<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="scripts/gl-matrix-min.js"></script>
+<script src="scripts/phoria-min.js"></script>
+<script src="scripts/requestAnimationFrame.js"></script>
+<script src="scripts/visual-spinner-engine.js"></script>
+<script src="scripts/visual-spinner-moves.js"></script>
+<script src="scripts/visual-spinner-ui.js"></script><script>
+function init() {
+	var vs = VS3D.VisualSpinnerWidget();
+	VS3D.Constants.rescope(vs);
+	vs.embedById("vs-div");
+	var propOne = vs.addProp();
+	var propTwo = vs.addProp();
+	var propThree = vs.addProp();
+	propOne.color = "red";
+	propTwo.color = "blue";
+	propThree.color = "green";
+	propOne.nudge(0,0,0.5);
+	propThree.nudge(0,0,-0.5);
+	propOne.hand.radius = 1;
+	propTwo.hand.radius = 1;
+	propThree.hand.radius = 1;
+	propTwo.setHandAngle(vs.NINE);
+	propTwo.setPropAngle(vs.NINE);
+	//initial static spins
+	propOne.addMove(vs.Moves.staticspin({extend: 1, duration: 0.25, speed: 2}));
+	propTwo.addMove(vs.Moves.staticspin({extend: 1, orient: vs.NINE, direction: vs.COUNTERCLOCKWISE, duration: 0.25, speed: 2}));
+	propThree.addMove(vs.Moves.staticspin({extend: 1, duration: 0.25, speed: 2}));
+	
+	propOne.addMove(vs.Moves.toss({extend: 1, orient: vs.THREE, duration: 0.5, drift: -4, speed: 2}));
+	propTwo.addMove(vs.Moves.staticspin({extend: 1, orient: vs.NINE, direction: vs.COUNTERCLOCKWISE, duration: 0.25, speed: 4}));
+	propThree.addMove(vs.Moves.staticspin({extend: 1, duration: 0.25, speed: 2}));
+	
+	for(var i = 0; i<3; i++) {
+		propTwo.addMove(vs.Moves.toss({extend: 1, orient: vs.NINE, entry: vs.THREE, direction: vs.COUNTERCLOCKWISE, duration: 0.5, drift: 4, speed: 2}));
+		propThree.addMove(vs.Moves.staticspin({extend: 1, duration: 0.25, speed: 2}));
+		
+		propOne.addMove(vs.Moves.staticspin({extend: 1, orient: vs.NINE, direction: vs.COUNTERCLOCKWISE, duration: 0.25, speed: 2}));
+		propThree.addMove(vs.Moves.toss({extend: 1, orient: vs.THREE, duration: 0.5, drift: -4, speed: 2}));
+		
+		propOne.addMove(vs.Moves.toss({extend: 1, orient: vs.NINE, entry: vs.THREE, direction: vs.COUNTERCLOCKWISE, duration: 0.5, drift: 4, speed: 2}));
+		propTwo.addMove(vs.Moves.staticspin({extend: 1, duration: 0.25, speed: 2}));
+		
+		propTwo.addMove(vs.Moves.toss({extend: 1, orient: vs.THREE, entry: vs.NINE, duration: 0.5, drift: -4, speed: 2}));
+		propThree.addMove(vs.Moves.staticspin({extend: 1, direction: vs.COUNTERCLOCKWISE, duration: 0.25, speed: 2}));
+		
+		propOne.addMove(vs.Moves.staticspin({extend: 1, duration: 0.25, speed: 2}));
+		propThree.addMove(vs.Moves.toss({extend: 1, orient: vs.NINE, entry: vs.THREE, direction: vs.COUNTERCLOCKWISE, duration: 0.5, drift: 4, speed: 2}));
+		
+		propOne.addMove(vs.Moves.toss({extend: 1, orient: vs.THREE, duration: 0.5, drift: -4, speed: 2}));
+		propTwo.addMove(vs.Moves.staticspin({extend: 1, orient: vs.NINE, direction: vs.COUNTERCLOCKWISE, duration: 0.25, speed: 2}));
+	}
+	propTwo.addMove(vs.Moves.toss({extend: 1, orient: vs.NINE, entry: vs.THREE, direction: vs.COUNTERCLOCKWISE, duration: 0.5, drift: 4, speed: 2}));
+	propThree.addMove(vs.Moves.staticspin({extend: 1, duration: 0.25, speed: 2}));
+		
+	propOne.addMove(vs.Moves.staticspin({extend: 1, orient: vs.NINE, direction: vs.COUNTERCLOCKWISE, duration: 0.25, speed: 2}));
+	propThree.addMove(vs.Moves.toss({extend: 1, orient: vs.THREE, duration: 0.5, drift: -4, speed: 2}));
+		
+	propOne.addMove(vs.Moves.toss({extend: 1, orient: vs.NINE, entry: vs.THREE, direction: vs.COUNTERCLOCKWISE, duration: 0.5, drift: 4, speed: 2}));
+	propTwo.addMove(vs.Moves.staticspin({extend: 1, duration: 0.25, speed: 2}));
+		
+	propTwo.addMove(vs.Moves.toss({extend: 1, orient: vs.THREE, entry: vs.NINE, duration: 0.5, drift: -4, speed: 2}));
+	propThree.addMove(vs.Moves.staticspin({extend: 1, direction: vs.COUNTERCLOCKWISE, duration: 0.25, speed: 2}));
+		
+	propOne.addMove(vs.Moves.staticspin({extend: 1, duration: 0.5, speed: 2}));
+	propTwo.addMove(vs.Moves.staticspin({extend: 1, orient: vs.NINE, direction: vs.COUNTERCLOCKWISE, duration: 0.25, speed: 4}));
+	propThree.addMove(vs.Moves.toss({extend: 1, orient: vs.NINE, entry: vs.THREE, direction: vs.COUNTERCLOCKWISE, duration: 0.5, drift: 4, speed: 2}));
+	
+	vs.addControls("play","pause","rewind","frame","forward","reset","2d3d");
+	vs.ready();
+}
+</script>
+<body onload="init();">
+<a href='http://infiniteperplexity.github.io/visual-spinner-3d/'>See more at the VisualSpinner3D main site.</a>
+<div id="vs-div">
+</div>
+</body></html>

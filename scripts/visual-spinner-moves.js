@@ -1645,7 +1645,7 @@ MoveFactory.prototype.toss = function(options) {
 	options = this.defaults(options,{
 		recipe: "toss",
 		movename: "Vertical Toss",
-		speed: 0.5,
+		speed: 2,
 		duration: 1,
 		gravity: 50,
 		direction: CLOCKWISE,
