@@ -546,11 +546,37 @@ Prop.prototype.debugMode = function(tf) {
 }
 
 Prop.prototype.debugSpin = function() {
-	alert("debugSpin");
+	Prop.prototype.spin.call(this);
 }
 
-Prop.prototype.debugAddMove = function() {
-	alert("debugAddMove");
+Prop.prototype.debugAddMove = function(myMove) {	
+	if (window.save_alert == null) {
+		window.save_alert = window.alert;
+	}
+	window.alert = function() {return null;}
+	var thisMove;
+	if (myMove.abrupt == false) {
+		if (this.move.submoves.length>0) {
+			thisMove = myMove.reorient(this.move.tail());
+		} else {
+			thisMove = myMove.reorient(this);
+		}
+	}
+	if (thisMove===null) {
+		window.debugAlert(myMove.stringify());
+		this.move.add(myMove.setAbrupt());
+	} else {
+		this.move.add(thisMove);
+	}
+}
+
+window.debugAlert = function(text) {
+	if (window.save_alert) {
+		window.alert = window.save_alert;
+		alert(text);
+		window.save_alert = window.alert;
+		window.alert = function() {return null;}
+	}
 }
 
 
