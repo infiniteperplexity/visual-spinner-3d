@@ -523,6 +523,37 @@ Prop.prototype.propVector = function() {
 }
 
 
+Prop.prototype.addMove = function(myMove) {
+	if (myMove.abrupt == false) {
+		if (this.move.submoves.length>0) {
+			myMove = myMove.reorient(this.move.tail());
+		} else {
+			myMove = myMove.reorient(this);
+		}
+	}
+	this.move.add(myMove);
+}
+
+Prop.prototype.debugMode = function(tf) {
+	if (tf==true || tf==null) {
+		this.spin = this.debugSpin;
+		this.addMove = this.debugAddMove;
+	} else {
+		this.spin = this.constructor.prototype.spin;
+		this.addMove = this.constructor.prototype.addMove;
+	}
+	
+}
+
+Prop.prototype.debugSpin = function() {
+	alert("debugSpin");
+}
+
+Prop.prototype.debugAddMove = function() {
+	alert("debugAddMove");
+}
+
+
 //////// A "MoveLink" is the simplest kind of movement.  It defines a single, continuous movement.
 function MoveLink() {
 	this.parent = null;
@@ -1369,17 +1400,6 @@ MoveLink.prototype.adjust = function(target) {
 	return null;
 }
 
-
-Prop.prototype.addMove = function(myMove) {
-	if (myMove.abrupt == false) {
-		if (this.move.submoves.length>0) {
-			myMove = myMove.reorient(this.move.tail());
-		} else {
-			myMove = myMove.reorient(this);
-		}
-	}
-	this.move.add(myMove);
-}
 
 
 
