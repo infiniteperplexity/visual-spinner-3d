@@ -510,8 +510,12 @@ Prop.prototype.getVector = function(element) {
 	// ignore TWIST
 	if (element===HAND) {
 		v = new Vector(vh.x-(this.choke+0.5)*v.x, vh.y-(this.choke+0.5)*v.y, vh.z-(this.choke+0.5)*v.z);
+		//window.save_alert("hand: " + v.toArray());
 	} else if (element===PROP) {
-		v = new Vector(x+0.5*v.x,y+0.5*v.y,z+0.5*v.z);
+		//what, did I never finish writing this?!
+		//v = new Vector(x+0.5*v.x,y+0.5*v.y,z+0.5*v.z);
+		v = new Vector(vh.x-(this.choke-0.5)*v.x, vh.y-(this.choke-0.5)*v.y, vh.z-(this.choke-0.5)*v.z);
+		//window.save_alert("prop: " + v.toArray());
 	}
 	return v;
 }
@@ -563,7 +567,11 @@ Prop.prototype.debugAddMove = function(myMove) {
 		}
 	}
 	if (thisMove===null) {
-		window.debugAlert(myMove.stringify());
+		window.debugAlert("Socketing error on " + this.color + ".");
+		window.debugAlert("Last move was " + this.move.submoves[this.move.submoves.length-1].stringify());
+		window.debugAlert("Ending hand socket was " + this.handVector().toArray());
+		window.debugAlert("Ending prop socket was " + this.propVector().toArray());
+		window.debugAlert("Next move is " + myMove.stringify());
 		this.move.add(myMove.setAbrupt());
 	} else {
 		this.move.add(thisMove);
@@ -571,6 +579,7 @@ Prop.prototype.debugAddMove = function(myMove) {
 }
 
 window.debugAlert = function(text) {
+	return;
 	if (window.save_alert) {
 		window.alert = window.save_alert;
 		alert(text);
@@ -886,7 +895,9 @@ MoveLink.prototype.getVector = function(element) {
 	if (element===HAND) {
 		v = new Vector(vh.x-(this.choke+0.5)*v.x, vh.y-(this.choke+0.5)*v.y, vh.z-(this.choke+0.5)*v.z);
 	} else if (element===PROP) {
-		v = new Vector(x+0.5*v.x,y+0.5*v.y,z+0.5*v.z);
+		//what, did I never finish writing this?!
+		//v = new Vector(x+0.5*v.x,y+0.5*v.y,z+0.5*v.z);
+		v = new Vector(vh.x-(this.choke-0.5)*v.x, vh.y-(this.choke-0.5)*v.y, vh.z-(this.choke-0.5)*v.z);
 	}
 	return v;
 }

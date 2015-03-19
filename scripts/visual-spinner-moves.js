@@ -1663,11 +1663,9 @@ MoveFactory.prototype.toss = function(options) {
 	segment.helper.plane = options.plane;
 	segment.pivot.plane = options.plane;
 	
-	//causes bugs
-	//segment.choke = options.weight;
-	//segment.helper.angle = options.orient;
-	//segment.helper.angle = options.entry;
-	//segment.helper.radius = options.weight;
+	segment.choke = options.weight;
+	segment.helper.angle = options.entry;
+	segment.helper.radius = options.weight;
 	
 	segment.hand.speed = 0;
 	segment.prop.speed = options.direction*options.speed;
