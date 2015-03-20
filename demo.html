@@ -191,6 +191,10 @@ Controller.prototype.generateMove = function(n, txt) {
 	} else if (txt=="xtsn") {
 		move = moves.flower({entry: this.align[n], orient: this.align[n], direction: this.spin[n], plane: this.plane[n], mode: DIAMOND, petals: 0});
 		move.align("hand",this.align[n]);
+	} else if (txt=="weav") {
+		move = moves.weave({entry: this.align[n], orient: this.align[n], direction: this.spin[n], plane: this.plane[n]});
+	} else if (txt=="owev") {
+		move = moves.weave({entry: this.align[n], orient: this.align[n], direction: this.spin[n], plane: this.plane[n], pitch: BACKWARD});
 	} else if (txt=="1pif") {
 		move = moves.flower({entry: this.align[n], orient: this.align[n], direction: this.spin[n], mode: DIAMOND, plane: this.plane[n], petals: 1});
 		move.align("hand",this.align[n]);
@@ -552,6 +556,8 @@ First Move:
 <td colspan="3">
 	<select id="1move" onchange="controller.updateParameters()">
 		<option value="stat">Static Spin</option>
+		<option value="weav">Two-Beat Weave</option>
+		<option value="owev">Opposite Weave</option>
 		<option value="2btw">Two-Beat Static Spin</option>
 		<option value="supr">Superman</option>
 		<option value="xtsn">Extension</option>
@@ -611,6 +617,8 @@ Second Move:
 <td colspan="3">
 	<select id="2move" onchange="controller.updateParameters()">
 		<option value="stat">Static Spin</option>
+		<option value="weav">Two-Beat Weave</option>
+		<option value="owev">Opposite Weave</option>
 		<option value="2btw">Two-Beat Static Spin</option>
 		<option value="supr">Superman</option>
 		<option value="xtsn">Extension</option>
@@ -668,6 +676,8 @@ Third Move:
 <td colspan="3">
 	<select id="3move" onchange="controller.updateParameters()">
 		<option value="stat">Static Spin</option>
+		<option value="weav">Two-Beat Weave</option>
+		<option value="owev">Opposite Weave</option>
 		<option value="2btw">Two-Beat Static Spin</option>
 		<option value="supr">Superman</option>
 		<option value="xtsn">Extension</option>
@@ -725,7 +735,9 @@ Fourth Move:
 <form></form>
 <td colspan="3">
 	<select id="4move" onchange="controller.updateParameters()">
-				<option value="stat">Static Spin</option>
+		<option value="stat">Static Spin</option>
+		<option value="weav">Two-Beat Weave</option>
+		<option value="owev">Opposite Weave</option>
 		<option value="2btw">Two-Beat Static Spin</option>
 		<option value="supr">Superman</option>
 		<option value="xtsn">Extension</option>

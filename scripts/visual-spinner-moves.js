@@ -1687,5 +1687,87 @@ MoveFactory.prototype.toss = function(options) {
 	return segment;
 }
 
+//not done yet
+MoveFactory.prototype.weave = function(options) {
+	var move = VS3D.MoveChain();
+	move.definition = options;
+	options = this.defaults(options,{
+		recipe: "weave",
+		movename: "Weave",
+		plane: WALL,
+		direction: CLOCKWISE,
+		spin: INSPIN,
+		beats: 2,
+		extend: 1,
+		axis: null,
+		sway: 0.5,
+		bend: 0.5,
+		speed: 1,
+		entry: THREE,
+		orient: THREE,
+		duration: 1,
+		pitch: FORWARD
+	});
+	var segment = VS3D.MoveLink();
+	segment.prop.plane = options.plane;
+	segment.hand.plane = options.plane;
+	if (options.axis===null) {
+		if (options.plane == WALL) {
+			segment.helper.plane = WHEEL;
+		} else if (options.plane == WHEEL) {
+			segment.helper.plane = WALL;
+		} else if (options.plane == FLOOR) {
+			segment.helper.plane = WHEEL;
+		}
+	} else {
+		segment.helper.plane = options.axis;
+	}
+	segment.helper.angle = 0;
+	segment.hand.speed = 0;
+	segment.hand.radius = 0;
+	segment.hand.speed = 0;
+	segment.prop.angle = options.entry;
+	segment.prop.speed = options.direction*options.speed*options.beats;
+	segment.duration = 0.25;
+	move.add(segment);
+	move.tail().bend = 0;
+	move.tail().bend_speed = 2*options.bend*options.pitch;
+	move.tail().bend_acc = -8*options.bend*options.pitch;
+	move.tail().helper.angle = (options.pitch == FORWARD) ? SPLIT : 0;
+	move.tail().helper.radius = 0;
+	move.tail().helper.stretch = 8*options.sway;
+	move.tail().helper.stretch_acc = -32*options.sway;
+	move.extend();
+	move.tail().bend = 0.25*UNIT*options.bend*options.pitch;
+	move.tail().bend_speed = 0;
+	move.tail().bend_acc = -8*options.bend*options.pitch;
+	move.tail().helper.radius = options.sway;
+	move.tail().helper.stretch = 0;
+	move.tail().helper.stretch_acc = -32*options.sway;
+	move.extend();
+	move.tail().bend = 0;
+	move.tail().bend_speed = -2*options.bend*options.pitch;
+	move.tail().bend_acc = 8*options.bend*options.pitch;
+	move.tail().helper.angle = (options.pitch == FORWARD) ? 0 : SPLIT;
+	move.tail().helper.radius = 0;
+	move.tail().helper.stretch = 8*options.sway;
+	move.tail().helper.stretch_acc = -32*options.sway;
+	move.extend();
+	move.tail().bend = -0.25*UNIT*options.bend*options.pitch;
+	move.tail().bend_speed = 0;
+	move.tail().bend_acc = 8*options.bend*options.pitch;
+	move.tail().helper.radius = options.sway;
+	move.tail().helper.stretch = 0;
+	move.tail().helper.stretch_acc = -32*options.sway;
+
+	//need to add the slice and dice techniques
+
+	move.recipe = options.recipe;
+	move.definition.recipe = options.recipe;
+	move.movename = options.movename;
+	return move;
+}
+
+
 return VS3D;
 })(VS3D);

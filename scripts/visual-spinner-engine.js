@@ -115,6 +115,12 @@ Vector.prototype.unitize = function() {
 	var z = this.z / len;
 	return (new Vector(x,y,z));
 }
+
+Vector.prototype.magnitude = function() {
+	if (this.isZero()) {return this;}	
+	var len = Math.sqrt(this.x*this.x+this.y*this.y+this.z*this.z);
+	return len;
+}
 // Find the diagonal vector halfway between two vectors
 Vector.prototype.diagonal = function(v) {
 	return (new Vector(this.x + v.x, this.y + v.y, this.z + v.z)).unitize();
