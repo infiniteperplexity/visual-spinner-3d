@@ -34,44 +34,44 @@ function init() {
 	propTwo.addMove(vs.Moves.staticspin({extend: 1, orient: vs.NINE, direction: vs.COUNTERCLOCKWISE, duration: 0.25, speed: 2}));
 	propThree.addMove(vs.Moves.staticspin({extend: 1, duration: 0.25, speed: 2}));
 	
-	propOne.addMove(vs.Moves.toss({extend: 1, orient: vs.THREE, duration: 0.5, drift: -4, speed: 2}));
-	propTwo.addMove(vs.Moves.staticspin({extend: 1, orient: vs.NINE, direction: vs.COUNTERCLOCKWISE, duration: 0.25, speed: 4}));
+	propOne.addMove(vs.Moves.toss({extend: 1, duration: 0.5, drift: -4, speed: 2}));
+	propTwo.addMove(vs.Moves.staticspin({extend: 1, direction: vs.COUNTERCLOCKWISE, duration: 0.25, speed: 4}));
 	propThree.addMove(vs.Moves.staticspin({extend: 1, duration: 0.25, speed: 2}));
 	
 	for(var i = 0; i<3; i++) {
-		propTwo.addMove(vs.Moves.toss({extend: 1, orient: vs.NINE, entry: vs.THREE, direction: vs.COUNTERCLOCKWISE, duration: 0.5, drift: 4, speed: 2}));
+		propTwo.addMove(vs.Moves.toss({extend: 1, direction: vs.COUNTERCLOCKWISE, duration: 0.5, drift: 4, speed: 2}));
 		propThree.addMove(vs.Moves.staticspin({extend: 1, duration: 0.25, speed: 6}));
 		
-		propOne.addMove(vs.Moves.staticspin({extend: 1, orient: vs.NINE, direction: vs.COUNTERCLOCKWISE, duration: 0.25, speed: 6}));
-		propThree.addMove(vs.Moves.toss({extend: 1, orient: vs.THREE, duration: 0.5, drift: -4, speed: 2}));
+		propOne.addMove(vs.Moves.staticspin({extend: 1, direction: vs.COUNTERCLOCKWISE, duration: 0.25, speed: 6}));
+		propThree.addMove(vs.Moves.toss({extend: 1, duration: 0.5, drift: -4, speed: 2}));
 		
-		propOne.addMove(vs.Moves.toss({extend: 1, orient: vs.NINE, entry: vs.THREE, direction: vs.COUNTERCLOCKWISE, duration: 0.5, drift: 4, speed: 2}));
+		propOne.addMove(vs.Moves.toss({extend: 1, direction: vs.COUNTERCLOCKWISE, duration: 0.5, drift: 4, speed: 2}));
 		propTwo.addMove(vs.Moves.staticspin({extend: 1, duration: 0.25, speed: 6}));
 		
-		propTwo.addMove(vs.Moves.toss({extend: 1, orient: vs.THREE, entry: vs.NINE, duration: 0.5, drift: -4, speed: 2}));
+		propTwo.addMove(vs.Moves.toss({extend: 1, duration: 0.5, drift: -4, speed: 2}));
 		propThree.addMove(vs.Moves.staticspin({extend: 1, direction: vs.COUNTERCLOCKWISE, duration: 0.25, speed: 6}));
 		
 		propOne.addMove(vs.Moves.staticspin({extend: 1, duration: 0.25, speed: 6}));
-		propThree.addMove(vs.Moves.toss({extend: 1, orient: vs.NINE, entry: vs.THREE, direction: vs.COUNTERCLOCKWISE, duration: 0.5, drift: 4, speed: 2}));
+		propThree.addMove(vs.Moves.toss({extend: 1, direction: vs.COUNTERCLOCKWISE, duration: 0.5, drift: 4, speed: 2}));
 		
-		propOne.addMove(vs.Moves.toss({extend: 1, orient: vs.THREE, duration: 0.5, drift: -4, speed: 2}));
-		propTwo.addMove(vs.Moves.staticspin({extend: 1, orient: vs.NINE, direction: vs.COUNTERCLOCKWISE, duration: 0.25, speed: 6}));
+		propOne.addMove(vs.Moves.toss({extend: 1, duration: 0.5, drift: -4, speed: 2}));
+		propTwo.addMove(vs.Moves.staticspin({extend: 1, direction: vs.COUNTERCLOCKWISE, duration: 0.25, speed: 6}));
 	}
-	propTwo.addMove(vs.Moves.toss({extend: 1, orient: vs.NINE, entry: vs.THREE, direction: vs.COUNTERCLOCKWISE, duration: 0.5, drift: 4, speed: 2}));
+	propTwo.addMove(vs.Moves.toss({extend: 1, direction: vs.COUNTERCLOCKWISE, duration: 0.5, drift: 4, speed: 2}));
 	propThree.addMove(vs.Moves.staticspin({extend: 1, duration: 0.25, speed: 6}));
 		
-	propOne.addMove(vs.Moves.staticspin({extend: 1, orient: vs.NINE, direction: vs.COUNTERCLOCKWISE, duration: 0.25, speed: 6}));
-	propThree.addMove(vs.Moves.toss({extend: 1, orient: vs.THREE, duration: 0.5, drift: -4, speed: 2}));
+	propOne.addMove(vs.Moves.staticspin({extend: 1, direction: vs.COUNTERCLOCKWISE, duration: 0.25, speed: 6}));
+	propThree.addMove(vs.Moves.toss({extend: 1, duration: 0.5, drift: -4, speed: 2}));
 		
-	propOne.addMove(vs.Moves.toss({extend: 1, orient: vs.NINE, entry: vs.THREE, direction: vs.COUNTERCLOCKWISE, duration: 0.5, drift: 4, speed: 2}));
+	propOne.addMove(vs.Moves.toss({extend: 1, direction: vs.COUNTERCLOCKWISE, duration: 0.5, drift: 4, speed: 2}));
 	propTwo.addMove(vs.Moves.staticspin({extend: 1, duration: 0.25, speed: 6}));
 		
-	propTwo.addMove(vs.Moves.toss({extend: 1, orient: vs.THREE, entry: vs.NINE, duration: 0.5, drift: -4, speed: 2}));
+	propTwo.addMove(vs.Moves.toss({extend: 1, duration: 0.5, drift: -4, speed: 2}));
 	propThree.addMove(vs.Moves.staticspin({extend: 1, direction: vs.COUNTERCLOCKWISE, duration: 0.25, speed: 6}));
 		
 	propOne.addMove(vs.Moves.staticspin({extend: 1, duration: 0.5, speed: 6}));
-	propTwo.addMove(vs.Moves.staticspin({extend: 1, orient: vs.NINE, direction: vs.COUNTERCLOCKWISE, duration: 0.25, speed: 4}));
-	propThree.addMove(vs.Moves.toss({extend: 1, orient: vs.NINE, entry: vs.THREE, direction: vs.COUNTERCLOCKWISE, duration: 0.5, drift: 4, speed: 2}));
+	propTwo.addMove(vs.Moves.staticspin({extend: 1, direction: vs.COUNTERCLOCKWISE, duration: 0.25, speed: 4}));
+	propThree.addMove(vs.Moves.toss({extend: 1, direction: vs.COUNTERCLOCKWISE, duration: 0.5, drift: 4, speed: 2}));
 	
 	vs.addControls("play","pause","rewind","frame","forward","reset","2d3d");
 	vs.ready();

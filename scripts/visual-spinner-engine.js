@@ -1285,10 +1285,7 @@ MoveChain.prototype.modifyTail = function(options) {
 	tail.modify(options);
 	return this;
 }
-MoveLink.prototype.reorient = function () {
-		//probably it should warn you if this fails...
-        return this;
-}
+
 MoveLink.prototype.modifyTail = function(options) {
         var tail = this;
         var parent = tail.parent;
@@ -1374,14 +1371,12 @@ MoveChain.prototype.reorient = function(target) {
 	if (retrn !== null) {return retrn;}
 	var definition = this.definition;
 	if (definition === undefined) {
-		alert("Cannot reorient a move that has no attached definition.");
-		return null;
+		return this;
 	}
 	var entry = definition.entry || THREE;
 	var orient = definition.orient || THREE;
 	if (entry === undefined || orient === undefined) {
-		alert("Cannot reorient a move that has no defined orientation or entry.");
-		return null;
+		return this;
 	}
 	var hand;
 	var prop;
@@ -1411,8 +1406,12 @@ MoveChain.prototype.reorient = function(target) {
 		}
 	}
 	// Otherwise fail
-	alert("Reorientation failed.");
+	alert("Socketing failed (unable to align next move with end of prior move.)");
 	return null;
+}
+
+MoveLink.prototype.reorient = function (target) {
+	return MoveChain.prototype.reorient.call(this,target);
 }
 
 
