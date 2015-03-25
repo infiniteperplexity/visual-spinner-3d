@@ -71,7 +71,84 @@ The engine does not model the human body, so even though you can model the prop 
 </li>
 </ul>
 </p>
-<h3>Moves:</h3>
-(coming soon)
+<br>
+<h3>
+Movements:
+</h3>
+<p>
+When a prop spinner describes "a move", they are typically referring to a series of hand and prop.  For example, a four-petal anti-spin flower can be described by a circular hand path spinning in one direction, and a circular prop path spinning three times as fast in the other direction.  And the move exists over a certain period of time; one "flower" refers to the movements of the hand and poi during the time it takes the hand to complete one full circle.
+</p>
+<p>
+That's simply a convention.  We could just as easily divide the move into smaller motions, and instead of saying, "she spun an anti-spin flower," say, "she spun four anti-spin petals in a row."  And just as several petals can be sequenced together to create a flower, flowers and other moves can be sequenced together to create a performance.  You could repeat this without limit in either direction, splitting a flower into petals, and then the petals into even brief movements; or combining moves into routines, and then combining routines into longer routines, and so on.
+</p>
+<p>
+In computer science, this property is called <a href="http://en.wikipedia.org/wiki/Composability">composability</a>, and the resulting structure is called a <a href=http://en.wikipedia.org/wiki/Tree_%28data_structure%29>tree</a> - you could think of an entire routine as the tree, a C-CAP as a small branch, and the half-extension and half-antispin segments as leaves.  Specifically, a prop-spinning routine is an "ordered tree", which means every individual motion - the "leaves" - happens in a specific order.
+</p>
+<p>
+In VisualSpinner3D, the "leaves" are called <b>MoveLinks</b>, and contain simple instructions for the position, speed, and acceleration of the coordinates: home, pivot, helper, hand, prop, grip, choke, twist, and bend.  The "branches" are called <b>MoveChains</b>, and each MoveChain has a list of its "children", which could be any combination of MoveLinks or shorter MoveChains.
+</p>
+<h4>
+Recipes:
+</h4>
+<p>
+Even though we could combine movements into chunks of any size, it is easiest for spinners to think of them in terms of familiar "moves."  VisualSpinner3D models moves using <b>recipes</b>, which are sets of instructions for building a MoveChain out of MoveLinks.  For example, the "flower" recipe generates a number of petals (MoveLinks) and combines them together to form a flower (MoveChain.)  By default, the "flower" recipe creates a flower that has four in-spin petals in diamond mode, spins clockwise from the "3 o' clock" position in the wall plane, with a hand extension of one prop length, centered around the origin (roughly, the spinner's chest.)  But when you use a recipe, you can change any or all of these options; for example, you could change the "petals", "spin", and "entry" options to make a three-petal anti-spin flower that begins at the six o' clock position in the wall plane.  Different recipes have different options; for example, the "toroid" recipe has an option called "pitch" that describes which direction the prop bends toward.
+</p>
+<p>
+When a recipe creates a move, it tags the MoveChain with a list of all the selected options, called the <b>definition.</b>  The definition isn't very appealing to the human eye...
+</p>
+<code>
 
+{
+<br>
+&nbsp;"movename": "Four-Petal Anti-Spin Flower",
+<br>
+&nbsp;"recipe": "flower",
+<br>
+&nbsp;"spin": -1,
+<br>
+&nbsp;"petals": 4,
+<br>
+&nbsp;"orient": 0,
+<br>
+&nbsp;"entry": 0,
+<br>
+&nbsp;"duration": 1,
+<br>
+&nbsp;"extend": 1,
+<br>
+&nbsp;"direction": 1,
+<br>
+&nbsp;"mode": 0,
+<br>
+&nbsp;"plane": {
+<br>
+&nbsp;&nbsp;"x": 0,
+<br>
+&nbsp;&nbsp;"y": 0,
+<br>
+&nbsp;&nbsp;"z": 1
+<br>
+&nbsp;},
+<br>
+&nbsp;"pivot_angle": 0,
+<br>&nbsp;"pivot_radius": 0,
+<br>
+&nbsp;"phase": 1
+<br>}
+</code>
+<p>
+...however, that list tells VisualSpinner3D everything it needs to know about how to build that move from scratch.  That's helpful for a number of reasons.  First, it means we can "save our work" by exporting the text of the definition to a file, using a format called <a href="http://json.org/">JSON</a>, and re-load it later.  Second, it means the engine can tweak the move in order to ensure smooth transitions, using a system called <b>socketing.</b>
+</p>
+<h4>
+Sockets:
+</h4>
+<p>
+In real life, if I spin a diamond-mode, four-petal anti-spin flower, with an arm extension of one prop length, that ends in the 3 o' clock wall plane position, the very next move I spin has to begin with both the hand and the prop in the 3 o' clock wall plane position, with the arm extended one prop length.  Otherwise, the prop would have to teleport!
+</p>
+<p>
+VisualSpinner3D doesn't have to obey real-world physics, so teleporting props are a real possibility, especially if you sequence moves together without carefully choosing the right options.  Fortunately, VisualSpinner3D uses a system of <b>sockets</b> that makes things easier.  Each move has a starting and ending socket that describes where exactly the handle and prop head are located in three-dimensional space.
+</p>
+<p>
+By default, when you add a move to a prop that already has a list of moves to spin, the engine compares the ending socket of the last move on the list to the beginning socket on the new move you are trying to add.  If they don't match, the engine will try to fix the problem by tweaking certain options on the new move - currently, it cycles through all possible combinations of "orient" and "entry", and in the future it might try different "modes" as well - until it finds a socket that fits.  Then it rebuilds the move according to the modified recipe.  If it can't find a socket that fits, it pops up an alert box warning you that the move doesn't fit and that the simulation won't look realistic.
+</p>
 </body></html>

@@ -313,6 +313,7 @@ VisualSpinnerWidget.prototype.populateFromJSON = function(json) {
 function HTML5Canvas2dRenderer() {
 	var canvas = undefined;
 	this.context = undefined;
+	this.pixels = 60;
 }
 HTML5Canvas2dRenderer.prototype.activate = function(widget) {
 	this.canvas = widget.canvas;
@@ -333,7 +334,7 @@ HTML5Canvas2dRenderer.prototype.render = function(scene) {
 		this.context.translate(this.canvas.width/2, this.canvas.height/2);
 		for (var j = HOME; j<=HAND; j++) {
 			this.context.rotate(prop[ELEMENTS[j]].azimuth);
-			this.context.translate(Math.sin(prop[ELEMENTS[j]].zenith)*prop[ELEMENTS[j]].radius*60,0);
+			this.context.translate(Math.sin(prop[ELEMENTS[j]].zenith)*prop[ELEMENTS[j]].radius*this.pixels,0);
 			this.context.rotate(-prop[ELEMENTS[j]].azimuth);
 		}
 		// BEND
@@ -343,6 +344,7 @@ HTML5Canvas2dRenderer.prototype.render = function(scene) {
 		this.context.translate(Math.sin(s.zenith)*0.5*prop.prop.radius*this.pixels,0);
 		this.context.rotate(prop.grip);
 		this.context.translate(Math.sin(s.zenith)*(-prop.choke-0.5)*prop.prop.radius*this.pixels,0);
+		//this.context.translate(Math.sin(s.zenith)*(-prop.choke-0.5)*prop.prop.radius*this.pixels,0);
 		// actually draw the thing...
 		if (prop.propType === "poi") {
 			this.renderPoi(prop);
