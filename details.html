@@ -151,4 +151,59 @@ VisualSpinner3D doesn't have to obey real-world physics, so teleporting props ar
 <p>
 By default, when you add a move to a prop that already has a list of moves to spin, the engine compares the ending socket of the last move on the list to the beginning socket on the new move.  If they don't match, the engine will try to fix the problem by tweaking certain options on the new move (currently, it cycles through all possible combinations of "orient" and "entry", and in the future it might try different "modes" as well) until it finds a socket that fits.  Then it rebuilds the move according to the modified recipe.  If it can't find a socket that fits, it pops up an alert box warning you that the move doesn't fit and that the simulation won't look realistic.
 </p>
+<br>
+<h3>
+Code:
+</h3>
+<p>
+VisualSpinner3D is written in JavaScript.  The engine consists of three scripts: <code>visual-spinner-engine.js</code>, <code>visual-spinner-moves.js</code>, and <code>visual-spinner-ui.js</code>.
+</p>
+<p>
+The <code>engine.js</code> script defines the rules for how <code>Props</code>, <code>MoveLinks</code>, and <code>MoveChains</code> interact, the geometrical helper methods for encoding circular and linear motions, and the tools for importing and exporting JSON definitions.  It also contains a variety of useful constants, with names like <code>CLOCKWISE</code>, <code>OPPOSITE</code>, <code>ANTISPIN</code>, and so on, that translate spinning concepts into mathematical parameters (<code>CLOCKWISE</code> equals 1, <code>ANTISPIN</code> equals -1, and <code>OPPOSITE</code> equals 2&Pi; radians.)
+</p>
+<p>
+The <code>moves.js</code> script defines all built-in recipes: flowers, CAPs, weaves, tosses, and all the rest.
+</p>
+<p>
+The <code>ui.js</code> script defines the HTML5Canvas2dRenderer and the Phoria3dRenderer, which use two different graphics engines to animate props in either 2D or 3D.  It also defines a VisualSpinnerWidget that embeds a customizable VisualSpinner3D GUI element into a website.
+</p>
+<p>
+A page that incorporates VisualSpinner3D needs a <code>/scripts</code> directory and should include the following code:
+</p>
+<code>
+&ltscript&gtsrc="scripts/visual-spinner-engine.js">&lt/script&gt
+<br>
+&ltscript&gtsrc="scripts/visual-spinner-moves.js">&lt/script&gt
+<br>
+&ltscript&gtsrc="scripts/visual-spinner-ui.js">&lt/script&gt
+<br>
+</code>
+<p>
+The root JavaScript object of the VisualSpinner3D engine is called VS3D.  A new widget can be created like so:
+</p>
+<code>
+var vs = VS3D.VisualSpinnerWidget();
+<br>
+vs.embedById("theIdTagOfSomeDivOnMyPage");
+<br>
+vs.addControls("play","pause","rewind","frame","forward","reset","2d3d");
+<br>
+</code>
+<p>
+Props and moves can be added like so:
+</p>
+<code>
+var myProp = vs.addProp();
+<br>
+myProp.color = "orange";
+<br>
+myProp.addMove(VS3D.moves.flower({direction: VS3D.COUNTERCLOCKWISE, petals: 3, spin:  VS3D.ANTISPIN});
+myProp.addMove(VS3D.moves.pendulum({speed: 2, duration: 0.25});
+</code>
+<p>
+(As described earlier, in most cases the <code>Prop.addMove</code> method will automatically reorient the new move to match the ending socket of the existing list of moves.)
+</p>
+<p>
+By default, the widget allows playback of a pre-specified sequenced of moves.  More advanced functionality, including menus, drag-and-drop, and other features seen on the various pages of this site, require custom JavaScript and fuller understanding of the VisualSpinner3D code base.
+</p>
 </body></html>
