@@ -35,28 +35,591 @@
     "z": 1
   },
   "propType": "poi",
-  "color": "blue",
+  "color": "orange",
   "fire": false,
   "moves": [
     {
-      "movename": "Four-Petal In-Spin Flower",
-      "recipe": "flower",
-      "spin": 1,
-      "petals": 4,
-      "orient": 0,
-      "entry": 0,
-      "duration": 1,
+      "hybrid": true,
+      "direction": -1,
       "extend": 1,
-      "direction": 1,
-      "mode": 0,
-      "plane": {
-        "x": 0,
-        "y": 0,
-        "z": 1
-      },
+      "duration": 0.5,
+      "entry": 3.141592653589793,
+      "phase": 2,
+      "recipe": "pendulum",
+      "movename": "Pendulum",
+      "orient": 1.5707963267948966,
+      "abrupt": true
+    },
+    {
+      "hybrid": true,
+      "duration": 0.5,
+      "twirl": -3,
+      "phase": 3,
+      "recipe": "pendulum",
+      "movename": "Pendulum",
+      "orient": 1.5707963267948966,
+      "entry": 0
+    },
+    {
+      "hybrid": true,
+      "direction": -1,
+      "extend": 1,
+      "duration": 0.5,
+      "phase": 3,
+      "recipe": "pendulum",
+      "movename": "Pendulum",
+      "orient": 1.5707963267948966,
+      "entry": 3.141592653589793
+    },
+    {
+      "hybrid": true,
+      "duration": 0.5,
+      "twirl": -3,
+      "phase": 3,
+      "recipe": "pendulum",
+      "movename": "Pendulum",
+      "orient": 1.5707963267948966,
+      "entry": 0,
+      "modify_tail": {
+        "prop_speed": -1,
+        "prop_acc": 0,
+        "hand_stretch": -2
+      }
+    },
+    {
+      "petals": 0,
       "pivot_angle": 0,
-      "pivot_radius": 0,
+      "pivot_radius": 0.5,
+      "duration": 0.5,
+      "mode": 3.141592653589793,
+      "recipe": "flower",
+      "orient": 0,
+      "entry": 3.141592653589793,
       "phase": 1
+    },
+    {
+      "spin": -1,
+      "pivot_angle": 0,
+      "pivot_radius": 1,
+      "duration": 1.5,
+      "phase": 0,
+      "recipe": "isolation",
+      "movename": "Cat-Eye",
+      "orient": 0,
+      "entry": 0
+    },
+    {
+      "direction": -1,
+      "extend": 0.5,
+      "duration": 0.5,
+      "recipe": "staticspin",
+      "orient": 0,
+      "entry": 0
+    },
+    {
+      "direction": -1,
+      "duration": 0.5,
+      "pivot_angle": 0,
+      "pivot_radius": 0.5,
+      "recipe": "staticspin",
+      "orient": 0,
+      "entry": 3.141592653589793,
+      "modify_tail": {
+        "pivot_stretch": 2
+      }
+    },
+    {
+      "direction": -1,
+      "petals": 0,
+      "duration": 0.5,
+      "recipe": "flower",
+      "orient": 0,
+      "entry": 0
+    },
+    {
+      "orient": 4.71238898038469,
+      "direction": -1,
+      "phase": 2,
+      "recipe": "ccap"
+    },
+    {
+      "orient": 4.71238898038469,
+      "direction": -1,
+      "phase": 2,
+      "recipe": "ccap"
+    },
+    {
+      "orient": 3.141592653589793,
+      "direction": -1,
+      "phase": 0,
+      "duration": 0.25,
+      "recipe": "ccap",
+      "entry": 0
+    },
+    {
+      "orient": 4.71238898038469,
+      "direction": -1,
+      "phase": 3,
+      "recipe": "oval"
+    },
+    {
+      "orient": 4.71238898038469,
+      "direction": -1,
+      "duration": 0.25,
+      "phase": 2,
+      "recipe": "oval",
+      "entry": 4.71238898038469
+    },
+    {
+      "direction": -1,
+      "duration": 0.25,
+      "phase": 0,
+      "recipe": "isolation",
+      "modify": {
+        "pivot_angle": 4.71238898038469,
+        "pivot_stretch": 4
+      },
+      "orient": 0,
+      "entry": 3.141592653589793
+    },
+    {
+      "spin": -1,
+      "petals": 3,
+      "extend": 0.5,
+      "mode": 0,
+      "recipe": "flower",
+      "phase": 3,
+      "orient": 4.71238898038469,
+      "entry": 0
+    },
+    {
+      "spin": -1,
+      "petals": 3,
+      "extend": 0.5,
+      "mode": 0,
+      "recipe": "flower",
+      "phase": 3,
+      "orient": 4.71238898038469,
+      "entry": 0
+    },
+    {
+      "spin": -1,
+      "petals": 3,
+      "extend": 0.5,
+      "mode": 0,
+      "duration": 0.5,
+      "recipe": "flower",
+      "orient": 4.71238898038469,
+      "entry": 4.71238898038469
+    },
+    {
+      "spin": -1,
+      "phase": 0,
+      "recipe": "isolation",
+      "movename": "Cat-Eye",
+      "orient": 0,
+      "entry": 1.5707963267948966
+    },
+    {
+      "spin": -1,
+      "phase": 0,
+      "recipe": "isolation",
+      "movename": "Cat-Eye",
+      "orient": 0,
+      "entry": 1.5707963267948966
+    },
+    {
+      "spin": -1,
+      "petals": 3,
+      "extend": 0.5,
+      "recipe": "flower",
+      "phase": 1,
+      "orient": 4.71238898038469,
+      "entry": 0
+    },
+    {
+      "spin": -1,
+      "petals": 3,
+      "extend": 0.5,
+      "duration": 0.5,
+      "recipe": "flower",
+      "orient": 4.71238898038469,
+      "entry": 1.5707963267948966,
+      "phase": 1
+    },
+    {
+      "spin": -1,
+      "offset": 0,
+      "duration": 1,
+      "phase": 2,
+      "recipe": "isolation",
+      "movename": "Cat-Eye",
+      "orient": 0,
+      "entry": 1.5707963267948966
+    },
+    {
+      "spin": -1,
+      "offset": 0,
+      "duration": 0.75,
+      "phase": 0,
+      "recipe": "isolation",
+      "movename": "Cat-Eye",
+      "orient": 0,
+      "entry": 4.71238898038469
+    },
+    {
+      "entry": 0,
+      "hand": 3.141592653589793,
+      "direction": -1,
+      "extend": 0.5,
+      "duration": 0.5,
+      "recipe": "staticspin",
+      "orient": 3.141592653589793
+    },
+    {
+      "direction": -1,
+      "pivot_angle": 3.141592653589793,
+      "pivot_radius": 1,
+      "duration": 0.5,
+      "phase": 0,
+      "recipe": "isolation",
+      "orient": 0,
+      "entry": 0
+    },
+    {
+      "recipe": "antipendulum",
+      "movename": "Anti-Pendulum",
+      "lift": 0.5,
+      "swing": 1,
+      "spin": -1,
+      "extend": 0.5,
+      "pivot_angle": 3.141592653589793,
+      "pivot_radius": 1,
+      "duration": 0.25,
+      "phase": 1,
+      "orient": 1.5707963267948966,
+      "modify": {
+        "helper_radius": 0,
+        "helper_stretch": 6,
+        "helper_stretch_acc": -16
+      },
+      "entry": 3.141592653589793
+    },
+    {
+      "recipe": "antipendulum",
+      "movename": "Anti-Pendulum",
+      "lift": 0.5,
+      "swing": 0.75,
+      "spin": -1,
+      "extend": 0.5,
+      "pivot_angle": 3.141592653589793,
+      "pivot_radius": 1,
+      "duration": 0.75,
+      "phase": 2,
+      "orient": 1.5707963267948966,
+      "modify_tail": {
+        "prop_acc": 4,
+        "helper_stretch_acc": -16
+      },
+      "entry": 4.71238898038469
+    },
+    {
+      "mode": 3.141592653589793,
+      "petals": 0,
+      "pivot_angle": 3.141592653589793,
+      "pivot_radius": 0.5,
+      "duration": 0.5,
+      "recipe": "flower",
+      "orient": 0,
+      "entry": 3.141592653589793,
+      "phase": 1
+    },
+    {
+      "spin": -1,
+      "duration": 1.5,
+      "phase": 0,
+      "recipe": "isolation",
+      "movename": "Cat-Eye",
+      "orient": 0,
+      "entry": 0
+    },
+    {
+      "direction": -1,
+      "extend": 0.5,
+      "duration": 0.5,
+      "recipe": "staticspin",
+      "orient": 3.141592653589793,
+      "entry": 0
+    },
+    {
+      "direction": -1,
+      "pivot_angle": 3.141592653589793,
+      "pivot_radius": 1,
+      "duration": 1.5,
+      "phase": 0,
+      "recipe": "isolation",
+      "orient": 0,
+      "entry": 0
+    },
+    {
+      "hand_angle": 3.141592653589793,
+      "prop_angle": 0,
+      "pivot_angle": 3.141592653589793,
+      "pivot_radius": 1,
+      "pivot_stretch": -3,
+      "hand_radius": 0.5,
+      "hand_speed": -1,
+      "prop_speed": -1,
+      "duration": 0.5,
+      "recipe": "generic"
+    },
+    {
+      "spin": -1,
+      "entry": 0,
+      "pivot_angle": 0,
+      "pivot_radius": 0.5,
+      "duration": 1.5,
+      "phase": 0,
+      "recipe": "isolation",
+      "movename": "Cat-Eye",
+      "orient": 0
+    },
+    {
+      "hand_angle": 3.141592653589793,
+      "prop_angle": 0,
+      "hand_radius": 1,
+      "pivot_angle": 0,
+      "pivot_radius": 1,
+      "hand_speed": 0,
+      "hand_acc": -8,
+      "prop_speed": 0,
+      "prop_acc": -24,
+      "duration": 0.25,
+      "recipe": "generic"
+    },
+    {
+      "hand_angle": 1.5707963267948966,
+      "prop_angle": 1.5707963267948966,
+      "hand_radius": 1,
+      "pivot_angle": 0,
+      "pivot_radius": 1,
+      "hand_speed": -2,
+      "hand_acc": 8,
+      "prop_speed": -6,
+      "prop_acc": 24,
+      "duration": 0.25,
+      "pivot_stretch": -4,
+      "recipe": "generic"
+    },
+    {
+      "exit": true,
+      "mode": 3.141592653589793,
+      "entry": 0,
+      "petals": 2,
+      "direction": -1,
+      "duration": 0.25,
+      "recipe": "stall"
+    },
+    {
+      "exit": false,
+      "entry": 4.71238898038469,
+      "petals": 2,
+      "direction": -1,
+      "duration": 0.25,
+      "recipe": "stall"
+    },
+    {
+      "exit": true,
+      "mode": 3.141592653589793,
+      "entry": 3.141592653589793,
+      "petals": 2,
+      "duration": 0.25,
+      "recipe": "stall"
+    },
+    {
+      "exit": false,
+      "entry": 4.71238898038469,
+      "petals": 2,
+      "duration": 0.25,
+      "recipe": "stall"
+    },
+    {
+      "exit": true,
+      "mode": 3.141592653589793,
+      "entry": 0,
+      "petals": 2,
+      "direction": -1,
+      "duration": 0.25,
+      "recipe": "stall"
+    },
+    {
+      "exit": false,
+      "entry": 4.71238898038469,
+      "petals": 2,
+      "direction": -1,
+      "duration": 0.25,
+      "recipe": "stall"
+    },
+    {
+      "exit": true,
+      "mode": 3.141592653589793,
+      "entry": 3.141592653589793,
+      "petals": 2,
+      "duration": 0.25,
+      "recipe": "stall"
+    },
+    {
+      "exit": false,
+      "entry": 4.71238898038469,
+      "petals": 2,
+      "duration": 0.25,
+      "recipe": "stall"
+    },
+    {
+      "exit": true,
+      "mode": 3.141592653589793,
+      "entry": 0,
+      "petals": 2,
+      "direction": -1,
+      "duration": 0.25,
+      "recipe": "stall"
+    },
+    {
+      "exit": false,
+      "entry": 4.71238898038469,
+      "petals": 2,
+      "direction": -1,
+      "duration": 0.25,
+      "recipe": "stall"
+    },
+    {
+      "direction": -1,
+      "pivot_angle": 3.141592653589793,
+      "pivot_radius": 0.5,
+      "duration": 2.5,
+      "phase": 0,
+      "recipe": "isolation",
+      "orient": 0,
+      "entry": 3.141592653589793
+    },
+    {
+      "direction": -1,
+      "duration": 2.75,
+      "recipe": "staticspin",
+      "modify_tail": {
+        "pivot_angle": 1.5707963267948966,
+        "pivot_stretch": 2
+      },
+      "orient": 0,
+      "entry": 3.141592653589793
+    },
+    {
+      "direction": -1,
+      "duration": 1.5,
+      "phase": 0,
+      "recipe": "isolation",
+      "orient": 0,
+      "entry": 1.5707963267948966
+    },
+    {
+      "direction": -1,
+      "orient": 3.141592653589793,
+      "duration": 0.5,
+      "phase": 0,
+      "recipe": "oval",
+      "entry": 4.71238898038469
+    },
+    {
+      "direction": -1,
+      "duration": 0.5,
+      "phase": 0,
+      "recipe": "isolation",
+      "modify_tail": {
+        "duration": 0.125
+      },
+      "orient": 0,
+      "entry": 1.5707963267948966
+    },
+    {
+      "direction": -1,
+      "entry": 5.497787143782138,
+      "orient": 3.9269908169872414,
+      "duration": 0.5,
+      "phase": 1,
+      "recipe": "oval"
+    },
+    {
+      "hand_angle": 2.356194490192345,
+      "prop_angle": 5.497787143782138,
+      "hand_radius": 0.5,
+      "hand_stretch": 2,
+      "prop_speed": -2,
+      "duration": 0.25,
+      "recipe": "generic"
+    },
+    {
+      "direction": -1,
+      "petals": 1,
+      "minor": 0.075,
+      "entry": 2.356194490192345,
+      "orient": 2.356194490192345,
+      "duration": 0.25,
+      "recipe": "oval",
+      "modify_tail": {
+        "duration": 0.125
+      }
+    },
+    {
+      "hand_angle": 1.5707963267948966,
+      "prop_angle": 0.7853981633974483,
+      "hand_radius": 0.3,
+      "hand_stretch": 3,
+      "prop_speed": -3.5,
+      "duration": 0.25,
+      "recipe": "generic"
+    },
+    {
+      "direction": -1,
+      "petals": 2,
+      "orient": 1.5707963267948966,
+      "duration": 0.5,
+      "phase": 0,
+      "recipe": "linex",
+      "entry": 1.5707963267948966
+    },
+    {
+      "direction": -1,
+      "orient": 4.71238898038469,
+      "duration": 0.5,
+      "phase": 2,
+      "recipe": "oval",
+      "entry": 4.71238898038469
+    },
+    {
+      "spin": -1,
+      "duration": 1.5,
+      "recipe": "flower",
+      "orient": 0,
+      "entry": 1.5707963267948966,
+      "phase": 0
+    },
+    {
+      "direction": -1,
+      "petals": 2,
+      "orient": 4.71238898038469,
+      "duration": 0.25,
+      "phase": 0,
+      "recipe": "linex",
+      "entry": 4.71238898038469
+    },
+    {
+      "speed": 2,
+      "direction": -1,
+      "stretch": -1.5,
+      "duration": 0.5,
+      "recipe": "spiral",
+      "orient": 0,
+      "entry": 0
     }
   ]
 }, "prop2": {
@@ -77,13 +640,13 @@
     "zenith": 1.5707963267948966
   },
   "hand": {
-    "radius": 1,
-    "azimuth": 0.0001,
+    "radius": 0.0001,
+    "azimuth": 3.141692653589793,
     "zenith": 1.5707963267948966
   },
   "prop": {
     "radius": 1,
-    "azimuth": 0.0001,
+    "azimuth": 3.141692653589793,
     "zenith": 1.5707963267948966
   },
   "twist": 0,
@@ -96,27 +659,520 @@
     "z": 1
   },
   "propType": "poi",
-  "color": "red",
+  "color": "white",
   "fire": false,
   "moves": [
     {
-      "movename": "Four-Petal Anti-Spin Flower",
+      "direction": -1,
+      "extend": 0.0001,
+      "duration": 0.5,
+      "entry": 3.141592653589793,
+      "phase": 2,
+      "recipe": "pendulum",
+      "movename": "Pendulum",
+      "orient": 1.5707963267948966,
+      "abrupt": true
+    },
+    {
+      "extend": 0,
+      "duration": 0.5,
+      "phase": 3,
+      "recipe": "pendulum",
+      "movename": "Pendulum",
+      "orient": 1.5707963267948966,
+      "entry": 0
+    },
+    {
+      "direction": -1,
+      "extend": 0,
+      "duration": 0.5,
+      "phase": 3,
+      "recipe": "pendulum",
+      "movename": "Pendulum",
+      "orient": 1.5707963267948966,
+      "entry": 3.141592653589793
+    },
+    {
+      "direction": 1,
+      "extend": 0,
+      "duration": 0.5,
+      "phase": 3,
+      "recipe": "pendulum",
+      "movename": "Pendulum",
+      "orient": 1.5707963267948966,
+      "entry": 0,
+      "modify_tail": {
+        "pivot_stretch": 2,
+        "pivot_angle": 0
+      }
+    },
+    {
+      "extend": 0.5,
+      "duration": 0.5,
+      "recipe": "staticspin",
+      "orient": 0,
+      "entry": 3.141592653589793
+    },
+    {
+      "pivot_angle": 0,
+      "pivot_radius": 1,
+      "duration": 1.5,
+      "phase": 0,
+      "recipe": "isolation",
+      "orient": 0,
+      "entry": 3.141592653589793
+    },
+    {
+      "mode": 3.141592653589793,
+      "direction": -1,
+      "petals": 0,
+      "pivot_angle": 0,
+      "pivot_radius": 0.5,
+      "duration": 0.25,
       "recipe": "flower",
-      "spin": -1,
-      "petals": 4,
+      "orient": 0,
+      "entry": 0
+    },
+    {
+      "mode": 3.141592653589793,
+      "petals": 0,
+      "pivot_angle": 0,
+      "pivot_radius": 0.5,
+      "duration": 0.25,
+      "recipe": "flower",
+      "orient": 0,
+      "entry": 4.71238898038469,
+      "phase": 2
+    },
+    {
+      "mode": 3.141592653589793,
+      "direction": -1,
+      "petals": 0,
+      "duration": 0.5,
+      "pivot_angle": 0,
+      "pivot_radius": 0.5,
+      "recipe": "flower",
       "orient": 0,
       "entry": 0,
-      "duration": 1,
-      "extend": 1,
+      "modify_tail": {
+        "pivot_stretch": 2
+      }
+    },
+    {
+      "direction": -1,
+      "duration": 0.5,
+      "recipe": "staticspin",
+      "orient": 0,
+      "entry": 0
+    },
+    {
       "direction": 1,
-      "mode": 0,
-      "plane": {
-        "x": 0,
-        "y": 0,
-        "z": 1
+      "extend": 0,
+      "duration": 1,
+      "phase": 1,
+      "recipe": "pendulum",
+      "movename": "Pendulum",
+      "orient": 1.5707963267948966
+    },
+    {
+      "direction": 1,
+      "extend": 0,
+      "duration": 1,
+      "phase": 1,
+      "recipe": "pendulum",
+      "movename": "Pendulum",
+      "orient": 1.5707963267948966
+    },
+    {
+      "direction": 1,
+      "extend": 0,
+      "duration": 0.25,
+      "phase": 1,
+      "recipe": "pendulum",
+      "movename": "Pendulum",
+      "orient": 1.5707963267948966,
+      "modify": {
+        "hand_angle": 1.5707963267948966,
+        "hand_speed": 0,
+        "hand_stretch": 4
       },
+      "entry": 3.141592653589793
+    },
+    {
+      "orient": 1.5707963267948966,
+      "direction": -1,
+      "phase": 3,
+      "recipe": "oval"
+    },
+    {
+      "orient": 1.5707963267948966,
+      "direction": -1,
+      "duration": 0.25,
+      "phase": 0,
+      "recipe": "oval",
+      "entry": 1.5707963267948966
+    },
+    {
+      "direction": -1,
+      "duration": 0.25,
+      "phase": 0,
+      "recipe": "isolation",
+      "modify": {
+        "pivot_angle": 4.71238898038469,
+        "pivot_stretch": 4
+      },
+      "orient": 0,
+      "entry": 0
+    },
+    {
+      "recipe": "antipendulum",
+      "movename": "Anti-Pendulum",
+      "lift": 0.5,
+      "swing": 0.75,
+      "spin": -1,
+      "extend": 0.5,
+      "direction": -1,
+      "phase": 2,
+      "orient": 1.5707963267948966
+    },
+    {
+      "recipe": "antipendulum",
+      "movename": "Anti-Pendulum",
+      "lift": 0.5,
+      "swing": 0.75,
+      "spin": -1,
+      "extend": 0.5,
+      "direction": -1,
+      "phase": 2,
+      "orient": 1.5707963267948966
+    },
+    {
+      "recipe": "antipendulum",
+      "movename": "Anti-Pendulum",
+      "lift": 0.5,
+      "swing": 0.75,
+      "spin": -1,
+      "extend": 0.5,
+      "direction": -1,
+      "duration": 0.5,
+      "phase": 2,
+      "orient": 1.5707963267948966,
+      "entry": 4.71238898038469,
+      "modify_tail": {
+        "helper_stretch": 2
+      }
+    },
+    {
+      "phase": 3,
+      "recipe": "isolation"
+    },
+    {
+      "phase": 3,
+      "recipe": "isolation"
+    },
+    {
+      "phase": 3,
+      "recipe": "isolation"
+    },
+    {
+      "duration": 0.5,
+      "phase": 0,
+      "recipe": "isolation",
+      "orient": 0,
+      "entry": 4.71238898038469
+    },
+    {
+      "phase": 1,
+      "recipe": "isolation"
+    },
+    {
+      "duration": 0.75,
+      "phase": 0,
+      "recipe": "isolation",
+      "orient": 0,
+      "entry": 1.5707963267948966
+    },
+    {
+      "entry": 0,
+      "mode": 3.141592653589793,
+      "petals": 0,
+      "direction": -1,
+      "pivot_angle": 3.141592653589793,
+      "pivot_radius": 0.5,
+      "duration": 0.5,
+      "recipe": "flower",
+      "orient": 0
+    },
+    {
+      "spin": -1,
+      "direction": -1,
+      "pivot_angle": 3.141592653589793,
+      "pivot_radius": 1,
+      "duration": 1.5,
+      "phase": 0,
+      "recipe": "isolation",
+      "movename": "Cat-Eye",
+      "orient": 0,
+      "entry": 3.141592653589793
+    },
+    {
+      "extend": 0.5,
+      "duration": 0.5,
+      "recipe": "staticspin",
+      "orient": 3.141592653589793,
+      "entry": 3.141592653589793
+    },
+    {
+      "duration": 0.5,
+      "phase": 0,
+      "recipe": "isolation",
+      "orient": 0,
+      "entry": 3.141592653589793
+    },
+    {
+      "recipe": "antipendulum",
+      "movename": "Anti-Pendulum",
+      "lift": 0.5,
+      "swing": 1,
+      "spin": -1,
+      "extend": 0.5,
+      "direction": -1,
+      "duration": 0.25,
+      "phase": 1,
+      "orient": 1.5707963267948966,
+      "modify": {
+        "helper_radius": 0,
+        "helper_stretch": 6,
+        "helper_stretch_acc": -16
+      },
+      "entry": 0
+    },
+    {
+      "recipe": "antipendulum",
+      "movename": "Anti-Pendulum",
+      "lift": 0.5,
+      "swing": 0.75,
+      "spin": -1,
+      "extend": 0.5,
+      "direction": -1,
+      "duration": 0.75,
+      "phase": 2,
+      "orient": 1.5707963267948966,
+      "modify_tail": {
+        "prop_acc": -4,
+        "helper_stretch_acc": -16
+      },
+      "entry": 4.71238898038469
+    },
+    {
+      "mode": 3.141592653589793,
+      "petals": 0,
+      "direction": -1,
+      "pivot_angle": 3.141592653589793,
+      "pivot_radius": 0.5,
+      "duration": 0.5,
+      "recipe": "flower",
+      "orient": 0,
+      "entry": 0
+    },
+    {
+      "spin": -1,
+      "direction": -1,
+      "pivot_angle": 3.141592653589793,
+      "pivot_radius": 1,
+      "duration": 1.5,
+      "phase": 0,
+      "recipe": "isolation",
+      "movename": "Cat-Eye",
+      "orient": 0,
+      "entry": 3.141592653589793
+    },
+    {
+      "hand_angle": 0,
+      "prop_angle": 3.141592653589793,
+      "pivot_angle": 3.141592653589793,
+      "pivot_radius": 1,
+      "pivot_stretch": -3,
+      "hand_radius": 0.5,
+      "hand_speed": -1,
+      "prop_speed": -1,
+      "duration": 0.5,
+      "recipe": "generic"
+    },
+    {
+      "entry": 3.141592653589793,
       "pivot_angle": 0,
-      "pivot_radius": 0
+      "pivot_radius": 0.5,
+      "duration": 1.5,
+      "phase": 0,
+      "recipe": "isolation",
+      "orient": 0
+    },
+    {
+      "extend": 0,
+      "duration": 0.5,
+      "pivot_angle": 0,
+      "pivot_radius": 1,
+      "phase": 1,
+      "recipe": "pendulum",
+      "movename": "Pendulum",
+      "orient": 1.5707963267948966,
+      "modify_tail": {
+        "pivot_stretch": -4
+      },
+      "entry": 3.141592653589793
+    },
+    {
+      "extend": 0,
+      "duration": 2,
+      "phase": 3,
+      "recipe": "pendulum",
+      "movename": "Pendulum",
+      "orient": 1.5707963267948966
+    },
+    {
+      "extend": 0,
+      "duration": 0.5,
+      "phase": 3,
+      "recipe": "pendulum",
+      "movename": "Pendulum",
+      "orient": 1.5707963267948966,
+      "entry": 0
+    },
+    {
+      "direction": -1,
+      "pivot_angle": 3.141592653589793,
+      "pivot_radius": 0.5,
+      "duration": 2.5,
+      "phase": 0,
+      "recipe": "isolation",
+      "modify_tail": {
+        "prop_speed": -2
+      },
+      "orient": 0,
+      "entry": 0
+    },
+    {
+      "mode": 1.5707963267948966,
+      "petals": 1,
+      "direction": -1,
+      "duration": 2.75,
+      "recipe": "flower",
+      "modify_tail": {
+        "pivot_angle": 1.5707963267948966,
+        "pivot_stretch": 2
+      },
+      "orient": 0,
+      "entry": 3.141592653589793,
+      "phase": 1
+    },
+    {
+      "direction": -1,
+      "duration": 1.5,
+      "phase": 0,
+      "recipe": "isolation",
+      "orient": 0,
+      "entry": 4.71238898038469
+    },
+    {
+      "direction": -1,
+      "orient": 0,
+      "duration": 0.5,
+      "recipe": "oval",
+      "entry": 1.5707963267948966,
+      "phase": 2
+    },
+    {
+      "direction": -1,
+      "duration": 0.5,
+      "phase": 0,
+      "recipe": "isolation",
+      "modify_tail": {
+        "duration": 0.125
+      },
+      "orient": 0,
+      "entry": 4.71238898038469
+    },
+    {
+      "direction": -1,
+      "entry": 2.356194490192345,
+      "orient": 0.7853981633974483,
+      "duration": 0.5,
+      "phase": 1,
+      "recipe": "oval"
+    },
+    {
+      "hand_angle": 5.497787143782138,
+      "prop_angle": 2.356194490192345,
+      "hand_radius": 0.5,
+      "hand_stretch": 2,
+      "prop_speed": -2,
+      "duration": 0.25,
+      "recipe": "generic"
+    },
+    {
+      "direction": -1,
+      "petals": 1,
+      "minor": 0.075,
+      "entry": 5.497787143782138,
+      "orient": 5.497787143782138,
+      "duration": 0.25,
+      "recipe": "oval",
+      "modify_tail": {
+        "duration": 0.125
+      }
+    },
+    {
+      "hand_angle": 4.71238898038469,
+      "prop_angle": 3.9269908169872414,
+      "hand_radius": 0.3,
+      "hand_stretch": 3,
+      "prop_speed": -3.5,
+      "duration": 0.25,
+      "recipe": "generic"
+    },
+    {
+      "direction": -1,
+      "petals": 2,
+      "orient": 4.71238898038469,
+      "duration": 0.5,
+      "phase": 0,
+      "recipe": "linex",
+      "entry": 4.71238898038469
+    },
+    {
+      "direction": -1,
+      "orient": 1.5707963267948966,
+      "duration": 0.5,
+      "phase": 0,
+      "recipe": "oval",
+      "entry": 1.5707963267948966
+    },
+    {
+      "spin": -1,
+      "duration": 1.5,
+      "recipe": "flower",
+      "orient": 0,
+      "entry": 4.71238898038469,
+      "phase": 2
+    },
+    {
+      "direction": -1,
+      "petals": 2,
+      "orient": 1.5707963267948966,
+      "duration": 0.25,
+      "phase": 0,
+      "recipe": "linex",
+      "entry": 1.5707963267948966
+    },
+    {
+      "speed": 2,
+      "direction": -1,
+      "stretch": -1.5,
+      "duration": 0.5,
+      "recipe": "spiral",
+      "orient": 0,
+      "entry": 3.141592653589793
     }
   ]
 }}

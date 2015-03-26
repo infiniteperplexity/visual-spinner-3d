@@ -204,9 +204,28 @@ myProp.addMove(VS3D.moves.flower({direction: VS3D.COUNTERCLOCKWISE, petals: 3, s
 myProp.addMove(VS3D.moves.pendulum({speed: 2, duration: 0.25});
 </code>
 <p>
+Or, you can add directly from a JSON file &mdash; perhaps one you exported from the composer:
+</p>
+</p>
+<code>
+vs.parseFile("mysavedroutine.json");
+</code>
+<p>
 (As described earlier, in most cases the <code>Prop.addMove</code> method will automatically reorient the new move to match the ending socket of the existing list of moves.)
 </p>
 <p>
 By default, the widget allows playback of a pre-specified sequenced of moves.  More advanced functionality, including menus, drag-and-drop, and other features seen on the various pages of this site, require custom JavaScript and fuller understanding of the VisualSpinner3D code base.
 </p>
+<br>
+<h3>
+Known Bugs:
+</h3>
+<ul>
+<li>
+Some moves export to JSON incorrectly.  For example, if you export the routine from the "Comborific" page and try to reimport it with <code>parseFile</code>, the moves don't align correctly.  I suspect there may be something wrong with how the <code>phase</code> parameter is used.
+</li>
+<li>
+I haven't done much testing of moves with <code>duration</code> longer than 2.  There may be some issues in that range.
+</li>
+</ul>
 </body></html>

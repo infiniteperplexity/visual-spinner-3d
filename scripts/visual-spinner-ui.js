@@ -54,8 +54,8 @@ VisualSpinnerWidget.prototype.ready = function() {
 	}
 }
 
-VisualSpinnerWidget.prototype.addProp = function() {
-	var p = VS3D.Prop();
+VisualSpinnerWidget.prototype.addProp = function(optionalProp) {
+	var p = optionalProp || VS3D.Prop();
 	var o;
 	this.padding = 1; //provides some padding at the start
 	p.propType = "poi";
@@ -306,14 +306,14 @@ VisualSpinnerWidget.prototype.stringify = function() {
 VisualSpinnerWidget.prototype.parse = function(json) {	
         this.scene.props = [];
         this.scene.starting = [];
-       // var jsonprops = JSON.parse(json);
+       	var jsonprops = JSON.parse(json);
         var p;
-        for (var i = 0; i<1; i++) {
-        //for (var prop in jsonprops) {
+        for (var prop in jsonprops) {
 	        p = this.addProp();
-	        //p.build(JSON.stringify(jsonprops[prop]));
-	       	//p.applyMoves(JSON.stringify(jsonprops[prop]));
+	        p.build(JSON.stringify(jsonprops[prop]));
+	       	p.applyMoves(JSON.stringify(jsonprops[prop]));
         }
+        this.renderer.render(this.scene);
 }
 
 VisualSpinnerWidget.prototype.parseFile = function(url) {

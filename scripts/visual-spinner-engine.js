@@ -1184,7 +1184,6 @@ Prop.prototype.apply = function(json) {
 	if (definition.axis !== null) {
 		this.axis = new Vector(definition.axis.x, definition.axis.y, definition.axis.z);
 	}
-	this.axis = definition.axis;
 	this.propname = definition.propname;
 }
 Prop.prototype.build = function(json) {
@@ -1210,8 +1209,14 @@ Prop.prototype.applyMoves = function(json) {
 	this.emptyMoves();
 	var definition = PropFactory.prototype.parse(json);
 	var jmove;
-	for (var i = 0; i<definition.moves.length; i++) {
+	
+	//for (var i = 0; i<definition.moves.length; i++) {
+	for (var i = 0; i<16; i++) {
+		
 		jmove = JSON.stringify(definition.moves[i]);
+		if (i==15) {
+			alert(jmove);
+		}
 		jmove = MoveFactory.prototype.build(jmove);
 		this.addMove(jmove);
 	}
