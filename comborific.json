@@ -1,0 +1,122 @@
+{"prop1": {
+  "propname": "not defined",
+  "home": {
+    "radius": 0.0001,
+    "azimuth": 0.0001,
+    "zenith": 1.5707963267948966
+  },
+  "pivot": {
+    "radius": 0.0001,
+    "azimuth": 0.0001,
+    "zenith": 1.5707963267948966
+  },
+  "helper": {
+    "radius": 0.0001,
+    "azimuth": 0.0001,
+    "zenith": 1.5707963267948966
+  },
+  "hand": {
+    "radius": 1,
+    "azimuth": 3.141692653589793,
+    "zenith": 1.5707963267948966
+  },
+  "prop": {
+    "radius": 1,
+    "azimuth": 3.141692653589793,
+    "zenith": 1.5707963267948966
+  },
+  "twist": 0,
+  "grip": 0,
+  "choke": 0,
+  "bend": 0,
+  "axis": {
+    "x": 0,
+    "y": 0,
+    "z": 1
+  },
+  "propType": "poi",
+  "color": "blue",
+  "fire": false,
+  "moves": [
+    {
+      "movename": "Four-Petal In-Spin Flower",
+      "recipe": "flower",
+      "spin": 1,
+      "petals": 4,
+      "orient": 0,
+      "entry": 0,
+      "duration": 1,
+      "extend": 1,
+      "direction": 1,
+      "mode": 0,
+      "plane": {
+        "x": 0,
+        "y": 0,
+        "z": 1
+      },
+      "pivot_angle": 0,
+      "pivot_radius": 0,
+      "phase": 1
+    }
+  ]
+}, "prop2": {
+  "propname": "not defined",
+  "home": {
+    "radius": 0.0001,
+    "azimuth": 0.0001,
+    "zenith": 1.5707963267948966
+  },
+  "pivot": {
+    "radius": 0.0001,
+    "azimuth": 0.0001,
+    "zenith": 1.5707963267948966
+  },
+  "helper": {
+    "radius": 0.0001,
+    "azimuth": 0.0001,
+    "zenith": 1.5707963267948966
+  },
+  "hand": {
+    "radius": 1,
+    "azimuth": 0.0001,
+    "zenith": 1.5707963267948966
+  },
+  "prop": {
+    "radius": 1,
+    "azimuth": 0.0001,
+    "zenith": 1.5707963267948966
+  },
+  "twist": 0,
+  "grip": 0,
+  "choke": 0,
+  "bend": 0,
+  "axis": {
+    "x": 0,
+    "y": 0,
+    "z": 1
+  },
+  "propType": "poi",
+  "color": "red",
+  "fire": false,
+  "moves": [
+    {
+      "movename": "Four-Petal Anti-Spin Flower",
+      "recipe": "flower",
+      "spin": -1,
+      "petals": 4,
+      "orient": 0,
+      "entry": 0,
+      "duration": 1,
+      "extend": 1,
+      "direction": 1,
+      "mode": 0,
+      "plane": {
+        "x": 0,
+        "y": 0,
+        "z": 1
+      },
+      "pivot_angle": 0,
+      "pivot_radius": 0
+    }
+  ]
+}}

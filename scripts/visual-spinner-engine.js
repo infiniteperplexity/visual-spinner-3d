@@ -1201,7 +1201,6 @@ Prop.prototype.build = function(json) {
 	if (definition.axis !== null) {
 		this.axis = new Vector(definition.axis.x, definition.axis.y, definition.axis.z);
 	}
-	this.axis = definition.axis;
 	this.propname = definition.propname;
 	this.propType = definition.propType;
 	this.color = definition.color;

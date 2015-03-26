@@ -240,7 +240,36 @@ VisualSpinnerWidget.prototype.addControl = function(s) {
 			this.controls.push(control);
 			this.div.appendChild(control);
 		break;
-		
+			case "export":
+			control = document.createElement("button");
+			$(control).data("widget", this);
+			control.class = "vs3d-export-control";
+			control.type = "button";
+			control.innerHTML = "Export";
+			control.onclick = function(){
+				$(this).data("pop-export").style.display = "block";
+				$(this).data("widget").canvas.style.display = "none";
+				$(this).data("export-txt").innerHTML = $(this).data("widget").stringify();
+			}
+			this.controls.push(control);
+			this.div.appendChild(control);
+			var popup = document.createElement("div");
+			popup.style.display = "none";
+			$(control).data("pop-export", popup);
+			var txt = document.createElement("textarea")
+			$(control).data("export-txt", txt);
+			txt.rows="18";
+			txt.cols="46";
+			var done = document.createElement("button");
+			done.innerHTML = "Done";
+			done.onclick = function() {
+				$(control).data("pop-export").style.display = "none";
+				$(control).data("widget").canvas.style.display = "block";
+			}
+			popup.appendChild(txt);
+			popup.appendChild(done);
+			this.div.appendChild(popup);
+		break;
 	}
 }
 VisualSpinnerWidget.prototype.addControls = function(args) {
@@ -274,13 +303,28 @@ VisualSpinnerWidget.prototype.stringify = function() {
         json += "}";
         return json;
 }
-VisualSpinnerWidget.prototype.parse = function(json) {
+VisualSpinnerWidget.prototype.parse = function(json) {	
         this.scene.props = [];
         this.scene.starting = [];
-        var jsonprops = JSON.parse(json);
-        for (var prop in jsonprops) {
-                this.addProp(props.build(prop));
+       // var jsonprops = JSON.parse(json);
+        var p;
+        for (var i = 0; i<1; i++) {
+        //for (var prop in jsonprops) {
+	        p = this.addProp();
+	        //p.build(JSON.stringify(jsonprops[prop]));
+	       	//p.applyMoves(JSON.stringify(jsonprops[prop]));
         }
+}
+
+VisualSpinnerWidget.prototype.parseFile = function(url) {
+	var widget = this;
+	$.ajax({
+		url: url,
+		type: "GET",
+		dataType: "text",
+		cache: false,
+		success: function(data) {widget.parse(data);}
+	});
 }
 
 function VisualSpinnerScene() {

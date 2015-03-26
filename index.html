@@ -17,6 +17,8 @@ function init() {
 	var vs = VS3D.VisualSpinnerWidget();
 	VS3D.Constants.rescope(vs);
 	vs.embedById("vs-div");
+	vs.parseFile("comborific.json");
+	if (false) {
 	var propOne = vs.addProp();
 	var propTwo = vs.addProp();
 	propOne.color = "red";
@@ -31,9 +33,10 @@ function init() {
 	}
 	propOne.addMove(vs.Moves.flower({direction: vs.CLOCKWISE, entry: propOne.socket().hand.angle, spin: vs.ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
 	propTwo.addMove(vs.Moves.flower({direction: 1-(i%2)*2, entry: propTwo.socket().hand.angle, spin: vs.ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
+}
 	vs.addControls("play","pause","rewind","frame","forward","reset","2d3d");
 	vs.ready();
-	vs.play();
+	//vs.play();
 }
 </script>
 </head><body onload="init();">
