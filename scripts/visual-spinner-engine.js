@@ -1399,6 +1399,7 @@ MoveChain.prototype.reorient = function(target) {
 	}
 	// If it doesn't work, cycle through orientations and entry angles until it works
 	var redefined;
+
 	for (var i = 0; i < 4; i++) {
 		for (var j = 0; j < 4; j++) {
 			definition.orient = unwind(orient+i*QUARTER);
@@ -1412,6 +1413,28 @@ MoveChain.prototype.reorient = function(target) {
 			if (retrn !== null) {
 				retrn.oneshot = this.oneshot;
 				return retrn;
+			}
+		}
+	}
+	//right now there is no way to tell whether a prop should have a mode...does that mean we can't rotate through?
+	//new code - tries even more aggressively to match sockets
+	var mode = definition.mode || DIAMOND;
+	for (var k = 0; k < 4; k++) {
+		for (var i = 0; i < 4; i++) {
+			for (var j = 0; j < 4; j++) {
+				definition.mode = unwind(mode+k*QUARTER);
+				definition.orient = unwind(orient+i*QUARTER);
+				definition.entry = unwind(entry+j*QUARTER);
+				redefined = MoveFactory.prototype.build(JSON.stringify(definition));
+				if (hand.nearly(redefined.handVector(),0.05) && prop.nearly(redefined.propVector(),0.1)) {
+					redefined.oneshot = this.oneshot;
+					return redefined;
+				}
+				retrn = redefined.adjust(target);
+				if (retrn !== null) {
+					retrn.oneshot = this.oneshot;
+					return retrn;
+				}
 			}
 		}
 	}

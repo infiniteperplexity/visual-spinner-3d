@@ -152,7 +152,7 @@ In real life, if I spin a diamond-mode, four-petal anti-spin flower, with an arm
 VisualSpinner3D doesn't have to obey real-world physics, so teleporting props are a real possibility, especially if you sequence moves together without carefully choosing the right options.  Fortunately, VisualSpinner3D uses a system of <b>sockets</b> that makes things easier.  Each move has a starting and ending socket that describes where exactly the handle and prop head are located in three-dimensional space.
 </p>
 <p>
-By default, when you add a move to a prop that already has a list of moves to spin, the engine compares the ending socket of the last move on the list to the beginning socket on the new move.  If they don't match, the engine will try to fix the problem by tweaking certain options on the new move (currently, it cycles through all possible combinations of "orient" and "entry", and in the future it might try different "modes" as well) until it finds a socket that fits.  Then it rebuilds the move according to the modified recipe.  If it can't find a socket that fits, it pops up an alert box warning you that the move doesn't fit and that the simulation won't look realistic.
+By default, when you add a move to a prop that already has a list of moves to spin, the engine compares the ending socket of the last move on the list to the beginning socket on the new move.  If they don't match, the engine will try to fix the problem by tweaking certain options on the new move until it finds a socket that fits.  Then it rebuilds the move according to the modified recipe.  If it can't find a socket that fits, it pops up an alert box warning you that the move doesn't fit and that the simulation won't look realistic.
 </p>
 <br>
 <h3>
