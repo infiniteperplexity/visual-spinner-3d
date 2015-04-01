@@ -23,10 +23,10 @@ function VisualSpinnerWidget(options) {
 	this.context = this.canvas.getContext('2d');
 	this.svg = document.createElement("svg"); // build a new one
 	this.scene = new VisualSpinnerScene(); //can be reassigned
-	this.scene.widgets.push(this);
 	//this.renderer = new HTML5Canvas2dRenderer(); // for now;
 	this.renderer = new Phoria3dRenderer();
 	this.controls = []; // a list of control elements
+	
 	this.annotations = [];
 	this.textCursor = 0;
 	this.text = document.createElement("p");
@@ -37,11 +37,6 @@ function VisualSpinnerWidget(options) {
 	this.text.style.zIndex = "1";
 }
 
-VisualSpinnerWidget.prototype.camera = function(x,y,z) {
-	if (this.renderer.camera !== undefined) {
-		this.renderer.camera(x,y,z);
-	}
-}
 VisualSpinnerWidget.prototype.addText = function(txt, duration) {
 	duration = duration || 1;
 	this.annotations.push([txt,0,duration]);
@@ -83,6 +78,10 @@ VisualSpinnerWidget.prototype.embedById = function(id) {
 	this.div.appendChild(document.createElement("br"));
 	this.context.fillRect(0,0,this.width,this.height);
 	this.renderer.activate(this);
+	// add the canvas to the div and hide it
+	// add the svg to the div and hide it
+	
+	//test
 	this.div.style.position = "relative";
 	this.div.appendChild(this.text);
 }
@@ -115,27 +114,16 @@ function VisualSpinnerScene() {
 	this.props = []; // empty list
 	this.starting = [];
 	this.predicts = [];
-	this.widgets = [];
+	this.renderers = []; // empty list
 	this.paused = true;
 	this.padding = 1;
 	this.frame = 0;
 	this.speed = 1;
 }
 
-VisualSpinnerWidget.prototype.swapScene = function(scene) {
-	this.scene.widgets.splice(this.scene.widgets.indexOf(this));
-	this.renderer.deactivate(this);
-	this.scene = scene;
-	this.scene.widgets.push(this);
-	this.renderer.activate(this);
+VisualSpinner.prototype.swapScene = function(scene) {
+	//!!!!Do stuff
 }
-VisualSpinnerWidget.prototype.swapRenderer = function(r) {
-	this.renderer.deactivate(this);
-	this.renderer = r;
-	r.activate(this);
-}
-
-
 
 VisualSpinnerWidget.prototype.play = function() {
 	this.scene.play();
@@ -148,9 +136,7 @@ VisualSpinnerScene.prototype.play = function() {
 		}
 	}
 	this.paused = false;
-	for (var i = 0; i < this.widgets.length; i++) {
-		this.widgets[i].padText();
-	}
+	//!!!!!this.padText(); (dunno how to handle this right now)
 	this.animationLoop(this);
 }
 
@@ -193,22 +179,19 @@ VisualSpinnerScene.prototype.advance = function(n) {
 				this.props[j].spin();
 			}
 		}	
-		for (var j = 0; j < this.widgets.length; j++) {
-			this.widgets[j].advanceText();
-		}
+		//!!!!this.padText();
+		//!!!!this.advanceText();
 	}
 	this.frame = (this.frame + n)%this.maxFrame();
-	for (var i = 0; i < this.widgets.length; i++) {
-		for (var j = 0; j < this.widgets[i].controls.length; j++) {
-			if (this.widgets[i].controls[j].class === "vs3d-frame-control") {
-				this.widgets[i].controls[j].value = this.frame;
-			}
-		}
+	//!!!!for (var i = 0; i < this.controls.length; i++) {
+		//!!!!if (this.controls[i].class === "vs3d-frame-control") {
+			//!!!!this.controls[i].value = this.frame;
+		//!!!!}
+	//!!!!}
+	for (var i = 0; i < this.renderers.length; i++) {
+		this.renderers[i].render(this);
 	}
-	for (var i = 0; i < this.widgets.length; i++) {
-		this.widgets[i].renderer.render(this);
-		this.widgets[i].renderText();
-	}
+	//!!!!this.renderText();
 }
 VisualSpinnerWidget.prototype.goto = function(n) {
 	this.scene.goto(n);
@@ -226,23 +209,21 @@ VisualSpinnerScene.prototype.reset = function() {
 	this.paused = true;
 	this.frame = 0;
 	for (var i = 0; i<this.props.length; i++) {
-		this.props[i].orientToProp(this.starting[i]);
+		this.props[i].orientToProp(this.scene.starting[i]);
 		this.props[i].move.reset();
 	}
-	for (var i = 0; i < this.widgets.length; i++) {
-		this.widgets[i].textCursor = 0;
-		for (var j = 0; j < this.widgets[i].annotations.length; j++) {
-			this.widgets[i].annotations[j][1]=0;
-		}
-		for (var j = 0; j < this.widgets[i].controls.length; j++) {
-			if (this.widgets[i].controls[j].class === "vs3d-frame-control") {
-				this.widgets[i].controls[j].value = 0;
-			}
-		}
-	}
+	//!!!this.textCursor = 0;
+	//!!!!for (var i = 0; i<this.annotations.length; i++) {
+		//1!!this.annotations[i][1] = 0;
+	//!!!!}
 	this.padding = 1;
-	for (var i = 0; i < this.widgets.length; i++) {
-		this.widgets[i].renderer.clean(this);
+	//!!!for (var i = 0; i < this.controls.length; i++) {
+		//!!!!if (this.controls[i].class === "vs3d-frame-control") {
+			//!!!this.controls[i].value = 0;
+		//!!!!}
+	//!!!!}
+	for (var i = 0; i < this.renderers.length; i++) {
+		this.renderers[i].clean(this);
 	}
 }
 
@@ -270,10 +251,10 @@ VisualSpinnerScene.prototype.animationLoop = function(caller) {
 			} else {
 				caller.padding -= 1;
 			}
-			for (var i = 0; i < caller.widgets.length; i++) {
-				caller.widgets[i].renderer.render(caller);
-				caller.widgets[i].renderText();
+			for (var i = 0; i < caller.renderers.length; i++) {
+				caller.renderers[i].render(caller);
 			}
+			//!!!!caller.renderText();
 		})
 	}, 1);
 }
@@ -451,6 +432,11 @@ VisualSpinnerWidget.prototype.parseFile = function(url) {
 
 VisualSpinnerWidget.prototype.Moves = VS3D.MoveFactory();
 VisualSpinnerWidget.prototype.Props = VS3D.PropFactory();
+VisualSpinnerWidget.prototype.swapRenderer = function(r) {
+	this.renderer.deactivate(this);
+	this.renderer = r;
+	r.activate(this);
+}
 
 VisualSpinnerWidget.prototype.populateFromJSON = function(json) {
 }
@@ -657,9 +643,6 @@ Phoria3dRenderer.prototype.activate = function(widget) {
 	light.direction.z = 0;
 	this.scene.graph.push(light);
 	this.props = [];
-}
-Phoria3dRenderer.prototype.camera = function(_x,_y,_z) {
-	this.scene.camera.position = {x: _x, y: _y, z: _z};
 }
 Phoria3dRenderer.prototype.deactivate = function(widget) {
 }

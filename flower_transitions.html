@@ -20,7 +20,7 @@ var vs;
 function init() {
 	vs = VS3D.VisualSpinnerWidget();
 	vs.width = 800;
-	vs.renderer = VS3D.HTML5Canvas2dRenderer();
+	vs.swapRenderer(VS3D.HTML5Canvas2dRenderer());
 	vs.embedById("vs-div");
 	var propOne = vs.addProp();
 	propOne.color = "red";

@@ -1,0 +1,72 @@
+<!--Distributed under GNU Public License version 3-->
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<style>
+body {background-color: #99CCFF}
+</style>
+<title>VisualSpinner3D, by Glenn Wright</title>
+<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="scripts/gl-matrix-min.js"></script>
+<script src="scripts/phoria-min.js"></script>
+<script src="scripts/requestAnimationFrame.js"></script>
+<script src="scripts/visual-spinner-engine.js"></script>
+<script src="scripts/visual-spinner-moves.js"></script>
+<script src="scripts/visual-spinner-ui.js"></script>
+<script>
+function init() {
+	var vs = VS3D.VisualSpinnerWidget();
+	VS3D.Constants.rescope(vs);
+	vs.embedById("vs-div");
+	var one = vs.addProp();
+	var two = vs.addProp();
+	one.color = "red";
+	two.color = "blue";
+	one.hand.radius = 1;
+	two.hand.radius = 1;
+	one.setHandAngle(vs.NINE);
+	one.setPropAngle(vs.NINE);
+	one.nudge(0,0,0.1);
+	two.nudge(0,0,-0.1);
+	var vs2 = VS3D.VisualSpinnerWidget();
+	var vs3 = VS3D.VisualSpinnerWidget();
+	vs2.embedById("vs-div2");
+	vs3.embedById("vs-div3");
+	vs2.swapScene(vs.scene);
+	vs3.swapScene(vs.scene);
+	vs.camera(0,1,10);
+	vs2.camera(10,1,0);
+	vs3.camera(1,10,0);
+	
+	vs.addControls("play","pause","rewind","frame","forward","reset");
+	vs2.addControls("play","pause","rewind","frame","forward","reset");
+	vs3.addControls("play","pause","rewind","frame","forward","reset");
+	one.addMove(vs.Moves.toroid({bend: vs.ANTIBEND}));
+	two.addMove(vs.Moves.toroid({bend: vs.ANTIBEND}));
+	one.addMove(vs.Moves.toroid({bend: vs.ISOBEND}));
+	two.addMove(vs.Moves.toroid({bend: vs.ISOBEND}));
+	one.addMove(vs.Moves.toroid({bend: vs.PROBEND, harmonics: 2}));
+	two.addMove(vs.Moves.toroid({bend: vs.PROBEND, harmonics: 2}));
+	vs.addText("Anti-Bend Toroid (front view)");
+	vs2.addText("Anti-Bend Toroid (side view)");
+	vs3.addText("Anti-Bend Toroid (top view)");
+	vs.addText("Iso-Bend Toroid (front view)");
+	vs2.addText("Iso-Bend Toroid (side view)");
+	vs3.addText("Iso-Bend Toroid (top view)");
+	vs.addText("Pro-Bend Toroid (front view)");
+	vs2.addText("Pro-Bend Toroid (side view)");
+	vs3.addText("Pro-Bend Toroid (top view)");
+	
+	
+	vs.ready();
+	vs2.ready();
+	vs3.ready();
+	vs.play();
+}
+	
+
+</script>
+</head><body onload="init();">
+<div id="vs-div"></div>
+<div id="vs-div2"></div>
+<div id="vs-div3"></div>
+</body></html>
