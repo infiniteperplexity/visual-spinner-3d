@@ -60,6 +60,7 @@ function resetcamera(event) {
 	vs.camera(0,1,10);
 	vs.annotations[0][0] = "...click and drag me...";
 	vs.renderer.render(vs.scene);
+	vs.renderText();
 }
 function startdrag(event) {
 	dragging = true;
