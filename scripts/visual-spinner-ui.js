@@ -42,6 +42,21 @@ VisualSpinnerWidget.prototype.camera = function(x,y,z) {
 		this.renderer.camera(x,y,z);
 	}
 }
+VisualSpinnerWidget.prototype.cameraX = function() {
+	if (this.renderer.camera !== undefined) {
+		return this.renderer.cameraX();
+	}
+}
+VisualSpinnerWidget.prototype.cameraY = function() {
+	if (this.renderer.camera !== undefined) {
+		return this.renderer.cameraY();
+	}
+}
+VisualSpinnerWidget.prototype.cameraZ = function() {
+	if (this.renderer.camera !== undefined) {
+		return this.renderer.cameraZ();
+	}
+}
 VisualSpinnerWidget.prototype.addText = function(txt, duration) {
 	duration = duration || 1;
 	this.annotations.push([txt,0,duration]);
@@ -660,6 +675,15 @@ Phoria3dRenderer.prototype.activate = function(widget) {
 }
 Phoria3dRenderer.prototype.camera = function(_x,_y,_z) {
 	this.scene.camera.position = {x: _x, y: _y, z: _z};
+}
+Phoria3dRenderer.prototype.cameraX = function() {
+	return this.scene.camera.position.x;
+}
+Phoria3dRenderer.prototype.cameraY = function() {
+	return this.scene.camera.position.y;
+}
+Phoria3dRenderer.prototype.cameraZ = function() {
+	return this.scene.camera.position.z;
 }
 Phoria3dRenderer.prototype.deactivate = function(widget) {
 }
