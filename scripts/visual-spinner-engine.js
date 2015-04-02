@@ -534,14 +534,16 @@ Prop.prototype.propVector = function() {
 
 
 Prop.prototype.addMove = function(myMove) {
+	var add = myMove;
 	if (myMove.abrupt == false) {
 		if (this.move.submoves.length>0) {
-			myMove = myMove.reorient(this.move.tail());
+			add = myMove.reorient(this.move.tail());
 		} else {
-			myMove = myMove.reorient(this);
+			add = myMove.reorient(this);
 		}
 	}
-	this.move.add(myMove);
+	add = add || myMove;
+	this.move.add(add);
 }
 
 Prop.prototype.debugMode = function(tf) {
@@ -962,16 +964,18 @@ MoveChain.prototype.spindummy = function(dprop) {
 }
 // Rotate through submoves, changing which one comes first
 	// Rarely use this on moves that are not "cyclical"; e.g. start and stop in the same position
+// Phase, altering definition
 MoveChain.prototype.phaseBy = function(phase) {
 	if (phase==undefined) {phase = 1;}
-	if (this.definition !== undefined) {
-		if (this.definition.phase == undefined) {
-			this.definition.phase = 0;
-		} else {
-			// this might not be quite right.
-			this.definition.phase = (this.definition.phase + phase) % this.submoves.length;
-		}
+	
+	if (phase!==0 && this.definition !== undefined) {
+		this.definition.phase = phase;
 	}
+	return this.startPhase(phase);
+}
+//phase without altering definition
+MoveChain.prototype.startPhase = function(phase) {
+	if (phase==undefined) {phase = 1;}
 	if (phase>0) {
 		for (var i = 0; i<phase; i++) {
 			this.submoves.push(this.submoves.shift());
@@ -1214,9 +1218,6 @@ Prop.prototype.applyMoves = function(json) {
 	for (var i = 0; i<16; i++) {
 		
 		jmove = JSON.stringify(definition.moves[i]);
-		if (i==15) {
-			alert(jmove);
-		}
 		jmove = MoveFactory.prototype.build(jmove);
 		this.addMove(jmove);
 	}
@@ -1336,7 +1337,7 @@ MoveChain.prototype.align = function(element, angle) {
 		if (nearly(this.head()[element].angle, angle, 0.1)) {
 			return this;
 		} else {
-			this.phaseBy(1);
+			this.startPhase(1);
 		}
 	}
 	alert("alignment failed.");
@@ -1369,7 +1370,7 @@ MoveChain.prototype.adjust = function(target) {
 		if (hand.nearly(this.handVector(),0.05) && prop.nearly(this.propVector(),0.1)) {
 			return this;
 		} else {
-			this.phaseBy(1);
+			this.startPhase(1);
 		}
 	}
 	return null;
@@ -1440,6 +1441,7 @@ MoveChain.prototype.reorient = function(target) {
 	}
 	// Otherwise fail
 	alert("Socketing failed (unable to align next move with end of prior move.)");
+	alert(JSON.stringify(definition,null,2));
 	return null;
 }
 

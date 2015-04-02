@@ -182,7 +182,7 @@ VisualSpinnerWidget.prototype.rewind = function(n) {
 VisualSpinnerScene.prototype.rewind = function(n) {
 	var f = this.frame;
 	this.reset();
-	if (f-n > 0) {
+	if (f-n >= 0) {
 		this.advance(f - n);
 	} else if (f-n < 0) {
 		this.advance(this.maxFrame() + f - n);
@@ -342,10 +342,10 @@ VisualSpinnerWidget.prototype.addControl = function(s) {
 			control.class = "vs3d-frame-control";
 			control.value= "0";
 			control.min = "0";
-			control.max = String(this.maxFrame());
-			control.style.width = "100px";
+			control.style.width = "80px";
 			$(control).data("widget", this);
-			control.onchange = function() {$(this).data("widget").goto(this.value); this.value = $(this).data("widget").frame;}
+			control.onchange = function() {this.max = $(this).data("widget").maxFrame(); $(this).data("widget").goto(this.value); this.value = $(this).data("widget").scene.frame;}
+			control.oninput = function() {this.max = $(this).data("widget").maxFrame(); $(this).data("widget").goto(this.value); this.value = $(this).data("widget").scene.frame;}
 			this.controls.push(control);
 			this.div.appendChild(control);
 		break;

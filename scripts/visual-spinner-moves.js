@@ -597,13 +597,13 @@ MoveFactory.prototype.linex = function(options) {
 	//do we need to do some crazy thing here?
 	if (options.entry != null) {
 		if (nearly(options.entry,options.orient)) {
-			move.phaseBy(0);
+			move.startPhase(0);
 		} else if (nearly(options.entry, options.orient + QUARTER*options.direction)) {
-			move.phaseBy(1);
+			move.startPhase(1);
 		} else if (nearly(options.entry, options.orient + OFFSET)) {
-			move.phaseBy(2);
+			move.startPhase(2);
 		} else if (nearly(options.entry, options.orient - QUARTER*options.direction)) {
-			move.phaseBy(3);
+			move.startPhase(3);
 		}  else {
 			move.align("hand",options.entry);
 		}
@@ -911,7 +911,7 @@ MoveFactory.prototype.isobend = function(options) {
 	move.align("hand", options.entry);
 	if (options.mode == DIAMOND) {
 		//does this require fixing the definition?
-		move.phaseBy(1);
+		move.startPhase(1);
 	}
 	move.recipe = options.recipe;
 	move.definition.recipe = options.recipe;
@@ -1078,7 +1078,7 @@ MoveFactory.prototype.tapedeck = function(options) {
 		move.extend();
 	}
         move.align("hand", options.entry);
-		move.phaseBy(1);
+		move.startPhase(1);
         move.recipe = options.recipe;
         move.definition.recipe = options.recipe;
         move.movename = options.movename;

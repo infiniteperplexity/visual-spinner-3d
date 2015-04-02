@@ -47,7 +47,7 @@ function canvasSetup() {
 	var whitePoi = vs.addProp();
 	orangePoi.color = "orange";
 	whitePoi.color = "white";
-	vs.addControls("play","pause","rewind","frame","forward","reset","2d3d");
+	vs.addControls("play","pause","rewind","frame","forward","reset","export");
 	//window.addEventListener("keydown", listenForKey, false);
 	
 	
@@ -65,8 +65,8 @@ function canvasSetup() {
 			// The default (hybrid: false) instead spins at a constant speed that will match a static spin or flower
 			// Note that the constant THREE, SIX, NINE, and TWELVE refer to the clock points (directions)
 		// Pendulum paths are not true to real-world gravity, because I use a simplified function
-	orangePoi.addMove(moves.pendulum({hybrid: true, direction: COUNTERCLOCKWISE, extend: 1, duration: 0.5, entry: NINE}).setAbrupt());
-	whitePoi.addMove(moves.pendulum({direction: COUNTERCLOCKWISE, extend: TINY, duration: 0.5, entry: NINE}).setAbrupt());
+	orangePoi.addMove(moves.pendulum({hybrid: true, direction: COUNTERCLOCKWISE, extend: 1, duration: 0.5, entry: NINE}));
+	whitePoi.addMove(moves.pendulum({direction: COUNTERCLOCKWISE, extend: TINY, duration: 0.5, entry: NINE}));
 	
 	// Next Drex does a clockwise pendulum vs. antispin hybrid.  
 		// The "twirl" parameter, which is mainly used for 1.5s, turns out to be useful here
