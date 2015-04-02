@@ -70,8 +70,10 @@ function resetcamera(event) {
 function startdrag(event) {
 	event.preventDefault();
 	dragging = true;
-	fromX = event.clientX;
-	fromY = event.clientY;
+	fromX = event.pageX;
+	fromY = event.pageY;
+	//fromX = event.clientX;
+	//fromY = event.clientY;
 	camera = [vs.cameraX(),vs.cameraY(),vs.cameraZ()];
 	radius = Math.sqrt(camera[0]*camera[0]+camera[1]*camera[1]+camera[2]*camera[2]);
 	vs.annotations[0][0] = "(double click to reset)";
@@ -79,8 +81,10 @@ function startdrag(event) {
 function duringdrag(event) {
 	event.preventDefault();
 	if (dragging) {
-		var dx = event.clientX - fromX;
-		var dy = event.clientY - fromY;
+		//var dx = event.clientX - fromX;
+		//var dy = event.clientY - fromY;
+		var dx = event.pageX - fromX;
+		var dy = event.pageY - fromY;
 		//okay, now if we begin at the beginning...
 		dx = (dx > 0) ? (radius/100) : (-radius/100);
 		dy = (dy > 0) ? (radius/100) : (-radius/100);
