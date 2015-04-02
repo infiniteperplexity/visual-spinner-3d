@@ -43,6 +43,11 @@ function init() {
 	vs.canvas.setAttribute("onwheel","zoom(event)");
 	vs.canvas.setAttribute("ondblclick","resetcamera(event)");
 	
+	vs.canvas.setAttribute("ontouchstart","startdrag(event)");
+	vs.canvas.setAttribute("ontouchleave","enddrag(event)");
+	vs.canvas.setAttribute("ontouchend","enddrag(event)");
+	vs.canvas.setAttribute("ontouchmove","duringdrag(event)");
+	
 	
 	vs.ready();
 	//vs.play();

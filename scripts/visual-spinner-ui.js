@@ -135,6 +135,17 @@ function VisualSpinnerScene() {
 	this.padding = 1;
 	this.frame = 0;
 	this.speed = 1;
+	VS3D.overrideSpinfail(this.spinfail());
+}
+
+
+VisualSpinnerScene.prototype.spinfail = function() {
+	var self = this;
+	var spinfail = function() {
+		alert("can't spin with an empty queue");
+		self.reset();
+	}
+	return spinfail;
 }
 
 VisualSpinnerWidget.prototype.swapScene = function(scene) {
@@ -201,7 +212,9 @@ VisualSpinnerWidget.prototype.advance = function(n) {
 	this.scene.advance(n);
 }
 VisualSpinnerScene.prototype.advance = function(n) {
-	n = n || 1;
+	if (n===undefined) {
+		n = 1;
+	}
 	for (var i = 0; i<n; i++) {
 		for (var j = 0;  j < this.props.length; j++) {
 			if (!this.props[j].dummy) {

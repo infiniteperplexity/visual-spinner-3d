@@ -80,12 +80,6 @@ function canvasSetup() {
 	vs.ready();
 }
 window.addEventListener("keydown", listenForKey, false);
-VS3D.spinfail = function() {
-	if (paused == false) {
-		alert("can't spin with an empty queue");
-		this.paused = true;
-	}
-}
 
 function redraw() {
 	vs.renderer.render(vs.scene);

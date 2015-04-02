@@ -1471,8 +1471,9 @@ MoveLink.prototype.adjust = function(target) {
 	return null;
 }
 
-
-
+function overrideSpinfail(fun) {
+	Prop.prototype.spinfail = fun;
+}
 
 return {
 	MoveChain: function() {return new MoveChain();},
@@ -1484,7 +1485,7 @@ return {
 	Spherical: function(r,z,a) {return new Spherical(r,z,a);},
 	Constants: Constants,
 	Utilities: {unwind: unwind, nearly: nearly, isValidJSON: isValidJSON},
-	spinfail: Prop.prototype.spinfail
+	overrideSpinfail: overrideSpinfail
 }
 })();
 
