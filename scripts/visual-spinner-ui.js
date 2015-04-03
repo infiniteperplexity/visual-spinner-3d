@@ -142,8 +142,16 @@ function VisualSpinnerScene() {
 VisualSpinnerScene.prototype.spinfail = function() {
 	var self = this;
 	var spinfail = function() {
-		alert("can't spin with an empty queue");
-		self.reset();
+		var none = true;
+		for (var i = 0; i<self.props.length; i++) {
+			if (self.props[i].move.submoves.length>0) {
+				none = false;
+			}
+		}
+		if (none===true) {
+			alert("can't spin with an empty queue");
+			self.reset();
+		}
 	}
 	return spinfail;
 }

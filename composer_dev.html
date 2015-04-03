@@ -69,7 +69,7 @@ var propFour;
 function canvasSetup() {
 	vs = VS3D.VisualSpinnerWidget();
 	vs.embedById("display");
-	vs.addControls("play","pause","rewind","frame","forward","reset");
+	vs.addControls("play","pause","rewind","frame","forward","reset","2d3d");
 	window.addEventListener("keydown", listenForKey, false);
 	predictions = [vs.addProp(),vs.addProp(),vs.addProp(),vs.addProp()];
 	
@@ -77,8 +77,8 @@ function canvasSetup() {
 	predictions[1].color = "64,0,0";
 	predictions[0].dummy = true;
 	predictions[1].dummy = true;
-	predictions[2].color = "64,64,0";
-	predictions[3].color = "0,64,0";
+	predictions[2].color = "0,64,0";
+	predictions[3].color = "64,64,0";
 	predictions[2].dummy = true;
 	predictions[3].dummy = true;
 	
@@ -94,8 +94,12 @@ function canvasSetup() {
 	propOne.rotateProp(SPLIT);
 	propThree = vs.addProp();
 	propThree.color = "green";
+	propThree.propType = "noprop";
+	predictions[2].propType = "noprop";
 	propFour = vs.addProp();
 	propFour.color = "yellow";
+	propFour.propType = "noprop";
+	predictions[3].propType = "noprop";
 	// set up props
 	propThree.hand.radius = 1;
 	propFour.hand.radius = 1;
@@ -481,11 +485,21 @@ function popExport() {
 	totalReset();
 	$("#popimport").hide();
 	$("#popexport").toggle();
-	var one = propOne.stringify();
-	var two = propTwo.stringify();
-	var three = propThree.stringify();
-	var four = propFour.stringify();
-	$("#popexport textarea").html('{"prop1": '+one+', "prop2": '+two+', "prop3": '+three+', "prop4": '+four+"}");
+	var str = "{";
+	if (propOne.propType !== "noprop") {
+		str += ('"prop1": '+ propOne.stringify());
+	}
+	if (propTwo.propType !== "noprop") {
+		str += (', "prop2": '+ propTwo.stringify());
+	}
+	if (propThree.propType !== "noprop") {
+		str += (', "prop3": '+ propThree.stringify());
+	}
+	if (propFour.propType !== "noprop") {
+		str += (', "prop4": '+propFour.stringify());
+	}
+	str += "}";
+	$("#popexport textarea").html(str);
 }
 function popImport() {
 	$("#popexport").hide();
@@ -494,12 +508,12 @@ function popImport() {
 
 var prop1 = "poi";
 var prop2 = "poi";
-var prop3 = "poi";
-var prop4 = "poi";
+var prop3 = "none";
+var prop4 = "none";
 var color1 = "blue";
 var color2 = "red";
-var color3 = "yellow";
-var color4 = "green";
+var color3 = "green";
+var color4 = "yellow";
 function popAlign(n) {
 	totalReset();
 	$("#popalign"+n).toggle();
@@ -560,7 +574,7 @@ function popAlign(n) {
 		}
 	}
 	element = $('input[name=hand3]').toArray();
-	angle = propThreee.getHandAngle();
+	angle = propThree.getHandAngle();
 	for (var i = 0; i < element.length; i++) {
 		if (nearly(parseFloat(element[i].value),angle)) {
 			element[i].checked = true;
@@ -630,27 +644,35 @@ function importSubmit() {
 	var imported = $("#popimport textarea").val();
 	imported = props.parse(imported);
 	emptyQueues();
-	props.setPosition(propOne, JSON.stringify(imported.prop1));
-	props.setPosition(propTwo, JSON.stringify(imported.prop2));
-	props.setPosition(propThree, JSON.stringify(imported.prop3));
-	props.setPosition(propFour, JSON.stringify(imported.prop4));
-	propOne.apply(JSON.stringify(imported.prop1));
-	propTwo.apply(JSON.stringify(imported.prop2));
-	propThree.apply(JSON.stringify(imported.prop3));
-	propFour.apply(JSON.stringify(imported.prop4));
+	if (imported.prop1) {
+		props.setPosition(propOne, JSON.stringify(imported.prop1));
+		propOne.apply(JSON.stringify(imported.prop1));
+		for (var i = 0; i < imported.prop1.moves.length; i++) {
+			addMoveToQueue(JSON.stringify(imported.prop1.moves[i]), $("#queue1 ul").get(0));
+		}
+	}
+	if (imported.prop2) {
+		props.setPosition(propTwo, JSON.stringify(imported.prop2));
+		propTwo.apply(JSON.stringify(imported.prop2));
+		for (var i = 0; i < imported.prop2.moves.length; i++) {
+			addMoveToQueue(JSON.stringify(imported.prop2.moves[i]), $("#queue2 ul").get(0));
+		}
+	}
+	if (imported.prop3) {
+		props.setPosition(propThree, JSON.stringify(imported.prop3));
+		propThree.apply(JSON.stringify(imported.prop3));
+		for (var i = 0; i < imported.prop3.moves.length; i++) {
+			addMoveToQueue(JSON.stringify(imported.prop3.moves[i]), $("#queue3 ul").get(0));
+		}
+	}
+	if (imported.prop4) {
+		props.setPosition(propFour, JSON.stringify(imported.prop4));
+		propFour.apply(JSON.stringify(imported.prop4));
+		for (var i = 0; i < imported.prop4.moves.length; i++) {
+			addMoveToQueue(JSON.stringify(imported.prop4.moves[i]), $("#queue4 ul").get(0));
+		}
+	}
 	vs.ready();
-	for (var i = 0; i < imported.prop1.moves.length; i++) {
-		addMoveToQueue(JSON.stringify(imported.prop1.moves[i]), $("#queue1 ul").get(0));
-	}
-	for (var i = 0; i < imported.prop2.moves.length; i++) {
-		addMoveToQueue(JSON.stringify(imported.prop2.moves[i]), $("#queue2 ul").get(0));
-	}
-	for (var i = 0; i < imported.prop3.moves.length; i++) {
-		addMoveToQueue(JSON.stringify(imported.prop3.moves[i]), $("#queue3 ul").get(0));
-	}
-	for (var i = 0; i < imported.prop4.moves.length; i++) {
-		addMoveToQueue(JSON.stringify(imported.prop4.moves[i]), $("#queue4 ul").get(0));
-	}
 	$("#popimport").toggle();
 	predict();
 	redraw();
@@ -958,18 +980,18 @@ function alignSubmit(n) {
 <div style="display: none;" id="popalign3">
 		Prop:
 			<select id="3prop">
-				<option selected="selected" value="poi">Poi</option>
+				<option value="poi">Poi</option>
 				<option value="staff">Staff</option>
 				<option value="hoop">Hoop</option>
-				<option value="none">None</option>
+				<option selected="selected" value="none">None</option>
 			</select>
 		<br>
 		Color:
 			<select id="3color">
-				<option selected="selected" value="red">Red</option>
+				<option value="red">Red</option>
 				<option value="blue">Blue</option>
 				<option value="yellow">Yellow</option>
-				<option value="green">Green</option>
+				<option selected="selected" value="green">Green</option>
 				<option value="orange">Orange</option>
 				<option value="white">White</option>
 			</select>
@@ -1003,7 +1025,7 @@ function alignSubmit(n) {
 						<td></td>
 					</tr>
 					<tr>
-						<td><input checked="checked" name="prop1" value="3.141593" type="radio">Left</td>
+						<td><input checked="checked" name="prop3" value="3.141593" type="radio">Left</td>
 						<td></td>
 						<td><input name="prop3" value="0" type="radio">Right</td>
 					</tr>	
@@ -1021,7 +1043,7 @@ function alignSubmit(n) {
 						<td></td>
 					</tr>
 					<tr>
-						<td><input checked="checked" name="pivot1" value="3.141593" type="radio">Left</td>
+						<td><input checked="checked" name="pivot3" value="3.141593" type="radio">Left</td>
 						<td><input id="pradius3" min="0" max="1" step="0.5" value="0" type="number"></td>
 						<td><input name="pivot3" value="0" type="radio">Right</td>
 					</tr>	
@@ -1037,17 +1059,17 @@ function alignSubmit(n) {
 <div style="display: none;" id="popalign4">
 		Prop:
 			<select id="4prop">
-				<option selected="selected" value="poi">Poi</option>
+				<option value="poi">Poi</option>
 				<option value="staff">Staff</option>
 				<option value="hoop">Hoop</option>
-				<option value="none">None</option>
+				<option selected="selected" value="none">None</option>
 			</select>
 		<br>
 		Color:
 			<select id="4color">
-				<option selected="selected" value="red">Red</option>
+				<option value="red">Red</option>
 				<option value="blue">Blue</option>
-				<option value="yellow">Yellow</option>
+				<option selected="selected" value="yellow">Yellow</option>
 				<option value="green">Green</option>
 				<option value="orange">Orange</option>
 				<option value="white">White</option>
@@ -1100,7 +1122,7 @@ function alignSubmit(n) {
 						<td></td>
 					</tr>
 					<tr>
-						<td><input checked="checked" name="pivot2" value="3.141593" type="radio">Left</td>
+						<td><input checked="checked" name="pivot4" value="3.141593" type="radio">Left</td>
 						<td><input id="pradius4" min="0" max="1" step="0.5" value="0" type="number"></td>
 						<td><input name="pivot4" value="0" type="radio">Right</td>
 					</tr>	
