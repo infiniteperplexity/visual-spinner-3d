@@ -7,14 +7,15 @@
 <script src="scripts/phoria-min.js"></script>
 <script src="scripts/requestAnimationFrame.js"></script>
 <script src="scripts/visual-spinner-engine.js"></script>
-<script src="scripts/visual-spinner-moves.js"></script>
+<script src="scripts/visual-spinner-moves_refactor.js"></script>
 <script src="scripts/visual-spinner-ui.js"></script><script>
 function init() {
 	var vs = VS3D.VisualSpinnerWidget();
 	VS3D.Constants.rescope(vs);
 	vs.embedById("vs-div");
-	vs.parseFile("comborific.json");
-	
+	var p = vs.addProp();
+	p.hand.radius = 1;
+	p.addMove(vs.Moves.build("flower",{duration: 1.5}));
 	vs.addControls("play","pause","rewind","frame","forward","reset","2d3d");
 	vs.ready();
 	//vs.play();

@@ -82,7 +82,7 @@ MoveFactory.prototype.defaults = function(options, defaults) {
 }
 
 Constants.convert = function(hash) {
-	var cvar onverted = {};
+	var converted = {};
 	for (key in hash) {
 		if (typeof hash[key] === "string") {
 			converted[key] = Constants[hash[key]];
@@ -95,24 +95,39 @@ Constants.convert = function(hash) {
 
 MoveFactory.prototype.recipes = {};
 
+//naming conflict with JSON!
 MoveFactory.prototype.build = function(movename, options) {
-	//we could through an underscore in there to prevent accidental access
+	//ad hoc handling of naming conflict
+	if (movename[0] === "{") {
+		return MoveFactory.prototype.oldbuild(movename);
+	}
 	if (options===undefined) {options = {};}
+	options = Constants.convert(options);
+	
 	var augmented = {};
 	for (var option in options) {
 		augmented[option] = options[option];
 	}
-	defaults = Constants.convert(oveFactory.prototype.build.movename.defaults);
+	defaults = Constants.convert(MoveFactory.prototype.recipes[movename].defaults);
 	for (var def in defaults) {
 		if (augmented[def] === undefined) {
 			augmented[def] = defaults[def];
 		}
 	}
-	var move = MoveFactory.recipes[movename](augmented);
-	
+	//we can run into trouble here with variants because they can't see the augmented definition of their  parent
+	if (MoveFactory.prototype.recipes[movename].main) {
+		defaults = Constants.convert(MoveFactory.prototype.recipes[MoveFactory.prototype.recipes[movename].main].defaults);
+		for (var def in defaults) {
+			if (augmented[def] === undefined) {
+				augmented[def] = defaults[def];
+			}
+		}
+	}
+	var move = MoveFactory.prototype.recipes[movename](augmented);
 	if (augmented.phase !== undefined) {
 		move.phaseBy(augmented.phase);
 	}
+	//not all moves slice in the same way, do they?
 	if (augmented.duration < 1) {
 		move = move.slice(0,augmented.duration*augmented.sliceby);
 	} else if (augmented.duration > 1) {
@@ -120,38 +135,63 @@ MoveFactory.prototype.build = function(movename, options) {
 			move.add(move.submoves[augmented.sliceby*(i-1)].clone());
 		}
 	}
-	
 	move.definition = options;
 	move.definition.recipe = movename;
-	
 	return move;
 }
-MoveFactory.prototype.recipe = function(movename, defaults, main) {
-	MoveFactory.prototype.recipes.movename = fun(movename, defaults);
-	MoveFactory.prototype.recipes.movename.defaults = defaults;
+
+MoveFactory.prototype.oldbuild = function(json) {
+	var definition = this.parse(json);
+	if (definition.recipe == undefined) {alert("undefined!");}//alert(json);}
+	var move = this.build(definition.recipe,definition);
+	if (definition.abrupt !== undefined) {
+		move.setAbrupt(definition.abrupt);
+	}
+	if (definition.modify !== undefined) {
+		move.modify(definition.modify);
+	}
+	if (definition.modify_tail !== undefined) {
+		move.modifyTail(definition.modify_tail);
+	}
+	return move;
 }
-MoveFactory.prototype.variant = function(movename, defaults, main) {
-	MoveFactory.prototype.recipes.movename = function(options) {
+
+
+MoveFactory.recipe = function(movename, defaults, fun) {
+	MoveFactory.prototype.recipes[movename] = fun;
+	MoveFactory.prototype.recipes[movename].defaults = defaults;
+}
+MoveFactory.variant = function(movename, defaults, main) {
+	MoveFactory.prototype.recipes[movename] = function(options) {
 		if (options===undefined) {options = {};}
+		options = Constants.convert(options);
 		var augmented = {};
 		for (var option in options) {
 			augmented[option] = options[option];
 		}
-		defaults = Constants.convert(oveFactory.prototype.build.movename.defaults);
+		defaults = Constants.convert(MoveFactory.prototype.recipes[movename].defaults);
 		for (var def in defaults) {
 			if (augmented[def] === undefined) {
 				augmented[def] = defaults[def];
 			}
 		}
-		var move = MoveFactory.prototype.recipes["main"](options);
-		move.definition.recipe = movename;
+		defaults = Constants.convert(MoveFactory.prototype.recipes[main].defaults);
+		for (var def in defaults) {
+			if (augmented[def] === undefined) {
+				augmented[def] = defaults[def];
+			}
+		}
+		var move = MoveFactory.prototype.recipes[main](augmented);
 		return move;
 	};
-	MoveFactory.prototype.recipes.movename.defaults = defaults;
+	MoveFactory.prototype.recipes[movename].defaults = defaults;
+	//is this truly the best way to do it?
+	MoveFactory.prototype.recipes[movename].main = main;
 }
 
 
 
+//could there be such a thing as "default defaults"?  Like WALL, THREE, THREE, CLOCKWISE, DIAMOND, 0, 0, 1, 4?  Well, not all of them...we don't want MODE for everything;
 MoveFactory.recipe(
 	"flower",
 {
@@ -198,8 +238,11 @@ function(options) {
 	move.align("hand", options.entry);
 	return move;
 });
-MoveFactory.variant("antispin",{name: "Anti-Spin Flower", spin: ANTISPIN},"flower");
+MoveFactory.variant("antispin",{name: "Anti-Spin Flower", spin: "ANTISPIN"},"flower");
 MoveFactory.variant("extension",{name: "Extension", petals: 0},"flower");
+
+
+
 
 return VS3D;
 })(VS3D);
