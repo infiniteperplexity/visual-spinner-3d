@@ -54,6 +54,8 @@ var NOOFFSET = Constants.NOOFFSET = 0;
 var OFFSET = Constants.OFFSET = Math.PI;
 var CLOCKWISE = Constants.CLOCKWISE = 1;
 var COUNTERCLOCKWISE = Constants.COUNTERCLOCKWISE = -1;
+var CW = Constants.CLOCKWISE;
+var CCW = Constants.COUNTERCLOCKWISE;
 var INSPIN = Constants.INSPIN = 1;
 var NOSPIN = Constants.NOSPIN = 0;
 var ANTISPIN = Constants.ANTISPIN = -1;
@@ -1440,8 +1442,9 @@ MoveChain.prototype.reorient = function(target) {
 		}
 	}
 	// Otherwise fail
-	alert("Socketing failed (unable to align next move with end of prior move.)");
-	alert(JSON.stringify(definition,null,2));
+	this.reorientFail();
+	//alert("Socketing failed (unable to align next move with end of prior move.)");
+	//alert(JSON.stringify(definition,null,2));
 	return null;
 }
 
@@ -1449,6 +1452,15 @@ MoveLink.prototype.reorient = function (target) {
 	return MoveChain.prototype.reorient.call(this,target);
 }
 
+MoveChain.prototype.reorientFail = function() {
+	alert("Socketing failed (unable to align next move with end of prior move.)");
+	if (this.definition) {
+		alert(JSON.stringify(this.definition,null,2));
+	}
+}
+MoveLink.prototype.reorientFail = function (target) {
+	return MoveChain.prototype.reorientFail.call(this);
+}
 
 MoveLink.prototype.align = function(element, angle) {
 	this[element].angle = angle;
@@ -1475,6 +1487,10 @@ function overrideSpinfail(fun) {
 	Prop.prototype.spinfail = fun;
 }
 
+function overrideReorientFail(fun) {
+	MoveChain.prototype.reorientFail = fun;
+}
+
 return {
 	MoveChain: function() {return new MoveChain();},
 	MoveLink: function() {return new MoveLink();},
@@ -1485,7 +1501,8 @@ return {
 	Spherical: function(r,z,a) {return new Spherical(r,z,a);},
 	Constants: Constants,
 	Utilities: {unwind: unwind, nearly: nearly, isValidJSON: isValidJSON},
-	overrideSpinfail: overrideSpinfail
+	overrideSpinfail: overrideSpinfail,
+	overrideReorientFail: overrideReorientFail
 }
 })();
 

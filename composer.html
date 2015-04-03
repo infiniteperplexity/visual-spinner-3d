@@ -81,6 +81,10 @@ function canvasSetup() {
 }
 window.addEventListener("keydown", listenForKey, false);
 
+
+
+VS3D.overrideReorientFail(function() {return});
+
 function redraw() {
 	vs.renderer.render(vs.scene);
 }

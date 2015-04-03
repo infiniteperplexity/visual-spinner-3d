@@ -69,6 +69,14 @@ var MoveFactory = VS3D.MoveFactory().constructor;
 var unwind = VS3D.Utilities.unwind;
 var nearly = VS3D.Utilities.nearly;
 
+//MoveFactory.prototype.defaults = function(options, defaults) {
+//	if (options===undefined) {options = {};}
+//	for (var option in options) {
+//		defaults[option] = options[option];
+//	}
+//	return defaults;
+//}
+
 "use strict";
 ///Fixes...get rid of most nulls...
 ///But make entry typically null and rely on orient more

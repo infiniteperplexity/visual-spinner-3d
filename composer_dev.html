@@ -10,7 +10,7 @@ header {width: 1240px; height: 100px}
 section {margin: 0; padding: 0}
 header, section div {vertical-align: top; padding: 2.5px; border: 5px solid gray; margin: -2.5px; display: inline-block;}
 #display {width: 400px; height: 400px; float: left}
-#control {position: absolute; top: 550px; left: 0; height: 60px; width: 400px;}
+#control {position: absolute; top: 550px; left: 0; height: 65px; width: 400px; border-top-width: 0px}
 #queues {width: 410px; height: 500px; float: left}
 .queue {padding-top: 0; width: 200px; height: 206px; border: 0; float: left}
 #queue1, #queue3 {padding-right: 12px}
@@ -23,6 +23,7 @@ li {font-size: 90%;}
 li:hover {background-color: lightcyan; cursor: grab;}
 .active {background-color: mediumaquamarine;}
 #queues h2, #menu h2, #workshop h2 {height: 25px; text-decoration: underline}
+#queues h2 {text-align: left; text-indent: 5px}
 #menu ul {width: 200px; height: 430px;}
 #workshop ul {width: 199px; height: 380px;}
 table {position: relative; top: -20px;}
@@ -110,6 +111,11 @@ function canvasSetup() {
 	vs.ready();
 }
 window.addEventListener("keydown", listenForKey, false);
+
+
+VS3D.overrideReorientFail(function() {return});
+
+
 
 function redraw() {
 	vs.renderer.render(vs.scene);
@@ -499,6 +505,9 @@ function popExport() {
 		str += (', "prop4": '+propFour.stringify());
 	}
 	str += "}";
+	if (str[1] === ",") {
+		str = str.replace(", ","");
+	}
 	$("#popexport textarea").html(str);
 }
 function popImport() {
