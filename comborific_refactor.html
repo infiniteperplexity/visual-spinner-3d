@@ -1,0 +1,286 @@
+<!--Distributed under GNU Public License version 3-->
+<!DOCTYPE html>
+<html><head>
+<style>
+body {margin: 0; padding: 0; background-color: #679}
+h1, h2, header p {text-align: center}
+header {width: 1240px; height: 100px}
+header a {position: absolute; top: 5px; left: 5px}
+#content {width: 1250px; height: 510px;}
+canvas {width: 400px; height: 400px; background-color: #000;}
+section {margin: 0; padding: 0}
+header, section div {vertical-align: top; padding: 2.5px; border: 5px solid gray; margin: -2.5px; display: inline-block;}
+#display {width: 400px; height: 400px; float: left}
+#popimport {height: 240px; width: 400px}
+#frameN {width: 100px}
+</style>
+
+
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Drex's "combo-rific" video modeled in VisualSpinner, by Glenn Wright)</title>
+<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="scripts/gl-matrix-min.js"></script>
+<script src="scripts/phoria-min.js"></script>
+<script src="scripts/requestAnimationFrame.js"></script>
+<script src="scripts/visual-spinner-engine.js"></script>
+<script src="scripts/visual-spinner-moves_refactor.js"></script>
+<script src="scripts/visual-spinner-ui.js"></script>
+<script>
+// set parameters
+VS3D.Constants.rescope();
+
+var view2d = false;
+
+var myProps = new Array(); 
+var moves = VS3D.MoveFactory();
+var props = VS3D.PropFactory();
+
+function init() {
+	canvasSetup();
+}
+
+var vs;
+function canvasSetup() {
+	vs = VS3D.VisualSpinnerWidget();
+	vs.embedById("display");
+	var orangePoi = vs.addProp();
+	var whitePoi = vs.addProp();
+	orangePoi.color = "orange";
+	whitePoi.color = "white";
+	vs.addControls("play","pause","rewind","frame","forward","reset","export");
+	//window.addEventListener("keydown", listenForKey, false);
+	
+	
+	// set up props
+	orangePoi.hand.radius = 1;
+	whitePoi.hand.radius = 0;
+	orangePoi.rotateHand(SPLIT);
+	orangePoi.rotateProp(SPLIT);
+	whitePoi.rotateHand(SPLIT);
+	whitePoi.rotateProp(SPLIT);
+
+	// Drex begins with a counterclockwise pendulum vs. extended pendulum hybrid.
+		// Note the use of "hybrid: true" on the extended pendulum.
+			// This tells the hand speed the smooth path of the other pendulum's prop
+			// The default (hybrid: false) instead spins at a constant speed that will match a static spin or flower
+			// Note that the constant THREE, SIX, NINE, and TWELVE refer to the clock points (directions)
+		// Pendulum paths are not true to real-world gravity, because I use a simplified function
+	orangePoi.addMove(moves.build.pendulum({hybrid: true, direction: CCW, extend: 1, duration: 0.5}));
+	whitePoi.addMove(moves.build.pendulum({direction: CCW, extend: TINY, duration: 0.5}));
+	
+		// Next Drex does a clockwise pendulum vs. antispin hybrid.  
+		// The "twirl" parameter, which is mainly used for 1.5s, turns out to be useful here
+		
+	///!!!It's unfortunate, but ENTRY seems to be necessary on these pendulums, because they don't "pass over the top" in the usual sense even when cycled through
+	orangePoi.addMove(moves.build.pendulum({hybrid: true, duration: 0.5, twirl: -3, entry: THREE}));
+	whitePoi.addMove(moves.build.pendulum({extend: 0, duration: 0.5, entry: THREE}));
+	
+		// Back to the original hybrid...
+	orangePoi.addMove(moves.build.pendulum({hybrid: true, direction: CCW, extend: 1, duration: 0.5}));
+	whitePoi.addMove(moves.build.pendulum({direction: CCW, extend: 0, duration: 0.5}));
+	
+	// ...and back to the second hybrid
+	orangePoi.addMove(moves.build.pendulum({hybrid: true, duration: 0.5, twirl: -3, entry: THREE}));
+	// As Drex transitions to the next move, he distorts the second half of the hybrid in various ways
+		// The orange poi stops and reverses direction (much more slowly) and the hand holding it drifts to the right
+			// (I don't think the pivoting here is essential to Drex's intent for the move...basically it switches from triquetra to cateye partway through)
+	orangePoi.modifyTail({prop_speed: -1, prop_acc: 0, hand_stretch: -2});
+	whitePoi.addMove(moves.build.pendulum({direction: CLOCKWISE, extend: 0, duration: 0.5, entry: THREE}));
+		// The white poi drifts to the right so Drex can spin moves that are not centered on his body
+			// VisualSpinner handles this sort of thing using the "pivot" element to recenter the move
+	whitePoi.modifyTail({pivot_stretch: 2, pivot_angle: THREE});
+	
+		// The next move is point isolation vs. static spin.  A point isolation can be modeled as a box-mode, zero-petal, in-spin flower.
+	orangePoi.addMove(moves.build.pointiso({pivot_angle: THREE, pivot_radius: 0.5, duration: 0.5}));
+	whitePoi.addMove(moves.build.staticspin({extend: 0.5, duration: 0.5}));
+	
+		// The next move is isolation vs. vertical cateye
+	orangePoi.addMove(moves.build.cateye({pivot_angle: THREE, pivot_radius: 1, duration: 1.5}));
+	whitePoi.addMove(moves.build.isolation({pivot_angle: THREE, pivot_radius: 1, duration: 1.5}));
+	
+	// Then Drex does the third, "unfolding" variant of point iso vs. static spin from his Tech Blog #390
+	orangePoi.addMove(moves.build.staticspin({direction: CCW, extend: 0.5, duration: 0.5}));
+	whitePoi.addMove(moves.build.pointiso({direction: CCW, pivot_angle: THREE, pivot_radius: 0.5, duration: 0.25}));
+	whitePoi.addMove(moves.build.pointiso({pivot_angle: THREE, pivot_radius: 0.5, duration: 0.25}));
+	
+	// Next comes static spin vs. extension, starting pivoted but recentering quickly
+	orangePoi.addMove(moves.build.staticspin({direction: CCW, duration: 0.5, pivot_angle: THREE, pivot_radius: 0.5}));;
+	whitePoi.addMove(moves.build.pointiso({direction: CCW, duration: 0.5, pivot_angle: THREE, pivot_radius: 0.5}));
+	orangePoi.modifyTail({pivot_stretch: 2});
+	whitePoi.modifyTail({pivot_stretch: 2});
+	orangePoi.addMove(moves.build.extension({direction: CCW, duration: 0.5}));
+	whitePoi.addMove(moves.build.staticspin({direction: CCW, duration: 0.5}));
+	
+		// Next comes pendulum vs. overhead CAP
+	orangePoi.addMove(moves.build.ccap({orient: TWELVE, direction: CCW, phase: 1}));
+	whitePoi.addMove(moves.build.pendulum({direction: CLOCKWISE, extend:0}));
+	// Then repeat the same hybrid
+	orangePoi.addMove(moves.build.ccap({orient: TWELVE, direction: CCW, phase: 1}));
+	whitePoi.addMove(moves.build.pendulum({direction: CLOCKWISE, extend:0}));
+	// Then one quarter of a repetition
+	orangePoi.addMove(moves.build.ccap({orient: TWELVE, direction: CCW, phase: 1, duration: 0.25}));
+	// The white poi drifts down to prepare for the next move
+	whitePoi.addMove(moves.build.pendulum({direction: CLOCKWISE, extend:0, duration: 0.25}).modify({hand_angle: SIX, hand_speed: 0, hand_stretch: 4}));
+	
+	// The next move is a split pair of linear isolations
+		// These have oval hand paths, which are a little tricky to model
+	orangePoi.addMove(moves.build.lineariso({ovalness: 0.5, orient: TWELVE, direction: CCW}));
+	whitePoi.addMove(moves.build.lineariso({ovalness: 0.5, orient: SIX, direction: CCW}));
+	// Half a set
+	orangePoi.addMove(moves.build.lineariso({ovalness: 0.5, orient: TWELVE, direction: CCW, duration: 0.25}));
+	whitePoi.addMove(moves.build.lineariso({ovalness: 0.5, orient: SIX, direction: CCW, duration: 0.25}));
+	
+	// Transition
+		// These isolations drift upwards to prepare for the next combo
+		// Drex actually does this a little earlier but it's way easier to model this way
+	orangePoi.addMove(moves.build.isolation({direction: CCW, duration: 0.25}).modify({pivot_angle: TWELVE, pivot_stretch: 4}));
+	whitePoi.addMove(moves.build.isolation({direction: CCW, duration: 0.25}).modify({pivot_angle: TWELVE, pivot_stretch: 4}));
+
+	//  Triquetra vs. Anti-pendulum
+		// Note that a hybrid anti-pendulum does a couple of weird things...
+			// The top half of it drifts up about half an extension
+			// Also, it only swings about 0.75 times as far as a normal pendulum
+	orangePoi.addMove(moves.build.flower({spin: ANTISPIN, petals: 3, extend: 0.5, mode: DIAMOND}));
+	whitePoi.addMove(moves.build.antipendulum({direction: CCW}));
+	// Repeat once
+	orangePoi.addMove(moves.build.flower({spin: ANTISPIN, petals: 3, extend: 0.5, mode: DIAMOND}));
+	whitePoi.addMove(moves.build.antipendulum({direction: CCW}));
+	// Half of one more repetition
+		// The white poi drifts upward to prepare for a centered isolation.
+	orangePoi.addMove(moves.build.triquetra({extend: 0.5, duration: 0.5}));
+	whitePoi.addMove(moves.build.antipendulum({direction: CCW, duration: 0.5}));
+	whitePoi.modifyTail({helper_stretch: 2});
+	
+	// Isolation vs. Horizontal Cat-Eye
+	orangePoi.addMove(moves.build.cateye());
+	whitePoi.addMove(moves.build.isolation());
+	
+	// ...and again...
+	orangePoi.addMove(moves.build.cateye());
+	whitePoi.addMove(moves.build.isolation());
+	
+	// Isolation vs. Triquetra
+	orangePoi.addMove(moves.build.triquetra({extend: 0.5}));
+	whitePoi.addMove(moves.build.isolation());
+	
+	// ...and another half cycle...
+	orangePoi.addMove(moves.build.triquetra({extend: 0.5, duration: 0.5}));
+	whitePoi.addMove(moves.build.isolation({duration: 0.5}));
+
+	// ...leading into Isolation vs. Vertical Cat-Eye
+	orangePoi.addMove(moves.build.cateye());
+	whitePoi.addMove(moves.build.isolation());
+	// ...and three-quarters of another repetitition
+	orangePoi.addMove(moves.build.cateye({duration: 0.75}));
+	whitePoi.addMove(moves.build.isolation({duration: 0.75}));
+	
+	
+	
+	
+	
+	
+	// Point Isolation vs. Static Spin
+	orangePoi.addMove(moves.build.staticspin({direction: CCW, extend: 0.5, duration: 0.5}));
+	whitePoi.addMove(moves.build.pointiso({direction: CCW, pivot_angle: NINE, pivot_radius: 0.5, duration: 0.5}));
+
+	// Pivoted Cat-Eyes vs. Anti-Pendulums
+		// ...attention folks, the storm clouds are about to roll in...
+	// The orange poi turns half an isolation and then does an anti-pendulum
+	orangePoi.addMove(moves.build.isolation({direction: CCW, pivot_angle: NINE, pivot_radius: 1, duration: 0.5}));
+		// We have to do some custom slicing and dicing to make the transition work	
+	orangePoi.addMove(moves.build.antipendulum({pivot_angle: NINE, pivot_radius: 1, swing: 1, duration: 0.25}).modify({helper_radius: 0, helper_stretch: 6, helper_stretch_acc: -16}));
+	orangePoi.addMove(moves.build.antipendulum({pivot_angle: NINE, pivot_radius: 1, duration: 0.75}).modifyTail({prop_acc: 4, helper_stretch_acc: -16}));
+	// The white poi is much more straightforward
+	whitePoi.addMove(moves.build.cateye({direction: CCW, pivot_angle: NINE, pivot_radius: 1, duration: 1.5}));
+ 
+	// Point isolation vs. Static Spin
+	orangePoi.addMove(moves.build.pointiso({pivot_angle: NINE, pivot_radius: 0.5, duration: 0.5}));
+	whitePoi.addMove(moves.build.staticspin({extend: 0.5, duration: 0.5}));
+	
+	// Cat-Eye vs. Anti-Pendulum (switch hands)
+	orangePoi.addMove(moves.build.cateye({duration: 1.5}));
+	whitePoi.addMove(moves.build.isolation({duration: 0.5}));
+		// More custom slicing and dicing
+	whitePoi.addMove(moves.build.antipendulum({direction: CCW, swing: 1, duration: 0.25}).modify({helper_radius: 0, helper_stretch: 6, helper_stretch_acc: -16}));
+	whitePoi.addMove(moves.build.antipendulum({direction: CCW, duration: 0.75}).modifyTail({prop_acc: -4, helper_stretch_acc: -16}));
+
+	// Point Iso v. Static Spin
+	orangePoi.addMove(moves.build.staticspin({direction: CCW, extend: 0.5, duration: 0.5}));
+	whitePoi.addMove(moves.build.pointiso({direction: CCW, pivot_angle: NINE, pivot_radius: 0.5, duration: 0.5}));
+	
+	// Iso v. V. Cat-eye
+	orangePoi.addMove(moves.build.isolation({direction: CCW, pivot_angle: NINE, pivot_radius: 1, duration: 1.5}));
+	whitePoi.addMove(moves.build.cateye({direction: CCW, pivot_angle: NINE, pivot_radius: 1, duration: 1.5}));
+	// Point Iso v. Static Spin
+		// The complicated pivot going on here makes it easier to just use generic movements
+	orangePoi.addMove(moves.build.generic({hand_angle: NINE, prop_angle: THREE, pivot_angle: NINE, pivot_radius: 1, pivot_stretch: -3, hand_radius: 0.5, hand_speed: -1, prop_speed: -1, duration: 0.5}));
+	whitePoi.addMove(moves.build.generic({hand_angle: THREE, prop_angle: NINE, pivot_angle: NINE, pivot_radius: 1, pivot_stretch: -3, hand_radius: 0.5, hand_speed: -1, prop_speed: -1, duration: 0.5}));
+
+	
+	// Iso v. V. Cat-eye
+	orangePoi.addMove(moves.build.cateye({pivot_angle: THREE, pivot_radius: 0.5, duration: 1.5}));
+	whitePoi.addMove(moves.build.isolation({pivot_angle: THREE, pivot_radius: 0.5, duration: 1.5}));
+		
+	// Pendulum v. Two-Petal transition
+		// The first "petal" weirdly pendulum-like and distorted so it's best handled as a generic move
+	orangePoi.addMove(moves.build.generic({hand_angle: NINE, prop_angle: THREE, hand_radius: 1, pivot_angle: THREE, pivot_radius: 1, hand_speed: 0, hand_acc: -8, prop_speed: 0, prop_acc: -24, duration: 0.25}));
+	orangePoi.addMove(moves.build.generic({hand_angle: SIX, prop_angle: SIX, hand_radius: 1, pivot_angle: THREE, pivot_radius: 1, hand_speed: -2, hand_acc: 8, prop_speed: -6, prop_acc: 24, duration: 0.25, pivot_stretch: -4}));
+	whitePoi.addMove(moves.build.pendulum({extend: 0, duration: 0.5, pivot_angle: THREE, pivot_radius: 1}).modifyTail({pivot_stretch: -4}));
+	
+	// Five repetitions of static pendulum vs. inside stalls
+		// one
+	orangePoi.addMove(moves.build.stall({exit: true, mode: BOX, entry: THREE, petals: 2, direction: CCW, duration: 0.25}));
+	orangePoi.addMove(moves.build.stall({exit: false, entry: TWELVE, petals: 2, direction: CCW, duration: 0.25}));
+	whitePoi.addMove(moves.build.pendulum({extend: 0, duration: 2}));
+	//whitePoi.addMove(moves.build.pendulum({extend: 0, duration: 0.5}));
+		// two
+	//orangePoi.addMove(moves.build.stall({exit: true, mode: BOX, entry: NINE, petals: 2, duration: 0.25}));
+	//orangePoi.addMove(moves.build.stall({exit: false, entry: TWELVE, petals: 2, duration: 0.25}));
+		// three
+	//orangePoi.addMove(moves.build.stall({exit: true, mode: BOX, entry: THREE, petals: 2, direction: CCW, duration: 0.25}));
+	//orangePoi.addMove(moves.build.stall({exit: false, entry: TWELVE, petals: 2, direction: CCW, duration: 0.25}));
+		// four
+	//orangePoi.addMove(moves.build.stall({exit: true, mode: BOX, entry: NINE, petals: 2, duration: 0.25}));
+	//orangePoi.addMove(moves.build.stall({exit: false, entry: TWELVE, petals: 2, duration: 0.25}));
+		// five
+	//orangePoi.addMove(moves.build.stall({exit: true, mode: BOX, entry: THREE, petals: 2, direction: CCW, duration: 0.25}));
+	//orangePoi.addMove(moves.build.stall({exit: false, entry: TWELVE, petals: 2, direction: CCW, duration: 0.25}));
+	
+	// Two and a half beats of good old fashioned crank isolations
+	//orangePoi.addMove(moves.build.isolation({direction: CCW, pivot_angle: NINE, pivot_radius: 0.5, duration: 2.5}));
+	//whitePoi.addMove(moves.build.isolation({direction: CCW, pivot_angle: NINE, pivot_radius: 0.5, duration: 2.5}).modifyTail({prop_speed: -2}));
+	
+	// Finally, the madness is over!
+	vs.ready();
+}
+
+
+function listenForKey(e) {
+	if (e.keyCode===37) {
+		vs.rewind(12);
+	} else if (e.keyCode===39) {
+		vs.forward(12);
+	}
+}
+
+
+</script>
+</head>
+<body onload="init();">
+<header>
+	<a href='http://infiniteperplexity.github.io/visual-spinner-3d/'>See more at the VisualSpinner3D main site.</a>
+	<h1>Welcome to VisualSpinner3D. </h1>
+	<p>(we have successfully digitized Drex.)</p>
+</header>
+	<section>
+<div id="display">
+</div>
+<div id="vid">
+	<video id="drex" controls="controls" width="400px">
+		<source src="comborific.mp4" type="video/mp4">
+		Your browser does not support HTML5 video.
+	</video>
+</div>
+
+</section>
+</body></html>

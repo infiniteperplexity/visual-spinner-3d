@@ -1,0 +1,73 @@
+
+
+
+	
+	
+	
+
+	
+
+	
+	
+	
+
+
+
+	
+	
+
+	
+	
+	
+	
+
+	// Static Spin vs. One-Petal
+	orangePoi.addMove(moves.staticspin({direction: COUNTERCLOCKWISE, duration: 2.75}).modifyTail({pivot_angle: SIX, pivot_stretch: 2}));
+	whitePoi.addMove(moves.flower({mode: FOLLOW, petals: 1, direction: COUNTERCLOCKWISE, duration: 2.75}).modifyTail({pivot_angle: SIX, pivot_stretch: 2}));
+	// At the end, drift down to do some crank isolations
+	
+	// One and a half beats of crank isolations
+	orangePoi.addMove(moves.isolation({direction: COUNTERCLOCKWISE,duration: 1.5}));
+	whitePoi.addMove(moves.isolation({direction: COUNTERCLOCKWISE, duration: 1.5}));
+	
+	// Oval-shaped "linear" isolations
+	orangePoi.addMove(moves.oval({direction: COUNTERCLOCKWISE, orient: NINE, duration: 0.5}));
+	whitePoi.addMove(moves.oval({direction: COUNTERCLOCKWISE, orient: THREE, duration: 0.5}));
+
+	// What's this?  A three-eighth time transition?  What kind of Colorado weed is Drex smoking?
+	orangePoi.addMove(moves.isolation({direction: COUNTERCLOCKWISE, duration: 0.5}).modifyTail({duration: 0.125}));
+	whitePoi.addMove(moves.isolation({direction: COUNTERCLOCKWISE, duration: 0.5}).modifyTail({duration: 0.125}));
+	
+	// The orange poi does a diagonal linear isolation in the 10:30 direction, white in the 4:30 direction
+	orangePoi.addMove(moves.oval({direction: COUNTERCLOCKWISE, entry: ONETHIRTY, orient: TENTHIRTY, duration: 0.5}));
+	whitePoi.addMove(moves.oval({direction: COUNTERCLOCKWISE, entry: SEVENTHIRTY, orient: FOURTHIRTY, duration: 0.5}));
+	
+	// This set of linear isolations is extremely distorted, and threw me for quite a loop
+	orangePoi.addMove(moves.generic({hand_angle: SEVENTHIRTY, prop_angle: ONETHIRTY, hand_radius: 0.5, hand_stretch: 2, prop_speed: -2, duration: 0.25}));
+	whitePoi.addMove(moves.generic({hand_angle: ONETHIRTY, prop_angle: SEVENTHIRTY, hand_radius: 0.5, hand_stretch: 2, prop_speed: -2, duration: 0.25}));
+	orangePoi.addMove(moves.oval({direction: COUNTERCLOCKWISE, petals: 1, minor: 0.075, entry: SEVENTHIRTY, orient: SEVENTHIRTY, duration: 0.25}).modifyTail({duration: 0.125}));
+	whitePoi.addMove(moves.oval({direction: COUNTERCLOCKWISE, petals: 1, minor: 0.075, entry: ONETHIRTY, orient: ONETHIRTY, duration: 0.25}).modifyTail({duration: 0.125}));
+	
+	// Another weird "linear" transition
+	orangePoi.addMove(moves.generic({hand_angle: SIX, prop_angle: FOURTHIRTY, hand_radius: 0.3, hand_stretch: 3, prop_speed: -3.5, duration: 0.25}));
+	whitePoi.addMove(moves.generic({hand_angle: TWELVE, prop_angle: TENTHIRTY, hand_radius: 0.3, hand_stretch: 3, prop_speed: -3.5, duration: 0.25}));
+	
+	// True linear isolations
+	orangePoi.addMove(moves.linex({direction: COUNTERCLOCKWISE, petals: 2, orient: SIX, duration: 0.5}));
+	whitePoi.addMove(moves.linex({direction: COUNTERCLOCKWISE, petals: 2, orient: TWELVE, duration: 0.5}));
+	
+	// Back to "linear" isolations
+	orangePoi.addMove(moves.oval({direction: COUNTERCLOCKWISE, orient: TWELVE, duration: 0.5}));
+	whitePoi.addMove(moves.oval({direction: COUNTERCLOCKWISE, orient: SIX, duration: 0.5}));
+	
+	// Four-petal antispin flowers
+	orangePoi.addMove(moves.flower({spin: ANTISPIN, duration: 1.5}));
+	whitePoi.addMove(moves.flower({spin: ANTISPIN, duration: 1.5}));
+	
+	// Partial linear isolation back to the center
+	orangePoi.addMove(moves.linex({direction: COUNTERCLOCKWISE, petals: 2, orient: TWELVE, duration: 0.25}));
+	whitePoi.addMove(moves.linex({direction: COUNTERCLOCKWISE, petals: 2, orient: SIX, duration: 0.25}));
+	
+	// Finish with a spiral wrap
+	orangePoi.addMove(moves.spiral({speed: 2, direction: COUNTERCLOCKWISE, stretch: -1.5,duration: 0.5}));
+	whitePoi.addMove(moves.spiral({speed: 2, direction: COUNTERCLOCKWISE, stretch: -1.5, duration: 0.5}));
