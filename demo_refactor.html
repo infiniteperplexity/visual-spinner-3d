@@ -1,0 +1,820 @@
+<!--Distributed under GNU Public License version 3-->
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>VisualSpinner3D v. 3.0, by Glenn Wright</title>
+<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="scripts/gl-matrix-min.js"></script>
+<script src="scripts/phoria-min.js"></script>
+<script src="scripts/requestAnimationFrame.js"></script>
+<script src="scripts/visual-spinner-engine.js"></script>
+<script src="scripts/visual-spinner-moves_refactor.js"></script>
+<script src="scripts/visual-spinner-ui.js"></script>
+<script>
+// set parameters
+
+VS3D.Constants.rescope();
+
+var controller = new Controller();
+var moves = VS3D.MoveFactory();
+var props = VS3D.PropFactory();
+var Prop = VS3D.Prop().constructor;
+var vs;
+$.urlParam = function(name){
+	var results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(window.location.href);
+	if (!results) {return 0;}
+	return results[1] || 0;
+}
+
+var twoD;
+var threeD;
+function init() {
+	vs = VS3D.VisualSpinnerWidget();
+	vs.embedById("vs-div");
+	twoD = VS3D.HTML5Canvas2dRenderer();
+	threeD = vs.renderer;
+	// optionally, pull parameters from URL
+	var params = [	"1prop","2prop","3prop","4prop",
+					"1plane","2plane","3plane","4plane",
+					"1align","2align","3align","4align",
+					"1spin","2spin","3spin","4spin",
+					"1move","2move","3move","4move"];
+	var defaults = ["poi","poi","poi","poi",
+					"wall","wall","wall","wall",
+					"twelve","twelve","twelve","twelve",
+					"cw","ccw","cw","ccw",
+					"xtsn","xtsn","3paf","3paf"];
+	for (var i = 0; i<params.length; i++) {
+		var txt = $.urlParam(params[i]);
+		if (txt==0) {txt = defaults[i];}
+		$("#"+params[i]).val(txt);
+	}
+	if( 	navigator.userAgent.match(/Android/i)
+		|| navigator.userAgent.match(/webOS/i)
+		|| navigator.userAgent.match(/iPhone/i)
+		|| navigator.userAgent.match(/iPad/i)
+		|| navigator.userAgent.match(/iPod/i)
+		|| navigator.userAgent.match(/BlackBerry/i)
+		|| navigator.userAgent.match(/Windows Phone/i)) {
+		$("#2d3d").val("2d");
+	} else {
+		$("#2d3d").val("3d");
+	}
+	var propOne = vs.addProp();
+	var propTwo = vs.addProp();
+	var propThree = vs.addProp();
+	var propFour = vs.addProp();
+	propOne.color = "red";
+	propTwo.color = "blue";
+	propThree.color = "yellow";
+	propFour.color = "green";
+	// set up controller	
+	controller.updateParameters();
+	vs.play();
+}
+
+function Controller() {
+	this.prop = [];
+	this.plane = [];
+	this.align = [];
+	this.spin = [];
+	this.view2d = false;
+}
+Prop.prototype.queueIsEmpty = function() {
+	controller.updateParameters();
+}
+Controller.prototype.updateParameters = function() {
+	var list;
+	var txt;
+	var renderer;
+	var move;
+	var propn;
+	var pcolor;
+	var fcolor;
+	
+	//Check 2D vs. 3D
+	list = document.getElementById("2d3d");
+	txt = list.options[list.selectedIndex].value;
+	if (txt=="2d") {vs.swapRenderer(twoD);}
+	else if (txt=="3d") {vs.swapRenderer(threeD);}
+			
+	//Update prop types
+	for(var i = 1; i<=vs.scene.props.length; i++) {
+		list = document.getElementById(i+"prop");
+		txt = list.options[list.selectedIndex].value;
+		if (txt==="poi") {	
+			vs.scene.props[i-1].propType = "poi";
+			vs.scene.props[i-1].fire = false;
+		} else if (txt==="fpoi") {	
+			vs.scene.props[i-1].propType = "poi";
+			vs.scene.props[i-1].fire = true;
+		} else if (txt==="staff") {	
+			vs.scene.props[i-1].propType = "staff";
+			vs.scene.props[i-1].fire = false;
+		} else if (txt==="fstaff") {	
+			vs.scene.props[i-1].propType = "staff";
+			vs.scene.props[i-1].fire = true;
+		} else if (txt==="hoop") {	
+			vs.scene.props[i-1].propType = "hoop";
+			vs.scene.props[i-1].fire = false;
+		} else if (txt==="fhoop") {	
+			vs.scene.props[i-1].propType = "hoop";
+			vs.scene.props[i-1].fire = true;
+		} else if (txt==="none") {
+			vs.scene.props[i-1].propType = "noprop";
+		}
+	}
+	
+	//Update alignment and planes
+	for (var i = 1; i<=vs.scene.props.length; i++) {
+		list = document.getElementById(i+"plane");
+		txt = list.options[list.selectedIndex].value;
+		if (txt=="wall") {
+			this.plane[i-1] = WALL;
+		} else if (txt=="wheel") {
+			this.plane[i-1] = WHEEL;
+		} else if (txt=="floor") {
+			this.plane[i-1] = FLOOR;
+		}
+		list = document.getElementById(i+"align");
+		txt = list.options[list.selectedIndex].value;
+		if (txt=="twelve") {
+			this.align[i-1] = TWELVE;
+		} else if (txt=="six") {
+			this.align[i-1] = SIX;
+		} else if (txt=="three") {
+			this.align[i-1] = THREE;
+		} else if (txt=="nine") {
+			this.align[i-1] = NINE;
+		}
+		list = document.getElementById(i+"spin");
+		txt = list.options[list.selectedIndex].value;
+		if (txt=="cw") {
+			this.spin[i-1] = CLOCKWISE;
+		} else if (txt=="ccw") {
+			this.spin[i-1] = COUNTERCLOCKWISE;
+		}
+	}	
+	//Generate moves
+	var submoves;
+	for (var i = 1; i<=vs.scene.props.length; i++) {
+		list = document.getElementById(i+"move");
+		txt = list.options[list.selectedIndex].value;
+		move = this.generateMove(i-1,txt);
+		submoves = vs.scene.props[i-1].move.submoves;
+		while (submoves.length > 1) {
+			submoves.pop();
+		}
+		if (submoves[0] !== undefined) {submoves[0].oneshot = true;}
+		vs.scene.props[i-1].addMove(move.setAbrupt());
+	}
+	var linktxt = "http://infiniteperplexity.github.io/visual-spinner-3d/demo.html";
+	var params = [	"1prop","2prop","3prop","4prop",
+					"1plane","2plane","3plane","4plane",
+					"1align","2align","3align","4align",
+					"1spin","2spin","3spin","4spin",
+					"1move","2move","3move","4move"];
+	for (var i = 0; i<params.length; i++) {
+		if (i==0) {
+			linktxt += "?" + params[i] + "=" + $("#"+params[i]).val();
+		} else {
+			linktxt += "&" + params[i] + "=" + $("#"+params[i]).val();
+		}
+	}
+	$('#myLink').text(linktxt);
+}
+
+
+Controller.prototype.generateMove = function(n, txt) {
+	var move;
+	if (txt=="stat") {
+		move = moves.build.staticspin({direction: this.spin[n], plane: this.plane[n], entry: this.align[n]});
+	} else if (txt=="xtsn") {
+		move = moves.build.flower({entry: this.align[n], orient: this.align[n], direction: this.spin[n], plane: this.plane[n], mode: DIAMOND, petals: 0});
+		move.align("hand",this.align[n]);
+	} else if (txt=="2btw") {
+		move = moves.build.weave({entry: this.align[n], orient: this.align[n], direction: this.spin[n], plane: this.plane[n]});
+	} else if (txt=="o2bt") {
+		move = moves.build.weave({entry: this.align[n], orient: this.align[n], direction: this.spin[n], plane: this.plane[n], pitch: BACKWARD});
+	} else if (txt=="3btw") {
+		move = moves.build.weave({beats: 3, entry: this.align[n], orient: this.align[n], direction: this.spin[n], plane: this.plane[n]});
+	} else if (txt=="o3bt") {
+		move = moves.build.weave({beats: 3, entry: this.align[n], orient: this.align[n], direction: this.spin[n], plane: this.plane[n], pitch: BACKWARD});
+	} else if (txt=="1pif") {
+		move = moves.build.flower({entry: this.align[n], orient: this.align[n], direction: this.spin[n], mode: DIAMOND, plane: this.plane[n], petals: 1});
+		move.align("hand",this.align[n]);
+	} else if (txt=="o1if") {
+		move = moves.build.flower({entry: this.align[n], orient: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n], petals: 1});
+		move.align("hand",this.align[n]);
+	} else if (txt=="2pif") {
+		move = moves.build.flower({entry: this.align[n], orient: this.align[n], mode: DIAMOND, direction: this.spin[n], plane: this.plane[n], petals: 2});
+		move.align("hand",this.align[n]);
+	} else if (txt=="o2if") {
+		move = moves.build.flower({entry: this.align[n], orient: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n], petals: 2});
+		move.align("hand",this.align[n]);
+	} else if (txt=="4pif") {
+		move = moves.build.flower({entry: this.align[n], orient: this.align[n], mode: DIAMOND, direction: this.spin[n], plane: this.plane[n]});
+		move.align("hand",this.align[n]);
+	} else if (txt=="b4if") {
+		move = moves.build.flower({entry: this.align[n], orient: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n]});
+		move.align("hand",this.align[n]);
+	} else if (txt=="3paf") {
+		move = moves.build.flower({entry: this.align[n], orient: this.align[n], mode: DIAMOND, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN, petals: 3});
+		move.align("hand",this.align[n]);
+	} else if (txt=="o3af") {
+		move = moves.build.flower({entry: this.align[n], orient: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN, petals: 3});
+		move.align("hand",this.align[n]);
+	} else if (txt=="4paf") {
+		move = moves.build.flower({entry: this.align[n], orient: this.align[n], mode: DIAMOND, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
+		move.align("hand",this.align[n]);
+	} else if (txt=="b4af") {
+		move = moves.build.flower({entry: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
+		move.align("hand",this.align[n]);
+	} else if (txt=="hcap") {
+		if (this.align[n] == TWELVE || this.align[n] == SIX) {
+			move = moves.build.ccap({orient: this.align[n]+this.spin[n]*QUARTER, direction: this.spin[n], plane: this.plane[n]});
+		} else {
+			move = moves.build.ccap({orient: this.align[n], direction: this.spin[n], plane: this.plane[n]});
+		}
+		move.align("hand",this.align[n]);
+	} else if (txt=="vcap") {
+		if (this.align[n] == THREE || this.align[n] == NINE) {
+			move = moves.build.ccap({orient: this.align[n]+this.spin[n]*QUARTER, direction: this.spin[n], plane: this.plane[n]});
+		} else {
+			move = moves.build.ccap({orient: this.align[n], direction: this.spin[n], plane: this.plane[n]});
+		}
+		move.align("hand",this.align[n]);
+	} else if (txt=="hcpo") {
+		if (this.align[n] == TWELVE || this.align[n] == SIX) {
+			move = moves.build.ccap({orient: this.align[n]-this.spin[n]*QUARTER, direction: this.spin[n], plane: this.plane[n]});
+		} else {
+			move = moves.build.ccap({orient: this.align[n], direction: this.spin[n], plane: this.plane[n]});
+			move.phaseBy(2);
+		}
+		move.align("hand",this.align[n]);
+	} else if (txt=="vcpo") {
+		if (this.align[n] == THREE || this.align[n] == NINE) {
+			move = moves.build.ccap({orient: this.align[n]-this.spin[n]*QUARTER, direction: this.spin[n], plane: this.plane[n]});
+		} else {
+			move = moves.build.ccap({orient: this.align[n], direction: this.spin[n], plane: this.plane[n]});
+			move.phaseBy(2);
+		}
+		move.align("hand",this.align[n]);
+	} else if (txt=="pend") {
+		move = moves.build.pendulum({direction: this.spin[n], plane: this.plane[n]});
+		move.align("hand",this.align[n]);
+	} else if (txt=="1pt5") {
+		move = moves.build.onepointfive({direction: this.spin[n], plane: this.plane[n]});
+		move.align("hand",this.align[n]);
+	} else if (txt=="ucex") {
+		move = moves.build.isolation({entry: this.align[n], mode: 0, direction: this.spin[n], plane: this.plane[n]});
+		move.align("prop",this.align[n]);
+	} else if (txt=="vcat") {
+		move = moves.build.isolation({entry: TWELVE, mode: 0, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
+		move.align("prop",this.align[n]);
+	} else if (txt=="hcat") {
+		move = moves.build.isolation({entry: THREE, direction: this.spin[n], mode: 0, plane: this.plane[n], spin: ANTISPIN});
+		move.align("prop",this.align[n]);
+	} else if (txt=="isol") {
+		move = moves.build.isolation({entry: this.align[n], direction: this.spin[n], plane: this.plane[n]});
+		move.align("prop",this.align[n]);
+	} else if (txt=="unip") {
+		move = moves.build.pendulum({direction: this.spin[n], plane: this.plane[n], extend: 0.5});
+		move.align("hand",this.align[n]);
+	} else if (txt=="antp") {
+		move = moves.build.antipendulum({direction: this.spin[n], plane: this.plane[n]});
+		move.align("hand",this.align[n]);
+	} else if (txt=="pext") {
+		move = moves.build.isolation({pivot: this.align[n], mode: 0, direction: this.spin[n], plane: this.plane[n]});
+		move.align("prop",this.align[n]);
+	} else if (txt=="piso") {
+		move = moves.build.isolation({pivot: this.align[n], direction: this.spin[n], plane: this.plane[n]});
+		move.align("prop",this.align[n]);
+	} else if (txt=="pcat") {
+		move = moves.build.isolation({pivot: this.align[n], entry: TWELVE, mode: 0, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
+		move.align("prop",this.align[n]);
+	} else if (txt=="pflo") {
+		move = moves.build.flower({pivot: this.align[n], extend: 0.5,  entry: this.align[n],direction: this.spin[n], plane: this.plane[n], petals: 2});
+		move.align("hand",this.align[n]);
+	} else if (txt=="ptri") {
+		move = moves.build.flower({pivot: this.align[n], extend: 0.5, entry: this.align[n],direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN, petals: 3});
+		move.align("hand",this.align[n]);
+	} else if (txt=="pant") {
+		move = moves.build.flower({pivot: this.align[n], extend: 0.5, entry: this.align[n],direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
+		move.align("hand",this.align[n]);
+	} else if (txt=="ppen") {
+		move = moves.build.pendulum({pivot: this.align[n], extend: 0.5, direction: this.spin[n], plane: this.plane[n]});
+		move.align("hand",this.align[n]);
+	} else if (txt=="hlex") {
+		move = moves.build.linex({entry: this.align[n], petals: 0, direction: this.spin[n], plane: this.plane[n], orient: THREE});
+	} else if (txt=="vlex") {
+		move = moves.build.linex({entry: this.align[n], petals: 0, direction: this.spin[n], plane: this.plane[n], orient: TWELVE});
+	} else if (txt=="hlis") {
+		move = moves.build.linex({entry: this.align[n], petals: 2, direction: this.spin[n], plane: this.plane[n], orient: THREE});
+	} else if (txt=="vlis") {
+		move = moves.build.linex({entry: this.align[n], petals: 2, direction: this.spin[n], plane: this.plane[n], orient: TWELVE});
+		move.align("prop",this.align[n]);
+	} else if (txt=="supr") {
+		move = moves.build.superman({orient: this.align[n], direction: this.spin[n], hand_plane: this.plane[n]});
+		move.align("prop",this.align[n]);
+	} else if (txt=="zbnd") {
+		move = moves.build.toroid({entry: this.align[n], harmonics: 4, direction: this.spin[n], bend: 0, plane: this.plane[n]});
+		move.align("hand",this.align[n]);
+	} else if (txt=="2isb") {
+		move = moves.build.toroid({entry: this.align[n], harmonics: 2, direction: this.spin[n], bend: ISOBEND, plane: this.plane[n]});
+	} else if (txt=="isob") {
+		move = moves.build.toroid({entry: this.align[n], harmonics: 4, direction: this.spin[n], bend: ISOBEND, plane: this.plane[n]});
+	} else if (txt=="biso") {
+		move = moves.build.toroid({entry: this.align[n], pitch: BACKWARD, harmonics: 4, direction: this.spin[n], bend: ISOBEND, plane: this.plane[n]});
+	} else if (txt=="bant") {
+		move = moves.build.toroid({entry: this.align[n], pitch: BACKWARD, harmonics: 2, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
+	} else if (txt=="1ant") {
+		move = moves.build.toroid({orient: this.align[n], entry: this.align[n], harmonics: 1, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
+	} else if (txt=="2ant") {
+		move = moves.build.toroid({orient: this.align[n], entry: this.align[n], harmonics: 2, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
+	} else if (txt=="3ant") {
+		move = moves.build.toroid({orient: this.align[n], entry: this.align[n], harmonics: 3, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
+	} else if (txt=="4ant") {
+		move = moves.build.toroid({orient: this.align[n], entry: this.align[n], harmonics: 4, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
+	} else if (txt=="6ant") {
+		move = moves.build.toroid({orient: this.align[n], entry: this.align[n], harmonics: 6, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
+	} else if (txt=="1pro") {
+		move = moves.build.toroid({orient: this.align[n], entry: this.align[n], harmonics: 1, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
+	} else if (txt=="2pro") {
+		move = moves.build.toroid({orient: this.align[n], entry: this.align[n], harmonics: 2, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
+	} else if (txt=="bpro") {
+		move = moves.build.toroid({entry: this.align[n], pitch: BACKWARD, harmonics: 2, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
+	} else if (txt=="4pro") {
+		move = moves.build.toroid({entry: this.align[n], harmonics: 4, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
+	} else if (txt=="6pro") {
+		move = moves.build.toroid({entry: this.align[n], harmonics: 6, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
+	} else if (txt=="lisb") {
+		move = moves.build.linearisobend({orient: this.align[n], entry: this.align[n], harmonics: 4, direction: this.spin[n],  plane: this.plane[n]});
+	} else if (txt=="lnt3") {
+		move = moves.build.linearantibend({orient: this.align[n], entry: this.align[n], harmonics: 3, direction: this.spin[n],  plane: this.plane[n]});
+	} else if (txt=="lnt4") {
+		move = moves.build.linearantibend({orient: this.align[n], entry: this.align[n] , harmonics: 4, direction: this.spin[n],  plane: this.plane[n]});
+	} else if (txt=="lnt5") {
+		move = moves.build.linearantibend({orient: this.align[n], entry: this.align[n], harmonics: 5, direction: this.spin[n],  plane: this.plane[n]});
+	} else if (txt=="lnt6") {
+		move = moves.build.linearantibend({orient: this.align[n], entry: this.align[n], harmonics: 6, direction: this.spin[n],  plane: this.plane[n]});
+	} else if (txt=="pent") {
+		move = moves.build.pentagram({orient: this.align[n], entry: this.align[n], harmonics: 5, direction: this.spin[n],  plane: this.plane[n]});
+	} else if (txt=="n3bd") {
+		move = moves.build.toroid({entry: this.align[n], harmonics: 2, direction: this.spin[n], bend: -3, plane: this.plane[n]});
+	} else if (txt=="tape") {
+		move = moves.build.tapedeck({orient: this.align[n], entry: this.align[n], direction: this.spin[n],  plane: this.plane[n]});
+	} else if (txt=="idia") {
+		move = moves.build.diamond({entry: this.align[n], direction: this.spin[n], spin: INSPIN, plane: this.plane[n]});
+	} else if (txt=="adia") {
+		move = moves.build.diamond({entry: this.align[n], direction: this.spin[n], spin: ANTISPIN, plane: this.plane[n]});
+	}
+	return move;
+}
+
+Controller.prototype.shuffle = function() {
+        var params = ["spin","move"];
+        var options;
+        for (var i=1; i<=4; i++) {
+                for (var j=0; j<=1; j++) {
+                        options = $("#"+i+params[j]+ " > option");
+                        $("#"+i+params[j]+ " > option").attr('selected',false).eq(Math.floor(options.length*(Math.random()%1))).attr('selected',true);
+                }
+        }
+        this.updateParameters();
+} 
+</script>
+</head><body onload="init();">
+<a href='http://infiniteperplexity.github.io/visual-spinner-3d/'>See more at the VisualSpinner3D main site.</a>
+<table>
+<tbody><tr>
+<td rowspan="8" colspan="2">
+	<div id="vs-div">
+	</div>
+</td>
+<td>
+Props:
+</td>
+<td>
+	<select id="1prop" onchange="controller.updateParameters()">
+		<option selected="selected" value="poi">Poi</option>
+		<option value="fpoi">Fire Poi</option>
+		<option value="staff">Staff</option>
+		<option value="fstaff">Fire Staff</option>
+		<option value="hoop">Hoop</option>
+		<option value="fhoop">Fire Hoop</option>
+		<option value="none">None</option>
+	</select>
+
+</td>
+<td>
+	<select id="2prop" onchange="controller.updateParameters()">
+		<option selected="selected" value="poi">Poi</option>
+		<option value="fpoi">Fire Poi</option>
+		<option value="staff">Staff</option>
+		<option value="fstaff">Fire Staff</option>
+		<option value="hoop">Hoop</option>
+		<option value="fhoop">Fire Hoop</option>
+		<option value="none">None</option>
+	</select>
+</td>
+<td>
+	<select id="3prop" onchange="controller.updateParameters()">
+		<option selected="selected" value="poi">Poi</option>
+		<option value="fpoi">Fire Poi</option>
+		<option value="staff">Staff</option>
+		<option value="fstaff">Fire Staff</option>
+		<option value="hoop">Hoop</option>
+		<option value="fhoop">Fire Hoop</option>
+		<option value="none">None</option>
+	</select>
+</td>
+<td>
+	<select id="4prop" onchange="controller.updateParameters()">
+		<option selected="selected" value="poi">Poi</option>
+		<option value="fpoi">Fire Poi</option>
+		<option value="staff">Staff</option>
+		<option value="fstaff">Fire Staff</option>
+		<option value="hoop">Hoop</option>
+		<option value="fhoop">Fire Hoop</option>
+		<option value="none">None</option>
+	</select>
+</td>
+</tr>
+<tr>
+<td>
+Planes:
+</td>
+<form></form>
+<td>
+	<select id="1plane" onchange="controller.updateParameters()">
+		<option selected="selected" value="wall">Wall</option>
+		<option value="wheel">Wheel</option>
+		<option value="floor">Floor</option>
+	</select>
+</td>
+<form></form>
+<td>
+	<select id="2plane" onchange="controller.updateParameters()">
+		<option selected="selected" value="wall">Wall</option>
+		<option value="wheel">Wheel</option>
+		<option value="floor">Floor</option>
+	</select>
+</td>
+<form></form>
+<td>
+	<select id="3plane" onchange="controller.updateParameters()">
+		<option selected="selected" value="wall">Wall</option>
+		<option value="wheel">Wheel</option>
+		<option value="floor">Floor</option>
+	</select>
+</td>
+<form></form>
+<td>
+	<select id="4plane" onchange="controller.updateParameters()">
+		<option selected="selected" value="wall">Wall</option>
+		<option value="wheel">Wheel</option>
+		<option value="floor">Floor</option>
+	</select>
+</td>
+</tr>
+<tr>
+<td>
+Alignment:
+</td>
+<form></form>
+<td>
+	<select id="1align" onchange="controller.updateParameters()">
+		<option selected="selected" value="twelve">Up</option>
+		<option value="six">Down</option>
+		<option value="three">Right</option>
+		<option value="nine">Left</option>
+	</select>
+</td>
+<form></form>
+<td>
+	<select id="2align" onchange="controller.updateParameters()">
+		<option selected="selected" value="twelve">Up</option>
+		<option value="six">Down</option>
+		<option value="three">Right</option>
+		<option value="nine">Left</option>
+	</select>
+</td>
+<form></form>
+<td>
+	<select id="3align" onchange="controller.updateParameters()">
+		<option value="twelve">Up</option>
+		<option selected="selected" value="six">Down</option>
+		<option value="three">Right</option>
+		<option value="nine">Left</option>
+	</select>
+</td>
+<form></form>
+<td>
+	<select id="4align" onchange="controller.updateParameters()">
+		<option value="twelve">Up</option>
+		<option selected="selected" value="six">Down</option>
+		<option value="three">Right</option>
+		<option value="nine">Left</option>
+	</select>
+</td>
+</tr>
+<tr>
+<td>
+Spin:
+</td>
+<form></form>
+<td>
+	<select id="1spin" onchange="controller.updateParameters()">
+		<option selected="selected" value="cw">Clockwise</option>
+		<option value="ccw">Counter</option>
+	</select>
+</td>
+<td>
+	<select id="2spin" onchange="controller.updateParameters()">
+		<option selected="selected" value="cw">Clockwise</option>
+		<option value="ccw">Counter</option>
+	</select>
+</td>
+<td>
+	<select id="3spin" onchange="controller.updateParameters()">
+		<option selected="selected" value="cw">Clockwise</option>
+		<option value="ccw">Counter</option>
+	</select>
+</td>
+<td>
+	<select id="4spin" onchange="controller.updateParameters()">
+		<option selected="selected" value="cw">Clockwise</option>
+		<option value="ccw">Counter</option>
+	</select>
+</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>
+First Move:
+</td>
+<form></form>
+<td colspan="3">
+	<select id="1move" onchange="controller.updateParameters()">
+		<option value="stat">Static Spin</option>
+		<option value="2btw">Two-Beat Weave</option>
+		<option value="o2bt">Opposite Two-Beat</option>
+		<option value="3btw">Three-Beat Weave</option>
+		<option value="o3bt">Opposite Three-Beat</option>
+		<option value="supr">Superman</option>
+		<option value="xtsn">Extension</option>
+		<option value="1pif">One-Petal In-Spin Flower</option>
+		<option value="o1if">Offset One-Petal In-Spin Flower</option>
+		<option value="2pif">Two-Petal In-Spin Flower</option>
+		<option value="o2if">Offset Two-Petal In-Spin Flower</option>
+		<option value="4pif">Four-Petal In-Spin Flower</option>
+		<option value="b4if">Box Mode In-Spin Flower</option>
+		<option value="3paf">Three-Petal Anti-Spin Flower</option>
+		<option value="o3af">Offset Three-Petal Anti-Spin Flower</option>
+		<option value="4paf">Four-Petal Anti-Spin Flower</option>
+		<option value="b4af">Box Mode Anti-Spin Flower</option>
+		<option value="hcap">Horizontal C-CAP (from inspin)</option>
+		<option value="hcpo">Horizontal C-CAP (from antispin)</option>
+		<option value="vcap">Vertical C-CAP (from inspin)</option>
+		<option value="vcpo">Vertical C-CAP (from antispin)</option>
+		<option value="pend">Pendulum</option>
+		<option value="1pt5">1.5</option>
+		<option value="ucex">Unit Circle Extension</option>
+		<option value="isol">Isolation</option>
+		<option value="vcat">Vertical Cat-Eye</option>
+		<option value="hcat">Horizontal Cat-Eye</option>
+		<option value="unip">Unit Pendulum</option>
+		<option value="antp">Anti-Pendulum</option>
+		<option value="hlex">Horizontal Linear Extension</option>
+		<option value="vlex">Vertical Linear Extension</option>
+		<option value="hlis">Horizontal Linear Isolation</option>
+		<option value="vlis">Vertical Linear Isolation</option>
+		<option value="2isb">"Two-Lobe" Iso-bend Toroid</option>
+		<option selected="selected" value="isob">"Four-Lobe" Iso-bend Toroid</option>
+		<option value="lisb">Linearized Iso-bend Toroid</option>
+		<option value="1ant">"Triangle" Anti-Bend Toroid</option>
+		<option value="lnt3">"Triangle" Linearized Toroid</option>
+		<option value="2ant">"Diamond" Anti-Bend Toroid</option>
+		<option value="lnt4">"Diamond" Linearized Toroid</option>
+		<option value="3ant">"Pentagon" Anti-Bend Toroid</option>
+		<option value="lnt5">"Pentagon" Linearized Toroid</option>
+		<option value="4ant">"Hexagon" Anti-Bend Toroid</option>
+		<option value="lnt6">"Hexagon" Linearized Toroid</option>
+		<option value="pent">"Pentagram" Linearized Toroid</option>
+		<option value="6ant">"Four-Lobe" Anti-Bend Toroid</option>
+		<option value="1pro">"Tapedeck" Pro-Bend Toroid</option>
+		<option value="tape">"Tapedeck" Linearized Toroid</option>
+		<option value="2pro">"Four-Lobe" Pro-Bend Toroid</option>
+		<option value="idia">Zan's Diamond (In-Spin)</option>
+		<option value="adia">Zan's Diamond (Anti-Spin)</option>
+	</select>
+</td>
+
+</tr>
+<tr>
+<td>
+Second Move:
+</td>
+<form></form>
+<td colspan="3">
+	<select id="2move" onchange="controller.updateParameters()">
+		<option value="stat">Static Spin</option>
+		<option value="2btw">Two-Beat Weave</option>
+		<option value="o2bt">Opposite Two-Beat</option>
+		<option value="3btw">Three-Beat Weave</option>
+		<option value="o3bt">Opposite Three-Beat</option>
+		<option value="supr">Superman</option>
+		<option value="xtsn">Extension</option>
+		<option value="1pif">One-Petal In-Spin Flower</option>
+		<option value="o1if">Offset One-Petal In-Spin Flower</option>
+		<option value="2pif">Two-Petal In-Spin Flower</option>
+		<option value="o2if">Offset Two-Petal In-Spin Flower</option>
+		<option value="4pif">Four-Petal In-Spin Flower</option>
+		<option value="b4if">Box Mode In-Spin Flower</option>
+		<option value="3paf">Three-Petal Anti-Spin Flower</option>
+		<option value="o3af">Offset Three-Petal Anti-Spin Flower</option>
+		<option value="4paf">Four-Petal Anti-Spin Flower</option>
+		<option value="b4af">Box Mode Anti-Spin Flower</option>
+		<option value="hcap">Horizontal C-CAP (from inspin)</option>
+		<option value="hcpo">Horizontal C-CAP (from antispin)</option>
+		<option value="vcap">Vertical C-CAP (from inspin)</option>
+		<option value="vcpo">Vertical C-CAP (from antispin)</option>
+		<option value="pend">Pendulum</option>
+		<option value="1pt5">1.5</option>
+		<option value="ucex">Unit Circle Extension</option>
+		<option value="isol">Isolation</option>
+		<option value="vcat">Vertical Cat-Eye</option>
+		<option value="hcat">Horizontal Cat-Eye</option>
+		<option value="unip">Unit Pendulum</option>
+		<option value="antp">Anti-Pendulum</option>
+		<option value="hlex">Horizontal Linear Extension</option>
+		<option value="vlex">Vertical Linear Extension</option>
+		<option value="hlis">Horizontal Linear Isolation</option>
+		<option value="vlis">Vertical Linear Isolation</option>
+		<option value="2isb">"Two-Lobe" Iso-bend Toroid</option>
+		<option value="isob">"Four-Lobe" Iso-bend Toroid</option>
+		<option selected="selected" value="lisb">Linearized Iso-bend Toroid</option>
+		<option value="1ant">"Triangle" Anti-Bend Toroid</option>
+		<option value="lnt3">"Triangle" Linearized Toroid</option>
+		<option value="2ant">"Diamond" Anti-Bend Toroid</option>
+		<option value="lnt4">"Diamond" Linearized Toroid</option>
+		<option value="3ant">"Pentagon" Anti-Bend Toroid</option>
+		<option value="lnt5">"Pentagon" Linearized Toroid</option>
+		<option value="4ant">"Hexagon" Anti-Bend Toroid</option>
+		<option value="lnt6">"Hexagon" Linearized Toroid</option>
+		<option value="pent">"Pentagram" Linearized Toroid</option>
+		<option value="6ant">"Four-Lobe" Anti-Bend Toroid</option>
+		<option value="1pro">"Tapedeck" Pro-Bend Toroid</option>
+		<option value="tape">"Tapedeck" Linearized Toroid</option>
+		<option value="2pro">"Four-Lobe" Pro-Bend Toroid</option>
+		<option value="idia">Zan's Diamond (In-Spin)</option>
+		<option value="adia">Zan's Diamond (Anti-Spin)</option>
+</select></td>
+</tr>
+<tr>
+<td>
+Third Move:
+</td>
+<form></form>
+<td colspan="3">
+	<select id="3move" onchange="controller.updateParameters()">
+		<option value="stat">Static Spin</option>
+		<option value="2btw">Two-Beat Weave</option>
+		<option value="o2bt">Opposite Two-Beat</option>
+		<option value="3btw">Three-Beat Weave</option>
+		<option value="o3bt">Opposite Three-Beat</option>
+		<option value="supr">Superman</option>
+		<option value="xtsn">Extension</option>
+		<option value="1pif">One-Petal In-Spin Flower</option>
+		<option value="o1if">Offset One-Petal In-Spin Flower</option>
+		<option value="2pif">Two-Petal In-Spin Flower</option>
+		<option value="o2if">Offset Two-Petal In-Spin Flower</option>
+		<option value="4pif">Four-Petal In-Spin Flower</option>
+		<option value="b4if">Box Mode In-Spin Flower</option>
+		<option value="3paf">Three-Petal Anti-Spin Flower</option>
+		<option value="o3af">Offset Three-Petal Anti-Spin Flower</option>
+		<option value="4paf">Four-Petal Anti-Spin Flower</option>
+		<option value="b4af">Box Mode Anti-Spin Flower</option>
+		<option value="hcap">Horizontal C-CAP (from inspin)</option>
+		<option value="hcpo">Horizontal C-CAP (from antispin)</option>
+		<option value="vcap">Vertical C-CAP (from inspin)</option>
+		<option value="vcpo">Vertical C-CAP (from antispin)</option>
+		<option value="pend">Pendulum</option>
+		<option value="1pt5">1.5</option>
+		<option value="ucex">Unit Circle Extension</option>
+		<option value="isol">Isolation</option>
+		<option value="vcat">Vertical Cat-Eye</option>
+		<option value="hcat">Horizontal Cat-Eye</option>
+		<option value="unip">Unit Pendulum</option>
+		<option value="antp">Anti-Pendulum</option>
+		<option value="hlex">Horizontal Linear Extension</option>
+		<option value="vlex">Vertical Linear Extension</option>
+		<option value="hlis">Horizontal Linear Isolation</option>
+		<option value="vlis">Vertical Linear Isolation</option>
+		<option value="2isb">"Two-Lobe" Iso-bend Toroid</option>
+		<option value="isob">"Four-Lobe" Iso-bend Toroid</option>
+		<option value="lisb">Linearized Iso-bend Toroid</option>
+		<option value="1ant">"Triangle" Anti-Bend Toroid</option>
+		<option value="lnt3">"Triangle" Linearized Toroid</option>
+		<option selected="selected" value="2ant">"Diamond" Anti-Bend Toroid</option>
+		<option value="lnt4">"Diamond" Linearized Toroid</option>
+		<option value="3ant">"Pentagon" Anti-Bend Toroid</option>
+		<option value="lnt5">"Pentagon" Linearized Toroid</option>
+		<option value="4ant">"Hexagon" Anti-Bend Toroid</option>
+		<option value="lnt6">"Hexagon" Linearized Toroid</option>
+		<option value="pent">"Pentagram" Linearized Toroid</option>
+		<option value="6ant">"Four-Lobe" Anti-Bend Toroid</option>
+		<option value="1pro">"Tapedeck" Pro-Bend Toroid</option>
+		<option value="tape">"Tapedeck" Linearized Toroid</option>
+		<option value="2pro">"Four-Lobe" Pro-Bend Toroid</option>
+		<option value="idia">Zan's Diamond (In-Spin)</option>
+		<option value="adia">Zan's Diamond (Anti-Spin)</option>
+	</select>
+</td>
+</tr>
+<tr>
+<td>
+Fourth Move:
+</td>
+<form></form>
+<td colspan="3">
+	<select id="4move" onchange="controller.updateParameters()">
+		<option value="stat">Static Spin</option>
+		<option value="2btw">Two-Beat Weave</option>
+		<option value="o2bt">Opposite Two-Beat</option>
+		<option value="3btw">Three-Beat Weave</option>
+		<option value="o3bt">Opposite Three-Beat</option>
+		<option value="supr">Superman</option>
+		<option value="xtsn">Extension</option>
+		<option value="1pif">One-Petal In-Spin Flower</option>
+		<option value="o1if">Offset One-Petal In-Spin Flower</option>
+		<option value="2pif">Two-Petal In-Spin Flower</option>
+		<option value="o2if">Offset Two-Petal In-Spin Flower</option>
+		<option value="4pif">Four-Petal In-Spin Flower</option>
+		<option value="b4if">Box Mode In-Spin Flower</option>
+		<option value="3paf">Three-Petal Anti-Spin Flower</option>
+		<option value="o3af">Offset Three-Petal Anti-Spin Flower</option>
+		<option value="4paf">Four-Petal Anti-Spin Flower</option>
+		<option value="b4af">Box Mode Anti-Spin Flower</option>
+		<option value="hcap">Horizontal C-CAP (from inspin)</option>
+		<option value="hcpo">Horizontal C-CAP (from antispin)</option>
+		<option value="vcap">Vertical C-CAP (from inspin)</option>
+		<option value="vcpo">Vertical C-CAP (from antispin)</option>
+		<option value="pend">Pendulum</option>
+		<option value="1pt5">1.5</option>
+		<option value="ucex">Unit Circle Extension</option>
+		<option value="isol">Isolation</option>
+		<option value="vcat">Vertical Cat-Eye</option>
+		<option value="hcat">Horizontal Cat-Eye</option>
+		<option value="unip">Unit Pendulum</option>
+		<option value="antp">Anti-Pendulum</option>
+		<option value="hlex">Horizontal Linear Extension</option>
+		<option value="vlex">Vertical Linear Extension</option>
+		<option value="hlis">Horizontal Linear Isolation</option>
+		<option value="vlis">Vertical Linear Isolation</option>
+		<option value="2isb">"Two-Lobe" Iso-bend Toroid</option>
+		<option value="isob">"Four-Lobe" Iso-bend Toroid</option>
+		<option value="lisb">Linearized Iso-bend Toroid</option>
+		<option value="1ant">"Triangle" Anti-Bend Toroid</option>
+		<option value="lnt3">"Triangle" Linearized Toroid</option>
+		<option value="2ant">"Diamond" Anti-Bend Toroid</option>
+		<option selected="selected" value="lnt4">"Diamond" Linearized Toroid</option>
+		<option value="3ant">"Pentagon" Anti-Bend Toroid</option>
+		<option value="lnt5">"Pentagon" Linearized Toroid</option>
+		<option value="4ant">"Hexagon" Anti-Bend Toroid</option>
+		<option value="lnt6">"Hexagon" Linearized Toroid</option>
+		<option value="pent">"Pentagram" Linearized Toroid</option>
+		<option value="6ant">"Four-Lobe" Anti-Bend Toroid</option>
+		<option value="1pro">"Tapedeck" Pro-Bend Toroid</option>
+		<option value="tape">"Tapedeck" Linearized Toroid</option>
+		<option value="2pro">"Four-Lobe" Pro-Bend Toroid</option>
+		<option value="idia">Zan's Diamond (In-Spin)</option>
+		<option value="adia">Zan's Diamond (Anti-Spin)</option>
+	</select>
+</td>
+</tr>
+<tr>
+<td>
+View in...
+</td>
+<form></form>
+<td>
+	<select id="2d3d" onchange="controller.updateParameters()">
+		<option value="3d" selected="selected">3D</option>
+		<option value="2d">2D</option>
+</select></td>
+<td>
+        <button type="button" onclick="controller.shuffle()">Shuffle Moves</button>       
+</td>
+</tr>
+</tbody></table>
+
+<p></p>
+Pasteable link to these settings:
+<p id="myLink"></p>
+
+<p>Source: https://github.com/infiniteperplexity/visual-spinner-3d</p>
+<p>Questions, comments, and suggestions: infinite DOT perplexity AT gmail DOT com</p>
+
+</body></html>

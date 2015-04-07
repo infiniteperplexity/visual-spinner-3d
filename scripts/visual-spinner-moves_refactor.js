@@ -748,8 +748,8 @@ function(options) {
 	return move;
 });
 MoveFactory.variant("isobend",{name: "Isobend Toroid", harmonics: 4},"toroid");
-MoveFactory.variant("antibend",{name: "Antibend Toroid", harmonics: 2},"toroid");
-MoveFactory.variant("probend",{name: "Probend Toroid", harmonics: 1},"toroid");
+MoveFactory.variant("antibend",{name: "Antibend Toroid", bend: ANTIBEND, harmonics: 2},"toroid");
+MoveFactory.variant("probend",{name: "Probend Toroid", bend: PROBEND, harmonics: 1},"toroid");
 
 
 MoveFactory.recipe(

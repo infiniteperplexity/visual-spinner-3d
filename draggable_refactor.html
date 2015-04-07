@@ -1,0 +1,139 @@
+<!--Distributed under GNU Public License version 3-->
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<style>
+body {background-color: #99CCFF}
+</style>
+<title>VisualSpinner3D, by Glenn Wright</title>
+<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="scripts/gl-matrix-min.js"></script>
+<script src="scripts/phoria-min.js"></script>
+<script src="scripts/requestAnimationFrame.js"></script>
+<script src="scripts/visual-spinner-engine.js"></script>
+<script src="scripts/visual-spinner-moves_refactor.js"></script>
+<script src="scripts/visual-spinner-ui.js"></script>
+<script>
+
+var vs;
+function init() {
+	vs = VS3D.VisualSpinnerWidget();
+	VS3D.Constants.rescope(vs);
+	vs.embedById("vs-div");
+	var one = vs.addProp();
+	var two = vs.addProp();
+	one.color = "red";
+	two.color = "blue";
+	one.hand.radius = 1;
+	two.hand.radius = 1;
+	one.setHandAngle(vs.NINE);
+	one.setPropAngle(vs.NINE);
+	one.nudge(0,0,0.1);
+	two.nudge(0,0,-0.1);
+	vs.camera(0,1,10);
+	
+	vs.addControls("play","pause","rewind","frame","forward","reset");
+	one.addMove(vs.Moves.build.antispin());
+	two.addMove(vs.Moves.build.antispin());
+	vs.addText("...click and drag me...");
+	
+	vs.canvas.setAttribute("onmousedown","startdrag(event)");
+	vs.canvas.setAttribute("onmouseout","enddrag(event)");
+	vs.canvas.setAttribute("onmouseup","enddrag(event)");
+	vs.canvas.setAttribute("onmousemove","duringdrag(event)");
+	vs.canvas.setAttribute("onwheel","zoom(event)");
+	vs.canvas.setAttribute("ondblclick","resetcamera(event)");
+	
+	vs.canvas.setAttribute("ontouchstart","startdrag(event)");
+	vs.canvas.setAttribute("ontouchleave","enddrag(event)");
+	vs.canvas.setAttribute("ontouchend","enddrag(event)");
+	vs.canvas.setAttribute("ontouchmove","duringdrag(event)");
+	
+	
+	vs.ready();
+	//vs.play();
+}
+
+
+var dragging = false;
+var camera = [];
+var radius;
+var fromX;
+var fromY;
+
+function resetcamera(event) {
+	event.preventDefault();
+	vs.camera(0,1,10);
+	vs.annotations[0][0] = "...click and drag me...";
+	vs.renderer.render(vs.scene);
+	vs.renderText();
+}
+function startdrag(event) {
+	event.preventDefault();
+	dragging = true;
+	fromX = event.pageX;
+	fromY = event.pageY;
+	//fromX = event.clientX;
+	//fromY = event.clientY;
+	camera = [vs.cameraX(),vs.cameraY(),vs.cameraZ()];
+	radius = Math.sqrt(camera[0]*camera[0]+camera[1]*camera[1]+camera[2]*camera[2]);
+	vs.annotations[0][0] = "(double click to reset)";
+}
+function duringdrag(event) {
+	event.preventDefault();
+	if (dragging) {
+		//var dx = event.clientX - fromX;
+		//var dy = event.clientY - fromY;
+		var dx = event.pageX - fromX;
+		var dy = event.pageY - fromY;
+		//okay, now if we begin at the beginning...
+		dx = (dx > 0) ? (radius/100) : (-radius/100);
+		dy = (dy > 0) ? (radius/100) : (-radius/100);
+		
+		if (camera[0]>=0 && camera[2]>=0) {
+			camera[0]+=dx;
+			camera[2]-=dx;
+		} else if (camera[0]>=0 && camera[2]<0) {
+			camera[0]-=dx;
+			camera[2]-=dx;
+		} else if (camera[0]<0 && camera[2]<0) {
+			camera[0]-=dx;
+			camera[2]+=dx;
+		} else if (camera[0]<0 && camera[2]>=0) {
+			camera[0]+=dx;
+			camera[2]+=dx;
+		}
+		camera[1]+=dy;
+		var r = Math.sqrt(camera[0]*camera[0]+camera[1]*camera[1]+camera[2]*camera[2])/radius;
+		camera[0]/=r;
+		camera[1]/=r;
+		camera[2]/=r;
+		vs.camera(camera[0],camera[1],camera[2]);
+		vs.renderer.render(vs.scene);
+		vs.renderText();
+	}
+}
+function enddrag(event) {
+	event.preventDefault();
+	dragging = false;
+}
+function zoom(event) {
+	event.preventDefault();
+	camera = [vs.cameraX(),vs.cameraY(),vs.cameraZ()];
+	radius = Math.sqrt(camera[0]*camera[0]+camera[1]*camera[1]+camera[2]*camera[2]);
+	radius+=(event.deltaY/3)
+	radius = (radius<=1) ? 1 : radius;
+	var r = Math.sqrt(camera[0]*camera[0]+camera[1]*camera[1]+camera[2]*camera[2])/radius;
+	camera[0]/=r;
+	camera[1]/=r;
+	camera[2]/=r;
+	vs.camera(camera[0],camera[1],camera[2]);
+	vs.renderer.render(vs.scene);
+}
+
+
+
+
+</script>
+</head><body onload="init();">
+<div id="vs-div"></div>
+</body></html>
