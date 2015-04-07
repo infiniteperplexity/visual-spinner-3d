@@ -179,6 +179,58 @@ MoveChain.prototype.align = function(element, angle) {
 }
 
 
+function parse_options(def) {
+	return Constants.convert(def);
+}
+
+//maybe slap this guy on Constants?
+function stringify_options(def) {
+	for (option in def) {
+		//etc
+		if (option==="entry" || option==="orient" || option.substr(-1,6)==="_angle") {
+			if (def[option]===THREE) {
+				def[option]="THREE";
+			} else if (def[option]===SIX) {
+				def[option]="SIX";
+			} else if (def[option]===NINE) {
+				def[option]="NINE";
+			} else if (def[option]===TWELVE) {
+				def[option]="TWELVE";
+			} else if (def[option]===ONETHIRTY) {
+				def[option]="ONETHIRTY";
+			} else if (def[option]===FOURTHIRTY) {
+				def[option]="FOURTHIRTY";
+			} else if (def[option]===SEVENTHIRTY) {
+				def[option]="SEVENTHIRTY";
+			} else if (def[option]===TENTHIRTY) {
+				def[option]="TENTHIRTY";
+			}
+		}
+		if (option==="mode") {
+			if (def[option]===BOX) {
+				def[option]="BOX";
+			} else if (def[option]===DIAMOND) {
+				def[option]="DIAMOND";
+			} else if (def[option]===DRAG) {
+				def[option]="DRAG";
+			} else if (def[option]===FOLLOW) {
+				def[option]="FOLLOW";
+			}
+		}
+		if (option==="axis" || option.substr(-1,5)==="plane") {
+			if (def[option].toArray()==[0,0,1]) {
+				def[option] = "WALL";
+			} else if (def[option].toArray()==[1,0,0]) {
+				def[option] = "WHEEL";
+			} else if (def[option].toArray()==[0,1,0]) {
+				def[option] = "FLOOR";
+			}
+		}
+	}
+	return def;
+}
+
+
 //// "reorient" is a more aggressive version of "adjust" that will scrap and rebuild the move in different orientations
 MoveChain.prototype.reorient = function(target) {
 	var retrn = this.adjust(target);
@@ -265,8 +317,6 @@ MoveChain.prototype.reorient = function(target) {
 			}
 		}
 	}
-	alert(hand.toArray());
-	alert(prop.toArray());
 	// Otherwise fail
 	this.reorientFail();
 	//alert("Socketing failed (unable to align next move with end of prior move.)");
