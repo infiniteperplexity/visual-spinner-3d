@@ -518,7 +518,12 @@ function(options) {
 	move.tail().hand.acc = hybrid;
 	move.tail().helper.stretch = 0;
 	move.tail().helper.stretch_acc = 0;
-	move.align("hand", options.entry);
+	// under certain parameters, pendulums align badly and need tweaking
+	if ((options.hybrid == true || options.extend < SMALLISH) && options.entry == TWELVE) {
+		move.align("hand",SIX);
+	} else {
+		move.align("hand", options.entry);
+	}
 	return move;
 });
 MoveFactory.variant("antipendulum",{name: "Anti-Pendulum", spin: "ANTISPIN", lift: 0.5, swing: 0.75, extend: 0.5},"pendulum");
@@ -1054,6 +1059,7 @@ function(options) {
 		segment.prop.speed = 2*(options.petals-1)*options.spin*options.direction*options.speed;
 	}
 	var exit = (options.exit == true) ? -1 : 1;
+	segment.duration = options.duration;
 	segment.prop.acc = -exit*segment.prop.speed/options.duration;
 	segment.hand.acc = -exit*2*options.speed*options.direction/options.duration;
 	segment.prop.speed = (options.exit == true) ? 0 : segment.prop.speed;
