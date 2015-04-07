@@ -118,8 +118,6 @@ MoveFactory.prototype.build = function(movename, options) {
 			augmented[def] = defaults[def];
 		}
 	}
-	
-	//we can run into trouble here with variants because they can't see the augmented definition of their  parent
 	if (MoveFactory.prototype.recipes[movename].main) {
 		defaults = Constants.convert(MoveFactory.prototype.recipes[MoveFactory.prototype.recipes[movename].main].defaults);
 		for (var def in defaults) {
@@ -845,12 +843,55 @@ function(options) {
     return move;
 });
 
+
+MoveFactory.recipe(
+	"pentagram",
+{
+	name: "Linearized Anti-Bend Toroid",
+	pitch: "FORWARD",
+	harmonics: 4,
+	mode: "DIAMOND"
+},
+function(options) {
+	var move = VS3D.MoveChain();
+    var segment = VS3D.MoveLink();
+    segment.pivot.radius = options.pivot_radius;
+    segment.pivot.plane = options.plane;
+    segment.pivot.angle = options.pivot_angle;
+    segment.pivot.speed = 0;
+    var orient = options.orient;
+	var entry = options.entry;
+	if (options.mode==DIAMOND) {
+		orient += SPLIT*options.direction/options.harmonics;
+		entry += SPLIT*options.direction/options.harmonics;
+	}
+    segment.prop.bend = 0;
+    segment.bend_speed = 0.5*options.harmonics*options.pitch*options.speed;
+    segment.prop.plane = options.plane;
+    segment.hand.plane = options.plane;
+    segment.prop.speed = 0;
+    // what a mess!
+	segment.hand.radius = 0.35;
+
+    segment.hand.angle = orient;
+    segment.prop.angle = orient - QUARTER*options.direction;
+    segment.duration = 1 / options.harmonics;
+    move.add(segment);
+    for (var i = 1; i < options.harmonics; i++) {
+            move.extend();
+            move.tail().hand.angle = unwind(orient + 2*i*options.direction*UNIT/options.harmonics);
+            move.tail().prop.angle = unwind(orient + ((i%2==0) ? -1 : 1)*QUARTER*options.direction + 2*i*options.direction*UNIT/options.harmonics);
+    }
+    move.align("hand", entry);
+    return move;
+});
+
+
 MoveFactory.recipe(
 	"tapedeck",
 {
 	name: "Tapedeck (Linearized Pro-Bend) Toroid",
 	pitch: "FORWARD"
-	//,mode: "DIAMOND"
 },
 function(options) {
     var move = VS3D.MoveChain();
@@ -928,8 +969,8 @@ MoveFactory.recipe(
 {
 	name: "Toss",
 	speed: (2/3),
-	//"height" might be better...
-	gravity: 7,
+	//"height" is a rough measure
+	height: 2,
 	drift: 0,
 	weight: 0.5
 },
@@ -951,8 +992,9 @@ function(options) {
 	segment.hand.radius = options.extend;
 	segment.prop.angle = options.entry;
 	segment.helper.linear_angle = TWELVE;
-	segment.helper.linear_speed = 0.5*options.gravity*options.duration;
-	segment.helper.linear_acc = -options.gravity;
+	// Is using actual G just a coincidence that it looks right???
+	segment.helper.linear_speed = 4.9*options.speed*options.height*options.duration;
+	segment.helper.linear_acc = -9.8*options.speed*options.height;
 	segment.pivot.angle = options.pivot_angle;
 	segment.pivot.radius = options.pivot_radius;
 	segment.pivot.linear_angle = THREE;
@@ -1037,7 +1079,37 @@ function(options) {
 });
 
 
-		
+MoveFactory.recipe(
+	"superman",
+{
+	name: "Superman",
+	extend: 1,
+	// So far we aren't doing the interesting versions...
+	plane: "FLOOR",
+	beats: 2
+},
+function(options) {
+	var move = VS3D.MoveChain();
+	var segment = VS3D.MoveLink();
+	segment.duration = 0.25;
+	segment.prop.angle = options.orient;
+	segment.prop.plane = options.plane;
+	move.add(segment);
+	move.tail().prop.speed = 2*options.speed*options.direction;
+	//move.tail().prop.acc = -16*options.speed*options.direction;
+	move.extend();
+	move.tail().prop.speed = -2*options.speed*options.direction;
+	//move.tail().prop.acc = -16*options.speed*options.direction;
+	move.extend();
+	move.tail().prop.speed = -2*options.speed*options.direction;
+	//move.tail().prop.acc = 16*options.speed*options.direction;
+	move.extend();
+	move.tail().prop.speed = 2*options.speed*options.direction;
+	//move.tail().prop.acc = 16*options.speed*options.direction;
+	return move;
+});
+
+
 
 MoveFactory.recipe(
 	"stall",
