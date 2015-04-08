@@ -7,7 +7,7 @@
 <script src="scripts/phoria-min.js"></script>
 <script src="scripts/requestAnimationFrame.js"></script>
 <script src="scripts/visual-spinner-engine.js"></script>
-<script src="scripts/visual-spinner-moves_refactor.js"></script>
+<script src="scripts/visual-spinner-moves.js"></script>
 <script src="scripts/visual-spinner-ui.js"></script>
 <script>
 // set parameters
@@ -43,15 +43,15 @@ function init() {
 	propThree.hand.radius = 1;
 	propFour.hand.radius = 1;
 	for (var i = 0; i<8; i++) {
-		propOne.addMove(moves.build.flower({direction: CLOCKWISE, entry: propOne.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
-		propTwo.addMove(moves.build.flower({direction: 1-(i%2)*2, entry: propTwo.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
-		propThree.addMove(moves.build.flower({direction: COUNTERCLOCKWISE, entry: propThree.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
-		propFour.addMove(moves.build.flower({direction: (i%2)*2-1, entry: propFour.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
+		propOne.addMove(moves.flower({direction: CLOCKWISE, entry: propOne.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
+		propTwo.addMove(moves.flower({direction: 1-(i%2)*2, entry: propTwo.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
+		propThree.addMove(moves.flower({direction: COUNTERCLOCKWISE, entry: propThree.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
+		propFour.addMove(moves.flower({direction: (i%2)*2-1, entry: propFour.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
 	}
-	propOne.addMove(moves.build.flower({direction: CLOCKWISE, entry: propOne.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
-	propTwo.addMove(moves.build.flower({direction: 1-(i%2)*2, entry: propTwo.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
-	propThree.addMove(moves.build.flower({direction: COUNTERCLOCKWISE, entry: propThree.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
-	propFour.addMove(moves.build.flower({direction: (i%2)*2-1, entry: propFour.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
+	propOne.addMove(moves.flower({direction: CLOCKWISE, entry: propOne.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
+	propTwo.addMove(moves.flower({direction: 1-(i%2)*2, entry: propTwo.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
+	propThree.addMove(moves.flower({direction: COUNTERCLOCKWISE, entry: propThree.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
+	propFour.addMove(moves.flower({direction: (i%2)*2-1, entry: propFour.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
 	vs.ready();
 	vs.play();
 }
@@ -69,16 +69,16 @@ function init() {
 <p>Here is the code that drives the entire pattern:</p>
 <p></p>
 <p>for (var i = 0; i&lt;8; i++) {</p>
-<p>&nbsp;&nbsp;&nbsp;&nbsp;propOne.addMove(moves.build.flower({direction: 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;propOne.addMove(moves.flower({direction: 
 CLOCKWISE, entry: propOne.socket().hand.angle, spin: ANTISPIN, duration:
   (i==4) ? 1 : 1.25}));</p>
-<p>&nbsp;&nbsp;&nbsp;&nbsp;propTwo.addMove(moves.build.flower({direction: 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;propTwo.addMove(moves.flower({direction: 
 1-(i%2)*2, entry: propTwo.socket().hand.angle, spin: ANTISPIN, duration:
   (i==4) ? 1 : 1.25}));</p>
-<p>&nbsp;&nbsp;&nbsp;&nbsp;propThree.addMove(moves.build.flower({direction: 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;propThree.addMove(moves.flower({direction: 
 COUNTERCLOCKWISE, entry: propThree.socket().hand.angle, spin: ANTISPIN, 
 duration:  (i==4) ? 1 : 1.25}));</p>
-<p>&nbsp;&nbsp;&nbsp;&nbsp;propFour.addMove(moves.build.flower({direction: 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;propFour.addMove(moves.flower({direction: 
 (i%2)*2-1, entry: propFour.socket().hand.angle, spin: ANTISPIN, 
 duration:  (i==4) ? 1 : 1.25}));</p>
 <p>}</p>

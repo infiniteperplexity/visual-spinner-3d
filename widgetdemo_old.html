@@ -7,7 +7,7 @@
 <script src="scripts/phoria-min.js"></script>
 <script src="scripts/requestAnimationFrame.js"></script>
 <script src="scripts/visual-spinner-engine.js"></script>
-<script src="scripts/visual-spinner-moves_refactor.js"></script>
+<script src="scripts/visual-spinner-moves.js"></script>
 <script src="scripts/visual-spinner-ui.js"></script><script>
 function init() {
 	var vs = VS3D.VisualSpinnerWidget();
@@ -19,8 +19,8 @@ function init() {
 	propTwo.color = "blue";
 	propOne.hand.radius = 1;
 	propTwo.hand.radius = 1;
-	propOne.addMove(vs.Moves.build.flower({spin: vs.ANTISPIN}));
-	propTwo.addMove(vs.Moves.build.flower({spin: vs.ANTISPIN, direction: vs.COUNTERCLOCKWISE}));
+	propOne.addMove(vs.Moves.flower({spin: vs.ANTISPIN}));
+	propTwo.addMove(vs.Moves.flower({spin: vs.ANTISPIN, direction: vs.COUNTERCLOCKWISE}));
 	vs.addControls("play","pause","rewind","frame","forward","reset","2d3d");
 	vs.ready();
 }

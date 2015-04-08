@@ -19,8 +19,8 @@ function init() {
 	propTwo.color = "blue";
 	propOne.hand.radius = 1;
 	propTwo.hand.radius = 1;
-	propOne.addMove(vs.Moves.flower({spin: vs.ANTISPIN}));
-	propTwo.addMove(vs.Moves.flower({spin: vs.ANTISPIN, direction: vs.COUNTERCLOCKWISE}));
+	propOne.addMove(vs.Moves.build.flower({spin: vs.ANTISPIN}));
+	propTwo.addMove(vs.Moves.build.flower({spin: vs.ANTISPIN, direction: vs.COUNTERCLOCKWISE}));
 	vs.addControls("play","pause","rewind","frame","forward","reset","2d3d");
 	vs.ready();
 }
@@ -49,8 +49,8 @@ function init() {<br>
 &nbsp;&nbsp;&nbsp;&nbsp;propTwo.color = "blue";<br>
 &nbsp;&nbsp;&nbsp;&nbsp;propOne.hand.radius = 1;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;propTwo.hand.radius = 1;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;propOne.addMove(vs.Moves.flower({spin: vs.ANTISPIN}));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;propTwo.addMove(vs.Moves.flower({spin: vs.ANTISPIN, direction: vs.COUNTERCLOCKWISE}));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;propOne.addMove(vs.Moves.build.flower({spin: vs.ANTISPIN}));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;propTwo.addMove(vs.Moves.build.flower({spin: vs.ANTISPIN, direction: vs.COUNTERCLOCKWISE}));<br>
 &nbsp;&nbsp;&nbsp;&nbsp;vs.addControls("play","pause","rewind","frame","forward","reset","2d3d");<br>
 &nbsp;&nbsp;&nbsp;&nbsp;vs.ready();<br>
 }<br>

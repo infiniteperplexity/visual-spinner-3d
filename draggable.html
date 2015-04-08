@@ -32,8 +32,8 @@ function init() {
 	vs.camera(0,1,10);
 	
 	vs.addControls("play","pause","rewind","frame","forward","reset");
-	one.addMove(vs.Moves.flower({spin: vs.ANTISPIN}));
-	two.addMove(vs.Moves.flower({spin: vs.ANTISPIN}));
+	one.addMove(vs.Moves.build.antispin());
+	two.addMove(vs.Moves.build.antispin());
 	vs.addText("...click and drag me...");
 	
 	vs.canvas.setAttribute("onmousedown","startdrag(event)");

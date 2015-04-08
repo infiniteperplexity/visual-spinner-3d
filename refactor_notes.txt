@@ -1,0 +1,22 @@
+refactoring notes:
+- swap over all the _refactors into the main versions.
+- move the refactored reorient into the main engine.
+- rename "build" in the engine, however...
+- rethink the whole way JSON stuff is organized in the engine
+	- get rid of PropFactory completely.
+	- maybe add a VS3D.JSONizer object
+	- what all does MoveFactory do?  Right now it's only for JSONizing and recipes.
+		- What about just renaming it?  MoveCookBook, MoveRecipes.
+	- Constants could use some helper methods.
+	- Alignment failure maybe shouldn't throw a message.
+	- We want a "remove all defaults" thing to make definitions shorter, even when they've been fleshed out.
+	- We might want a "defaults" thing for serializing Props as well.
+	- Should the Cookbook and the JSONizer be the same object?  They are closely related.  The Constants are also closely related.
+	- Maybe return an "overrides" object?
+	- With the new "default defaults" system, is it feasible to remove the "modify" parameter?
+		- I believe so, so long as no names are shared between the typical parameters and the "generic" parameters.
+		- However, we might want to watch out for that...because it's going to make the fully-expanded definitions *huge*.
+		- Even if we don't do the full thing, I think we can do pivot_angle and pivot_radius as part of the "standard package."
+		- We could make "modify" a standard parameter, though...yeah, I like that better, actually.
+		- What about modify_tail?  We still need that, presumably.  Maybe call that "tweak"?
+	- Maybe even move the JSONizer over to the "recipes" .js file?

@@ -10,20 +10,15 @@ header {width: 1240px; height: 100px}
 section {margin: 0; padding: 0}
 header, section div {vertical-align: top; padding: 2.5px; border: 5px solid gray; margin: -2.5px; display: inline-block;}
 #display {width: 400px; height: 400px; float: left}
-#control {position: absolute; top: 550px; left: 0; height: 65px; width: 400px; border-top-width: 0px}
-#queues {width: 410px; height: 500px; float: left}
-.queue {padding-top: 0; width: 200px; height: 206px; border: 0; float: left}
-#queue1, #queue3 {padding-right: 12px}
-#queue1, #queue2 {padding-bottom: 25px}
-.queue ul {width: 190px; height: 165px}
-#menu, #workshop {width: 200px; height: 500px; float: left}
+#control {position: absolute; top: 550px; left: 0; height: 60px; width: 400px;}
+.queue, #menu, #workshop {width: 200px; height: 500px; float: left}
 canvas {width: 400px; height: 400px; background-color: #000;}
 ul {background-color: #FFF;  list-style-type: none; padding-left: 0; overflow-y: scroll; overflow-x: hidden;}
 li {font-size: 90%;}
 li:hover {background-color: lightcyan; cursor: grab;}
 .active {background-color: mediumaquamarine;}
-#queues h2, #menu h2, #workshop h2 {height: 25px; text-decoration: underline}
-#queues h2 {text-align: left; text-indent: 5px}
+.queue h2, #menu h2, #workshop h2 {height: 25px; text-decoration: underline}
+.queue ul {width: 200px; height: 400px}
 #menu ul {width: 200px; height: 430px;}
 #workshop ul {width: 199px; height: 380px;}
 table {position: relative; top: -20px;}
@@ -31,8 +26,6 @@ table {position: relative; top: -20px;}
 #popimport {position: fixed; z-index: 1; top: 150px; left: 50px;}
 #popalign1 {position: fixed; z-index: 1; top: 100px; left: 420px; background-color: #FFF; padding: 2.5px; border: 5px solid gray; margin: -2.5px;}
 #popalign2 {position: fixed; z-index: 1; top: 100px; left: 630px; background-color: #FFF; padding: 2.5px; border: 5px solid gray; margin: -2.5px;}
-#popalign3 {position: fixed; z-index: 1; top: 300px; left: 420px; background-color: #FFF; padding: 2.5px; border: 5px solid gray; margin: -2.5px;}
-#popalign4 {position: fixed; z-index: 1; top: 300px; left: 630px; background-color: #FFF; padding: 2.5px; border: 5px solid gray; margin: -2.5px;}
 #radius1, #radius2 {width: 50px;}
 #frameN {width: 100px;}
 #moveview {position: fixed; z-index: 1; top: 150px; left: 250px; width: 400px; background-color: #FFF; padding: 2.5px; border: 5px solid gray; margin: -2.5px;}
@@ -48,8 +41,9 @@ table {position: relative; top: -20px;}
 <script src="scripts/phoria-min.js"></script>
 <script src="scripts/requestAnimationFrame.js"></script>
 <script src="scripts/visual-spinner-engine.js"></script>
-<script src="scripts/visual-spinner-moves_refactor.js"></script>
+<script src="scripts/visual-spinner-moves.js"></script>
 <script src="scripts/visual-spinner-ui.js"></script>
+<script src="scripts/visual-spinner-recipes.js"></script>
 
 <script>
 "use strict";
@@ -61,29 +55,18 @@ var props = VS3D.PropFactory();
 var predictions;
 
 var vs;
-var recipes;
 var propOne;
 var propTwo;
-var propThree;
-var propFour;
-
 function canvasSetup() {
 	vs = VS3D.VisualSpinnerWidget();
 	vs.embedById("display");
-	vs.addControls("play","pause","rewind","frame","forward","reset","2d3d");
+	vs.addControls("play","pause","rewind","frame","forward","reset");
 	window.addEventListener("keydown", listenForKey, false);
-	predictions = [vs.addProp(),vs.addProp(),vs.addProp(),vs.addProp()];
-	
+	predictions = [vs.addProp(),vs.addProp()];
 	predictions[0].color = "0,32,64";
 	predictions[1].color = "64,0,0";
 	predictions[0].dummy = true;
 	predictions[1].dummy = true;
-	predictions[2].color = "0,64,0";
-	predictions[3].color = "64,64,0";
-	predictions[2].dummy = true;
-	predictions[3].dummy = true;
-	
-	
 	propOne = vs.addProp();
 	propOne.color = "blue";
 	propTwo = vs.addProp();
@@ -93,29 +76,14 @@ function canvasSetup() {
 	propTwo.hand.radius = 1;
 	propOne.rotateHand(SPLIT);
 	propOne.rotateProp(SPLIT);
-	propThree = vs.addProp();
-	propThree.color = "green";
-	propThree.propType = "noprop";
-	predictions[2].propType = "noprop";
-	propFour = vs.addProp();
-	propFour.color = "yellow";
-	propFour.propType = "noprop";
-	predictions[3].propType = "noprop";
-	// set up props
-	propThree.hand.radius = 1;
-	propFour.hand.radius = 1;
-	propThree.rotateHand(SPLIT);
-	propThree.rotateProp(SPLIT);
-	
 	predict();
 	vs.ready();
 }
 window.addEventListener("keydown", listenForKey, false);
 
 
+
 VS3D.overrideReorientFail(function() {return});
-
-
 
 function redraw() {
 	vs.renderer.render(vs.scene);
@@ -125,57 +93,22 @@ function redraw() {
 function init() {
 	$("#popexport").hide();
 	$("#popimport").hide();
-	parseRecipes("composer-recipes.json");
+	populateMenu();
 	canvasSetup();
 }
-
-function parseRecipes(url) {
-	$.ajax({
-		url: url,
-		type: "GET",
-		dataType: "text",
-		cache: false,
-		success: function(data) {populateMenu(data);}
-	});
-}
-	
-function populateMenu(json) {
+function populateMenu() {
 	var menu = $("#menu").children("ul");
 	var option;
+	// this check helps those who save the webpage on their Desktop
+	//if ($("#menu").children("ul").children().toArray().length>0) {return;}
 	menu.empty();
-	recipes = JSON.parse(json);
-	var options;
-	var augmented;
-	var defaults;
-	for (var key in recipes.recipes) {
+	for (var key in recipes) {
 		if (key !== "add") {
 			option = '<li draggable="true" ondragstart="dragMenu(event)" data-value="'+key+'">'+key+"</li>";
 			menu.append(option);
 		}
-		augmented = {};
-		options =recipes.recipes[key];
-		for (var option in options) {
-			augmented[option] = options[option];
-		}
-		defaults = VS3D.Constants.convert(moves.constructor.prototype.recipes[options.recipe].defaults);
-		for (var def in defaults) {
-			if (augmented[def] === undefined) {
-				augmented[def] = defaults[def];
-			}
-		}
-		if (moves.constructor.prototype.recipes[options.recipe].main) {
-			defaults = VS3D.Constants.convert(moves.constructor.prototype.recipes[moves.constructor.prototype.recipes[options.recipe].main].defaults);
-			for (var def in defaults) {
-				if (augmented[def] === undefined) {
-					augmented[def] = defaults[def];
-				}
-			}
-		}
-		recipes.recipes[key] = augmented;
 	}
 }
-
-
 
 //**** handle custom list-item selection
 function selectItem(event) {
@@ -189,8 +122,7 @@ function allowDrop(event) {
 }
 function dragMenu(event) {
 	var movename = event.target.innerHTML;
-	//we probably want to make a helper method that "augments" recipes...
-	event.dataTransfer.setData("Text", JSON.stringify(recipes.recipes[movename]));
+	event.dataTransfer.setData("Text", JSON.stringify(recipes[movename]));
 }
 function dropQueue(event) {
 	event.preventDefault();
@@ -198,20 +130,14 @@ function dropQueue(event) {
 	addMoveToQueue(definition, event.target);
 }
 function addMoveToQueue(definition, target) {
-	totalReset()
-	var parsed = JSON.parse(definition);
-	parsed.plane = VS3D.Vector(parsed.plane.x,parsed.plane.y,parsed.plane.z);
-	var move = moves.build[parsed.recipe](parsed);
+	totalReset();
+	var move = moves.build(definition);
 	var prop;
 	var queue = target.parentNode.id;
 	if (queue === "queue1") {
 		prop = propOne;
 	} else if (queue === "queue2") {
 		prop = propTwo;
-	} else if (queue === "queue3") {
-		prop = propThree;
-	} else if (queue === "queue4") {
-		prop = propFour;
 	}
 	var oriented = move.reorient(prop);
 	var proceed = true;
@@ -223,7 +149,7 @@ function addMoveToQueue(definition, target) {
 	}
 	if (proceed !== false) {
 		var child = document.createElement("li");
-		child.innerHTML = JSON.parse(definition).name;
+		child.innerHTML = JSON.parse(definition).movename;
 		child.setAttribute("data-value",definition);
 		child.addEventListener('dblclick', viewMove);
 		child.addEventListener('click', selectItem);
@@ -251,7 +177,7 @@ function dropWorkshop(event) {
 	if (target.parentNode != null && target.parentNode.id === "thisMove") {target = target.parentNode;}
 	var child = document.createElement("li");
 	child.setAttribute("data-value",event.dataTransfer.getData("Text"));
-	child.innerHTML = JSON.parse(child.getAttribute("data-value")).name;
+	child.innerHTML = JSON.parse(child.getAttribute("data-value")).movename;
 	child.draggable = true;
 	child.addEventListener('dragstart',dragWorkshop);
 	child.addEventListener('dragover', allowDrop);
@@ -473,12 +399,8 @@ function totalReset() {
 function predict() {
 	predictions[0].orientToProp(propOne.predict());
 	predictions[1].orientToProp(propTwo.predict());
-	predictions[2].orientToProp(propThree.predict());
-	predictions[3].orientToProp(propFour.predict());
 	predictions[0].nudge(-0.1,0,-0.1);
 	predictions[1].nudge(-0.1,0,-0.1);
-	predictions[2].nudge(-0.1,0,-0.1);
-	predictions[3].nudge(-0.1,0,-0.1);
 }
 function listenForKey(e) {
 	//alert(e.keyCode);
@@ -502,10 +424,6 @@ function deleteItem() {
 			propOne.move.submoves.pop();
 		} else if (parent.parentNode.id === "queue2" && propTwo.move.submoves.length > 0) {
 			propTwo.move.submoves.pop();
-		} else if (parent.parentNode.id === "queue3" && propThree.move.submoves.length > 0) {
-			propThree.move.submoves.pop();
-		} else if (parent.parentNode.id === "queue4" && propFour.move.submoves.length > 0) {
-			propFour.move.submoves.pop();
 		}
 	}
 	predict();
@@ -515,12 +433,8 @@ function emptyQueues() {
 	vs.pause();
 	$("#queue1 ul").empty();
 	$("#queue2 ul").empty();
-	$("#queue3 ul").empty();
-	$("#queue4 ul").empty();
 	propOne.emptyMoves();
 	propTwo.emptyMoves();
-	propThree.emptyMoves();
-	propFour.emptyMoves();
 	totalReset();
 }
 
@@ -529,24 +443,9 @@ function popExport() {
 	totalReset();
 	$("#popimport").hide();
 	$("#popexport").toggle();
-	var str = "{";
-	if (propOne.propType !== "noprop") {
-		str += ('"prop1": '+ propOne.stringify());
-	}
-	if (propTwo.propType !== "noprop") {
-		str += (', "prop2": '+ propTwo.stringify());
-	}
-	if (propThree.propType !== "noprop") {
-		str += (', "prop3": '+ propThree.stringify());
-	}
-	if (propFour.propType !== "noprop") {
-		str += (', "prop4": '+propFour.stringify());
-	}
-	str += "}";
-	if (str[1] === ",") {
-		str = str.replace(", ","");
-	}
-	$("#popexport textarea").html(str);
+	var blue = propOne.stringify();
+	var red = propTwo.stringify();
+	$("#popexport textarea").html('{"prop1": '+blue+', "prop2": '+red+"}");
 }
 function popImport() {
 	$("#popexport").hide();
@@ -555,12 +454,8 @@ function popImport() {
 
 var prop1 = "poi";
 var prop2 = "poi";
-var prop3 = "none";
-var prop4 = "none";
 var color1 = "blue";
 var color2 = "red";
-var color3 = "green";
-var color4 = "yellow";
 function popAlign(n) {
 	totalReset();
 	$("#popalign"+n).toggle();
@@ -620,68 +515,10 @@ function popAlign(n) {
 			element[i].checked = false;
 		}
 	}
-	element = $('input[name=hand3]').toArray();
-	angle = propThree.getHandAngle();
-	for (var i = 0; i < element.length; i++) {
-		if (nearly(parseFloat(element[i].value),angle)) {
-			element[i].checked = true;
-		} else {
-			element[i].checked = false;
-		}
-	}
-	element = $('input[name=hand4]').toArray();
-	angle = propFour.getHandAngle();
-	for (var i = 0; i < element.length; i++) {
-		if (nearly(parseFloat(element[i].value),angle)) {
-			element[i].checked = true;
-		} else {
-			element[i].checked = false;;
-		}
-	}
-	element = $('input[name=prop3]').toArray();
-	angle = propThree.getPropAngle();
-	for (var i = 0; i < element.length; i++) {
-		if (nearly(parseFloat(element[i].value),angle)) {
-			element[i].checked = true;
-		} else {
-			element[i].checked = false;
-		}
-	}
-	element = $('input[name=prop4]').toArray();
-	angle = propFour.getPropAngle();
-	for (var i = 0; i < element.length; i++) {
-		if (nearly(parseFloat(element[i].value),angle)) {
-			element[i].checked = true;
-		} else {
-			element[i].checked = false;
-		}
-	}
-	element = $('input[name=pivot3]').toArray();
-	angle = propThree.getPivotAngle();
-	for (var i = 0; i < element.length; i++) {
-		if (nearly(parseFloat(element[i].value),angle)) {
-			element[i].checked = true;
-		} else {
-			element[i].checked = false;
-		}
-	}
-	element = $('input[name=pivot4]').toArray();
-	angle = propFour.getPivotAngle();
-	for (var i = 0; i < element.length; i++) {
-		if (nearly(parseFloat(element[i].value),angle)) {
-			element[i].checked = true;
-		} else {
-			element[i].checked = false;
-		}
-	}
 	$("#1prop").val(prop1);
 	$("#2prop").val(prop2);
 	$("#1color").val(color1);
 	$("#2color").val(color2);
-	$("#3prop").val(prop3);
-	$("#4prop").val(prop4);
-	$("#3color").val(color3);
-	$("#4color").val(color4);
 	predict();
 	vs.ready();
 	redraw();
@@ -691,35 +528,17 @@ function importSubmit() {
 	var imported = $("#popimport textarea").val();
 	imported = props.parse(imported);
 	emptyQueues();
-	if (imported.prop1) {
-		props.setPosition(propOne, JSON.stringify(imported.prop1));
-		propOne.apply(JSON.stringify(imported.prop1));
-		for (var i = 0; i < imported.prop1.moves.length; i++) {
-			addMoveToQueue(JSON.stringify(imported.prop1.moves[i]), $("#queue1 ul").get(0));
-		}
-	}
-	if (imported.prop2) {
-		props.setPosition(propTwo, JSON.stringify(imported.prop2));
-		propTwo.apply(JSON.stringify(imported.prop2));
-		for (var i = 0; i < imported.prop2.moves.length; i++) {
-			addMoveToQueue(JSON.stringify(imported.prop2.moves[i]), $("#queue2 ul").get(0));
-		}
-	}
-	if (imported.prop3) {
-		props.setPosition(propThree, JSON.stringify(imported.prop3));
-		propThree.apply(JSON.stringify(imported.prop3));
-		for (var i = 0; i < imported.prop3.moves.length; i++) {
-			addMoveToQueue(JSON.stringify(imported.prop3.moves[i]), $("#queue3 ul").get(0));
-		}
-	}
-	if (imported.prop4) {
-		props.setPosition(propFour, JSON.stringify(imported.prop4));
-		propFour.apply(JSON.stringify(imported.prop4));
-		for (var i = 0; i < imported.prop4.moves.length; i++) {
-			addMoveToQueue(JSON.stringify(imported.prop4.moves[i]), $("#queue4 ul").get(0));
-		}
-	}
+	props.setPosition(propOne, JSON.stringify(imported.prop1));
+	props.setPosition(propTwo, JSON.stringify(imported.prop2));
+	propOne.apply(JSON.stringify(imported.prop1));
+	propTwo.apply(JSON.stringify(imported.prop2));
 	vs.ready();
+	for (var i = 0; i < imported.prop1.moves.length; i++) {
+		addMoveToQueue(JSON.stringify(imported.prop1.moves[i]), $("#queue1 ul").get(0));
+	}
+	for (var i = 0; i < imported.prop2.moves.length; i++) {
+		addMoveToQueue(JSON.stringify(imported.prop2.moves[i]), $("#queue2 ul").get(0));
+	}
 	$("#popimport").toggle();
 	predict();
 	redraw();
@@ -731,10 +550,6 @@ function alignSubmit(n) {
 		prop = propOne;
 	} else if (n===2) {
 		prop = propTwo;
-	} else if (n===3) {
-		prop = propThree;
-	} else if (n===4) {
-		prop = propFour;
 	}
 	prop.setHandAngle(parseFloat($('input[name=hand' + n + ']:checked').val()));
 	prop.hand.radius = parseFloat(document.getElementById('hradius'+n).value);
@@ -771,12 +586,6 @@ function alignSubmit(n) {
 	} else if (n===2) {
 		color2 = color;
 		prop2 = text;
-	} else if (n===3) {
-		color3 = color;
-		prop3 = text;
-	} else if (n===4) {
-		color4 = color;
-		prop4 = text;
 	}
 	if (text=="poi") {
 		prop.propType = "poi";
@@ -823,26 +632,17 @@ function alignSubmit(n) {
 			<button type="button" onclick="popExport();">Export to JSON</button>
 			<button type="button" onclick="popImport();">Import from JSON</button>
 		</div>
-		<div id="queues">
-			<h2>Props</h2>
-			<div id="queue1" class="queue">
-				<button type="button" onclick="popAlign(1);">Options</button>
-				<ul ondrop="dropQueue(event)" ;="" ondragover="allowDrop(event);"></ul>
-			</div>
-			<div id="queue2" class="queue">
-				<button type="button" onclick="popAlign(2);">Options</button>
-				<ul ondrop="dropQueue(event)" ;="" ondragover="allowDrop(event);"></ul>
-			</div>
-			<div id="queue3" class="queue">
-				<button type="button" onclick="popAlign(3);">Options</button>
-				<ul ondrop="dropQueue(event)" ;="" ondragover="allowDrop(event);"></ul>
-			</div>
-			<div id="queue4" class="queue">
-				<button type="button" onclick="popAlign(4);">Options</button>
-				<ul ondrop="dropQueue(event)" ;="" ondragover="allowDrop(event);"></ul>
-			</div>
-		</div>
+		<div id="queue1" class="queue">
+			<h2>Blue Prop</h2>
+			<button type="button" onclick="popAlign(1);">Options</button>
+			<ul ondrop="dropQueue(event)" ;="" ondragover="allowDrop(event);"></ul>
+		</div>	
 
+		<div id="queue2" class="queue">
+			<h2>Red Prop</h2>
+			<button type="button" onclick="popAlign(2);">Options</button>
+			<ul ondrop="dropQueue(event);" ondragover="allowDrop(event);"></ul>
+		</div>
 		
 		<div id="workshop" ondrop="dropWorkshop(event);" ondragover="allowDrop(event);">
 			<h2>Workshop</h2>
@@ -1023,164 +823,6 @@ function alignSubmit(n) {
 				</tbody></table>
 	<button type="button" onclick="popAlign(2);">Cancel</button>
 	<button type="button" onclick="alignSubmit(2);">Submit</button>
-</div>
-<div style="display: none;" id="popalign3">
-		Prop:
-			<select id="3prop">
-				<option value="poi">Poi</option>
-				<option value="staff">Staff</option>
-				<option value="hoop">Hoop</option>
-				<option selected="selected" value="none">None</option>
-			</select>
-		<br>
-		Color:
-			<select id="3color">
-				<option value="red">Red</option>
-				<option value="blue">Blue</option>
-				<option value="yellow">Yellow</option>
-				<option selected="selected" value="green">Green</option>
-				<option value="orange">Orange</option>
-				<option value="white">White</option>
-			</select>
-		<br>
-		<br>
-		<u>Starting Positions</u>
-		<br>
-		Hand:
-				<p></p><table>
-					<tbody><tr>
-						<td></td>
-						<td><input name="hand3" value="4.712389" type="radio">Up</td>
-						<td></td>
-					</tr>
-					<tr>
-						<td><input checked="checked" name="hand3" value="3.141593" type="radio">Left</td>
-						<td><input id="hradius3" min="0" max="1" step="0.5" value="1" type="number"></td>
-						<td><input name="hand3" value="0" type="radio">Right</td>
-					</tr>	
-					<tr>
-						<td></td>
-						<td><input name="hand3" value="1.570796" type="radio">Down</td>
-						<td></td>
-					</tr>	
-				</tbody></table>	
-		Prop:
-				<table>
-					<tbody><tr>
-						<td></td>
-						<td><input name="prop3" value="4.712389" type="radio">Up</td>
-						<td></td>
-					</tr>
-					<tr>
-						<td><input checked="checked" name="prop3" value="3.141593" type="radio">Left</td>
-						<td></td>
-						<td><input name="prop3" value="0" type="radio">Right</td>
-					</tr>	
-					<tr>
-						<td></td>
-						<td><input name="prop3" value="1.570796" type="radio">Down</td>
-						<td></td>
-					</tr>	
-				</tbody></table>
-		Pivot:
-				<table>
-					<tbody><tr>
-						<td></td>
-						<td><input name="pivot3" value="4.712389" type="radio">Up</td>
-						<td></td>
-					</tr>
-					<tr>
-						<td><input checked="checked" name="pivot3" value="3.141593" type="radio">Left</td>
-						<td><input id="pradius3" min="0" max="1" step="0.5" value="0" type="number"></td>
-						<td><input name="pivot3" value="0" type="radio">Right</td>
-					</tr>	
-					<tr>
-						<td></td>
-						<td><input name="pivot3" value="1.570796" type="radio">Down</td>
-						<td></td>
-					</tr>	
-				</tbody></table>
-	<button type="button" onclick="popAlign(3);">Cancel</button>
-	<button type="button" onclick="alignSubmit(3);">Submit</button>
-</div>
-<div style="display: none;" id="popalign4">
-		Prop:
-			<select id="4prop">
-				<option value="poi">Poi</option>
-				<option value="staff">Staff</option>
-				<option value="hoop">Hoop</option>
-				<option selected="selected" value="none">None</option>
-			</select>
-		<br>
-		Color:
-			<select id="4color">
-				<option value="red">Red</option>
-				<option value="blue">Blue</option>
-				<option selected="selected" value="yellow">Yellow</option>
-				<option value="green">Green</option>
-				<option value="orange">Orange</option>
-				<option value="white">White</option>
-			</select>
-		<br>
-		<br>
-		<u>Starting Positions</u>
-		<br>
-		Hand:
-				<p></p><table>
-					<tbody><tr>
-						<td></td>
-						<td><input name="hand4" value="4.712389" type="radio">Up</td>
-						<td></td>
-					</tr>
-					<tr>
-						<td><input checked="checked" name="hand4" value="3.141593" type="radio">Left</td>
-						<td><input id="hradius4" min="0" max="1" step="0.5" value="1" type="number"></td>
-						<td><input name="hand4" value="0" type="radio">Right</td>
-					</tr>	
-					<tr>
-						<td></td>
-						<td><input name="hand4" value="1.570796" type="radio">Down</td>
-						<td></td>
-					</tr>	
-				</tbody></table>	
-		Prop:
-				<table>
-					<tbody><tr>
-						<td></td>
-						<td><input name="prop4" value="4.712389" "="" type="radio">Up</td>
-						<td></td>
-					</tr>
-					<tr>
-						<td><input checked="checked" name="prop4" value="3.141593" type="radio">Left</td>
-						<td></td>
-						<td><input name="prop4" value="0" type="radio">Right</td>
-					</tr>	
-					<tr>
-						<td></td>
-						<td><input name="prop4" value="1.570796" type="radio">Down</td>
-						<td></td>
-					</tr>	
-				</tbody></table>
-			Pivot:
-				<table>
-					<tbody><tr>
-						<td></td>
-						<td><input name="pivot4" value="4.712389" type="radio">Up</td>
-						<td></td>
-					</tr>
-					<tr>
-						<td><input checked="checked" name="pivot4" value="3.141593" type="radio">Left</td>
-						<td><input id="pradius4" min="0" max="1" step="0.5" value="0" type="number"></td>
-						<td><input name="pivot4" value="0" type="radio">Right</td>
-					</tr>	
-					<tr>
-						<td></td>
-						<td><input name="pivot4" value="1.570796" type="radio">Down</td>
-						<td></td>
-					</tr>	
-				</tbody></table>
-	<button type="button" onclick="popAlign(4);">Cancel</button>
-	<button type="button" onclick="alignSubmit(4);">Submit</button>
 </div>
 <div style="display: none;" id="moveview">
 	<button type="button" onclick='$("#moveview").toggle();'>Okay</button>

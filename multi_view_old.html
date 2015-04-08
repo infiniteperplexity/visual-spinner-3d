@@ -10,7 +10,7 @@ body {background-color: #99CCFF}
 <script src="scripts/phoria-min.js"></script>
 <script src="scripts/requestAnimationFrame.js"></script>
 <script src="scripts/visual-spinner-engine.js"></script>
-<script src="scripts/visual-spinner-moves_refactor.js"></script>
+<script src="scripts/visual-spinner-moves.js"></script>
 <script src="scripts/visual-spinner-ui.js"></script>
 <script>
 function init() {
@@ -40,12 +40,12 @@ function init() {
 	vs.addControls("play","pause","rewind","frame","forward","reset");
 	vs2.addControls("play","pause","rewind","frame","forward","reset");
 	vs3.addControls("play","pause","rewind","frame","forward","reset");
-	one.addMove(vs.Moves.build.antibend());
-	two.addMove(vs.Moves.build.antibend());
-	one.addMove(vs.Moves.build.isobend());
-	two.addMove(vs.Moves.build.isobend());
-	one.addMove(vs.Moves.build.probend());
-	two.addMove(vs.Moves.build.probend());
+	one.addMove(vs.Moves.toroid({bend: vs.ANTIBEND}));
+	two.addMove(vs.Moves.toroid({bend: vs.ANTIBEND}));
+	one.addMove(vs.Moves.toroid({bend: vs.ISOBEND}));
+	two.addMove(vs.Moves.toroid({bend: vs.ISOBEND}));
+	one.addMove(vs.Moves.toroid({bend: vs.PROBEND, harmonics: 2}));
+	two.addMove(vs.Moves.toroid({bend: vs.PROBEND, harmonics: 2}));
 	vs.addText("Anti-Bend Toroid (front view)");
 	vs2.addText("Anti-Bend Toroid (side view)");
 	vs3.addText("Anti-Bend Toroid (top view)");
