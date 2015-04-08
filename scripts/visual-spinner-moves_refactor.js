@@ -88,7 +88,7 @@ MoveFactory.prototype.defaults = function(options, defaults) {
 Constants.convert = function(hash) {
 	var converted = {};
 	for (key in hash) {
-		if (typeof hash[key] === "string") {
+		if (typeof hash[key] === "string" && Constants[hash[key]] !== undefined) {
 			converted[key] = Constants[hash[key]];
 		} else {
 			converted[key] = hash[key];
@@ -113,6 +113,7 @@ MoveFactory.prototype.build = function(movename, options) {
 		augmented[option] = options[option];
 	}
 	defaults = Constants.convert(MoveFactory.prototype.recipes[movename].defaults);
+	
 	for (var def in defaults) {
 		if (augmented[def] === undefined) {
 			augmented[def] = defaults[def];

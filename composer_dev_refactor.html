@@ -171,6 +171,7 @@ function populateMenu(json) {
 				}
 			}
 		}
+		recipes.recipes[key] = augmented;
 	}
 }
 
@@ -188,7 +189,7 @@ function allowDrop(event) {
 }
 function dragMenu(event) {
 	var movename = event.target.innerHTML;
-	
+	//we probably want to make a helper method that "augments" recipes...
 	event.dataTransfer.setData("Text", JSON.stringify(recipes.recipes[movename]));
 }
 function dropQueue(event) {
@@ -197,9 +198,10 @@ function dropQueue(event) {
 	addMoveToQueue(definition, event.target);
 }
 function addMoveToQueue(definition, target) {
-	totalReset();
-	//var move = moves.build(definition);
-	var move = moves.build[definition.recipe](definition);
+	totalReset()
+	var parsed = JSON.parse(definition);
+	parsed.plane = VS3D.Vector(parsed.plane.x,parsed.plane.y,parsed.plane.z);
+	var move = moves.build[parsed.recipe](parsed);
 	var prop;
 	var queue = target.parentNode.id;
 	if (queue === "queue1") {
@@ -221,7 +223,7 @@ function addMoveToQueue(definition, target) {
 	}
 	if (proceed !== false) {
 		var child = document.createElement("li");
-		child.innerHTML = JSON.parse(definition).movename;
+		child.innerHTML = JSON.parse(definition).name;
 		child.setAttribute("data-value",definition);
 		child.addEventListener('dblclick', viewMove);
 		child.addEventListener('click', selectItem);
@@ -249,7 +251,7 @@ function dropWorkshop(event) {
 	if (target.parentNode != null && target.parentNode.id === "thisMove") {target = target.parentNode;}
 	var child = document.createElement("li");
 	child.setAttribute("data-value",event.dataTransfer.getData("Text"));
-	child.innerHTML = JSON.parse(child.getAttribute("data-value")).movename;
+	child.innerHTML = JSON.parse(child.getAttribute("data-value")).name;
 	child.draggable = true;
 	child.addEventListener('dragstart',dragWorkshop);
 	child.addEventListener('dragover', allowDrop);
