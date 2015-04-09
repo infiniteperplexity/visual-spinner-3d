@@ -109,6 +109,19 @@ Vector.prototype.isZero = function() {
 		return false;
 	}
 }
+//create a vector from a hash or array
+Vector.constructor.prototype.define = function(def) {
+	if (def==undefined) {
+		return undefined;
+	}
+	if(def.x!==undefined && def.y!==undefined && def.z!==undefined) {
+		return new Vector(def.x,def.y,def.z);
+	}
+	if (def.length===3) {
+		return new Vector(def[0],def[1],def[2]);
+	}
+	return def;
+}
 // Normalize a vector to magnitude = 1
 Vector.prototype.unitize = function() {
 	if (this.isZero()) {return this;}	
@@ -280,7 +293,7 @@ function nearly(n1,n2, delta) {
 	// Props define angles uniquely in terms of spherical coordinates: zenith and azimuth
 	// Moves define angles in spinner's terms: distance from a reference angle in the wall, wheel, or floor plane 
 function Prop() {
-	this.propname = "not defined";
+	this.name = undefined;
 	// These elements define the Prop's position
 	// "hand" and "prop" are used in almost every move
 	// "home" should be used when the spinner's body is moving, e.g. walking around
@@ -1138,158 +1151,10 @@ MoveChain.prototype.getDuration = function() {
 
 
 /////////// Factory functions to produce props and moves.  The user should either add methods or include a library of methods
-function PropFactory() {}
-PropFactory.prototype.defaults = function(options, defaults) {
-	if (options===undefined) {options = {};}
-	for (var option in options) {
-		defaults[option] = options[option];
-	}
-	return defaults;
-}
-PropFactory.prototype.parse = function(json) {
-	var definition = JSON.parse(json);
-	return definition;
-}
 function MoveFactory() {
 	this.options = {};
 }
-MoveFactory.prototype.defaults = function(options, defaults) {
-	if (options===undefined) {options = {};}
-	for (var option in options) {
-		defaults[option] = options[option];
-	}
-	return defaults;
-}
 
-//// Serialization methods on factories, props, and moves
-PropFactory.prototype.setPosition = function(prop, json) {
-	var definition = PropFactory.prototype.parse(json);
-	for (var i = HOME; i<=PROP; i++) {
-		prop[ELEMENTS[i]].radius = definition[ELEMENTS[i]].radius;
-		prop[ELEMENTS[i]].azimuth = definition[ELEMENTS[i]].azimuth;
-		prop[ELEMENTS[i]].zenith = definition[ELEMENTS[i]].zenith;
-	}
-	prop.twist = definition.twist;
-	prop.grip = definition.grip;
-	prop.choke = definition.choke;
-	prop.bend = definition.bend;
-	prop.axis = new Vector(definition.axis.x, definition.axis.y, definition.axis.z);
-}
-
-// This does both moves and position, I want one that just does position
-Prop.prototype.apply = function(json) {
-	var definition = PropFactory.prototype.parse(json);
-	for (var i = HOME; i<=PROP; i++) {
-		this[ELEMENTS[i]].radius = definition[ELEMENTS[i]].radius;
-		this[ELEMENTS[i]].azimuth = definition[ELEMENTS[i]].azimuth;
-		this[ELEMENTS[i]].zenith = definition[ELEMENTS[i]].zenith;
-	}
-	this.twist = definition.twist;
-	this.grip = definition.grip;
-	this.choke = definition.choke;
-	this.bend = definition.bend;
-	if (definition.axis !== null) {
-		this.axis = new Vector(definition.axis.x, definition.axis.y, definition.axis.z);
-	}
-	this.propname = definition.propname;
-}
-Prop.prototype.build = function(json) {
-	var definition = PropFactory.prototype.parse(json);
-	for (var i = HOME; i<=PROP; i++) {
-		this[ELEMENTS[i]].radius = definition[ELEMENTS[i]].radius;
-		this[ELEMENTS[i]].azimuth = definition[ELEMENTS[i]].azimuth;
-		this[ELEMENTS[i]].zenith = definition[ELEMENTS[i]].zenith;
-	}
-	this.twist = definition.twist;
-	this.grip = definition.grip;
-	this.choke = definition.choke;
-	this.bend = definition.bend;
-	if (definition.axis !== null) {
-		this.axis = new Vector(definition.axis.x, definition.axis.y, definition.axis.z);
-	}
-	this.propname = definition.propname;
-	this.propType = definition.propType;
-	this.color = definition.color;
-	this.fire = definition.fire;
-}
-Prop.prototype.applyMoves = function(json) {
-	this.emptyMoves();
-	var definition = PropFactory.prototype.parse(json);
-	var jmove;
-	
-	//for (var i = 0; i<definition.moves.length; i++) {
-	for (var i = 0; i<16; i++) {
-		
-		jmove = JSON.stringify(definition.moves[i]);
-		jmove = MoveFactory.prototype.build(jmove);
-		this.addMove(jmove);
-	}
-}
-
-
-///these methods should not be on the factories
-Prop.prototype.stringify = function() {
-	// This currently won't exist
-	var definition = {	propname: this.propname,
-					home: {},
-					pivot: {},
-					helper: {},
-					hand: {},
-					prop: {}
-				};
-	for (var i = HOME; i<=PROP; i++) {
-		definition[ELEMENTS[i]].radius = this[ELEMENTS[i]].radius;
-		definition[ELEMENTS[i]].azimuth = this[ELEMENTS[i]].azimuth;
-		definition[ELEMENTS[i]].zenith = this[ELEMENTS[i]].zenith;
-	}
-	definition.twist = this.twist;
-	definition.grip = this.grip;
-	definition.choke = this.choke;
-	definition.bend = this.bend;
-	definition.axis = this.axis;
-	definition.propType = this.propType;
-	definition.color = this.color;
-	definition.fire = this.fire;
-	definition.moves = [];
-	for (var i = 0; i<this.move.submoves.length; i++) {
-		definition.moves[i] = this.move.submoves[i].definition;
-	}
-	return JSON.stringify(definition,undefined,2);
-}
-
-MoveFactory.prototype.parse = function(json) {
-	var definition = JSON.parse(json);
-	// I check for undefined and null separately just as a matter of style
-	if (definition.plane !== undefined && definition.plane !== null) {
-		definition.plane = new Vector(definition.plane.x,definition.plane.y,definition.plane.z);
-	}
-	return definition;
-}
-MoveFactory.prototype.build_old = function(json) {
-	var definition = this.parse(json);
-	if (definition.recipe == undefined) {alert("undefined!");}//alert(json);}
-	var move = this[definition.recipe](definition);
-	if (definition.abrupt !== undefined) {
-		move.setAbrupt(definition.abrupt);
-	}
-	if (definition.modify !== undefined) {
-		move.modify(definition.modify);
-	}
-	if (definition.modify_tail !== undefined) {
-		move.modifyTail(definition.modify_tail);
-	}
-	return move;
-}
-MoveLink.prototype.stringify = function() {
-	if (this.definition !== undefined) {
-		return JSON.stringify(this.definition,undefined,2);
-	}
-}
-MoveChain.prototype.stringify = function() {
-	if (this.definition !== undefined) {
-		return JSON.stringify(this.definition,undefined,2);
-	}
-}
 MoveChain.prototype.modifyTail = function(options) {
 	var tail = this.tail();
 	var parent = tail.parent;
@@ -1311,27 +1176,6 @@ MoveLink.prototype.modifyTail = function(options) {
         tail.modify(options);
         return this;
 }
-function isValidJSON(str) {
-    try {
-        JSON.parse(str);
-    } catch (e) {
-        return false;
-    }
-    return true;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // Rotate the move until a specified element matches a specified angle
 	// this tends to be used for parameterizing move "entry" angle
@@ -1376,76 +1220,6 @@ MoveChain.prototype.adjust = function(target) {
 			this.startPhase(1);
 		}
 	}
-	return null;
-}
-//// "reorient" is a more aggressive version of "adjust" that will scrap and rebuild the move in different orientations
-MoveChain.prototype.reorient_old = function(target) {
-	var retrn = this.adjust(target);
-	// If it works to start with, don't mess with it
-	if (retrn !== null) {return retrn;}
-	var definition = this.definition;
-	if (definition === undefined) {
-		return this;
-	}
-	var entry = definition.entry || THREE;
-	var orient = definition.orient || THREE;
-	if (entry === undefined || orient === undefined) {
-		return this;
-	}
-	var hand;
-	var prop;
-	if (target instanceof Prop) {
-		hand = target.handVector();
-		prop = target.propVector();
-	} else if (target instanceof MoveLink || target instanceof MoveChain) {
-		hand = target.socket().handVector();
-		prop = target.socket().propVector();
-	}
-	// If it doesn't work, cycle through orientations and entry angles until it works
-	var redefined;
-
-	for (var i = 0; i < 4; i++) {
-		for (var j = 0; j < 4; j++) {
-			definition.orient = unwind(orient+i*QUARTER);
-			definition.entry = unwind(entry+j*QUARTER);
-			redefined = MoveFactory.prototype.build(JSON.stringify(definition));
-			if (hand.nearly(redefined.handVector(),0.05) && prop.nearly(redefined.propVector(),0.1)) {
-				redefined.oneshot = this.oneshot;
-				return redefined;
-			}
-			retrn = redefined.adjust(target);
-			if (retrn !== null) {
-				retrn.oneshot = this.oneshot;
-				return retrn;
-			}
-		}
-	}
-	//right now there is no way to tell whether a prop should have a mode...does that mean we can't rotate through?
-	//new code - tries even more aggressively to match sockets
-	var mode = definition.mode || DIAMOND;
-	for (var k = 0; k < 4; k++) {
-		for (var i = 0; i < 4; i++) {
-			for (var j = 0; j < 4; j++) {
-				definition.mode = unwind(mode+k*QUARTER);
-				definition.orient = unwind(orient+i*QUARTER);
-				definition.entry = unwind(entry+j*QUARTER);
-				redefined = MoveFactory.prototype.build(JSON.stringify(definition));
-				if (hand.nearly(redefined.handVector(),0.05) && prop.nearly(redefined.propVector(),0.1)) {
-					redefined.oneshot = this.oneshot;
-					return redefined;
-				}
-				retrn = redefined.adjust(target);
-				if (retrn !== null) {
-					retrn.oneshot = this.oneshot;
-					return retrn;
-				}
-			}
-		}
-	}
-	// Otherwise fail
-	this.reorientFail();
-	//alert("Socketing failed (unable to align next move with end of prior move.)");
-	//alert(JSON.stringify(definition,null,2));
 	return null;
 }
 
@@ -1567,12 +1341,11 @@ return {
 	MoveChain: function() {return new MoveChain();},
 	MoveLink: function() {return new MoveLink();},
 	Prop: function() {return new Prop();},
-	PropFactory: function() {return new PropFactory();},
 	MoveFactory: function() {return new MoveFactory();},
 	Vector: function(x,y,z) {return new Vector(x,y,z);},
 	Spherical: function(r,z,a) {return new Spherical(r,z,a);},
 	Constants: Constants,
-	Utilities: {unwind: unwind, nearly: nearly, isValidJSON: isValidJSON},
+	Utilities: {unwind: unwind, nearly: nearly},
 	overrideSpinfail: overrideSpinfail,
 	overrideReorientFail: overrideReorientFail
 }

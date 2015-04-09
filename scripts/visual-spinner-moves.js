@@ -68,12 +68,142 @@ var CONTACT = Constants.CONTACT;
 var GUNSLINGER = Constants.GUNSLINGER;	
 
 var MoveFactory = VS3D.MoveFactory().constructor;
+var MoveChain = VS3D.MoveChain().constructor;
+var MoveLink = VS3D.MoveLink().constructor;
+var Prop = VS3D.Prop().constructor;
+var Vector = VS3D.Vector().constructor;
 var unwind = VS3D.Utilities.unwind;
 var nearly = VS3D.Utilities.nearly;
 
 "use strict";
 
-//// "reorient" is a more aggressive version of "adjust" that will scrap and rebuild the move in different orientations
+Prop.prototype.defineMoves = function(def) {
+	this.emptyMoves();
+	var move;
+	for (var i = 0; i<def.moves.length; i++) {
+		move = MoveFactory.prototype.build(def.moves[i].recipe, def.moves[i]);
+		this.addMove(move);
+	}
+}
+Prop.prototype.definePosition = function(def) {
+	for (var i = HOME; i<=PROP; i++) {
+		if (def[ELEMENTS[i]]===undefined) {
+			this[ELEMENTS[i]].azimuth = 0;
+			this[ELEMENTS[i]].zenith = QUARTER;
+			if (i===PROP) {
+				this.prop.radius = 1;
+			} else {
+				this[ELEMENTS[i]].radius = 0;
+			}
+		} else {
+			if (def[ELEMENTS[i]].radius===undefined) {
+				if (i===PROP) {
+					this.prop.radius = 1;
+				} else {
+					this[ELEMENTS[i]].radius = 0;
+				}
+			} else {
+				this[ELEMENTS[i]].radius = def[ELEMENTS[i]].radius;
+			}
+			if (def[ELEMENTS[i]].zenith===undefined) {
+				this[ELEMENTS[i]].zenith = QUARTER;
+			} else {
+				this[ELEMENTS[i]].zenith = def[ELEMENTS[i]].zenith;
+			}
+			if (def[ELEMENTS[i]].azimuth===undefined) {
+				this[ELEMENTS[i]].azimuth = 0;
+			} else {
+				this[ELEMENTS[i]].azimuth = def[ELEMENTS[i]].azimuth;
+			}
+		}
+	}
+	this.twist = def.twist || 0;
+	this.grip = def.grip || 0;
+	this.choke = def.choke || 0;
+	this.bend = def.bend || 0;
+	//need to implement
+	//this.axis = Vector.define(def.axis) || WALL;
+	this.name = def.name || undefined;
+	this.propType = def.propType;
+	this.color = def.color || "red";
+	this.fire = def.fire || false;
+}
+
+//should we add a "sparsify" parameter?
+Prop.prototype.stringify = function() {
+	var def = {}
+	var e;
+	for (var i = HOME; i<=PROP; i++) {
+		e = {};
+		if (i==PROP) {
+			if (this.prop.radius !== 1) {
+				e.radius = this.prop.radius;
+			}
+		} else {
+			// what about negative radius?
+			if (this[ELEMENTS[i]].radius > TINY) {
+				e.radius = this[ELEMENTS[i]].radius;
+			}
+		}
+		if (this[ELEMENTS[i]].zenith != QUARTER) {
+			e.zenith = this[ELEMENTS[i]].zenith;
+		}
+		if (this[ELEMENTS[i]].azimuth > TINY) {
+			e.azimuth = this[ELEMENTS[i]].azimuth;
+		}
+		if (e.radius !== undefined || e.zenith !== undefined || e.azimuth !== undefined) {
+			def[ELEMENTS[i]] = Constants.stringify(e);
+		}
+	}
+	if (this.twist !== 0) {
+		def.twist = this.twist;
+	}
+	if (this.choke !== 0) {
+		def.choke = this.choke;
+	}
+	if (this.bend !== 0) {
+		def.bend = this.bend;
+	}
+	if (this.grip !== 0) {
+		def.grip = this.grip;
+	}
+	if (this.axis !== undefined && !this.axis.nearly(WALL)) {
+		def.axis = this.axis
+	}
+	if (this.name !== undefined) {
+		def.name = this.name;
+	}
+	if (this.propType !== "poi") {
+		def.propType = this.propType;
+	}
+	if (this.color !== "red") {
+		def.color = this.color;
+	}
+	if (this.fire !== false) {
+		def.fire = this.fire;
+	}
+	def = Constants.stringify(def);
+	def.moves = [];
+	for (var i = 0; i<this.move.submoves.length; i++) {
+		def.moves[i] = MoveFactory.prototype.sparsify(this.move.submoves[i].definition);
+	}
+	return JSON.stringify(def,null,2);
+}
+//takes JSONized Prop (optionally sparse, optionally constantized) and returns valid definition
+Prop.prototype.parseProp = function(json) {
+	var def = JSON.parse(json);
+	//for (var i = HOME; i<=PROP; i++) {
+	//	if (def[ELEMENTS[i]] === undefined) {
+	//		if (i==PROP) {
+	//			def.prop === {radius: 1, zenith: QUARTER, azimuth: TINY};
+	//		} else {
+	//			def[ELEMENTS[i]] = {radius: TINY, zenith: QUARTER, azimuth: TINY};
+	//		}
+	//	}
+	//}
+	def = Constants.parse(def);
+	return def;
+}
 
 //Takes an associative array with numeric values and returns an associative array with some values converted to text
 Constants.stringify = function(def) {
@@ -86,50 +216,52 @@ Constants.stringify = function(def) {
 				|| option==="grip"
 				|| option==="twist"
 				|| option==="bend"
-				|| option.substr(-1,6)==="_angle") {
-			if (def[option]===THREE) {
+				|| option.substr(-6,6)==="_angle") {
+			if (nearly(def[option],THREE)) {
 				def[option]="THREE";
-			} else if (def[option]===SIX) {
+			} else if (nearly(def[option],SIX)) {
 				def[option]="SIX";
-			} else if (def[option]===NINE) {
+			} else if (nearly(def[option],NINE)) {
 				def[option]="NINE";
-			} else if (def[option]===TWELVE) {
+			} else if (nearly(def[option],TWELVE)) {
 				def[option]="TWELVE";
-			} else if (def[option]===ONETHIRTY) {
+			} else if (nearly(def[option],ONETHIRTY)) {
 				def[option]="ONETHIRTY";
-			} else if (def[option]===FOURTHIRTY) {
+			} else if (nearly(def[option],FOURTHIRTY)) {
 				def[option]="FOURTHIRTY";
-			} else if (def[option]===SEVENTHIRTY) {
+			} else if (nearly(def[option],SEVENTHIRTY)) {
 				def[option]="SEVENTHIRTY";
-			} else if (def[option]===TENTHIRTY) {
+			} else if (nearly(def[option],TENTHIRTY)) {
 				def[option]="TENTHIRTY";
 			}
 		}
 		if (option==="mode") {
-			if (def[option]===BOX) {
+			if (nearly(def[option],BOX)) {
 				def[option]="BOX";
-			} else if (def[option]===DIAMOND) {
+			} else if (nearly(def[option],DIAMOND)) {
 				def[option]="DIAMOND";
-			} else if (def[option]===DRAG) {
+			} else if (nearly(def[option],DRAG)) {
 				def[option]="DRAG";
-			} else if (def[option]===FOLLOW) {
+			} else if (nearly(def[option],FOLLOW)) {
 				def[option]="FOLLOW";
 			}
 		}
-		if (option==="axis" || option.substr(-1,5)==="plane") {
-			if (def[option].toArray()==[0,0,1]) {
+		if (option==="axis" || option.substr(-5,5)==="plane") {
+			if (def[option] && WALL.nearly(def[option])) {
 				def[option] = "WALL";
-			} else if (def[option].toArray()==[1,0,0]) {
+			} else if (def[option] && WHEEL.nearly(def[option])) {
 				def[option] = "WHEEL";
-			} else if (def[option].toArray()==[0,1,0]) {
+			} else if (def[option] && FLOOR.nearly(def[option])) {
 				def[option] = "FLOOR";
 			}
 		}
 		if (def[option] === TINY) {
 			def[option] = "TINY";
 		}
-		if (def[option] === SMALL) {
+		else if (def[option] === SMALL) {
 			def[option] = "SMALL";
+		} else if (nearly(def[option],0)) {
+			def[option] = 0;
 		}
 	}
 	return def;
@@ -138,13 +270,70 @@ Constants.stringify = function(def) {
 Constants.parse = function(hash) {
 	var converted = {};
 	for (key in hash) {
-		if (typeof hash[key] === "string" && Constants[hash[key]] !== undefined) {
-			converted[key] = Constants[hash[key]];
+		if(key==="home" || key==="pivot" || key==="helper" || key==="hand" || key==="prop") {
+			converted[key] = this.parse(hash[key]);
+		}
+		//this apparently is a thing that can happen...
+		else if(hash[key] === null) {
+			converted[key] = null;
+		} else if (typeof hash[key] === "string" && Constants[hash[key]] !== undefined) {
+				converted[key] = Constants[hash[key]];
+		//there might be a better way of doing this...
+		} else if (hash[key].x !== undefined && hash[key].y !== undefined && hash[key].z !== undefined) {
+			converted[key] = Vector.define(hash[key]);
 		} else {
 			converted[key] = hash[key];
 		}
 	}
 	return converted;
+}
+
+
+
+//is this method even needed? for now, yes, until we have constant cleaning on build...
+MoveFactory.prototype.parse = function(json) {
+	var def = JSON.parse(json);
+	return MoveFactory.prototype.build(def.recipe,def);
+}
+
+MoveChain.prototype.stringify = function() {
+	var def = MoveFactory.prototype.sparsify(this);
+	return JSON.stringify(def,null,2);
+}
+MoveLink.prototype.stringify = function () {
+	return MoveChain.prototype.stringify.call(this);
+}
+MoveFactory.prototype.sparsify = function(def) {
+	if (def===undefined) {
+		return {};
+	}
+	var defaults = MoveFactory.prototype.recipes[def.recipe].defaults;
+	defaults.recipe = def.recipe;
+	defaults = MoveFactory.prototype.augment(defaults);
+	for (key in defaults) {
+		if(key==="axis" || key.substr(-5,5)==="plane") {
+			if (def[key]!==undefined && defaults[key]!==undefined) {
+				if (nearly(def[key].x,nearly(defaults[key].x)) && nearly(def[key].y,nearly(defaults[key].y) && nearly(def[key].z,nearly(defaults[key].z)))) {
+					def[key] = undefined;
+				}
+			}
+		}
+		else if (def[key]==defaults[key] || nearly(def[key],defaults[key])) {
+			def[key] = undefined;
+		}
+	}
+	def = Constants.stringify(def);
+	def.recipe = defaults.recipe;
+	return def;
+}
+
+function isValidJSON(str) {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
 }
 
 MoveFactory.prototype.augment = function(def) {
@@ -171,12 +360,7 @@ MoveFactory.prototype.augment = function(def) {
 
 MoveFactory.prototype.recipes = {};
 
-//naming conflict with JSON!
 MoveFactory.prototype.build = function(movename, options) {
-	//ad hoc handling of naming conflict
-	if (movename[0] === "{") {
-		return MoveFactory.prototype.oldbuild(movename);
-	}
 	if (options===undefined) {options = {};}
 	options.recipe = movename;
 	var augmented = MoveFactory.prototype.augment(options);
@@ -204,22 +388,6 @@ MoveFactory.prototype.build = function(movename, options) {
 	}
 	move.definition = options;
 	move.definition.recipe = movename;
-	return move;
-}
-
-MoveFactory.prototype.oldbuild = function(json) {
-	var definition = this.parse(json);
-	if (definition.recipe == undefined) {alert("undefined!");}//alert(json);}
-	var move = this.build(definition.recipe,definition);
-	if (definition.abrupt !== undefined) {
-		move.setAbrupt(definition.abrupt);
-	}
-	if (definition.modify !== undefined) {
-		move.modify(definition.modify);
-	}
-	if (definition.modify_tail !== undefined) {
-		move.modifyTail(definition.modify_tail);
-	}
 	return move;
 }
 
@@ -549,83 +717,6 @@ function(options) {
 	return move;
 });
 MoveFactory.variant("lineariso",{name: "Linear Isolation", petals: 2},"linex");
-
-
-
-
-// This move could possibly be re-done using "helper"
-MoveFactory.prototype.oval = function(options) {
-	var move = VS3D.MoveChain();
-	move.definition = options;
-	options = this.defaults(options,{
-		recipe: "oval",
-		movename: "Linear Isolation",
-		plane: WALL,
-		direction: CLOCKWISE,
-		spin: INSPIN,
-		petals: 2,
-		major: 1,
-		minor: 0.5,
-		speed: 1,
-		mode: DIAMOND,
-		entry: THREE,
-		orient: THREE,
-		pivot_angle: 0,
-		pivot_radius: 0,
-		duration: 1
-	});
-	var segment = VS3D.MoveLink();
-	if (options.spin==INSPIN) {
-		segment.prop.speed = (options.petals+1)*options.spin*options.direction*options.speed;
-	} else {
-		segment.prop.speed = (options.petals-1)*options.spin*options.direction*options.speed;
-	}
-	segment.pivot.angle = options.pivot_angle;
-	segment.pivot.radius = options.pivot_radius;
-	segment.pivot.plane = options.plane;
-	segment.pivot.speed = 0;
-
-	segment.hand.speed = options.direction*options.speed;
-	segment.prop.plane = options.plane;
-	segment.hand.plane = options.plane;
-	segment.hand.angle = options.orient;
-	if (options.mode != null) {
-		segment.prop.angle = options.orient + options.direction*options.mode;
-	}
-	segment.duration = 0.25;
-	move.add(segment);
-	move.tail().hand.radius = options.major;
-	move.tail().hand.stretch = -(options.major-options.minor)*8;
-	move.tail().hand.stretch_acc = (options.major-options.minor)*32;
-	move.extend();
-	move.tail().hand.radius = options.minor;
-	move.tail().hand.stretch = 0;
-	move.tail().hand.stretch_acc = (options.major-options.minor)*32;
-	move.extend();
-	move.tail().hand.radius = options.major;
-	move.tail().hand.stretch = -(options.major-options.minor)*8;
-	move.tail().hand.stretch_acc = (options.major-options.minor)*32;
-	move.extend();
-	move.tail().hand.radius = options.minor;
-	move.tail().hand.stretch = 0;
-	move.tail().hand.stretch_acc = (options.major-options.minor)*32;
-	if (options.entry != null) {
-		move.align("hand",options.entry);
-	}
-	if (options.duration < 1) {
-		move = move.slice(0,options.duration*4);
-	} else if (options.duration > 1) {
-		for (var i = 1; i<options.duration; i+=0.25) {
-			move.add(move.submoves[4*(i-1)].clone());
-		}
-	}
-	move.recipe = options.recipe;
-	move.definition.recipe = options.recipe;
-	move.movename = options.movename;
-	return move;
-}
-
-
 
 MoveFactory.recipe(
 	"isolation",
@@ -964,7 +1055,7 @@ MoveFactory.recipe(
 	name: "Weave",
 	extend: 1,
 	// I'm not at all set on this way of doing things
-	axis: null,
+	//axle: WHEEL,
 	beats: 2,
 	spin: "INSPIN",
 	sway: 0.5,
@@ -978,7 +1069,7 @@ function(options) {
 	segment.hand.plane = options.plane;
 	var wheelfix = 1;
 	var floorfix = 0;
-	if (options.axis===null) {
+	//if (options.axle===null) {
 		if (options.plane == WALL) {
 			segment.helper.plane = WHEEL;
 		} else if (options.plane == WHEEL) {
@@ -989,9 +1080,9 @@ function(options) {
 			floorfix = UNIT/4;
 			wheelfix = -1;
 		}
-	} else {
-		segment.helper.plane = options.axis;
-	}
+	//} else {
+	//	segment.helper.plane = options.axis;
+	//}
 	segment.helper.angle = 0;
 	segment.hand.speed = 0;
 	segment.hand.radius = 0;

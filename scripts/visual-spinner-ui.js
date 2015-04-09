@@ -12,8 +12,6 @@ var WHEEL = VS3D.Constants.WHEEL;
 var FLOOR = VS3D.Constants.FLOOR;
 var BEAT = VS3D.Constants.BEAT;
 
-var props = VS3D.PropFactory();
-
 function VisualSpinnerWidget(options) {
 	this.div = undefined; // a reference
 	this.width = 400;
@@ -486,7 +484,6 @@ VisualSpinnerWidget.prototype.parseFile = function(url) {
 
 
 VisualSpinnerWidget.prototype.Moves = VS3D.MoveFactory();
-VisualSpinnerWidget.prototype.Props = VS3D.PropFactory();
 
 VisualSpinnerWidget.prototype.populateFromJSON = function(json) {
 }

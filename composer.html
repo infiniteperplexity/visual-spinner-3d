@@ -57,7 +57,6 @@ VS3D.Constants.rescope();
 var nearly = VS3D.Utilities.nearly;
 var unwind = VS3D.Utilities.unwind;
 var moves = VS3D.MoveFactory();
-var props = VS3D.PropFactory();
 var predictions;
 
 var vs;
@@ -192,6 +191,7 @@ function dragMenu(event) {
 	var movename = event.target.innerHTML;
 	//we probably want to make a helper method that "augments" recipes...
 	event.dataTransfer.setData("Text", JSON.stringify(recipes.recipes[movename]));
+
 }
 function dropQueue(event) {
 	event.preventDefault();
@@ -269,6 +269,8 @@ function nothing() {
 var moveTarget;
 
 function modifyJSON() {
+	alert("not yet implemented");
+	return;
 	var active = $(".active").get(0);
 	if (active===undefined) {
 		alert("Please select a move in the workshop."); return;
@@ -301,7 +303,8 @@ function modifyMove(event) {
 	moveTarget = event.target;
 	$("#moveinner").empty();
 	$("#movemodify").toggle();
-	var definition = moves.parse(event.target.getAttribute("data-value"));
+	//var definition = moves.parse(event.target.getAttribute("data-value"));
+	var definition = JSON.parse(event.target.getAttribute("data-value"));
 	var which = "moveinner";
 	addInput(which,textInput(definition,"name"));
 	addInput(which,textInput(definition,"build"));
@@ -337,7 +340,7 @@ function viewMove(event) {
 	moveTarget = event.target;
 	$("#viewinner").empty();
 	$("#moveview").toggle();
-	var definition = moves.parse(event.target.getAttribute("data-value"));
+	var definition = JSON.parse(event.target.getAttribute("data-value"));
 	var which = "viewinner";
 	addInput(which,textInput(definition,"name"));
 	addInput(which,textInput(definition,"build"));
@@ -438,7 +441,7 @@ function isNumber(n) {
 }
 function submitChanges() {
 	var move = moveTarget;
-	var olddef = moves.parse(move.getAttribute("data-value"));
+	var olddef = JSON.parse(move.getAttribute("data-value"));
 	var newdef = {};
 	var inputs = $("#moveinner").children().toArray();
 	var prmtr;
@@ -690,34 +693,40 @@ function popAlign(n) {
 
 function importSubmit() {
 	var imported = $("#popimport textarea").val();
-	imported = props.parse(imported);
+	//okay, here comes the test...
+	imported = JSON.parse(imported);
 	emptyQueues();
+	var parsed;
 	if (imported.prop1) {
-		props.setPosition(propOne, JSON.stringify(imported.prop1));
-		propOne.apply(JSON.stringify(imported.prop1));
+		propOne.definePosition(VS3D.Constants.parse(imported.prop1));
 		for (var i = 0; i < imported.prop1.moves.length; i++) {
-			addMoveToQueue(JSON.stringify(imported.prop1.moves[i]), $("#queue1 ul").get(0));
+			parsed = VS3D.Constants.parse(imported.prop1.moves[i]);
+			parsed = moves.constructor.prototype.augment(parsed);
+			addMoveToQueue(JSON.stringify(parsed), $("#queue1 ul").get(0));
 		}
 	}
 	if (imported.prop2) {
-		props.setPosition(propTwo, JSON.stringify(imported.prop2));
-		propTwo.apply(JSON.stringify(imported.prop2));
+		propTwo.definePosition(VS3D.Constants.parse(imported.prop2));
 		for (var i = 0; i < imported.prop2.moves.length; i++) {
-			addMoveToQueue(JSON.stringify(imported.prop2.moves[i]), $("#queue2 ul").get(0));
+			parsed = VS3D.Constants.parse(imported.prop2.moves[i]);
+			parsed = moves.constructor.prototype.augment(parsed);
+			addMoveToQueue(JSON.stringify(parsed), $("#queue2 ul").get(0));
 		}
 	}
 	if (imported.prop3) {
-		props.setPosition(propThree, JSON.stringify(imported.prop3));
-		propThree.apply(JSON.stringify(imported.prop3));
+		propThree.definePosition(VS3D.Constants.parse(imported.prop3));
 		for (var i = 0; i < imported.prop3.moves.length; i++) {
-			addMoveToQueue(JSON.stringify(imported.prop3.moves[i]), $("#queue3 ul").get(0));
+			parsed = VS3D.Constants.parse(imported.prop3.moves[i]);
+			parsed = moves.constructor.prototype.augment(parsed);
+			addMoveToQueue(JSON.stringify(parsed), $("#queue3 ul").get(0));
 		}
 	}
 	if (imported.prop4) {
-		props.setPosition(propFour, JSON.stringify(imported.prop4));
-		propFour.apply(JSON.stringify(imported.prop4));
+		propFour.definePosition(VS3D.Constants.parse(imported.prop4));
 		for (var i = 0; i < imported.prop4.moves.length; i++) {
-			addMoveToQueue(JSON.stringify(imported.prop4.moves[i]), $("#queue4 ul").get(0));
+			parsed = VS3D.Constants.parse(imported.prop4.moves[i]);
+			parsed = moves.constructor.prototype.augment(parsed);
+			addMoveToQueue(JSON.stringify(parsed), $("#queue4 ul").get(0));
 		}
 	}
 	vs.ready();
