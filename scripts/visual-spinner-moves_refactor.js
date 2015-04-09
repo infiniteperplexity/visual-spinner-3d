@@ -74,7 +74,7 @@ var nearly = VS3D.Utilities.nearly;
 "use strict";
 
 //Takes an associative array with numeric values and returns an associative array with some values converted to text
-Constants.constantize = function(def) {
+Constants.stringify = function(def) {
 	for (option in def) {
 		//etc
 		if (	option==="entry"
@@ -133,7 +133,7 @@ Constants.constantize = function(def) {
 	return def;
 }
 //Takes an associative array that may contain converted text values and converts them back to numbers
-Constants.deconstantize = function(hash) {
+Constants.parse = function(hash) {
 	var converted = {};
 	for (key in hash) {
 		if (typeof hash[key] === "string" && Constants[hash[key]] !== undefined) {
@@ -144,6 +144,40 @@ Constants.deconstantize = function(hash) {
 	}
 	return converted;
 }
+
+MoveFactory.prototype.augment = function(def) {
+	if (def===undefined) {
+		def = {};
+	}
+	var augmented = {};
+	var defaults;
+	if (MoveFactory.prototype.recipes[movename].main) {
+		defaults = MoveFactory.prototype.recipes[MoveFactory.prototype.recipes[movename].main].defaults;
+		for (var def in defaults) {
+			augmented[def] = defaults[def];
+		}
+	}
+	defaults = MoveFactory.prototype.recipes[movename].defaults;
+	for (var def in defaults) {
+		augmented[def] = defaults[def];
+	}
+	for (var option in options) {
+		augmented[option] = options[option];
+	}
+	return augmented;
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 function JSONizer() {}

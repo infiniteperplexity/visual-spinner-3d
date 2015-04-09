@@ -43,15 +43,15 @@ function init() {
 	propThree.hand.radius = 1;
 	propFour.hand.radius = 1;
 	for (var i = 0; i<8; i++) {
-		propOne.addMove(moves.build.flower({direction: CLOCKWISE, entry: propOne.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
-		propTwo.addMove(moves.build.flower({direction: 1-(i%2)*2, entry: propTwo.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
-		propThree.addMove(moves.build.flower({direction: COUNTERCLOCKWISE, entry: propThree.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
-		propFour.addMove(moves.build.flower({direction: (i%2)*2-1, entry: propFour.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
+		propOne.addMove(moves.build.flower({direction: CLOCKWISE, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
+		propTwo.addMove(moves.build.flower({direction: 1-(i%2)*2, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
+		propThree.addMove(moves.build.flower({direction: COUNTERCLOCKWISE, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
+		propFour.addMove(moves.build.flower({direction: (i%2)*2-1, spin: ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
 	}
-	propOne.addMove(moves.build.flower({direction: CLOCKWISE, entry: propOne.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
-	propTwo.addMove(moves.build.flower({direction: 1-(i%2)*2, entry: propTwo.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
-	propThree.addMove(moves.build.flower({direction: COUNTERCLOCKWISE, entry: propThree.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
-	propFour.addMove(moves.build.flower({direction: (i%2)*2-1, entry: propFour.socket().hand.angle, spin: ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
+	propOne.addMove(moves.build.flower({direction: CLOCKWISE, spin: ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
+	propTwo.addMove(moves.build.flower({direction: 1-(i%2)*2, spin: ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
+	propThree.addMove(moves.build.flower({direction: COUNTERCLOCKWISE, spin: ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
+	propFour.addMove(moves.build.flower({direction: (i%2)*2-1, spin: ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
 	vs.ready();
 	vs.play();
 }

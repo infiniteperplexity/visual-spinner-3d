@@ -157,20 +157,21 @@ function populateMenu(json) {
 		for (var option in options) {
 			augmented[option] = options[option];
 		}
-		defaults = VS3D.Constants.convert(moves.constructor.prototype.recipes[options.recipe].defaults);
+		defaults = VS3D.Constants.parse(moves.constructor.prototype.recipes[options.recipe].defaults);
 		for (var def in defaults) {
 			if (augmented[def] === undefined) {
 				augmented[def] = defaults[def];
 			}
 		}
 		if (moves.constructor.prototype.recipes[options.recipe].main) {
-			defaults = VS3D.Constants.convert(moves.constructor.prototype.recipes[moves.constructor.prototype.recipes[options.recipe].main].defaults);
+			defaults = VS3D.Constants.parse(moves.constructor.prototype.recipes[moves.constructor.prototype.recipes[options.recipe].main].defaults);
 			for (var def in defaults) {
 				if (augmented[def] === undefined) {
 					augmented[def] = defaults[def];
 				}
 			}
 		}
+		augmented.name = key;
 		recipes.recipes[key] = augmented;
 	}
 }
@@ -292,7 +293,7 @@ function submitJSON() {
 	var move = moveTarget;
 	var definition = $("#jsonmodify textarea").val();
 	move.setAttribute("data-value",definition);
-	move.innerHTML = JSON.parse(definition).movename;
+	move.innerHTML = JSON.parse(definition).name;
 	$("#jsonmodify").toggle();
 }
 
@@ -302,7 +303,7 @@ function modifyMove(event) {
 	$("#movemodify").toggle();
 	var definition = moves.parse(event.target.getAttribute("data-value"));
 	var which = "moveinner";
-	addInput(which,textInput(definition,"movename"));
+	addInput(which,textInput(definition,"name"));
 	addInput(which,textInput(definition,"build"));
 	addInput(which,selectInput(definition,"direction",["Clockwise","Counter"],[CLOCKWISE, COUNTERCLOCKWISE]));
 	addInput(which,selectInput(definition,"orient",["Up","Right","Down","Left"],[TWELVE, THREE, SIX, NINE]));
@@ -338,7 +339,7 @@ function viewMove(event) {
 	$("#moveview").toggle();
 	var definition = moves.parse(event.target.getAttribute("data-value"));
 	var which = "viewinner";
-	addInput(which,textInput(definition,"movename"));
+	addInput(which,textInput(definition,"name"));
 	addInput(which,textInput(definition,"build"));
 	addInput(which,selectInput(definition,"direction",["Clockwise","Counter"],[CLOCKWISE, COUNTERCLOCKWISE]));
 	addInput(which,selectInput(definition,"orient",["Up","Right","Down","Left"],[TWELVE, THREE, SIX, NINE]));
@@ -460,7 +461,7 @@ function submitChanges() {
 		olddef[p] = newdef[p];
 	}
 	move.setAttribute("data-value",JSON.stringify(olddef));
-	move.innerHTML = olddef.movename;
+	move.innerHTML = olddef.name;
 	$("#movemodify").toggle();
 }
 

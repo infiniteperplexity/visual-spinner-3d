@@ -9,7 +9,7 @@ var BEAT = Constants.BEAT = 360;
 var SPEED = Constants.SPEED = UNIT/BEAT;
 // Constants used to prevent rounding errors
 var TINY = Constants.TINY = 0.0001;
-var SMALLISH = Constants.SMALLISH = 0.01;
+var SMALL = Constants.SMALL = 0.01;
 // Constants referring to the five spherical prop elements
 var HOME = Constants.HOME = 0;
 var PIVOT = Constants.PIVOT = 1;
@@ -73,13 +73,14 @@ var GUNSLINGER = Constants.GUNSLINGER = 0.5;
 Constants.rescope = function (scope) {
 	scope = scope || global;
 	for (var c in this) {
-		if (scope[c] !== undefined && c !== "rescope") {
+		if (scope[c] !== undefined && typeof this[c] !== "function") {
 			alert("Constant-naming conflict in enclosing namespace.  Must use explicit 'VS3D.Constant' reference for this session.");
+			alert("Name was '" + c + "'.");
 			return;
 		}
 	}
 	for (var c in this)  {
-		if (c !== "rescope") {
+		if (typeof this[c] !== "function") {
 			scope[c] = this[c];
 		}
 	}
@@ -87,7 +88,7 @@ Constants.rescope = function (scope) {
 Constants.descope = function (scope) {
 	scope = scope || global;
 	for (var c in this) {
-		if (c !== "rescope") {
+		if (typeof scope[c] !== "function") {
 			scope[c] = undefined;
 		}
 	}
@@ -195,7 +196,7 @@ Vector.prototype.between = function(v) {
 // Test equality of vectors within rounding error
 Vector.prototype.nearly = function(vector, delta) {
 	if (delta===undefined) {
-		delta = SMALLISH;
+		delta = SMALL;
 	}
 	//checks to see whether two vectors or planes are nearly the same
 	if (	Math.abs(this.x-vector.x)<delta
@@ -264,7 +265,7 @@ function unwind(angle) {
 // Check whether two floating point values are almost equal
 function nearly(n1,n2, delta) {
 	if (delta===undefined) {
-		delta = SMALLISH;
+		delta = SMALL;
 	}
 	n1 = unwind(n1);
 	n2 = unwind(n2);
@@ -1264,7 +1265,7 @@ MoveFactory.prototype.parse = function(json) {
 	}
 	return definition;
 }
-MoveFactory.prototype.build = function(json) {
+MoveFactory.prototype.build_old = function(json) {
 	var definition = this.parse(json);
 	if (definition.recipe == undefined) {alert("undefined!");}//alert(json);}
 	var move = this[definition.recipe](definition);
@@ -1378,7 +1379,7 @@ MoveChain.prototype.adjust = function(target) {
 	return null;
 }
 //// "reorient" is a more aggressive version of "adjust" that will scrap and rebuild the move in different orientations
-MoveChain.prototype.reorient = function(target) {
+MoveChain.prototype.reorient_old = function(target) {
 	var retrn = this.adjust(target);
 	// If it works to start with, don't mess with it
 	if (retrn !== null) {return retrn;}
@@ -1447,6 +1448,77 @@ MoveChain.prototype.reorient = function(target) {
 	//alert(JSON.stringify(definition,null,2));
 	return null;
 }
+
+//// "reorient" is a more aggressive version of "adjust" that will scrap and rebuild the move in different orientations
+MoveChain.prototype.reorient = function(target) {
+	var retrn = this.adjust(target);
+	// If it works to start with, don't mess with it
+	if (retrn !== null) {return retrn;}
+	var definition = this.definition;
+	if (definition === undefined) {
+		return this;
+	}
+	definition = MoveFactory.prototype.augment(definition);	
+	var entry = definition.entry;
+	var orient = definition.orient;
+	if (entry === undefined || orient === undefined) {
+		return this;
+	}
+	var hand;
+	var prop;
+	if (target instanceof Prop) {
+		hand = target.handVector();
+		prop = target.propVector();
+	} else if (target instanceof MoveLink || target instanceof MoveChain) {
+		hand = target.socket().handVector();
+		prop = target.socket().propVector();
+	}
+	// If it doesn't work, cycle through orientations and entry angles until it works
+	var redefined;
+
+	for (var i = 0; i < 4; i++) {
+		for (var j = 0; j < 4; j++) {
+			definition.orient = unwind(orient+i*QUARTER);
+			definition.entry = unwind(entry+j*QUARTER);
+			redefined = MoveFactory.prototype.build(definition.recipe, definition);
+			if (hand.nearly(redefined.handVector(),0.05) && prop.nearly(redefined.propVector(),0.1)) {
+				redefined.oneshot = this.oneshot;
+				return redefined;
+			}
+			retrn = redefined.adjust(target);
+			if (retrn !== null) {
+				retrn.oneshot = this.oneshot;
+				return retrn;
+			}
+		}
+	}
+	//right now there is no way to tell whether a prop should have a mode...does that mean we can't rotate through?
+	//new code - tries even more aggressively to match sockets
+	var mode = definition.mode || DIAMOND;
+	for (var k = 0; k < 4; k++) {
+		for (var i = 0; i < 4; i++) {
+			for (var j = 0; j < 4; j++) {
+				definition.mode = unwind(mode+k*QUARTER);
+				definition.orient = unwind(orient+i*QUARTER);
+				definition.entry = unwind(entry+j*QUARTER);
+				redefined = MoveFactory.prototype.build(definition.recipe, definition);
+				if (hand.nearly(redefined.handVector(),0.05) && prop.nearly(redefined.propVector(),0.1)) {
+					redefined.oneshot = this.oneshot;
+					return redefined;
+				}
+				retrn = redefined.adjust(target);
+				if (retrn !== null) {
+					retrn.oneshot = this.oneshot;
+					return retrn;
+				}
+			}
+		}
+	}
+	// Otherwise fail
+	this.reorientFail();
+	return null;
+}
+
 
 MoveLink.prototype.reorient = function (target) {
 	return MoveChain.prototype.reorient.call(this,target);

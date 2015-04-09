@@ -7,7 +7,7 @@ var BEAT = Constants.BEAT;
 var SPEED = Constants.SPEED;
 // Constants used to prevent rounding errors
 var TINY = Constants.TINY;
-var SMALLISH = Constants.SMALLISH;
+var SMALL = Constants.SMALL;
 // Constants referring to the five spherical prop elements
 var HOME = Constants.HOME;
 var PIVOT = Constants.PIVOT;
@@ -73,122 +73,20 @@ var nearly = VS3D.Utilities.nearly;
 
 "use strict";
 
-
 //// "reorient" is a more aggressive version of "adjust" that will scrap and rebuild the move in different orientations
 
-
-MoveFactory.prototype.defaults = function(options, defaults) {
-	if (options===undefined) {options = {};}
-	for (var option in options) {
-		defaults[option] = options[option];
-	}
-	return defaults;
-}
-
-Constants.convert = function(hash) {
-	var converted = {};
-	for (key in hash) {
-		if (typeof hash[key] === "string" && Constants[hash[key]] !== undefined) {
-			converted[key] = Constants[hash[key]];
-		} else {
-			converted[key] = hash[key];
-		}
-	}
-	return converted;
-}
-
-MoveFactory.prototype.recipes = {};
-
-//naming conflict with JSON!
-MoveFactory.prototype.build = function(movename, options) {
-	//ad hoc handling of naming conflict
-	if (movename[0] === "{") {
-		return MoveFactory.prototype.oldbuild(movename);
-	}
-	if (options===undefined) {options = {};}
-	options = Constants.convert(options);
-	
-	var augmented = {};
-	for (var option in options) {
-		augmented[option] = options[option];
-	}
-	defaults = Constants.convert(MoveFactory.prototype.recipes[movename].defaults);
-	
-	for (var def in defaults) {
-		if (augmented[def] === undefined) {
-			augmented[def] = defaults[def];
-		}
-	}
-	if (MoveFactory.prototype.recipes[movename].main) {
-		defaults = Constants.convert(MoveFactory.prototype.recipes[MoveFactory.prototype.recipes[movename].main].defaults);
-		for (var def in defaults) {
-			if (augmented[def] === undefined) {
-				augmented[def] = defaults[def];
-			}
-		}
-	}
-	var move = MoveFactory.prototype.recipes[movename](augmented);
-
-	if (move.submoves) {
-		if (augmented.phase !== undefined) {
-			move.phaseBy(augmented.phase);
-		}
-		if (augmented.duration < 1) {
-			move = move.slice(0,augmented.duration*augmented.sliceby);
-		} else if (augmented.duration > 1) {
-			for (var i = 1; i<augmented.duration; i+=(1/augmented.sliceby)) {
-				move.add(move.submoves[augmented.sliceby*(i-1)].clone());
-			}
-		}
-	}
-	move.definition = options;
-	move.definition.recipe = movename;
-	return move;
-}
-
-MoveFactory.prototype.oldbuild = function(json) {
-	var definition = this.parse(json);
-	if (definition.recipe == undefined) {alert("undefined!");}//alert(json);}
-	var move = this.build(definition.recipe,definition);
-	if (definition.abrupt !== undefined) {
-		move.setAbrupt(definition.abrupt);
-	}
-	if (definition.modify !== undefined) {
-		move.modify(definition.modify);
-	}
-	if (definition.modify_tail !== undefined) {
-		move.modifyTail(definition.modify_tail);
-	}
-	return move;
-}
-
-var MoveChain = VS3D.MoveChain().constructor;
-var Prop = VS3D.Prop().constructor;
-var MoveLink = VS3D.MoveLink().constructor;
-
-
-MoveChain.prototype.align = function(element, angle) {
-	for (var i = 0; i<this.submoves.length; i++) {
-		if (nearly(this.head()[element].angle, angle, 0.1)) {
-			return this;
-		} else {
-			this.startPhase(1);
-		}
-	}
-	alert("alignment failed.");
-	return this;
-}
-
-
-function parse_options(def) {
-	return Constants.convert(def);
-}
-
-//maybe slap this guy on Constants?
-function stringify_options(def) {
+//Takes an associative array with numeric values and returns an associative array with some values converted to text
+Constants.stringify = function(def) {
 	for (option in def) {
 		//etc
-		if (option==="entry" || option==="orient" || option.substr(-1,6)==="_angle") {
+		if (	option==="entry"
+				|| option==="orient"
+				|| option==="azimuth"
+				|| option==="zenith"
+				|| option==="grip"
+				|| option==="twist"
+				|| option==="bend"
+				|| option.substr(-1,6)==="_angle") {
 			if (def[option]===THREE) {
 				def[option]="THREE";
 			} else if (def[option]===SIX) {
@@ -227,103 +125,108 @@ function stringify_options(def) {
 				def[option] = "FLOOR";
 			}
 		}
+		if (def[option] === TINY) {
+			def[option] = "TINY";
+		}
+		if (def[option] === SMALL) {
+			def[option] = "SMALL";
+		}
 	}
 	return def;
 }
-
-
-//// "reorient" is a more aggressive version of "adjust" that will scrap and rebuild the move in different orientations
-MoveChain.prototype.reorient = function(target) {
-	var retrn = this.adjust(target);
-	// If it works to start with, don't mess with it
-	if (retrn !== null) {return retrn;}
-	var definition = this.definition;
-	if (definition === undefined) {
-		return this;
-	}
-	
-	
-	var augmented = {};
-	for (var option in definition) {
-		augmented[option] = definition[option];
-	}
-	var defaults = Constants.convert(MoveFactory.prototype.recipes[definition.recipe].defaults);
-	for (var def in defaults) {
-		if (augmented[def] === undefined) {
-			augmented[def] = defaults[def];
+//Takes an associative array that may contain converted text values and converts them back to numbers
+Constants.parse = function(hash) {
+	var converted = {};
+	for (key in hash) {
+		if (typeof hash[key] === "string" && Constants[hash[key]] !== undefined) {
+			converted[key] = Constants[hash[key]];
+		} else {
+			converted[key] = hash[key];
 		}
 	}
-	if (MoveFactory.prototype.recipes[definition.recipe].main) {
-		defaults = Constants.convert(MoveFactory.prototype.recipes[MoveFactory.prototype.recipes[definition.recipe].main].defaults);
-		for (var def in defaults) {
-			if (augmented[def] === undefined) {
-				augmented[def] = defaults[def];
-			}
-		}
-	}
-	definition = augmented;
-	//alert(JSON.stringify(definition,null,2));
-	var entry = definition.entry;
-	var orient = definition.orient;
-	if (entry === undefined || orient === undefined) {
-		return this;
-	}
-	var hand;
-	var prop;
-	if (target instanceof Prop) {
-		hand = target.handVector();
-		prop = target.propVector();
-	} else if (target instanceof MoveLink || target instanceof MoveChain) {
-		hand = target.socket().handVector();
-		prop = target.socket().propVector();
-	}
-	// If it doesn't work, cycle through orientations and entry angles until it works
-	var redefined;
-
-	for (var i = 0; i < 4; i++) {
-		for (var j = 0; j < 4; j++) {
-			definition.orient = unwind(orient+i*QUARTER);
-			definition.entry = unwind(entry+j*QUARTER);
-			redefined = MoveFactory.prototype.build(JSON.stringify(definition));
-			if (hand.nearly(redefined.handVector(),0.05) && prop.nearly(redefined.propVector(),0.1)) {
-				redefined.oneshot = this.oneshot;
-				return redefined;
-			}
-			retrn = redefined.adjust(target);
-			if (retrn !== null) {
-				retrn.oneshot = this.oneshot;
-				return retrn;
-			}
-		}
-	}
-	//right now there is no way to tell whether a prop should have a mode...does that mean we can't rotate through?
-	//new code - tries even more aggressively to match sockets
-	var mode = definition.mode || DIAMOND;
-	for (var k = 0; k < 4; k++) {
-		for (var i = 0; i < 4; i++) {
-			for (var j = 0; j < 4; j++) {
-				definition.mode = unwind(mode+k*QUARTER);
-				definition.orient = unwind(orient+i*QUARTER);
-				definition.entry = unwind(entry+j*QUARTER);
-				redefined = MoveFactory.prototype.build(JSON.stringify(definition));
-				if (hand.nearly(redefined.handVector(),0.05) && prop.nearly(redefined.propVector(),0.1)) {
-					redefined.oneshot = this.oneshot;
-					return redefined;
-				}
-				retrn = redefined.adjust(target);
-				if (retrn !== null) {
-					retrn.oneshot = this.oneshot;
-					return retrn;
-				}
-			}
-		}
-	}
-	// Otherwise fail
-	this.reorientFail();
-	//alert("Socketing failed (unable to align next move with end of prior move.)");
-	//alert(JSON.stringify(definition,null,2));
-	return null;
+	return converted;
 }
+
+MoveFactory.prototype.augment = function(def) {
+	if (def===undefined) {
+		def = {};
+	}
+	var augmented = {};
+	var defaults;
+	if (MoveFactory.prototype.recipes[def.recipe].main) {
+		defaults = MoveFactory.prototype.recipes[MoveFactory.prototype.recipes[def.recipe].main].defaults;
+		for (var d in defaults) {
+			augmented[d] = defaults[d];
+		}
+	}
+	defaults = MoveFactory.prototype.recipes[def.recipe].defaults;
+	for (var d in defaults) {
+		augmented[d] = defaults[d];
+	}
+	for (var option in def) {
+		augmented[option] = def[option];
+	}
+	return augmented;
+}
+
+MoveFactory.prototype.recipes = {};
+
+//naming conflict with JSON!
+MoveFactory.prototype.build = function(movename, options) {
+	//ad hoc handling of naming conflict
+	if (movename[0] === "{") {
+		return MoveFactory.prototype.oldbuild(movename);
+	}
+	if (options===undefined) {options = {};}
+	options.recipe = movename;
+	var augmented = MoveFactory.prototype.augment(options);
+	var move = MoveFactory.prototype.recipes[movename](augmented);
+	if (move.submoves) {
+		if (augmented.phase !== undefined) {
+			move.phaseBy(augmented.phase);
+		}
+		if (augmented.duration < 1) {
+			move = move.slice(0,augmented.duration*augmented.sliceby);
+		} else if (augmented.duration > 1) {
+			for (var i = 1; i<augmented.duration; i+=(1/augmented.sliceby)) {
+				move.add(move.submoves[augmented.sliceby*(i-1)].clone());
+			}
+		}
+	}
+	if (augmented.abrupt !== undefined) {
+		move.setAbrupt(augmented.abrupt);
+	}
+	if (augmented.modify !== undefined) {
+		move.modify(augmented.modify);
+	}
+	if (augmented.modify_tail !== undefined) {
+		move.modifyTail(augmented.modify_tail);
+	}
+	move.definition = options;
+	move.definition.recipe = movename;
+	return move;
+}
+
+MoveFactory.prototype.oldbuild = function(json) {
+	var definition = this.parse(json);
+	if (definition.recipe == undefined) {alert("undefined!");}//alert(json);}
+	var move = this.build(definition.recipe,definition);
+	if (definition.abrupt !== undefined) {
+		move.setAbrupt(definition.abrupt);
+	}
+	if (definition.modify !== undefined) {
+		move.modify(definition.modify);
+	}
+	if (definition.modify_tail !== undefined) {
+		move.modifyTail(definition.modify_tail);
+	}
+	return move;
+}
+
+var MoveChain = VS3D.MoveChain().constructor;
+var Prop = VS3D.Prop().constructor;
+var MoveLink = VS3D.MoveLink().constructor;
+
 
 MoveFactory.recipe = function(movename, defaults, fun) {
 	if (MoveFactory.prototype.recipes[movename] !== undefined) {
@@ -354,7 +257,7 @@ MoveFactory.recipe = function(movename, defaults, fun) {
 			defaults[key] = default_defaults[key];
 		}
 	}
-	MoveFactory.prototype.recipes[movename].defaults = defaults;
+	MoveFactory.prototype.recipes[movename].defaults = Constants.parse(defaults);
 }
 MoveFactory.variant = function(movename, defaults, main) {
 	if (MoveFactory.prototype.recipes[movename] !== undefined) {
@@ -362,18 +265,18 @@ MoveFactory.variant = function(movename, defaults, main) {
 	}
 	MoveFactory.prototype.recipes[movename] = function(options) {
 		if (options===undefined) {options = {};}
-		options = Constants.convert(options);
+		//options = Constants.parse(options);
 		var augmented = {};
 		for (var option in options) {
 			augmented[option] = options[option];
 		}
-		defaults = Constants.convert(MoveFactory.prototype.recipes[movename].defaults);
+		MoveFactory.prototype.recipes[movename].defaults;
 		for (var def in defaults) {
 			if (augmented[def] === undefined) {
 				augmented[def] = defaults[def];
 			}
 		}
-		defaults = Constants.convert(MoveFactory.prototype.recipes[main].defaults);
+		defaults = MoveFactory.prototype.recipes[main].defaults;
 		for (var def in defaults) {
 			if (augmented[def] === undefined) {
 				augmented[def] = defaults[def];
@@ -385,7 +288,7 @@ MoveFactory.variant = function(movename, defaults, main) {
 	MoveFactory.prototype.build[movename] = function(options) {
 		return MoveFactory.prototype.build(movename,options);
 	}
-	MoveFactory.prototype.recipes[movename].defaults = defaults;
+	MoveFactory.prototype.recipes[movename].defaults = Constants.parse(defaults);
 	//is this truly the best way to do it?
 	MoveFactory.prototype.recipes[movename].main = main;
 }
@@ -568,7 +471,7 @@ function(options) {
 	move.tail().helper.stretch = 0;
 	move.tail().helper.stretch_acc = 0;
 	// under certain parameters, pendulums align badly and need tweaking
-	if ((options.hybrid == true || options.extend < SMALLISH) && options.entry == TWELVE) {
+	if ((options.hybrid == true || options.extend < SMALL) && nearly(options.entry,TWELVE)) {
 		move.align("hand",SIX);
 	} else {
 		move.align("hand", options.entry);
