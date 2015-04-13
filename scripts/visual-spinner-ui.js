@@ -459,15 +459,18 @@ VisualSpinnerWidget.prototype.stringify = function() {
         return json;
 }
 VisualSpinnerWidget.prototype.parse = function(json) {	
-        this.scene.props = [];
-        this.scene.starting = [];
+        this.scene.props.length = 0;
+        this.scene.starting.length = 0;
        	var jsonprops = JSON.parse(json);
         var p;
+        var j;
         for (var prop in jsonprops) {
 	        p = this.addProp();
-	        p.build(JSON.stringify(jsonprops[prop]));
-	       	p.applyMoves(JSON.stringify(jsonprops[prop]));
+	        j = JSON.stringify(jsonprops[prop]);
+	        p.definePosition(p.parseProp(j));
+	        p.defineMoves(p.parseProp(j));
         }
+        this.renderer.activate(this);
         this.renderer.render(this.scene);
 }
 

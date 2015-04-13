@@ -334,6 +334,9 @@ function modifyMove(event) {
 	addInput(which,numberInput(definition,"lift",[0,0.5,0.5]));
 	addInput(which,numberInput(definition,"swing",[0.75,1,0.25]));
 	addInput(which,selectInput(definition,"hybrid",["Pendulum-y","Flower-y"],[true, false]));
+	addInput(which,numberInput(definition,"height",[0,3,0.5]));
+	addInput(which,numberInput(definition,"drift",[-2,2,0.5]));
+	addInput(which,numberInput(definition,"weight",[0,1,0.5]));
 }
 
 function viewMove(event) {
@@ -368,6 +371,9 @@ function viewMove(event) {
 	addInput(which,numberInput(definition,"lift",[0,0.5,0.5]));
 	addInput(which,numberInput(definition,"swing",[0.75,1,0.25]));
 	addInput(which,selectInput(definition,"hybrid",["Pendulum-y","Flower-y"],[true, false]));
+	addInput(which,numberInput(definition,"height",[0,3,0.5]));
+	addInput(which,numberInput(definition,"drift",[-2,2,0.5]));
+	addInput(which,numberInput(definition,"weight",[0,1,0.5]));
 }
 
 function addInput(trgt,inpt) {
@@ -699,6 +705,7 @@ function importSubmit() {
 	var parsed;
 	if (imported.prop1) {
 		propOne.definePosition(VS3D.Constants.parse(imported.prop1));
+		vs.ready();
 		for (var i = 0; i < imported.prop1.moves.length; i++) {
 			parsed = VS3D.Constants.parse(imported.prop1.moves[i]);
 			parsed = moves.constructor.prototype.augment(parsed);
@@ -707,6 +714,7 @@ function importSubmit() {
 	}
 	if (imported.prop2) {
 		propTwo.definePosition(VS3D.Constants.parse(imported.prop2));
+		vs.ready();
 		for (var i = 0; i < imported.prop2.moves.length; i++) {
 			parsed = VS3D.Constants.parse(imported.prop2.moves[i]);
 			parsed = moves.constructor.prototype.augment(parsed);
@@ -715,6 +723,7 @@ function importSubmit() {
 	}
 	if (imported.prop3) {
 		propThree.definePosition(VS3D.Constants.parse(imported.prop3));
+		vs.ready();
 		for (var i = 0; i < imported.prop3.moves.length; i++) {
 			parsed = VS3D.Constants.parse(imported.prop3.moves[i]);
 			parsed = moves.constructor.prototype.augment(parsed);
@@ -723,6 +732,7 @@ function importSubmit() {
 	}
 	if (imported.prop4) {
 		propFour.definePosition(VS3D.Constants.parse(imported.prop4));
+		vs.ready();
 		for (var i = 0; i < imported.prop4.moves.length; i++) {
 			parsed = VS3D.Constants.parse(imported.prop4.moves[i]);
 			parsed = moves.constructor.prototype.augment(parsed);

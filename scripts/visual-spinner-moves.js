@@ -342,6 +342,9 @@ MoveFactory.prototype.augment = function(def) {
 	}
 	var augmented = {};
 	var defaults;
+	if (MoveFactory.prototype.recipes[def.recipe]===undefined) {
+		alert(def.recipe);
+	}
 	if (MoveFactory.prototype.recipes[def.recipe].main) {
 		defaults = MoveFactory.prototype.recipes[MoveFactory.prototype.recipes[def.recipe].main].defaults;
 		for (var d in defaults) {
@@ -362,6 +365,7 @@ MoveFactory.prototype.recipes = {};
 
 MoveFactory.prototype.build = function(movename, options) {
 	if (options===undefined) {options = {};}
+	options = Constants.parse(options);
 	options.recipe = movename;
 	var augmented = MoveFactory.prototype.augment(options);
 	var move = MoveFactory.prototype.recipes[movename](augmented);
@@ -999,12 +1003,16 @@ function(options) {
 	segment.prop.angle = options.entry;
 	segment.prop.plane = options.plane;
 	segment.prop.speed = options.direction*options.speed;
-	segment.duration = 1/options.sliceby;
+	segment.duration = options.duration/options.sliceby;
 	segment.prop.stretch = options.stretch;
 	move.add(segment);
-	for (var i = 1; i<options.sliceby; i++) {
-		move.extend();
-	}
+	move.extend();
+	move.extend();
+	move.extend();
+	move.align("prop", options.entry);
+	//for (var i = 1; i<options.sliceby; i++) {
+	//	move.extend();
+	//}
 	return move;
 });
 
@@ -1013,11 +1021,11 @@ MoveFactory.recipe(
 	"toss",
 {
 	name: "Toss",
-	speed: (2/3),
 	//"height" is a rough measure
 	height: 2,
 	drift: 0,
-	weight: 0.5
+	weight: 0.5,
+	extend: 0
 },
 function(options) {
     var segment = VS3D.MoveLink();

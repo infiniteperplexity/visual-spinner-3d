@@ -20,5 +20,7 @@
 "Linear Isolation":				{"recipe": "lineariso"},
 "Iso-Bend Toroid":				{"recipe": "toroid"},
 "Anti-Bend Toroid":				{"recipe": "antibend"},
-"Pro-Bend Toroid":				{"recipe": "probend"}
+"Pro-Bend Toroid":				{"recipe": "probend"},
+"Spiral Wrap":					{"recipe": "spiral"},
+"Toss":							{"recipe": "toss"}
 }}
