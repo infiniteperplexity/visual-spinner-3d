@@ -1061,14 +1061,15 @@ MoveFactory.recipe(
 	"weave",
 {
 	name: "Weave",
-	extend: 1,
+	extend: 0,
 	// I'm not at all set on this way of doing things
 	//axle: WHEEL,
-	beats: 2,
+	harmonics: 2,
 	spin: "INSPIN",
 	sway: 0.5,
-	bend: 0.25,
-	pitch: "FORWARD"
+	lean: 0.25,
+	pitch: "FORWARD",
+	mode: "DIAMOND"
 },
 function(options) {
     var move = VS3D.MoveChain();
@@ -1078,53 +1079,54 @@ function(options) {
 	var wheelfix = 1;
 	var floorfix = 0;
 	//if (options.axle===null) {
-		if (options.plane == WALL) {
-			segment.helper.plane = WHEEL;
-		} else if (options.plane == WHEEL) {
-			segment.helper.plane = WALL;
-			wheelfix = -1;
-		} else if (options.plane == FLOOR) {
-			segment.helper.plane = WHEEL;
-			floorfix = UNIT/4;
-			wheelfix = -1;
-		}
+	if (options.plane.nearly(WALL)) {
+		segment.helper.plane = WHEEL;
+	} else if (options.plane.nearly(WHEEL)) {
+		segment.helper.plane = WALL;
+		wheelfix = -1;
+	} else if (options.plane.nearly(FLOOR)) {
+		segment.helper.plane = WHEEL;
+		floorfix = UNIT/4;
+		wheelfix = -1;
+	}
 	//} else {
 	//	segment.helper.plane = options.axis;
 	//}
 	segment.helper.angle = 0;
-	segment.hand.speed = 0;
-	segment.hand.radius = 0;
-	segment.hand.speed = 0;
+	segment.hand.speed = options.speed*options.direction*options.spin;
+	segment.hand.radius = options.extend;
+	segment.hand.angle = options.entry;
+	segment.prop.angle = options.orient + options.direction*options.mode;
 	segment.prop.angle = options.entry;
-	segment.prop.speed = options.direction*options.speed*options.beats;
+	segment.prop.speed = options.direction*options.speed*options.harmonics;
 	segment.duration = 0.25;
 	move.add(segment);
 	move.tail().bend = 0;
-	move.tail().bend_speed = wheelfix*2*options.bend*options.pitch;
-	move.tail().bend_acc = wheelfix*-8*options.bend*options.pitch;
+	move.tail().bend_speed = wheelfix*2*options.lean*options.pitch;
+	move.tail().bend_acc = wheelfix*-8*options.lean*options.pitch;
 	move.tail().helper.angle = floorfix + ((options.pitch == FORWARD) ? SPLIT : 0);
 	move.tail().helper.radius = 0;
 	move.tail().helper.stretch = 8*options.sway;
 	move.tail().helper.stretch_acc = -32*options.sway;
 	move.extend();
-	move.tail().bend = wheelfix*0.25*UNIT*options.bend*options.pitch;
+	move.tail().bend = wheelfix*0.25*UNIT*options.lean*options.pitch;
 	move.tail().bend_speed = 0;
-	move.tail().bend_acc = wheelfix*-8*options.bend*options.pitch;
+	move.tail().bend_acc = wheelfix*-8*options.lean*options.pitch;
 	move.tail().helper.radius = options.sway;
 	move.tail().helper.stretch = 0;
 	move.tail().helper.stretch_acc = -32*options.sway;
 	move.extend();
 	move.tail().bend = 0;
-	move.tail().bend_speed = wheelfix*-2*options.bend*options.pitch;
-	move.tail().bend_acc = wheelfix*8*options.bend*options.pitch;
+	move.tail().bend_speed = wheelfix*-2*options.lean*options.pitch;
+	move.tail().bend_acc = wheelfix*8*options.lean*options.pitch;
 	move.tail().helper.angle = floorfix + ((options.pitch == FORWARD) ? 0 : SPLIT);
 	move.tail().helper.radius = 0;
 	move.tail().helper.stretch = 8*options.sway;
 	move.tail().helper.stretch_acc = -32*options.sway;
 	move.extend();
-	move.tail().bend = wheelfix*-0.25*UNIT*options.bend*options.pitch;
+	move.tail().bend = wheelfix*-0.25*UNIT*options.lean*options.pitch;
 	move.tail().bend_speed = 0;
-	move.tail().bend_acc = wheelfix*8*options.bend*options.pitch;
+	move.tail().bend_acc = wheelfix*8*options.lean*options.pitch;
 	move.tail().helper.radius = options.sway;
 	move.tail().helper.stretch = 0;
 	move.tail().helper.stretch_acc = -32*options.sway;

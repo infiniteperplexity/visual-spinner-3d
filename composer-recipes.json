@@ -22,5 +22,6 @@
 "Anti-Bend Toroid":				{"recipe": "antibend"},
 "Pro-Bend Toroid":				{"recipe": "probend"},
 "Spiral Wrap":					{"recipe": "spiral"},
-"Toss":							{"recipe": "toss"}
+"Toss":							{"recipe": "toss"},
+"Weave":						{"recipe": "weave"}
 }}
