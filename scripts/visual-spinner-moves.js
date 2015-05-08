@@ -1138,33 +1138,60 @@ MoveFactory.recipe(
 	"superman",
 {
 	name: "Superman",
-	extend: 1,
-	// So far we aren't doing the interesting versions...
-	plane: "FLOOR",
-	beats: 2
+	extend: 0,
+	spin: "INSPIN",
+	sway: 0.5,
+	pitch: "FORWARD",
+	mode: "DIAMOND"
 },
 function(options) {
-	var move = VS3D.MoveChain();
-	var segment = VS3D.MoveLink();
-	segment.duration = 0.25;
+    var move = VS3D.MoveChain();
+    var segment = VS3D.MoveLink();
+	segment.prop.plane = FLOOR;
+	segment.hand.plane = options.plane;
+	segment.helper.plane = options.plane;
+	//var wheelfix = 1;
+	//var floorfix = 0;
+	//if (options.plane.nearly(WALL)) {
+//		segment.helper.plane = WHEEL;
+//	} else if (options.plane.nearly(WHEEL)) {
+//		segment.helper.plane = WALL;
+//		wheelfix = -1;
+//	} else if (options.plane.nearly(FLOOR)) {
+//		segment.helper.plane = WHEEL;
+//		floorfix = UNIT/4;
+//		wheelfix = -1;
+//	}
+	segment.helper.angle = 0;
+	segment.hand.speed = options.speed*options.direction*options.spin;
+	segment.hand.radius = options.extend;
+	segment.hand.angle = options.entry;
 	segment.prop.angle = options.orient;
-	segment.prop.plane = options.plane;
+	segment.duration = 0.25;
 	move.add(segment);
-	move.tail().prop.speed = 2*options.speed*options.direction;
-	//move.tail().prop.acc = -16*options.speed*options.direction;
+	move.tail().helper.angle = ((options.pitch == FORWARD) ? 0 : SPLIT);
+	move.tail().helper.radius = 0;
+	move.tail().helper.stretch = 8*options.sway;
+	move.tail().helper.stretch_acc = -32*options.sway;
+	move.tail().prop.speed = 2*options.pitch*options.speed;
 	move.extend();
-	move.tail().prop.speed = -2*options.speed*options.direction;
-	//move.tail().prop.acc = -16*options.speed*options.direction;
+	move.tail().helper.radius = options.sway;
+	move.tail().helper.stretch = 0;
+	move.tail().helper.stretch_acc = -32*options.sway;
+	move.tail().prop.speed = -2*options.pitch*options.speed;
 	move.extend();
-	move.tail().prop.speed = -2*options.speed*options.direction;
-	//move.tail().prop.acc = 16*options.speed*options.direction;
+	move.tail().helper.angle = ((options.pitch == FORWARD) ? SPLIT : 0);
+	move.tail().helper.radius = 0;
+	move.tail().helper.stretch = 8*options.sway;
+	move.tail().helper.stretch_acc = -32*options.sway;
+	move.tail().prop.speed = -2*options.pitch*options.speed;
 	move.extend();
-	move.tail().prop.speed = 2*options.speed*options.direction;
-	//move.tail().prop.acc = 16*options.speed*options.direction;
+	move.tail().helper.radius = options.sway;
+	move.tail().helper.stretch = 0;
+	move.tail().helper.stretch_acc = -32*options.sway;
+	move.tail().prop.speed = 2*options.pitch*options.speed;
 	return move;
 });
-
-
 
 MoveFactory.recipe(
 	"stall",
