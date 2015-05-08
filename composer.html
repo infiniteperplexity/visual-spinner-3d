@@ -27,8 +27,7 @@ li:hover {background-color: lightcyan; cursor: grab;}
 #menu ul {width: 200px; height: 430px;}
 #workshop ul {width: 199px; height: 380px;}
 table {position: relative; top: -20px;}
-#popexport {position: fixed; z-index: 1; top: 150px; left: 50px; }
-#popimport {position: fixed; z-index: 1; top: 150px; left: 50px;}
+#popexport, #popimport, #popsave, #popload {position: fixed; z-index: 1; top: 150px; left: 50px; }
 #popalign1 {position: fixed; z-index: 1; top: 100px; left: 420px; background-color: #FFF; padding: 2.5px; border: 5px solid gray; margin: -2.5px;}
 #popalign2 {position: fixed; z-index: 1; top: 100px; left: 630px; background-color: #FFF; padding: 2.5px; border: 5px solid gray; margin: -2.5px;}
 #popalign3 {position: fixed; z-index: 1; top: 300px; left: 420px; background-color: #FFF; padding: 2.5px; border: 5px solid gray; margin: -2.5px;}
@@ -825,6 +824,24 @@ function alignSubmit(n) {
 	$("#popalign"+n).toggle();
 }
 
+function popSave() {
+	$("#popimport").hide();
+	$("#popexport").hide();
+	$("#popload").hide();
+	$("#popsave").toggle();
+}
+function popLoad() {
+	$("#popimport").hide();
+	$("#popexport").hide();
+	$("#popload").toggle();
+	$("#popsave").hide();
+}
+function saveJSON() {
+}
+
+function loadJSON() {
+}
+
 </script>
 </head>
 <body onload="init();">
@@ -842,6 +859,9 @@ function alignSubmit(n) {
 			<button type="button" onclick="emptyQueues();">Reset Queues</button>
 			<button type="button" onclick="popExport();">Export to JSON</button>
 			<button type="button" onclick="popImport();">Import from JSON</button>
+			<br>
+			<button type="button" onclick="popSave();">Save JSON</button>
+			<button type="button" onclick="popLoad();">Load JSON</button>
 		</div>
 		<div id="queues">
 			<h2>Props</h2>
@@ -1215,6 +1235,16 @@ function alignSubmit(n) {
 	<button type="button" onclick='$("#jsonmodify").toggle();'>Cancel</button>
 	<button type="button" onclick="submitJSON()">Submit</button>
 	<br><textarea rows="16" cols="46"></textarea>
+</div>
+<div style="display: none;" id="popsave">
+	<button type="button" onclick='$("#popsave").toggle();'>Cancel</button>
+	<button type="button" onclick="saveJSON()">Okay</button>
+	<br><textarea rows="1" cols="46">Not currently available.</textarea>
+</div>
+<div style="display: none;" id="popload">
+	<button type="button" onclick='$("#popload").toggle();'>Cancel</button>
+	<button type="button" onclick="loadJSON()">Okay</button>
+	<br><textarea rows="1" cols="46">Not currently available.</textarea>
 </div>
 
 </body></html>

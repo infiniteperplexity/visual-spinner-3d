@@ -1,0 +1,47 @@
+<!--Distributed under GNU Public License version 3-->
+<html><head>
+<style>
+body {margin: 0; padding: 0; background-color: #679}
+</style>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>VisualSpinner3D v. 3.0, by Glenn Wright</title>
+<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="scripts/gl-matrix-min.js"></script>
+<script src="scripts/phoria-min.js"></script>
+<script src="scripts/requestAnimationFrame.js"></script>
+<script src="scripts/visual-spinner-engine.js"></script>
+<script src="scripts/visual-spinner-moves.js"></script>
+<script src="scripts/visual-spinner-ui.js"></script>
+<script>
+$.urlParam = function(name){
+	var results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(window.location.href);
+	if (!results) {return 0;}
+	return results[1] || 0;
+}
+function init() {
+	var vs = VS3D.VisualSpinnerWidget();
+	VS3D.Constants.rescope(vs);
+	vs.embedById("vs-div");
+	if( 	navigator.userAgent.match(/Android/i)
+		|| navigator.userAgent.match(/webOS/i)
+		|| navigator.userAgent.match(/iPhone/i)
+		|| navigator.userAgent.match(/iPad/i)
+		|| navigator.userAgent.match(/iPod/i)
+		|| navigator.userAgent.match(/BlackBerry/i)
+		|| navigator.userAgent.match(/Windows Phone/i)) {
+		vs.swapRenderer(new HTML5CanvasRenderer());
+	}
+	if ($.urlParam("file")) {
+		vs.parseFile("json/"+$.urlParam("file")+".json");
+	}
+	vs.addControls("play","pause","rewind","frame","forward","reset","2d3d");
+	vs.ready();
+	vs.play();
+}
+</script>
+<body onload="init();">
+<a href='http://infiniteperplexity.github.io/visual-spinner-3d/'>See more at the VisualSpinner3D main site.</a>
+<div id="vs-div">
+</div>
+</body></html>
+

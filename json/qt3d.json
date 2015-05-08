@@ -1,0 +1,63 @@
+{"prop1": {
+  "hand": {
+    "radius": 1,
+    "azimuth": "NINE"
+  },
+  "prop": {
+    "azimuth": "NINE"
+  },
+  "color": "blue",
+  "moves": [
+    {
+      "name": "Four-Petal Anti-Spin Flower",
+      "entry": "NINE",
+      "duration": 0.25,
+      "recipe": "antispin"
+    },
+    {
+      "name": "Four-Petal Anti-Spin Flower",
+      "direction": -1,
+      "plane": "WHEEL",
+      "entry": "TWELVE",
+      "duration": 0.25,
+      "recipe": "antispin"
+    },
+    {
+      "name": "Four-Petal Anti-Spin Flower",
+      "direction": -1,
+      "plane": "FLOOR",
+      "entry": "SIX",
+      "duration": 0.25,
+      "recipe": "antispin"
+    }
+  ]
+}, "prop2": {
+  "hand": {
+    "radius": 1,
+    "azimuth": "TWELVE"
+  },
+  "prop": {
+    "azimuth": "TWELVE"
+  },
+  "moves": [
+    {
+      "name": "Four-Petal Anti-Spin Flower",
+      "entry": "TWELVE",
+      "duration": 0.25,
+      "recipe": "antispin"
+    },
+    {
+      "name": "Four-Petal Anti-Spin Flower",
+      "direction": -1,
+      "plane": "FLOOR",
+      "duration": 0.25,
+      "recipe": "antispin"
+    },
+    {
+      "name": "Four-Petal Anti-Spin Flower",
+      "plane": "WHEEL",   
+      "duration": 0.25,
+      "recipe": "antispin"
+    }
+  ]
+}}
