@@ -32,7 +32,7 @@ function init() {
 		vs.swapRenderer(new HTML5CanvasRenderer());
 	}
 	if ($.urlParam("url")) {
-		vs.parseFile(decodeURI($.urlParam("url")));
+		vs.parseFile(decodeURIComponent($.urlParam("url")));
 	} else {
 		vs.parseFile("http://infiniteperplexity.github.io/visual-spinner-3d/json/qt3d.json");
 	}
