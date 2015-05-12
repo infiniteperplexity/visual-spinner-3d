@@ -31,8 +31,10 @@ function init() {
 		|| navigator.userAgent.match(/Windows Phone/i)) {
 		vs.swapRenderer(new HTML5CanvasRenderer());
 	}
-	if ($.urlParam("file")) {
-		vs.parseFile("json/"+$.urlParam("file")+".json");
+	if ($.urlParam("url")) {
+		vs.parseFile(decodeURI($.urlParam("url")));
+	} else {
+		vs.parseFile("http://infiniteperplexity.github.io/visual-spinner-3d/json/qt3d.json");
 	}
 	vs.addControls("play","pause","rewind","frame","forward","reset","2d3d");
 	vs.ready();
