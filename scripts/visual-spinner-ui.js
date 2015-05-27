@@ -538,6 +538,12 @@ HTML5Canvas2dRenderer.prototype.render = function(scene) {
 			this.renderHoop(prop);
 		} else if (prop.propType === "staff") {
 			this.renderStaff(prop);
+		} else if (prop.propType === "club") {
+			this.renderClub(prop);
+		} else if (prop.propType === "fan") {
+			this.renderFan(prop);
+		} else if (prop.propType === "buugeng") {
+			this.renderBuugeng(prop);
 		} else if (prop.propType === "noprop") {
 			//do not render
 		} else {
@@ -639,6 +645,94 @@ HTML5Canvas2dRenderer.prototype.renderStaff = function(prop) {
 	if (prop.fire === true) {
 		this.drawFlame(-60*Math.sin(bend.zenith)*prop.prop.radius,0);
 		this.drawFlame(60*Math.sin(bend.zenith)*prop.prop.radius,0);
+	}
+}
+
+HTML5Canvas2dRenderer.prototype.renderClub = function(prop) {
+	// Redundant calculation, could pass this as a parameter if necessary
+	var bend = prop.prop.vectorize().rotate(prop.bend,prop.prop.vectorize().cross(prop.axis)).spherify();
+	this.context.beginPath();
+	this.context.arc(0,0,3,0,2*Math.PI);
+	this.context.fillStyle = this.color(prop.color);
+	this.context.fill();
+	this.context.lineWidth = 1;
+	this.context.strokeStyle = "gray";
+	this.context.stroke();
+	this.context.beginPath();
+	this.context.moveTo(0,0);
+	this.context.lineTo(60*Math.sin(bend.zenith)*prop.prop.radius,0);
+	this.context.lineWidth = 1;
+	this.context.strokeStyle = "gray";
+	this.context.stroke();
+	if (prop.fire === true) {
+		this.drawFlame(60*Math.sin(bend.zenith)*prop.prop.radius,0);
+	} else {
+		this.context.beginPath();
+		// could do this in a different order depending on the zenith value...
+		this.context.arc(60*Math.sin(bend.zenith)*prop.prop.radius,0,12,0,2*Math.PI);
+		this.context.fillStyle = this.color(prop.color);
+		this.context.fill();
+		this.context.lineWidth = 1;
+		this.context.strokeStyle = "gray";
+		this.context.stroke();
+	}
+}
+HTML5Canvas2dRenderer.prototype.renderFan = function(prop) {
+	// Redundant calculation, could pass this as a parameter if necessary
+	var bend = prop.prop.vectorize().rotate(prop.bend,prop.prop.vectorize().cross(prop.axis)).spherify();
+	this.context.beginPath();
+	this.context.arc(0,0,3,0,2*Math.PI);
+	this.context.fillStyle = this.color(prop.color);
+	this.context.fill();
+	this.context.lineWidth = 1;
+	this.context.strokeStyle = "gray";
+	this.context.stroke();
+	this.context.beginPath();
+	this.context.moveTo(0,0);
+	this.context.lineTo(60*Math.sin(bend.zenith)*prop.prop.radius,0);
+	this.context.lineWidth = 1;
+	this.context.strokeStyle = "gray";
+	this.context.stroke();
+	if (prop.fire === true) {
+		this.drawFlame(60*Math.sin(bend.zenith)*prop.prop.radius,0);
+	} else {
+		this.context.beginPath();
+		// could do this in a different order depending on the zenith value...
+		this.context.arc(60*Math.sin(bend.zenith)*prop.prop.radius,0,12,0,2*Math.PI);
+		this.context.fillStyle = this.color(prop.color);
+		this.context.fill();
+		this.context.lineWidth = 1;
+		this.context.strokeStyle = "gray";
+		this.context.stroke();
+	}
+}
+HTML5Canvas2dRenderer.prototype.renderBuugeng = function(prop) {
+	// Redundant calculation, could pass this as a parameter if necessary
+	var bend = prop.prop.vectorize().rotate(prop.bend,prop.prop.vectorize().cross(prop.axis)).spherify();
+	this.context.beginPath();
+	this.context.arc(0,0,3,0,2*Math.PI);
+	this.context.fillStyle = this.color(prop.color);
+	this.context.fill();
+	this.context.lineWidth = 1;
+	this.context.strokeStyle = "gray";
+	this.context.stroke();
+	this.context.beginPath();
+	this.context.moveTo(0,0);
+	this.context.lineTo(60*Math.sin(bend.zenith)*prop.prop.radius,0);
+	this.context.lineWidth = 1;
+	this.context.strokeStyle = "gray";
+	this.context.stroke();
+	if (prop.fire === true) {
+		this.drawFlame(60*Math.sin(bend.zenith)*prop.prop.radius,0);
+	} else {
+		this.context.beginPath();
+		// could do this in a different order depending on the zenith value...
+		this.context.arc(60*Math.sin(bend.zenith)*prop.prop.radius,0,12,0,2*Math.PI);
+		this.context.fillStyle = this.color(prop.color);
+		this.context.fill();
+		this.context.lineWidth = 1;
+		this.context.strokeStyle = "gray";
+		this.context.stroke();
 	}
 }
 
@@ -809,6 +903,8 @@ function PhoriaProp(myProp) {
 		this.shapes = this.staffShapes(myProp);
 	} else if (myProp.propType === "hoop") {
 		this.shapes = this.hoopShapes(myProp);
+	} else if (myProp.propType === "club") {
+		this.shapes = this.clubShapes(myProp);
 	} else if (myProp.propType === "noprop") {
 		this.shapes = [];
 	} else {
@@ -898,7 +994,51 @@ PhoriaProp.prototype.hoopShapes = function(myProp) {
 	}
 	return shapes;
 }
-
+PhoriaProp.prototype.clubShapes = function(myProp) {
+	var pommel = PhoriaSphere(0.1, 3);
+	var tip = PhoriaSphere(0.1, 3);
+	var handle = PhoriaCylinder(0.05, 0.2, 8);
+	var segment1 = PhoriaCylinder(0.075, 0.1, 8);
+	var segment2 = PhoriaCylinder(0.1, 0.1, 8);
+	var segment3 = PhoriaCylinder(0.125, 0.1, 8);
+	var segment4 = PhoriaCylinder(0.15, 0.1, 8);
+	var segment5 = PhoriaCylinder(0.15, 0.1, 8);
+	var segment6 = PhoriaCylinder(0.15, 0.1, 8);
+	var segment7 = PhoriaCylinder(0.125, 0.1, 8);
+	pommel.style.color = PhoriaColor(myProp.color);
+	handle.style.color = PhoriaColor("gray");
+	segment1.style.color = PhoriaColor(myProp.color);
+	segment2.style.color = PhoriaColor(myProp.color);
+	segment3.style.color = PhoriaColor(myProp.color);
+	segment4.style.color = PhoriaColor(myProp.color);
+	segment5.style.color = PhoriaColor("gray");
+	segment6.style.color = PhoriaColor(myProp.color);
+	segment7.style.color = PhoriaColor(myProp.color);
+	PhoriaTranslatePoints(handle,[0,0,0.2]);
+	PhoriaTranslatePoints(segment1,[0,0,0.3]);
+	PhoriaTranslatePoints(segment2,[0,0,0.4]);
+	PhoriaTranslatePoints(segment3,[0,0,0.5]);
+	PhoriaTranslatePoints(segment4,[0,0,0.6]);
+	PhoriaTranslatePoints(segment5,[0,0,0.7]);
+	PhoriaTranslatePoints(segment6,[0,0,0.8]);
+	PhoriaTranslatePoints(segment7,[0,0,0.9]);
+	PhoriaTranslatePoints(tip,[0,0,0.95]);
+	var flame = PhoriaFlame(6);	
+	PhoriaTranslatePoints(flame,[0,0,1]);
+	if (myProp.fire === false) {
+		tip.style.color = PhoriaColor(myProp.color);
+		return [handle,pommel,tip,segment1,segment2,segment3,segment4,segment5,segment6,segment7];
+	} else {
+		tip.style.color = PhoriaColor("fire");
+		return [handle,pommel,tip,segment1,segment2,segment3,segment4,segment5,segment6,segment7,flame];
+	}
+	
+	
+}
+PhoriaProp.prototype.fanShapes = function(myProp) {
+}
+PhoriaProp.prototype.buugengShapes = function(myProp) {
+}
 
 
 // Helper methods for Phoria
