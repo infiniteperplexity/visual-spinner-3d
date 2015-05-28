@@ -905,6 +905,10 @@ function PhoriaProp(myProp) {
 		this.shapes = this.hoopShapes(myProp);
 	} else if (myProp.propType === "club") {
 		this.shapes = this.clubShapes(myProp);
+	} else if (myProp.propType === "fan") {
+		this.shapes = this.fanShapes(myProp);
+	} else if (myProp.propType === "buugeng") {
+		this.shapes = this.buugengShapes(myProp);
 	} else if (myProp.propType === "noprop") {
 		this.shapes = [];
 	} else {
@@ -1036,8 +1040,55 @@ PhoriaProp.prototype.clubShapes = function(myProp) {
 	
 }
 PhoriaProp.prototype.fanShapes = function(myProp) {
+	var shapes = [];
+	var a = 2*Math.PI/8;
+	var len = 0.25*(1-Math.sin(a))/Math.cos(a);
+	var section;
+	for (var i=0; i<8; i++) {
+		section = PhoriaCylinder(0.01, len, 4);
+		PhoriaSwapPoints(section, "y", "z");
+		PhoriaTranslatePoints(section, [0,0,0.15]);
+		PhoriaRotatePoints(section, i*a, "y", "z");
+		section.style.color = PhoriaColor(myProp.color);
+		shapes.push(section);
+	}
+	var tines = []
+	var ntines = 3;
+	for (var i=0; i<ntines; i++) {
+		section = PhoriaCylinder(0.01, 0.9, 4);
+		PhoriaTranslatePoints(section,[0,0,0.6]);
+		PhoriaRotatePoints(section, -Math.PI/4+i*Math.PI/4, "y", "z");
+		section.style.color = PhoriaColor(myProp.color);
+		shapes.push(section);
+	}
+	for (var i=0; i<ntines-1; i++) {
+		section = PhoriaCylinder(0.01, 0.4, 4);
+		PhoriaSwapPoints(section, "y", "z");
+		PhoriaTranslatePoints(section, [0,0,0.5]);
+		PhoriaRotatePoints(section, -Math.PI/8+i*Math.PI/4, "y", "z");
+		section.style.color = PhoriaColor(myProp.color);
+		shapes.push(section);
+	}
+	for (var i=0; i<ntines-1; i++) {
+		section = PhoriaCylinder(0.01, 0.6, 4);
+		PhoriaSwapPoints(section, "y", "z");
+		PhoriaTranslatePoints(section, [0,0,0.75]);
+		PhoriaRotatePoints(section, -Math.PI/8+i*Math.PI/4, "y", "z");
+		section.style.color = PhoriaColor(myProp.color);
+		shapes.push(section);
+	}
+	if (myProp.fire == true) {
+		for (var i=0; i<ntines; i++) {
+			section = PhoriaFlame(4);
+			PhoriaTranslatePoints(section, [0,0,1.1]);
+			PhoriaRotatePoints(section, -Math.PI/4+i*Math.PI/4, "y", "z");
+			shapes.push(section);
+		}
+	}
+	return shapes;	
 }
 PhoriaProp.prototype.buugengShapes = function(myProp) {
+	return Phoria.prototype.poiShapes(myProp);
 }
 
 
