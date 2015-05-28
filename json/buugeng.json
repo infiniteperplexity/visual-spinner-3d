@@ -1,0 +1,63 @@
+{"prop1": {
+  "hand": {
+    "radius": 1,
+    "azimuth": "NINE"
+  },
+  "prop": {
+    "azimuth": "NINE"
+  },
+  "propType": "buugeng",
+  "color": "blue",
+  "moves": [
+    {
+      "recipe": "flower",
+      "petals": 2,
+      "name": "Two-Petal In-Spin Flower"
+    }
+  ]
+}, "prop2": {
+  "hand": {
+    "radius": 1
+  },
+  "propType": "buugeng",
+  "moves": [
+    {
+      "recipe": "flower",
+      "petals": 2,
+      "name": "Two-Petal In-Spin Flower"
+    }
+  ]
+}, "prop3": {
+  "hand": {
+    "radius": 1,
+    "azimuth": "NINE"
+  },
+  "prop": {
+    "azimuth": "TWELVE"
+  },
+  "propType": "buugeng",
+  "color": "green",
+  "moves": [
+    {
+      "name": "Four-Petal Anti-Spin Flower",
+      "mode": "FOLLOW",
+      "recipe": "antispin"
+    }
+  ]
+}, "prop4": {
+  "hand": {
+    "radius": 1
+  },
+  "prop": {
+    "azimuth": "SIX"
+  },
+  "propType": "buugeng",
+  "color": "yellow",
+  "moves": [
+    {
+      "name": "Four-Petal Anti-Spin Flower",
+      "mode": "FOLLOW",
+      "recipe": "antispin"
+    }
+  ]
+}}

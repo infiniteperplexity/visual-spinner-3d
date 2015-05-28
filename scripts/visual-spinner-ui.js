@@ -1087,8 +1087,54 @@ PhoriaProp.prototype.fanShapes = function(myProp) {
 	}
 	return shapes;	
 }
+
+//not sure if I should handle flipped buugeng using grip or the prop
 PhoriaProp.prototype.buugengShapes = function(myProp) {
-	return Phoria.prototype.poiShapes(myProp);
+	var shapes = [];
+	var a = 2*Math.PI/18;
+	var len = 0.25*(1-Math.sin(a))/Math.cos(a);
+	var section;
+	for (var i=6; i<14; i++) {
+		section = PhoriaCylinder(0.025, len, 6);
+		PhoriaSwapPoints(section, "y", "z");
+		PhoriaTranslatePoints(section, [0,0,0.5]);
+		PhoriaRotatePoints(section, i*a, "y", "z");
+		PhoriaTranslatePoints(section, [0,0.5,0]);
+		PhoriaRotatePoints(section, 0.3*Math.PI, "y", "z");
+		if (i%2==1) {
+			section.style.color = PhoriaColor("gray");
+		} else {
+			section.style.color = PhoriaColor(myProp.color);
+		}
+		shapes.push(section);
+	}
+	for (var i=6; i<14; i++) {
+		section = PhoriaCylinder(0.025, len, 6);
+		PhoriaSwapPoints(section, "y", "z");
+		PhoriaTranslatePoints(section, [0,0,0.5]);
+		PhoriaRotatePoints(section, i*a+Math.PI, "y", "z");
+		PhoriaTranslatePoints(section, [0,-0.5,0]);
+		PhoriaRotatePoints(section, 0.3*Math.PI, "y", "z");
+		if (i%2==1) {
+			section.style.color = PhoriaColor("gray");
+		} else {
+			section.style.color = PhoriaColor(myProp.color);
+		}
+		shapes.push(section);
+	}
+	var handle = PhoriaCylinder(0.026, 0.1, 8);
+	var flame;
+	if (myProp.fire == true) {	
+		flame = PhoriaFlame(4);
+		PhoriaTranslatePoints(flame, [0,0,1]);
+		PhoriaRotatePoints(flame, -0.15*Math.PI, "y", "z");
+		shapes.push(flame);
+		flame = PhoriaFlame(4);
+		PhoriaTranslatePoints(flame, [0,0,-1]);
+		PhoriaRotatePoints(flame, -0.15*Math.PI, "y", "z");
+		shapes.push(flame);
+	}
+	return shapes;
 }
 
 
