@@ -544,6 +544,8 @@ HTML5Canvas2dRenderer.prototype.render = function(scene) {
 			this.renderFan(prop);
 		} else if (prop.propType === "buugeng") {
 			this.renderBuugeng(prop);
+		} else if (prop.propType === "flipbuu") {
+			this.renderFlipBuu(prop);
 		} else if (prop.propType === "noprop") {
 			//do not render
 		} else {
@@ -753,6 +755,24 @@ HTML5Canvas2dRenderer.prototype.renderBuugeng = function(prop) {
 		this.drawFlame(-60*Math.sin(bend.zenith)*prop.prop.radius,0);
 	}
 }
+HTML5Canvas2dRenderer.prototype.renderFlipBuu = function(prop) {
+	// Redundant calculation, could pass this as a parameter if necessary
+	var bend = prop.prop.vectorize().rotate(prop.bend,prop.prop.vectorize().cross(prop.axis)).spherify();
+	this.context.beginPath();
+	this.context.arc(30*Math.sin(bend.zenith)*prop.prop.radius,0,30*Math.sin(bend.zenith)*prop.prop.radius,0,Math.PI,true);
+	this.context.lineWidth = 3;
+	this.context.strokeStyle = this.color(prop.color);
+	this.context.stroke();
+	this.context.beginPath();
+	this.context.arc(-30*Math.sin(bend.zenith)*prop.prop.radius,0,30*Math.sin(bend.zenith)*prop.prop.radius,0,Math.PI);
+	this.context.lineWidth = 3;
+	this.context.strokeStyle = this.color(prop.color);
+	this.context.stroke();
+	if (prop.fire === true) {
+		this.drawFlame(60*Math.sin(bend.zenith)*prop.prop.radius,0);
+		this.drawFlame(-60*Math.sin(bend.zenith)*prop.prop.radius,0);
+	}
+}
 
 HTML5Canvas2dRenderer.prototype.drawFlame = function(x,y) {
 	// twelve motes per frame
@@ -927,6 +947,8 @@ function PhoriaProp(myProp) {
 		this.shapes = this.fanShapes(myProp);
 	} else if (myProp.propType === "buugeng") {
 		this.shapes = this.buugengShapes(myProp);
+	} else if (myProp.propType === "flipbuu") {
+		this.shapes = this.flipBuuShapes(myProp);
 	} else if (myProp.propType === "noprop") {
 		this.shapes = [];
 	} else {
@@ -1118,9 +1140,13 @@ PhoriaProp.prototype.buugengShapes = function(myProp) {
 		PhoriaTranslatePoints(section, [0,0,0.5]);
 		PhoriaRotatePoints(section, i*a, "y", "z");
 		PhoriaTranslatePoints(section, [0,0.5,0]);
-		PhoriaRotatePoints(section, 0.3*Math.PI, "y", "z");
+		PhoriaRotatePoints(section, 0.4*Math.PI, "y", "z");
 		if (i%2==1) {
-			section.style.color = PhoriaColor("gray");
+			if (myProp.color == "white") {
+				section.style.color = PhoriaColor("gray");
+			} else {
+				section.style.color = PhoriaColor("white");
+			}
 		} else {
 			section.style.color = PhoriaColor(myProp.color);
 		}
@@ -1132,9 +1158,13 @@ PhoriaProp.prototype.buugengShapes = function(myProp) {
 		PhoriaTranslatePoints(section, [0,0,0.5]);
 		PhoriaRotatePoints(section, i*a+Math.PI, "y", "z");
 		PhoriaTranslatePoints(section, [0,-0.5,0]);
-		PhoriaRotatePoints(section, 0.3*Math.PI, "y", "z");
+		PhoriaRotatePoints(section, 0.4*Math.PI, "y", "z");
 		if (i%2==1) {
-			section.style.color = PhoriaColor("gray");
+			if (myProp.color == "white") {
+				section.style.color = PhoriaColor("gray");
+			} else {
+				section.style.color = PhoriaColor("white");
+			}
 		} else {
 			section.style.color = PhoriaColor(myProp.color);
 		}
@@ -1145,15 +1175,76 @@ PhoriaProp.prototype.buugengShapes = function(myProp) {
 	if (myProp.fire == true) {	
 		flame = PhoriaFlame(4);
 		PhoriaTranslatePoints(flame, [0,0,1]);
-		PhoriaRotatePoints(flame, -0.15*Math.PI, "y", "z");
+		PhoriaRotatePoints(flame, -0.075*Math.PI, "y", "z");
 		shapes.push(flame);
 		flame = PhoriaFlame(4);
 		PhoriaTranslatePoints(flame, [0,0,-1]);
-		PhoriaRotatePoints(flame, -0.15*Math.PI, "y", "z");
+		PhoriaRotatePoints(flame, -0.075*Math.PI, "y", "z");
 		shapes.push(flame);
 	}
 	return shapes;
 }
+
+PhoriaProp.prototype.flipBuuShapes = function(myProp) {
+	var shapes = [];
+	var a = 2*Math.PI/18;
+	var len = 0.25*(1-Math.sin(a))/Math.cos(a);
+	var section;
+	for (var i=6; i<14; i++) {
+		section = PhoriaCylinder(0.025, len, 6);
+		PhoriaSwapPoints(section, "y", "z");
+		PhoriaTranslatePoints(section, [0,0,0.5]);
+		PhoriaRotatePoints(section, i*a, "y", "z");
+		PhoriaTranslatePoints(section, [0,0.5,0]);
+		PhoriaRotatePoints(section, 0.4*Math.PI, "y", "z");
+		PhoriaRotatePoints(section, Math.PI, "x", "z");
+		if (i%2==1) {
+			if (myProp.color == "white") {
+				section.style.color = PhoriaColor("gray");
+			} else {
+				section.style.color = PhoriaColor("white");
+			}
+		} else {
+			section.style.color = PhoriaColor(myProp.color);
+		}
+		shapes.push(section);
+	}
+	for (var i=6; i<14; i++) {
+		section = PhoriaCylinder(0.025, len, 6);
+		PhoriaSwapPoints(section, "y", "z");
+		PhoriaTranslatePoints(section, [0,0,0.5]);
+		PhoriaRotatePoints(section, i*a+Math.PI, "y", "z");
+		PhoriaTranslatePoints(section, [0,-0.5,0]);
+		PhoriaRotatePoints(section, 0.4*Math.PI, "y", "z");
+		PhoriaRotatePoints(section, Math.PI, "x", "z");
+		if (i%2==1) {
+			if (myProp.color == "white") {
+				section.style.color = PhoriaColor("gray");
+			} else {
+				section.style.color = PhoriaColor("white");
+			}
+		} else {
+			section.style.color = PhoriaColor(myProp.color);
+		}
+		shapes.push(section);
+	}
+	var handle = PhoriaCylinder(0.026, 0.1, 8);
+	var flame;
+	if (myProp.fire == true) {	
+		flame = PhoriaFlame(4);
+		PhoriaTranslatePoints(flame, [0,0,1]);
+		PhoriaRotatePoints(flame, -0.075*Math.PI, "y", "z");
+		PhoriaRotatePoints(flame, Math.PI, "x", "z");
+		shapes.push(flame);
+		flame = PhoriaFlame(4);
+		PhoriaTranslatePoints(flame, [0,0,-1]);
+		PhoriaRotatePoints(flame, -0.075*Math.PI, "y", "z");
+		PhoriaRotatePoints(flame, Math.PI, "x", "z");
+		shapes.push(flame);
+	}
+	return shapes;
+}
+
 
 
 // Helper methods for Phoria

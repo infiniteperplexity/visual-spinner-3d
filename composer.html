@@ -812,6 +812,26 @@ function alignSubmit(n) {
 		prop.color = color;
 		predictions[n-1].propType = "hoop";
 		predictions[n-1].color = dark;
+	} else if (text=="fan") {
+		prop.propType = "fan";
+		prop.color = color;
+		predictions[n-1].propType = "fan";
+		predictions[n-1].color = dark;
+	} else if (text=="club") {
+		prop.propType = "club";
+		prop.color = color;
+		predictions[n-1].propType = "fan";
+		predictions[n-1].color = dark;
+	} else if (text=="buugeng") {
+		prop.propType = "buugeng";
+		prop.color = color;
+		predictions[n-1].propType = "fan";
+		predictions[n-1].color = dark;
+	} else if (text=="flipbuu") {
+		prop.propType = "flipbuu";
+		prop.color = color;
+		predictions[n-1].propType = "fan";
+		predictions[n-1].color = dark;
 	} else if (text=="none") {
 		prop.propType = "noprop";
 		prop.color = color;
@@ -912,6 +932,10 @@ function loadJSON() {
 				<option selected="selected" value="poi">Poi</option>
 				<option value="staff">Staff</option>
 				<option value="hoop">Hoop</option>
+				<option value="fan">Fan</option>
+				<option value="club">Club</option>
+				<option value="buugeng">Buugeng</option>
+				<option value="flipbuu">Flipped Buugeng</option>
 				<option value="none">None</option>
 			</select>
 		<br>
@@ -991,6 +1015,10 @@ function loadJSON() {
 				<option selected="selected" value="poi">Poi</option>
 				<option value="staff">Staff</option>
 				<option value="hoop">Hoop</option>
+				<option value="fan">Fan</option>
+				<option value="club">Club</option>
+				<option value="buugeng">Buugeng</option>
+				<option value="flipbuu">Flipped Buugeng</option>
 				<option value="none">None</option>
 			</select>
 		<br>
@@ -1070,6 +1098,10 @@ function loadJSON() {
 				<option value="poi">Poi</option>
 				<option value="staff">Staff</option>
 				<option value="hoop">Hoop</option>
+				<option value="fan">Fan</option>
+				<option value="club">Club</option>
+				<option value="buugeng">Buugeng</option>
+				<option value="flipbuu">Flipped Buugeng</option>
 				<option selected="selected" value="none">None</option>
 			</select>
 		<br>
@@ -1149,6 +1181,10 @@ function loadJSON() {
 				<option value="poi">Poi</option>
 				<option value="staff">Staff</option>
 				<option value="hoop">Hoop</option>
+				<option value="fan">Fan</option>
+				<option value="club">Club</option>
+				<option value="buugeng">Buugeng</option>
+				<option value="flipbuu">Flipped Buugeng</option>
 				<option selected="selected" value="none">None</option>
 			</select>
 		<br>

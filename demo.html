@@ -136,6 +136,12 @@ Controller.prototype.updateParameters = function() {
 		} else if (txt==="fbuug") {	
 			vs.scene.props[i-1].propType = "buugeng";
 			vs.scene.props[i-1].fire = true;
+		} else if (txt==="flip") {	
+			vs.scene.props[i-1].propType = "flipbuu";
+			vs.scene.props[i-1].fire = false;
+		} else if (txt==="fflip") {	
+			vs.scene.props[i-1].propType = "flipbuu";
+			vs.scene.props[i-1].fire = true;
 		} else if (txt==="none") {
 			vs.scene.props[i-1].propType = "noprop";
 		}
@@ -428,6 +434,8 @@ Props:
 		<option value="fclub">Fire Club</option>
 		<option value="buug">Buugeng</option>
 		<option value="fbuug">Fire Buugeng</option>
+		<option value="flip">Flipped Buugeng</option>
+		<option value="fflip">Flipped Fire Buugeng</option>
 		<option value="none">None</option>
 	</select>
 
@@ -446,6 +454,8 @@ Props:
 		<option value="fclub">Fire Club</option>
 		<option value="buug">Buugeng</option>
 		<option value="fbuug">Fire Buugeng</option>
+		<option value="flip">Flipped Buugeng</option>
+		<option value="fflip">Flipped Fire Buugeng</option>
 		<option value="none">None</option>
 	</select>
 </td>
@@ -463,6 +473,8 @@ Props:
 		<option value="fclub">Fire Club</option>
 		<option value="buug">Buugeng</option>
 		<option value="fbuug">Fire Buugeng</option>
+		<option value="flip">Flipped Buugeng</option>
+		<option value="fflip">Flipped Fire Buugeng</option>
 		<option value="none">None</option>
 	</select>
 </td>
@@ -480,6 +492,8 @@ Props:
 		<option value="fclub">Fire Club</option>
 		<option value="buug">Buugeng</option>
 		<option value="fbuug">Fire Buugeng</option>
+		<option value="flip">Flipped Buugeng</option>
+		<option value="fflip">Flipped Fire Buugeng</option>
 		<option value="none">None</option>
 	</select>
 </td>
