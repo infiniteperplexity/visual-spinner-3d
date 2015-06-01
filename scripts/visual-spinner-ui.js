@@ -651,88 +651,106 @@ HTML5Canvas2dRenderer.prototype.renderStaff = function(prop) {
 HTML5Canvas2dRenderer.prototype.renderClub = function(prop) {
 	// Redundant calculation, could pass this as a parameter if necessary
 	var bend = prop.prop.vectorize().rotate(prop.bend,prop.prop.vectorize().cross(prop.axis)).spherify();
+	//handle
 	this.context.beginPath();
-	this.context.arc(0,0,3,0,2*Math.PI);
+	this.context.moveTo(0,0);
+	this.context.lineTo(20*Math.sin(bend.zenith)*prop.prop.radius,0);
+	this.context.lineWidth = 6;
+	this.context.strokeStyle = "gray";
+	this.context.stroke();
+	//pommel
+	this.context.beginPath();
+	this.context.arc(0,0,6,0,2*Math.PI);
 	this.context.fillStyle = this.color(prop.color);
 	this.context.fill();
 	this.context.lineWidth = 1;
 	this.context.strokeStyle = "gray";
 	this.context.stroke();
+	//head
 	this.context.beginPath();
-	this.context.moveTo(0,0);
-	this.context.lineTo(60*Math.sin(bend.zenith)*prop.prop.radius,0);
+	drawEllipse(this.context,20*Math.sin(bend.zenith)*prop.prop.radius,-6,40,12);
+	this.context.fillStyle = this.color(prop.color);
+	this.context.fill();
 	this.context.lineWidth = 1;
 	this.context.strokeStyle = "gray";
 	this.context.stroke();
 	if (prop.fire === true) {
 		this.drawFlame(60*Math.sin(bend.zenith)*prop.prop.radius,0);
-	} else {
-		this.context.beginPath();
-		// could do this in a different order depending on the zenith value...
-		this.context.arc(60*Math.sin(bend.zenith)*prop.prop.radius,0,12,0,2*Math.PI);
-		this.context.fillStyle = this.color(prop.color);
-		this.context.fill();
-		this.context.lineWidth = 1;
-		this.context.strokeStyle = "gray";
-		this.context.stroke();
 	}
+}
+function drawEllipse(ctx, x, y, w, h) {
+  var kappa = .5522848,
+      ox = (w / 2) * kappa, // control point offset horizontal
+      oy = (h / 2) * kappa, // control point offset vertical
+      xe = x + w,           // x-end
+      ye = y + h,           // y-end
+      xm = x + w / 2,       // x-middle
+      ym = y + h / 2;       // y-middle
+
+  ctx.beginPath();
+  ctx.moveTo(x, ym);
+  ctx.bezierCurveTo(x, ym - oy, xm - ox, y, xm, y);
+  ctx.bezierCurveTo(xm + ox, y, xe, ym - oy, xe, ym);
+  ctx.bezierCurveTo(xe, ym + oy, xm + ox, ye, xm, ye);
+  ctx.bezierCurveTo(xm - ox, ye, x, ym + oy, x, ym);
+  //ctx.closePath(); // not used correctly, see comments (use to close off open path)
+  ctx.stroke();
 }
 HTML5Canvas2dRenderer.prototype.renderFan = function(prop) {
 	// Redundant calculation, could pass this as a parameter if necessary
 	var bend = prop.prop.vectorize().rotate(prop.bend,prop.prop.vectorize().cross(prop.axis)).spherify();
+	//handle
 	this.context.beginPath();
-	this.context.arc(0,0,3,0,2*Math.PI);
-	this.context.fillStyle = this.color(prop.color);
-	this.context.fill();
-	this.context.lineWidth = 1;
-	this.context.strokeStyle = "gray";
+	this.context.arc(0,0,8,0,2*Math.PI);
+	this.context.lineWidth = 3;
+	this.context.strokeStyle = this.color(prop.color);
+	this.context.stroke();
+	// cross bars
+	this.context.beginPath();
+	this.context.moveTo(0.4*60*Math.sin(bend.zenith)*prop.prop.radius,60*Math.sin(bend.zenith)*prop.prop.radius*Math.sqrt(2)/4);
+	this.context.lineTo(60*Math.sin(bend.zenith)*prop.prop.radius*Math.sqrt(2)/2,0);
+	this.context.lineWidth = 3;
+	this.context.strokeStyle = this.color(prop.color);
 	this.context.stroke();
 	this.context.beginPath();
-	this.context.moveTo(0,0);
-	this.context.lineTo(60*Math.sin(bend.zenith)*prop.prop.radius,0);
-	this.context.lineWidth = 1;
-	this.context.strokeStyle = "gray";
+	this.context.moveTo(0.4*60*Math.sin(bend.zenith)*prop.prop.radius,-60*Math.sin(bend.zenith)*prop.prop.radius*Math.sqrt(2)/4);
+	this.context.lineTo(60*Math.sin(bend.zenith)*prop.prop.radius*Math.sqrt(2)/2,0);
+	this.context.lineWidth = 3;
+	this.context.strokeStyle = this.color(prop.color);
 	this.context.stroke();
-	if (prop.fire === true) {
-		this.drawFlame(60*Math.sin(bend.zenith)*prop.prop.radius,0);
-	} else {
+	//tines
+	this.context.save();
+	this.context.rotate(-Math.PI/4);
+	for (var i = 0; i<3; i++) {
 		this.context.beginPath();
-		// could do this in a different order depending on the zenith value...
-		this.context.arc(60*Math.sin(bend.zenith)*prop.prop.radius,0,12,0,2*Math.PI);
-		this.context.fillStyle = this.color(prop.color);
-		this.context.fill();
-		this.context.lineWidth = 1;
-		this.context.strokeStyle = "gray";
+		this.context.moveTo(0,0);
+		this.context.lineTo(60*Math.sin(bend.zenith)*prop.prop.radius,0);
+		this.context.lineWidth = 3;
+		this.context.strokeStyle = this.color(prop.color);
 		this.context.stroke();
+		if (prop.fire === true) {
+			this.drawFlame(60*Math.sin(bend.zenith)*prop.prop.radius,0);
+		}
+		this.context.rotate(Math.PI/4);
 	}
+	this.context.restore();
 }
 HTML5Canvas2dRenderer.prototype.renderBuugeng = function(prop) {
 	// Redundant calculation, could pass this as a parameter if necessary
 	var bend = prop.prop.vectorize().rotate(prop.bend,prop.prop.vectorize().cross(prop.axis)).spherify();
 	this.context.beginPath();
-	this.context.arc(0,0,3,0,2*Math.PI);
-	this.context.fillStyle = this.color(prop.color);
-	this.context.fill();
-	this.context.lineWidth = 1;
-	this.context.strokeStyle = "gray";
+	this.context.arc(30*Math.sin(bend.zenith)*prop.prop.radius,0,30*Math.sin(bend.zenith)*prop.prop.radius,0,Math.PI);
+	this.context.lineWidth = 3;
+	this.context.strokeStyle = this.color(prop.color);
 	this.context.stroke();
 	this.context.beginPath();
-	this.context.moveTo(0,0);
-	this.context.lineTo(60*Math.sin(bend.zenith)*prop.prop.radius,0);
-	this.context.lineWidth = 1;
-	this.context.strokeStyle = "gray";
+	this.context.arc(-30*Math.sin(bend.zenith)*prop.prop.radius,0,30*Math.sin(bend.zenith)*prop.prop.radius,0,Math.PI,true);
+	this.context.lineWidth = 3;
+	this.context.strokeStyle = this.color(prop.color);
 	this.context.stroke();
 	if (prop.fire === true) {
 		this.drawFlame(60*Math.sin(bend.zenith)*prop.prop.radius,0);
-	} else {
-		this.context.beginPath();
-		// could do this in a different order depending on the zenith value...
-		this.context.arc(60*Math.sin(bend.zenith)*prop.prop.radius,0,12,0,2*Math.PI);
-		this.context.fillStyle = this.color(prop.color);
-		this.context.fill();
-		this.context.lineWidth = 1;
-		this.context.strokeStyle = "gray";
-		this.context.stroke();
+		this.drawFlame(-60*Math.sin(bend.zenith)*prop.prop.radius,0);
 	}
 }
 
