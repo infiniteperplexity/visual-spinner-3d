@@ -1508,6 +1508,33 @@ function(options) {
 
 
 MoveFactory.recipe(
+	"snake",
+{
+	name: "Snake",
+	speed: 3,
+	direction: "CLOCKWISE"
+},
+function(options) {
+    var move = VS3D.MoveChain();
+	var segment = VS3D.MoveLink();
+	segment.duration = 1/options.speed;
+	segment.hand.radius = 1;
+	segment.hand.speed = 0;
+	segment.prop.speed = options.direction*options.speed;
+	segment.hand.angle = options.orient;
+	segment.prop.angle = options.orient + OFFSET;
+	move.add(segment);
+	move.extend();
+	move.tail().hand.radius = 0.5;
+	move.tail().pivot.angle = options.orient;
+	move.tail().pivot.radius = 0.5;
+	move.tail().hand.speed = options.direction*options.speed;
+	move.tail().prop.speed = options.direction*options.speed;
+	move.extend();
+	return move;
+});
+
+MoveFactory.recipe(
 	"isopop",
 {
 	name: "Iso-Pop",
@@ -1538,7 +1565,6 @@ function(options) {
 	return move;
 });
 MoveFactory.variant("isobreak",{name: "Iso-Break", pop: "ANTISPIN"},"isopop");
-
 
 MoveFactory.recipe(
 	"scap",

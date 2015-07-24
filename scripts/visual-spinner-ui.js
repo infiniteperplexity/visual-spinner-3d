@@ -1039,16 +1039,16 @@ PhoriaProp.prototype.hoopShapes = function(myProp) {
 	return shapes;
 }
 PhoriaProp.prototype.clubShapes = function(myProp) {
-	var pommel = PhoriaSphere(0.1, 3);
+	var pommel = PhoriaSphere(0.075, 3);
 	var tip = PhoriaSphere(0.1, 3);
-	var handle = PhoriaCylinder(0.05, 0.2, 8);
-	var segment1 = PhoriaCylinder(0.075, 0.1, 8);
-	var segment2 = PhoriaCylinder(0.1, 0.1, 8);
-	var segment3 = PhoriaCylinder(0.125, 0.1, 8);
-	var segment4 = PhoriaCylinder(0.15, 0.1, 8);
-	var segment5 = PhoriaCylinder(0.15, 0.1, 8);
-	var segment6 = PhoriaCylinder(0.15, 0.1, 8);
-	var segment7 = PhoriaCylinder(0.125, 0.1, 8);
+	var handle = PhoriaCylinder(0.05, 0.21, 8);
+	var segment1 = PhoriaCylinder(0.065, 0.11, 8);
+	var segment2 = PhoriaCylinder(0.08, 0.11, 8);
+	var segment3 = PhoriaCylinder(0.1, 0.11, 8);
+	var segment4 = PhoriaCylinder(0.125, 0.11, 8);
+	var segment5 = PhoriaCylinder(0.15, 0.11, 8);
+	var segment6 = PhoriaCylinder(0.125, 0.11, 8);
+	var segment7 = PhoriaCylinder(0.1, 0.11, 8);
 	pommel.style.color = PhoriaColor(myProp.color);
 	handle.style.color = PhoriaColor("gray");
 	segment1.style.color = PhoriaColor(myProp.color);
@@ -1058,15 +1058,15 @@ PhoriaProp.prototype.clubShapes = function(myProp) {
 	segment5.style.color = PhoriaColor("gray");
 	segment6.style.color = PhoriaColor(myProp.color);
 	segment7.style.color = PhoriaColor(myProp.color);
-	PhoriaTranslatePoints(handle,[0,0,0.2]);
-	PhoriaTranslatePoints(segment1,[0,0,0.3]);
-	PhoriaTranslatePoints(segment2,[0,0,0.4]);
-	PhoriaTranslatePoints(segment3,[0,0,0.5]);
-	PhoriaTranslatePoints(segment4,[0,0,0.6]);
-	PhoriaTranslatePoints(segment5,[0,0,0.7]);
-	PhoriaTranslatePoints(segment6,[0,0,0.8]);
-	PhoriaTranslatePoints(segment7,[0,0,0.9]);
-	PhoriaTranslatePoints(tip,[0,0,0.95]);
+	PhoriaTranslatePoints(handle,[0,0,0.21]);
+	PhoriaTranslatePoints(segment1,[0,0,0.32]);
+	PhoriaTranslatePoints(segment2,[0,0,0.44]);
+	PhoriaTranslatePoints(segment3,[0,0,0.55]);
+	PhoriaTranslatePoints(segment4,[0,0,0.66]);
+	PhoriaTranslatePoints(segment5,[0,0,0.77]);
+	PhoriaTranslatePoints(segment6,[0,0,0.88]);
+	PhoriaTranslatePoints(segment7,[0,0,0.99]);
+	PhoriaTranslatePoints(tip,[0,0,1.05]);
 	var flame = PhoriaFlame(6);	
 	PhoriaTranslatePoints(flame,[0,0,1]);
 	if (myProp.fire === false) {
