@@ -1,0 +1,64 @@
+{"prop1": {
+  "hand": {
+    "radius": 1,
+    "azimuth": "NINE"
+  },
+  "prop": {
+    "azimuth": "NINE"
+  },
+  "color": "blue",
+  "moves": [
+    {
+      "entry": "NINE",
+      "orient": "NINE",
+      "duration": 0.25,
+      "recipe": "triquetra"
+    },
+    {
+      "entry": "TWELVE",
+      "orient": "NINE",
+      "duration": 0.25,
+      "direction": -1,
+      "recipe": "triquetra"
+    },
+    {
+      "entry": "NINE",
+      "duration": 0.25,
+      "direction": -1,
+      "recipe": "extension"
+    },
+    {
+      "name": "Four-Petal Anti-Spin Flower",
+      "entry": "SIX",
+      "duration": 0.25,
+      "recipe": "antispin"
+    }
+  ]
+}, "prop2": {
+  "hand": {
+    "radius": 1
+  },
+  "moves": [
+    {
+      "duration": 0.25,
+      "recipe": "extension"
+    },
+    {
+      "name": "Four-Petal Anti-Spin Flower",
+      "entry": "SIX",
+      "duration": 0.25,
+      "direction": -1,
+      "recipe": "antispin"
+    },
+    {
+      "duration": 0.25,
+      "direction": -1,
+      "recipe": "triquetra"
+    },
+    {
+      "entry": "TWELVE",
+      "duration": 0.25,
+      "recipe": "triquetra"
+    }
+  ]
+}}
