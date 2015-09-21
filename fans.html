@@ -23,8 +23,6 @@ function init() {
 	two.propType = "fan";
 	one.color = "red";
 	two.color = "blue";
-	one.fire = true;
-	two.fire = true;
 	one.hand.radius = 1;
 	two.hand.radius = 1;
 	one.setHandAngle(vs.THREE);
@@ -39,18 +37,61 @@ function init() {
 	var move1 = vs.Moves.build.generic({hand_speed: 1, hand_radius: 1, hand_angle: vs.THREE, prop_angle: vs.THREE, duration: 0.25})
 	var move2 = vs.Moves.build.generic({hand_speed: 1, hand_radius: 1, hand_angle: vs.NINE, prop_angle: vs.NINE, duration: 0.25})
 	for(var i = 0; i<10; i++) {
-		twist1 = (Math.floor(Math.random()*9)-4)/1.0;
-		twist2 = (Math.floor(Math.random()*9)-4)/1.0;
-		hand1 = (Math.floor(Math.random()*9)-4)/1.0;
-		hand2 = (Math.floor(Math.random()*9)-4)/1.0;
-		prop1 = (Math.floor(Math.random()*9)-4)/1.0;
-		prop2 = (Math.floor(Math.random()*9)-4)/1.0;
+		twist1 = Math.floor(Math.random()*9)-4;
+		twist2 = Math.floor(Math.random()*9)-4;
+		prop1 = Math.floor(Math.random()*9)-4;
+		prop2 = Math.floor(Math.random()*9)-4;
+		bend1 = Math.floor(Math.random()*9)-4;
+		bend2 = Math.floor(Math.random()*9)-4;
+		//okay...so the only thing potentially wrong here is to change how the hand stuff works.
+		if (move1.handVector().nearly(VS3D.Vector(1,0,0),0.05) || move1.handVector().nearly(VS3D.Vector(-1,0,0),0.05)) {
+			if (Math.random()<0.5) {
+				move1.hand.plane = vs.WALL;
+			} else {
+				move1.hand.plane = vs.FLOOR;
+			}
+		} else if (move1.handVector().nearly(VS3D.Vector(0,1,0),0.05) || move1.handVector().nearly(VS3D.Vector(0,-1,0),0.05)) {
+			if (Math.random()<0.5) {
+				move1.hand.plane = vs.WALL;
+			} else {
+				move1.hand.plane = vs.WHEEL;
+			}
+		} else if (move1.handVector().nearly(VS3D.Vector(0,0,1),0.05) || move1.handVector().nearly(VS3D.Vector(0,0,-1),0.05)) {
+			if (Math.random()<0.5) {
+				move1.hand.plane = vs.FLOOR;
+			} else {
+				move1.hand.plane = vs.WHEEL;
+			}
+		}
+		if (move2.handVector().nearly(VS3D.Vector(1,0,0),0.05) || move2.handVector().nearly(VS3D.Vector(-1,0,0),0.05)) {
+			if (Math.random()<0.5) {
+				move2.hand.plane = vs.WALL;
+			} else {
+				move2.hand.plane = vs.FLOOR;
+			}
+		} else if (move2.handVector().nearly(VS3D.Vector(0,1,0),0.05) || move2.handVector().nearly(VS3D.Vector(0,-1,0),0.05)) {
+			if (Math.random()<0.5) {
+				move2.hand.plane = vs.WALL;
+			} else {
+				move2.hand.plane = vs.WHEEL;
+			}
+		} else if (move2.handVector().nearly(VS3D.Vector(0,0,1),0.05) || move2.handVector().nearly(VS3D.Vector(0,0,-1),0.05)) {
+			if (Math.random()<0.5) {
+				move2.hand.plane = vs.FLOOR;
+			} else {
+				move2.hand.plane = vs.WHEEL;
+			}
+		}
+		hand1 = Math.floor(Math.random()*5)-2;
+		hand2 = Math.floor(Math.random()*5)-2;
 		move1.twist_speed = twist1;
 		move2.twist_speed = twist2;
 		move1.hand.speed = hand1;
 		move2.hand.speed = hand2;
 		move1.prop.speed = prop1;
 		move2.prop.speed = prop2;
+		move1.bend_speed = bend1;
+		move2.bend_speed = bend2;
 		one.addMove(move1);
 		two.addMove(move2);
 		move1 = one.socket();
