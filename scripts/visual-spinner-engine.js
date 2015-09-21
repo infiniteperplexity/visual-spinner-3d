@@ -781,7 +781,7 @@ MoveLink.prototype.spin = function(prop, dummy) {
 	//update the prop axis of the current move
 	v = this.bend_speed + this.bend_acc*this.t/BEAT;
 	prop.bend = unwind(prop.bend+v*SPEED);
-	prop.twist = unwind(prop.twist+this.twist_speed);
+	prop.twist = unwind(prop.twist+this.twist_speed*SPEED);
 	prop.grip = unwind(prop.grip+this.grip_speed);
 	prop.choke += this.choke_speed; 
 	this.t+=1;
@@ -871,7 +871,6 @@ MoveLink.prototype.split = function(t) {
 		two.fitTo(one.socket());
         return [one, two];
 }
-
 // Return a new MoveLink representing the end state of this MoveLink
 MoveLink.prototype.socket = function() {
 	var socket = this.clone();
@@ -1356,6 +1355,7 @@ MoveLink.prototype.adjust = function(target) {
 	return null;
 }
 
+
 function overrideSpinfail(fun) {
 	Prop.prototype.spinfail = fun;
 }
@@ -1363,7 +1363,8 @@ function overrideSpinfail(fun) {
 function overrideReorientFail(fun) {
 	MoveChain.prototype.reorientFail = fun;
 }
-
+	
+	
 return {
 	MoveChain: function() {return new MoveChain();},
 	MoveLink: function() {return new MoveLink();},

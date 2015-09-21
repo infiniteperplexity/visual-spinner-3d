@@ -1,0 +1,67 @@
+<!--Distributed under GNU Public License version 3-->
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<style>
+body {background-color: #99CCFF}
+</style>
+<title>VisualSpinner3D, by Glenn Wright</title>
+<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="scripts/gl-matrix-min.js"></script>
+<script src="scripts/phoria-min.js"></script>
+<script src="scripts/requestAnimationFrame.js"></script>
+<script src="scripts/visual-spinner-engine.js"></script>
+<script src="scripts/visual-spinner-moves.js"></script>
+<script src="scripts/visual-spinner-ui.js"></script>
+<script>
+function init() {
+	var vs = VS3D.VisualSpinnerWidget();
+	VS3D.Constants.rescope(vs);
+	vs.embedById("vs-div");
+	var one = vs.addProp();
+	var two = vs.addProp();
+	one.propType = "fan";
+	two.propType = "fan";
+	one.color = "red";
+	two.color = "blue";
+	one.fire = true;
+	two.fire = true;
+	one.hand.radius = 1;
+	two.hand.radius = 1;
+	one.setHandAngle(vs.THREE);
+	one.setPropAngle(vs.THREE);
+	two.setHandAngle(vs.NINE);
+	two.setPropAngle(vs.NINE);
+	one.nudge(0,0,0.5);
+	two.nudge(0,0,-0.5);
+	
+	//needed fix!
+	//prop.twist = unwind(prop.twist+this.twist_speed*SPEED);
+	var move1 = vs.Moves.build.generic({hand_speed: 1, hand_radius: 1, hand_angle: vs.THREE, prop_angle: vs.THREE, duration: 0.25})
+	var move2 = vs.Moves.build.generic({hand_speed: 1, hand_radius: 1, hand_angle: vs.NINE, prop_angle: vs.NINE, duration: 0.25})
+	for(var i = 0; i<10; i++) {
+		twist1 = (Math.floor(Math.random()*9)-4)/1.0;
+		twist2 = (Math.floor(Math.random()*9)-4)/1.0;
+		hand1 = (Math.floor(Math.random()*9)-4)/1.0;
+		hand2 = (Math.floor(Math.random()*9)-4)/1.0;
+		prop1 = (Math.floor(Math.random()*9)-4)/1.0;
+		prop2 = (Math.floor(Math.random()*9)-4)/1.0;
+		move1.twist_speed = twist1;
+		move2.twist_speed = twist2;
+		move1.hand.speed = hand1;
+		move2.hand.speed = hand2;
+		move1.prop.speed = prop1;
+		move2.prop.speed = prop2;
+		one.addMove(move1);
+		two.addMove(move2);
+		move1 = one.socket();
+		move2 = two.socket();
+	}
+	
+	vs.addControls("play","pause","rewind","frame","forward","reset","2d3d");
+	vs.ready();
+	vs.play();
+}
+</script>
+</head><body onload="init();">
+<div id="vs-div"></div>
+</body></html>
