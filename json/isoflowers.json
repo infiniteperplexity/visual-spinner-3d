@@ -18,7 +18,8 @@
       "recipe": "flower",
       "petals": 2,
       "name": "Two-Petal In-Spin Flower",
-      "choke": 0.5
+      "choke": 0.5,
+      "extend": 0.5
     },
     {
       "recipe": "antispin",
@@ -28,7 +29,8 @@
     {
       "recipe": "antispin",
       "name": "Four-Petal Anti-Spin Flower",
-      "choke": 0.5
+      "choke": 0.5,
+      "extend": 0.5
     }
   ]
 }, "prop2": {
