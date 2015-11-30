@@ -60,12 +60,12 @@ var ANTISPIN = Constants.ANTISPIN;
 var CATEYE = Constants.CATEYE;
 var FORWARD = Constants.FORWARD;
 var BACKWARD = Constants.BACKWARD;
-var PROBEND = Constants.PROBEND; 
+var PROBEND = Constants.PROBEND;
 var ISOBEND = Constants.ISOBEND;
 var ANTIBEND = Constants.ANTIBEND;
 var STATIC = Constants.STATIC;
 var CONTACT = Constants.CONTACT;
-var GUNSLINGER = Constants.GUNSLINGER;	
+var GUNSLINGER = Constants.GUNSLINGER;
 
 var MoveFactory = VS3D.MoveFactory().constructor;
 var MoveChain = VS3D.MoveChain().constructor;
@@ -491,7 +491,7 @@ function(options) {
 	segment.prop.plane = options.plane;
 	segment.hand.plane = options.plane;
 	segment.hand.radius = options.extend;
-	
+
 	segment.hand.angle = options.orient;
 	segment.prop.angle = options.orient + options.direction*options.mode;
 	segment.duration = 1/options.sliceby;
@@ -525,7 +525,7 @@ function(options) {
 	segment.pivot.radius = options.pivot_radius;
 	segment.pivot.plane = options.plane;
 	segment.pivot.speed = 0;
-	
+
 	segment.hand.plane = options.plane;
 	segment.hand.radius = options.extend;
 	segment.hand.angle = options.orient;
@@ -729,8 +729,7 @@ MoveFactory.recipe(
 	spin: "INSPIN",
 	mode: "OFFSET",
 	petals: 0,
-	extend: 1,
-	mode: "DIAMOND"
+	extend: 1
 },
 function(options) {
 	var move = VS3D.MoveChain();
@@ -784,7 +783,7 @@ function(options) {
     segment.prop.plane = options.plane;
     segment.hand.plane = options.plane;
     segment.hand.radius = options.extend;
-   
+
     segment.hand.angle = options.orient;
     segment.prop.angle = options.orient;
     segment.bend = options.direction*options.mode;
@@ -816,7 +815,7 @@ function(options) {
     segment.pivot.plane = options.plane;
 	segment.pivot.angle = options.pivot_angle;
     segment.pivot.speed = 0;
-	
+
 	segment.prop.bend = 0;
 	segment.bend_speed = options.harmonics*options.pitch*options.speed;
 	segment.prop.plane = options.plane;
@@ -958,7 +957,7 @@ function(options) {
     segment.hand.angle = options.orient;
     segment.prop.angle = options.orient - options.direction*QUARTER;
     segment.duration = 0.5 / options.harmonics;
-   
+
     segment.prop.speed = 0.5*options.direction*options.harmonics*options.pitch*options.speed;
     segment.bend_speed = 0;
     move.add(segment);
@@ -995,7 +994,7 @@ function(options) {
 	segment.pivot.radius = options.pivot_radius;
 	segment.pivot.plane = options.plane;
 	segment.pivot.speed = 0;
-	
+
 	segment.hand.plane = options.plane;
 	segment.hand.radius = options.extend;
 	segment.hand.angle = options.orient;
@@ -1033,14 +1032,14 @@ function(options) {
 	segment.prop.plane = options.plane;
 	segment.helper.plane = options.plane;
 	segment.pivot.plane = options.plane;
-	
+
 	segment.choke = options.weight;
 	segment.helper.angle = options.entry;
 	segment.helper.radius = options.weight;
-	
+
 	segment.hand.speed = 0;
 	segment.prop.speed = options.direction*options.speed;
-	
+
 	segment.hand.angle = options.orient;
 	segment.hand.radius = options.extend;
 	segment.prop.angle = options.entry;
@@ -1289,7 +1288,7 @@ recipe: "generic",
 	grip: 0,
 	grip_speed: 0,
 	choke: 0,
-	choke_speed: 0, 
+	choke_speed: 0,
 	bend: 0,
 	bend_speed: 0,
 	bend_acc: 0

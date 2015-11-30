@@ -304,7 +304,7 @@ Controller.prototype.generateMove = function(n, txt) {
 		move = moves.build.isolation({entry: THREE, direction: this.spin[n], mode: 0, plane: this.plane[n], spin: ANTISPIN});
 		move.align("prop",this.align[n]);
 	} else if (txt=="isol") {
-		move = moves.build.isolation({entry: this.align[n], mode: OFFSET, direction: this.spin[n], plane: this.plane[n]});
+		move = moves.build.isolation({entry: this.align[n], direction: this.spin[n], plane: this.plane[n]});
 		move.align("prop",this.align[n]);
 	} else if (txt=="unip") {
 		move = moves.build.pendulum({direction: this.spin[n], plane: this.plane[n], extend: 0.5});
