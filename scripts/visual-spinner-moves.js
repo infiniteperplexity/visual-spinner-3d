@@ -383,6 +383,20 @@ MoveFactory.prototype.build = function(movename, options) {
 			}
 		}
 	}
+	//experimental code...might make lots of other stuff obsolete
+	var various = ["choke","grip","twist","bend"];
+	for (var i=0; i<various.length; i++) {
+		if (options[various[i]] !== undefined) {
+			if (move.submoves) {
+				for (var j=0; j<move.submoves.length; j++) {
+					move.submoves[j][various[i]] = options[various[i]];
+				}
+			} else {
+				move[various[i]] = options[various[i]];
+			}
+		}
+	}
+	//end experimental code
 	if (augmented.abrupt !== undefined) {
 		move.setAbrupt(augmented.abrupt);
 	}
