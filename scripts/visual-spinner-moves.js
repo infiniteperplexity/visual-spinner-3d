@@ -1,3 +1,5 @@
+//how exactly do we feed defaults into moves?  Do we need to actively consume the arguments?
+
 VS3D = (function (VS3D) {
 
 //Bring all Constants into the current namespace, for convenience
@@ -421,6 +423,10 @@ MoveFactory.recipe = function(movename, defaults, fun) {
 		direction: "CLOCKWISE",
 		pivot_angle: "THREE",
 		pivot_radius: 0,
+		twist: 0,
+		grip: 0,
+		choke: 0,
+		bend: 0,
 		phase: 0,
 		sliceby: 4
 	};
