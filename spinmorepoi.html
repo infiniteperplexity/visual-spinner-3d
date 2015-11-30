@@ -71,10 +71,10 @@ function init() {
 	} else {
 		$("#2d3d").val("3d");
 	}
-	// set up controller	
+	// set up controller
 	controller.updateParameters();
 	vs.play();
-	
+
 }
 
 function Controller() {
@@ -95,46 +95,46 @@ Controller.prototype.updateParameters = function() {
 	var propn;
 	var pcolor;
 	var fcolor;
-	
+
 	//Check 2D vs. 3D
 	list = document.getElementById("2d3d");
 	txt = list.options[list.selectedIndex].value;
 	if (txt=="2d") {vs.swapRenderer(twoD);}
 	else if (txt=="3d") {vs.swapRenderer(threeD);}
-			
+
 	//Update prop types
 	for(var i = 1; i<=vs.scene.props.length; i++) {
 		list = document.getElementById(i+"prop");
 		txt = list.options[list.selectedIndex].value;
-		if (txt==="poi") {	
+		if (txt==="poi") {
 			vs.scene.props[i-1].propType = "poi";
 			vs.scene.props[i-1].fire = false;
-		} else if (txt==="fpoi") {	
+		} else if (txt==="fpoi") {
 			vs.scene.props[i-1].propType = "poi";
 			vs.scene.props[i-1].fire = true;
-		} else if (txt==="staff") {	
+		} else if (txt==="staff") {
 			vs.scene.props[i-1].propType = "staff";
 			vs.scene.props[i-1].fire = false;
-		} else if (txt==="fstaff") {	
+		} else if (txt==="fstaff") {
 			vs.scene.props[i-1].propType = "staff";
 			vs.scene.props[i-1].fire = true;
-		} else if (txt==="hoop") {	
+		} else if (txt==="hoop") {
 			vs.scene.props[i-1].propType = "hoop";
 			vs.scene.props[i-1].fire = false;
-		} else if (txt==="fhoop") {	
+		} else if (txt==="fhoop") {
 			vs.scene.props[i-1].propType = "hoop";
 			vs.scene.props[i-1].fire = true;
-		} else if (txt==="fan") {	
+		} else if (txt==="fan") {
 			vs.scene.props[i-1].propType = "fan";
 			vs.scene.props[i-1].fire = false;
-		} else if (txt==="ffan") {	
+		} else if (txt==="ffan") {
 			vs.scene.props[i-1].propType = "fan";
 			vs.scene.props[i-1].fire = true;
 		} else if (txt==="none") {
 			vs.scene.props[i-1].propType = "noprop";
 		}
 	}
-	
+
 	//Update alignment and planes
 	for (var i = 1; i<=vs.scene.props.length; i++) {
 		list = document.getElementById(i+"plane");
@@ -164,7 +164,7 @@ Controller.prototype.updateParameters = function() {
 		} else if (txt=="ccw") {
 			this.spin[i-1] = COUNTERCLOCKWISE;
 		}
-	}	
+	}
 	//Generate moves
 	var submoves;
 	for (var i = 1; i<=vs.scene.props.length; i++) {
@@ -278,7 +278,7 @@ Controller.prototype.generateMove = function(n, txt) {
 		move = moves.build.isolation({entry: THREE, direction: this.spin[n], mode:  0, plane: this.plane[n], spin: ANTISPIN});
 		move.align("prop",this.align[n]);
 	} else if (txt=="isol") {
-		move = moves.build.isolation({entry: this.align[n], direction: this.spin[n], plane: this.plane[n]});
+		move = moves.build.isolation({entry: this.align[n], mode: OFFSET, direction: this.spin[n], plane: this.plane[n]});
 		move.align("prop",this.align[n]);
 	} else if (txt=="unip") {
 		move = moves.build.pendulum({direction: this.spin[n], plane: this.plane[n], extend: 0.5});
@@ -386,7 +386,7 @@ Controller.prototype.shuffle = function() {
                 }
         }
         this.updateParameters();
-} 
+}
 </script>
 </head><body onload="init();">
 <button onclick="window.open('http://infiniteperplexity.github.io/visual-spinner-3d/');">See more at the VisualSpinner3D main site</button>
@@ -402,7 +402,7 @@ Controller.prototype.shuffle = function() {
 		<option value="3d" selected="selected">3D</option>
 		<option value="2d">2D</option>
 </select>
- <button type="button" onclick="controller.shuffle()">Shuffle Moves</button> 
+ <button type="button" onclick="controller.shuffle()">Shuffle Moves</button>
 </td>
 </tr>
 <tr>
@@ -711,6 +711,6 @@ Green Prop
 	</select>
 </td>
 </tr>
-</table> 
+</table>
 <p>Questions, comments, and suggestions: infinite DOT perplexity AT gmail DOT com</p>
 </body></html>

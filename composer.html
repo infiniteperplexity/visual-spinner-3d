@@ -331,7 +331,7 @@ function modifyMove(event) {
 	addInput(which,selectInput(definition,"helper_angle",["Up","Right","Down","Left"],[TWELVE, THREE, SIX, NINE]));
 	addInput(which,numberInput(definition,"helper_radius",[0,1,0.5]));
 	addInput(which,numberInput(definition,"lift",[0,0.5,0.5]));
-	addInput(which,numberInput(definition,"swing",[0.75,1,0.25]));
+	addInput(which,numberInput(definition,"swing",[0.5,1,0.25]));
 	addInput(which,selectInput(definition,"hybrid",["Pendulum-y","Flower-y"],[true, false]));
 	addInput(which,numberInput(definition,"height",[0,3,0.5]));
 	addInput(which,numberInput(definition,"drift",[-2,2,0.5]));
@@ -368,7 +368,7 @@ function viewMove(event) {
 	addInput(which,numberInput(definition,"pivot_radius",[0,1.5,0.5]));
 	addInput(which,vectorInput(definition,"plane",["Wall","Wheel","Floor"],[WALL, WHEEL, FLOOR]));
 	addInput(which,numberInput(definition,"lift",[0,0.5,0.5]));
-	addInput(which,numberInput(definition,"swing",[0.75,1,0.25]));
+	addInput(which,numberInput(definition,"swing",[0.5,1,0.25]));
 	addInput(which,selectInput(definition,"hybrid",["Pendulum-y","Flower-y"],[true, false]));
 	addInput(which,numberInput(definition,"height",[0,3,0.5]));
 	addInput(which,numberInput(definition,"drift",[-2,2,0.5]));
