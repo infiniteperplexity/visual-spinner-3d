@@ -1,0 +1,32 @@
+<!--Distributed under GNU Public License version 3-->
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>VisualSpinner3D v. 3.0, by Glenn Wright</title>
+<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="scripts/gl-matrix-min.js"></script>
+<script src="scripts/phoria-min.js"></script>
+<script src="scripts/requestAnimationFrame.js"></script>
+<script src="scripts/visual-spinner-engine.js"></script>
+<script src="scripts/visual-spinner-moves.js"></script>
+<script src="scripts/visual-spinner-ui.js"></script><script>
+var vs;
+function init() {
+	vs = VS3D.VisualSpinnerWidget();
+	VS3D.Constants.rescope(vs);
+	vs.embedById("vs-div");
+	var propOne = vs.addProp();
+	propOne.hand.radius = 1;
+	propOne.addMove(vs.Moves.build.flower({spin: vs.ANTISPIN}));
+	vs.addControls("play","pause","rewind","frame","forward","reset","2d3d");
+	vs.ready();
+	document.getElementById("json").value = vs.stringify();
+}
+</script>
+<body onload="init();">
+<a href='http://infiniteperplexity.github.io/visual-spinner-3d/'>See more at the VisualSpinner3D main site.</a>
+<div id="vs-div">
+</div>
+	<textarea id="json" type="text" style="width:400px;height:300px;"></textarea>
+	<br>
+	<button onclick="vs.parse(document.getElementById('json').value);">Submit</button>
+</body></html>

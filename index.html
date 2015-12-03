@@ -31,7 +31,7 @@ function init() {
 	}
 	propOne.addMove(vs.Moves.build.flower({direction: vs.CLOCKWISE, entry: propOne.socket().hand.angle, spin: vs.ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
 	propTwo.addMove(vs.Moves.build.flower({direction: 1-(i%2)*2, entry: propTwo.socket().hand.angle, spin: vs.ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
-	
+
 	vs.addControls("play","pause","rewind","frame","forward","reset","2d3d");
 	vs.ready();
 	vs.play();
@@ -69,6 +69,7 @@ The long answer is trickier.  The simulator is a JavaScript engine that can simu
 <li><a href="http://infiniteperplexity.github.io/visual-spinner-3d/draggable.html">Another interface idea,</a> with rotation and zooming.</li>
 <li><a href="http://infiniteperplexity.github.io/visual-spinner-3d/composer.html">This page</a> is the most powerful interface I have built so far, but it's also a bit more complex than the other pages.  You can drag and drop moves from a list, modify them, arrange them in sequences, and even export a text file that you can reload the next time you visit the page.  Confused?  Try <a href="https://www.youtube.com/watch?feature=youtu.be&v=k3TzJOSmVBY&app=desktop">this tutorial.</a></li>
 <li><a href="http://infiniteperplexity.github.io/visual-spinner-3d/exhibit.html?file:///C:/Users/Glenn/Documents/GitHub/visual-spinner-3d/exhibit.html?url=http://infiniteperplexity.github.io/visual-spinner-3d/json/qt3d.json">This page</a> is new; it can directly load JSON files stored online, referenced by a URL parameter.</li>
+<li><a href="http://infiniteperplexity.github.io/visual-spinner-3d/jsontester.html">Another new page</a>, for direct JSON input.</li>
 </ul>
 <br>
 <p>
