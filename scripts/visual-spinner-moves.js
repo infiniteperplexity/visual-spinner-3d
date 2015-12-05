@@ -384,9 +384,9 @@ MoveFactory.prototype.build = function(movename, options) {
 		}
 	}
 	//experimental code...might make lots of other stuff obsolete
-	var various = ["choke","grip","twist"];
+	var various = ["choke","grip","twist","bend","pivot_radius","pivot_angle"];
 	for (var i=0; i<various.length; i++) {
-		if (options[various[i]] !== undefined) {
+		if (options[various[i]] !== undefined && MoveFactory.prototype.recipes[movename].defaults[various[i]] === undefined) {
 			if (move.submoves) {
 				for (var j=0; j<move.submoves.length; j++) {
 					move.submoves[j][various[i]] = options[various[i]];
