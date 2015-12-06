@@ -13,7 +13,7 @@ var SMALL = Constants.SMALL;
 // Constants referring to the five spherical prop elements
 var HOME = Constants.HOME;
 var PIVOT = Constants.PIVOT;
-var HELPER = Constants.HELPER
+var HELPER = Constants.HELPER;
 var HAND = Constants.HAND;
 var PROP = Constants.PROP;
 var ELEMENTS = Constants.ELEMENTS;

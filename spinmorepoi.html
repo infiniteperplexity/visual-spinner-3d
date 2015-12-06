@@ -343,7 +343,7 @@ Controller.prototype.generateMove = function(n, txt) {
 	} else if (txt=="6ant") {
 		move = moves.build.toroid({orient: this.align[n], entry: this.align[n], harmonics: 6, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
 	} else if (txt=="1pro") {
-		move = moves.build.toroid({orient: this.align[n], entry: this.align[n], harmonics: 1, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
+		move = moves.build.toroid({orient: this.align[n], entry: this.align[n], harmonics: 3, direction: this.spin[n], bend: 2, plane: this.plane[n]});
 	} else if (txt=="2pro") {
 		move = moves.build.toroid({orient: this.align[n], entry: this.align[n], harmonics: 2, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
 	} else if (txt=="bpro") {
