@@ -89,37 +89,12 @@ var ANTISPIN = Constants.ANTISPIN = -1;
 var CATEYE = Constants.CATEYE = -1;
 var FORWARD = Constants.FORWARD = 1;
 var BACKWARD = Constants.BACKWARD = -1;
-var PROBEND = Constants.PROBEND = 3; 
+var PROBEND = Constants.PROBEND = 3;
 var ISOBEND = Constants.ISOBEND = 1;
 var ANTIBEND = Constants.ANTIBEND = -1;
 var STATIC = Constants.STATIC = 0;
 var CONTACT = Constants.CONTACT = Math.PI;
 var GUNSLINGER = Constants.GUNSLINGER = 0.5;
-
-//attempt to re-scope constants into another namespace
-Constants.rescope = function (scope) {
-	scope = scope || global;
-	for (var c in this) {
-		if (scope[c] !== undefined && typeof this[c] !== "function") {
-			alert("Constant-naming conflict in enclosing namespace.  Must use explicit 'VS3D.Constant' reference for this session.");
-			alert("Name was '" + c + "'.");
-			return;
-		}
-	}
-	for (var c in this)  {
-		if (typeof this[c] !== "function") {
-			scope[c] = this[c];
-		}
-	}
-}
-Constants.descope = function (scope) {
-	scope = scope || global;
-	for (var c in this) {
-		if (typeof scope[c] !== "function") {
-			scope[c] = undefined;
-		}
-	}
-}
 
 //// A Vector can represent either a point or a plane, in 3D Cartesian coordinates
 function Vector(x,y,z) {
@@ -151,7 +126,7 @@ Vector.constructor.prototype.define = function(def) {
 }
 // Normalize a vector to magnitude = 1
 Vector.prototype.unitize = function() {
-	if (this.isZero()) {return this;}	
+	if (this.isZero()) {return this;}
 	var len = Math.sqrt(this.x*this.x+this.y*this.y+this.z*this.z);
 	var x = this.x / len;
 	var y = this.y / len;
@@ -160,7 +135,7 @@ Vector.prototype.unitize = function() {
 }
 
 Vector.prototype.magnitude = function() {
-	if (this.isZero()) {return this;}	
+	if (this.isZero()) {return this;}
 	var len = Math.sqrt(this.x*this.x+this.y*this.y+this.z*this.z);
 	return len;
 }
@@ -179,7 +154,7 @@ Vector.prototype.rotate = function(angle, axis) {
 	var u = axis.x;
 	var v = axis.y;
 	var w = axis.z;
-	var s = (u*x+v*y+w*z); 
+	var s = (u*x+v*y+w*z);
 	var t = (u*u+v*v+w*w);
 	var sq = Math.sqrt(t);
 	var cs = Math.cos(angle);
@@ -195,7 +170,7 @@ Vector.prototype.cross = function(v) {
         var y = this.z*v.x - this.x*v.z;
         var z = this.x*v.y - this.y*v.x;
         return new Vector(x,y,z);
-}         
+}
 // Project a vector onto a plane (defined by axis)
 Vector.prototype.project = function(axis) {
 	if (axis===undefined) {
@@ -241,12 +216,12 @@ Vector.prototype.nearly = function(vector, delta) {
 	//checks to see whether two vectors or planes are nearly the same
 	if (	Math.abs(this.x-vector.x)<delta
 		&&	Math.abs(this.y-vector.y)<delta
-		&&	Math.abs(this.z-vector.z)<delta) 
+		&&	Math.abs(this.z-vector.z)<delta)
 	{
 		return true;
 	} else {
 		return false;
-	}		
+	}
 }
 // Convert Vector coordinates to Spherical coordinates
 Vector.prototype.spherify = function() {
@@ -318,7 +293,7 @@ function nearly(n1,n2, delta) {
 //// A Prop handles the geometry for a number of spherical coordinates, some ad hoc coordinates, and a move queue
 // Note that Props and Moves use different coordinate systems for three-dimensional angles.
 	// Props define angles uniquely in terms of spherical coordinates: zenith and azimuth
-	// Moves define angles in spinner's terms: distance from a reference angle in the wall, wheel, or floor plane 
+	// Moves define angles in spinner's terms: distance from a reference angle in the wall, wheel, or floor plane
 function Prop() {
 	this.name = undefined;
 	// These elements define the Prop's position
@@ -439,7 +414,7 @@ Prop.prototype.getElementAngle = function(element, plane) {
         } else {
                 return unwind(-angle);
         }
-} 
+}
 Prop.prototype.getHomeAngle = function(plane) {return this.getElementAngle(HOME, plane);}
 Prop.prototype.getPivotAngle = function(plane) {return this.getElementAngle(PIVOT, plane);}
 Prop.prototype.getHelperAngle = function(plane) {return this.getElementAngle(HELPER, plane);}
@@ -597,14 +572,14 @@ Prop.prototype.debugMode = function(tf) {
 		this.spin = this.constructor.prototype.spin;
 		this.addMove = this.constructor.prototype.addMove;
 	}
-	
+
 }
 
 Prop.prototype.debugSpin = function() {
 	Prop.prototype.spin.call(this);
 }
 
-Prop.prototype.debugAddMove = function(myMove) {	
+Prop.prototype.debugAddMove = function(myMove) {
 	if (window.save_alert == null) {
 		window.save_alert = window.alert;
 	}
@@ -670,9 +645,9 @@ function MoveLink() {
 	this.twist = 0;
 	this.twist_speed = 0;
 	this.grip = 0;
-	this.grip_speed = 0; 
+	this.grip_speed = 0;
 	this.choke = 0;
-	this.choke_speed = 0; 
+	this.choke_speed = 0;
 	this.bend = 0;
 	this.bend_speed = 0;
 	this.bend_acc = 0;
@@ -683,7 +658,7 @@ function MoveLink() {
 	// by default, the MoveLink is not removed from the parent queue when finished
 	this.oneshot = false;
 	// determines the default reorientation behavior of the move when added to a Prop
-	this.abrupt = false; 
+	this.abrupt = false;
 }
 //// Modify one or more MoveLink parameters
 MoveLink.prototype.modify = function(options) {
@@ -733,7 +708,7 @@ MoveLink.prototype.modify = function(options) {
 	this.grip = (options.grip !== undefined) ? options.grip : this.grip;
 	this.grip_speed = (options.grip_speed !== undefined) ? options.grip_speed : this.grip_speed;
 	this.choke = (options.choke !== undefined) ? options.choke : this.choke;
-	this.choke_speed = (options.choke_speed !== undefined) ? options.choke_speed : this.choke_speed; 
+	this.choke_speed = (options.choke_speed !== undefined) ? options.choke_speed : this.choke_speed;
 	this.bend = (options.bend !== undefined) ? options.bend : this.bend;
 	this.bend_speed = (options.bend_speed !== undefined) ? options.bend_speed : this.bend_speed;
 	this.bend_acc = (options.bend_acc !== undefined) ? options.bend_acc : this.bend_acc;
@@ -783,7 +758,7 @@ MoveLink.prototype.spin = function(prop, dummy) {
 	prop.bend = unwind(prop.bend+v*SPEED);
 	prop.twist = unwind(prop.twist+this.twist_speed*SPEED);
 	prop.grip = unwind(prop.grip+this.grip_speed);
-	prop.choke += this.choke_speed; 
+	prop.choke += this.choke_speed;
 	this.t+=1;
 	if (this.t >= this.duration*BEAT) {
 		this.finished = true;
@@ -830,7 +805,7 @@ MoveLink.prototype.refit = function() {return this;}
 
 // adjust the MoveLink to match a Prop or Move
 	//??? Is this any good?  how should it work?
-	
+
 
 // Create a perfect duplicate of this MoveLink
 MoveLink.prototype.clone = function() {
@@ -856,7 +831,7 @@ MoveLink.prototype.clone = function() {
 	newlink.grip = this.grip;
 	newlink.grip_speed = this.grip_speed;
 	newlink.choke = this.choke;
-	newlink.choke_speed = this.choke_speed; 
+	newlink.choke_speed = this.choke_speed;
 	return newlink;
 }
 
@@ -970,7 +945,7 @@ function MoveChain() {
 	this.oneshot = false;
 	this.started = false;
 	this.finished = false;
-	this.abrupt = false; 
+	this.abrupt = false;
 	this.submoves = [];
 }
 
@@ -1009,7 +984,7 @@ MoveChain.prototype.spindummy = function(dprop) {
 // Phase, altering definition
 MoveChain.prototype.phaseBy = function(phase) {
 	if (phase==undefined) {phase = 1;}
-	
+
 	if (phase!==0 && this.definition !== undefined) {
 		this.definition.phase = phase;
 	}
@@ -1046,7 +1021,7 @@ MoveChain.prototype.head = function() {
 MoveChain.prototype.tail = function() {
 	if (this.submoves.length == 0) {
                 return undefined;
-        } 
+        }
 	return this.submoves[this.submoves.length-1].tail();
 }
 MoveChain.prototype.socket = function() {
@@ -1079,7 +1054,7 @@ MoveChain.prototype.modify = function(options) {
 	}
 	if (this.definition !== undefined) {
 		this.definition.modify = options;
-	} 
+	}
 	return this;
 }
 // This convenience method clones the last MoveLink on the queue and adds it to the tail end of the MoveChain
@@ -1111,7 +1086,7 @@ MoveChain.prototype.split = function(t) {
 		} else if (tally+this.submoves[i].getDuration()*BEAT > t) {
 			halves = this.submoves[i].split(t-tally);
 			chain1.add(halves[0]);
-			chain2.add(halves[1]);			
+			chain2.add(halves[1]);
 		} else {
 			chain1.add(this.submoves[i]);
 		}
@@ -1162,7 +1137,7 @@ MoveChain.prototype.setAbrupt = function(tf) {
 	this.abrupt = tf;
 	if (this.definition !== undefined) {
 		this.definition.abrupt = tf;
-	} 
+	}
 	return this;
 }
 MoveChain.prototype.getDuration = function() {
@@ -1258,7 +1233,7 @@ MoveChain.prototype.reorient = function(target) {
 	if (definition === undefined) {
 		return this;
 	}
-	definition = MoveFactory.prototype.augment(definition);	
+	definition = MoveFactory.prototype.augment(definition);
 	var entry = definition.entry;
 	var orient = definition.orient;
 	if (entry === undefined || orient === undefined) {
@@ -1363,8 +1338,8 @@ function overrideSpinfail(fun) {
 function overrideReorientFail(fun) {
 	MoveChain.prototype.reorientFail = fun;
 }
-	
-	
+
+
 return {
 	MoveChain: function() {return new MoveChain();},
 	MoveLink: function() {return new MoveLink();},
@@ -1378,5 +1353,3 @@ return {
 	overrideReorientFail: overrideReorientFail
 }
 })();
-
-

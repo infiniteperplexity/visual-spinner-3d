@@ -1,3 +1,5 @@
+
+
 VS3D = (function (VS3D) {
 "use strict";
 //Bring some Constants into the current namespace, for convenience
@@ -33,6 +35,10 @@ function VisualSpinnerWidget(options) {
 	this.text.style.position = "absolute";
 	this.text.style.top = "10px";
 	this.text.style.zIndex = "1";
+	//rescope all the constants to the widget
+	for (var c in VS3D.Constants)  {
+		this[c] = VS3D.Constants[c];
+	}
 }
 
 VisualSpinnerWidget.prototype.camera = function(x,y,z) {
@@ -1394,7 +1400,6 @@ function PhoriaFlame(size) {
 	  var WIDTH = 400;
 	  var HEIGHT = 400;
 	  this.renderer = new THREE.WebGLRenderer({antialias: true});
-	  //this.renderer.setSize(400,400);
 	  this.renderer.setSize(WIDTH,HEIGHT);
 	  this.renderer.setClearColor(0x333F47, 1);
 	  var div = widget.div;
@@ -1402,9 +1407,6 @@ function PhoriaFlame(size) {
 	  div.removeChild(div.children[0]);
 	  div.appendChild(this.renderer.domElement);
 	  div.appendChild(document.createElement('br'));
-	  //widget.canvas = div.children[0];
-
-	  //div.replaceChild(c1,c2);
 	  this.scene = new THREE.Scene();
 	  this.camera = new THREE.PerspectiveCamera(45, WIDTH/HEIGHT, 0.1, 1000);
 	  this.camera.position.set(0,1,8);
@@ -1415,6 +1417,10 @@ function PhoriaFlame(size) {
 		this.scene.add(light);
 	  this.props = [];
 	  this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+		var grid = new THREE.GridHelper(200,10);
+	  grid.setColors(0x333333, 0x333333);
+	  this.scene.add(grid);
+	  this.scene.fog = new THREE.FogExp2( 0x000000, 0.0128 );
 	  this.renderer.render(this.scene, this.camera);
 	  this.controls.update();
 		var that = this;

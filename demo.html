@@ -13,9 +13,6 @@
 <script src="scripts/visual-spinner-ui.js"></script>
 <script>
 // set parameters
-THREE = undefined;
-VS3D.Constants.rescope();
-
 var controller = new Controller();
 var moves = VS3D.MoveFactory();
 var Prop = VS3D.Prop().constructor;
@@ -154,29 +151,29 @@ Controller.prototype.updateParameters = function() {
 		list = document.getElementById(i+"plane");
 		txt = list.options[list.selectedIndex].value;
 		if (txt=="wall") {
-			this.plane[i-1] = WALL;
+			this.plane[i-1] = vs.WALL;
 		} else if (txt=="wheel") {
-			this.plane[i-1] = WHEEL;
+			this.plane[i-1] = vs.WHEEL;
 		} else if (txt=="floor") {
-			this.plane[i-1] = FLOOR;
+			this.plane[i-1] = vs.FLOOR;
 		}
 		list = document.getElementById(i+"align");
 		txt = list.options[list.selectedIndex].value;
 		if (txt=="twelve") {
-			this.align[i-1] = TWELVE;
+			this.align[i-1] = vs.TWELVE;
 		} else if (txt=="six") {
-			this.align[i-1] = SIX;
+			this.align[i-1] = vs.SIX;
 		} else if (txt=="three") {
-			this.align[i-1] = THREE;
+			this.align[i-1] = vs.THREE;
 		} else if (txt=="nine") {
-			this.align[i-1] = NINE;
+			this.align[i-1] = vs.NINE;
 		}
 		list = document.getElementById(i+"spin");
 		txt = list.options[list.selectedIndex].value;
 		if (txt=="cw") {
-			this.spin[i-1] = CLOCKWISE;
+			this.spin[i-1] = vs.CLOCKWISE;
 		} else if (txt=="ccw") {
-			this.spin[i-1] = COUNTERCLOCKWISE;
+			this.spin[i-1] = vs.COUNTERCLOCKWISE;
 		}
 	}
 	//Generate moves
@@ -220,71 +217,71 @@ Controller.prototype.generateMove = function(n, txt) {
 	} else if (txt=="snk3") {
 		move = moves.build.snake({phase: 2, direction: this.spin[n], plane: this.plane[n], orient: this.align[n], entry: this.align[n]});
 	} else if (txt=="xtsn") {
-		move = moves.build.flower({entry: this.align[n], orient: this.align[n], direction: this.spin[n], plane: this.plane[n], mode: DIAMOND, petals: 0});
+		move = moves.build.flower({entry: this.align[n], orient: this.align[n], direction: this.spin[n], plane: this.plane[n], mode: vs.DIAMOND, petals: 0});
 		move.align("hand",this.align[n]);
 	} else if (txt=="2btw") {
 		move = moves.build.weave({entry: this.align[n], orient: this.align[n], direction: this.spin[n], plane: this.plane[n]});
 	} else if (txt=="o2bt") {
-		move = moves.build.weave({entry: this.align[n], orient: this.align[n], direction: this.spin[n], plane: this.plane[n], pitch: BACKWARD});
+		move = moves.build.weave({entry: this.align[n], orient: this.align[n], direction: this.spin[n], plane: this.plane[n], pitch: vs.BACKWARD});
 	} else if (txt=="3btw") {
 		move = moves.build.weave({beats: 3, entry: this.align[n], orient: this.align[n], direction: this.spin[n], plane: this.plane[n]});
 	} else if (txt=="o3bt") {
-		move = moves.build.weave({beats: 3, entry: this.align[n], orient: this.align[n], direction: this.spin[n], plane: this.plane[n], pitch: BACKWARD});
+		move = moves.build.weave({beats: 3, entry: this.align[n], orient: this.align[n], direction: this.spin[n], plane: this.plane[n], pitch: vs.BACKWARD});
 	} else if (txt=="1pif") {
-		move = moves.build.flower({entry: this.align[n], orient: this.align[n], direction: this.spin[n], mode: DIAMOND, plane: this.plane[n], petals: 1});
+		move = moves.build.flower({entry: this.align[n], orient: this.align[n], direction: this.spin[n], mode: vs.DIAMOND, plane: this.plane[n], petals: 1});
 		move.align("hand",this.align[n]);
 	} else if (txt=="o1if") {
-		move = moves.build.flower({entry: this.align[n], orient: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n], petals: 1});
+		move = moves.build.flower({entry: this.align[n], orient: this.align[n], mode: vs.BOX, direction: this.spin[n], plane: this.plane[n], petals: 1});
 		move.align("hand",this.align[n]);
 	} else if (txt=="2pif") {
-		move = moves.build.flower({entry: this.align[n], orient: this.align[n], mode: DIAMOND, direction: this.spin[n], plane: this.plane[n], petals: 2});
+		move = moves.build.flower({entry: this.align[n], orient: this.align[n], mode: vs.DIAMOND, direction: this.spin[n], plane: this.plane[n], petals: 2});
 		move.align("hand",this.align[n]);
 	} else if (txt=="o2if") {
-		move = moves.build.flower({entry: this.align[n], orient: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n], petals: 2});
+		move = moves.build.flower({entry: this.align[n], orient: this.align[n], mode: vs.BOX, direction: this.spin[n], plane: this.plane[n], petals: 2});
 		move.align("hand",this.align[n]);
 	} else if (txt=="4pif") {
-		move = moves.build.flower({entry: this.align[n], orient: this.align[n], mode: DIAMOND, direction: this.spin[n], plane: this.plane[n]});
+		move = moves.build.flower({entry: this.align[n], orient: this.align[n], mode: vs.DIAMOND, direction: this.spin[n], plane: this.plane[n]});
 		move.align("hand",this.align[n]);
 	} else if (txt=="b4if") {
-		move = moves.build.flower({entry: this.align[n], orient: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n]});
+		move = moves.build.flower({entry: this.align[n], orient: this.align[n], mode: vs.BOX, direction: this.spin[n], plane: this.plane[n]});
 		move.align("hand",this.align[n]);
 	} else if (txt=="3paf") {
-		move = moves.build.flower({entry: this.align[n], orient: this.align[n], mode: DIAMOND, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN, petals: 3});
+		move = moves.build.flower({entry: this.align[n], orient: this.align[n], mode: vs.DIAMOND, direction: this.spin[n], plane: this.plane[n], spin: vs.ANTISPIN, petals: 3});
 		move.align("hand",this.align[n]);
 	} else if (txt=="o3af") {
-		move = moves.build.flower({entry: this.align[n], orient: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN, petals: 3});
+		move = moves.build.flower({entry: this.align[n], orient: this.align[n], mode: vs.BOX, direction: this.spin[n], plane: this.plane[n], spin: vs.ANTISPIN, petals: 3});
 		move.align("hand",this.align[n]);
 	} else if (txt=="4paf") {
-		move = moves.build.flower({entry: this.align[n], orient: this.align[n], mode: DIAMOND, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
+		move = moves.build.flower({entry: this.align[n], orient: this.align[n], mode: vs.DIAMOND, direction: this.spin[n], plane: this.plane[n], spin: vs.ANTISPIN});
 		move.align("hand",this.align[n]);
 	} else if (txt=="b4af") {
-		move = moves.build.flower({entry: this.align[n], mode: BOX, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
+		move = moves.build.flower({entry: this.align[n], mode: vs.BOX, direction: this.spin[n], plane: this.plane[n], spin: vs.ANTISPIN});
 		move.align("hand",this.align[n]);
 	} else if (txt=="hcap") {
-		if (this.align[n] == TWELVE || this.align[n] == SIX) {
-			move = moves.build.ccap({orient: this.align[n]+this.spin[n]*QUARTER, direction: this.spin[n], plane: this.plane[n]});
+		if (this.align[n] == vs.TWELVE || this.align[n] == vs.SIX) {
+			move = moves.build.ccap({orient: this.align[n]+this.spin[n]*vs.QUARTER, direction: this.spin[n], plane: this.plane[n]});
 		} else {
 			move = moves.build.ccap({orient: this.align[n], direction: this.spin[n], plane: this.plane[n]});
 		}
 		move.align("hand",this.align[n]);
 	} else if (txt=="vcap") {
-		if (this.align[n] == THREE || this.align[n] == NINE) {
-			move = moves.build.ccap({orient: this.align[n]+this.spin[n]*QUARTER, direction: this.spin[n], plane: this.plane[n]});
+		if (this.align[n] == vs.THREE || this.align[n] == vs.NINE) {
+			move = moves.build.ccap({orient: this.align[n]+this.spin[n]*vs.QUARTER, direction: this.spin[n], plane: this.plane[n]});
 		} else {
 			move = moves.build.ccap({orient: this.align[n], direction: this.spin[n], plane: this.plane[n]});
 		}
 		move.align("hand",this.align[n]);
 	} else if (txt=="hcpo") {
-		if (this.align[n] == TWELVE || this.align[n] == SIX) {
-			move = moves.build.ccap({orient: this.align[n]-this.spin[n]*QUARTER, direction: this.spin[n], plane: this.plane[n]});
+		if (this.align[n] == vs.TWELVE || this.align[n] == vs.SIX) {
+			move = moves.build.ccap({orient: this.align[n]-this.spin[n]*vs.QUARTER, direction: this.spin[n], plane: this.plane[n]});
 		} else {
 			move = moves.build.ccap({orient: this.align[n], direction: this.spin[n], plane: this.plane[n]});
 			move.phaseBy(2);
 		}
 		move.align("hand",this.align[n]);
 	} else if (txt=="vcpo") {
-		if (this.align[n] == THREE || this.align[n] == NINE) {
-			move = moves.build.ccap({orient: this.align[n]-this.spin[n]*QUARTER, direction: this.spin[n], plane: this.plane[n]});
+		if (this.align[n] == vs.THREE || this.align[n] == vs.NINE) {
+			move = moves.build.ccap({orient: this.align[n]-this.spin[n]*vs.QUARTER, direction: this.spin[n], plane: this.plane[n]});
 		} else {
 			move = moves.build.ccap({orient: this.align[n], direction: this.spin[n], plane: this.plane[n]});
 			move.phaseBy(2);
@@ -300,10 +297,10 @@ Controller.prototype.generateMove = function(n, txt) {
 		move = moves.build.isolation({entry: this.align[n], mode: 0, direction: this.spin[n], plane: this.plane[n]});
 		move.align("prop",this.align[n]);
 	} else if (txt=="vcat") {
-		move = moves.build.isolation({entry: TWELVE, mode: 0, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
+		move = moves.build.isolation({entry: vs.TWELVE, mode: 0, direction: this.spin[n], plane: this.plane[n], spin: vs.ANTISPIN});
 		move.align("prop",this.align[n]);
 	} else if (txt=="hcat") {
-		move = moves.build.isolation({entry: THREE, direction: this.spin[n], mode: 0, plane: this.plane[n], spin: ANTISPIN});
+		move = moves.build.isolation({entry: vs.THREE, direction: this.spin[n], mode: 0, plane: this.plane[n], spin: vs.ANTISPIN});
 		move.align("prop",this.align[n]);
 	} else if (txt=="isol") {
 		move = moves.build.isolation({entry: this.align[n], direction: this.spin[n], plane: this.plane[n]});
@@ -321,66 +318,66 @@ Controller.prototype.generateMove = function(n, txt) {
 		move = moves.build.isolation({pivot: this.align[n], direction: this.spin[n], plane: this.plane[n]});
 		move.align("prop",this.align[n]);
 	} else if (txt=="pcat") {
-		move = moves.build.isolation({pivot: this.align[n], entry: TWELVE, mode: 0, direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
+		move = moves.build.isolation({pivot: this.align[n], entry: vs.TWELVE, mode: 0, direction: this.spin[n], plane: this.plane[n], spin: vs.ANTISPIN});
 		move.align("prop",this.align[n]);
 	} else if (txt=="pflo") {
 		move = moves.build.flower({pivot: this.align[n], extend: 0.5,  entry: this.align[n],direction: this.spin[n], plane: this.plane[n], petals: 2});
 		move.align("hand",this.align[n]);
 	} else if (txt=="ptri") {
-		move = moves.build.flower({pivot: this.align[n], extend: 0.5, entry: this.align[n],direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN, petals: 3});
+		move = moves.build.flower({pivot: this.align[n], extend: 0.5, entry: this.align[n],direction: this.spin[n], plane: this.plane[n], spin: vs.ANTISPIN, petals: 3});
 		move.align("hand",this.align[n]);
 	} else if (txt=="pant") {
-		move = moves.build.flower({pivot: this.align[n], extend: 0.5, entry: this.align[n],direction: this.spin[n], plane: this.plane[n], spin: ANTISPIN});
+		move = moves.build.flower({pivot: this.align[n], extend: 0.5, entry: this.align[n],direction: this.spin[n], plane: this.plane[n], spin: vs.ANTISPIN});
 		move.align("hand",this.align[n]);
 	} else if (txt=="ppen") {
 		move = moves.build.pendulum({pivot: this.align[n], extend: 0.5, direction: this.spin[n], plane: this.plane[n]});
 		move.align("hand",this.align[n]);
 	} else if (txt=="hlex") {
-		move = moves.build.linex({entry: this.align[n], petals: 0, direction: this.spin[n], plane: this.plane[n], orient: THREE});
+		move = moves.build.linex({entry: this.align[n], petals: 0, direction: this.spin[n], plane: this.plane[n], orient: vs.THREE});
 	} else if (txt=="vlex") {
-		move = moves.build.linex({entry: this.align[n], petals: 0, direction: this.spin[n], plane: this.plane[n], orient: TWELVE});
+		move = moves.build.linex({entry: this.align[n], petals: 0, direction: this.spin[n], plane: this.plane[n], orient: vs.TWELVE});
 	} else if (txt=="hlis") {
-		move = moves.build.linex({entry: this.align[n], petals: 2, direction: this.spin[n], plane: this.plane[n], orient: THREE});
+		move = moves.build.linex({entry: this.align[n], petals: 2, direction: this.spin[n], plane: this.plane[n], orient: vs.THREE});
 	} else if (txt=="vlis") {
-		move = moves.build.linex({entry: this.align[n], petals: 2, direction: this.spin[n], plane: this.plane[n], orient: TWELVE});
+		move = moves.build.linex({entry: this.align[n], petals: 2, direction: this.spin[n], plane: this.plane[n], orient: vs.TWELVE});
 		move.align("prop",this.align[n]);
 	} else if (txt=="supr") {
-		move = moves.build.superman({entry: this.align[n], orient: TWELVE, direction: this.spin[n], plane: this.plane[n]});
+		move = moves.build.superman({entry: this.align[n], orient: vs.TWELVE, direction: this.spin[n], plane: this.plane[n]});
 		move.align("hand",this.align[n]);
 	} else if (txt=="xsup") {
-		move = moves.build.superman({entry: this.align[n], sway: 0, extend: 1, orient: TWELVE, direction: this.spin[n], plane: this.plane[n]});
+		move = moves.build.superman({entry: this.align[n], sway: 0, extend: 1, orient: vs.TWELVE, direction: this.spin[n], plane: this.plane[n]});
 		move.align("hand",this.align[n]);
 	} else if (txt=="zbnd") {
 		move = moves.build.toroid({entry: this.align[n], harmonics: 4, direction: this.spin[n], bend: 0, plane: this.plane[n]});
 		move.align("hand",this.align[n]);
 	} else if (txt=="2isb") {
-		move = moves.build.toroid({entry: this.align[n], harmonics: 2, direction: this.spin[n], bend: ISOBEND, plane: this.plane[n]});
+		move = moves.build.toroid({entry: this.align[n], harmonics: 2, direction: this.spin[n], bend: vs.ISOBEND, plane: this.plane[n]});
 	} else if (txt=="isob") {
-		move = moves.build.toroid({entry: this.align[n], harmonics: 4, direction: this.spin[n], bend: ISOBEND, plane: this.plane[n]});
+		move = moves.build.toroid({entry: this.align[n], harmonics: 4, direction: this.spin[n], bend: vs.ISOBEND, plane: this.plane[n]});
 	} else if (txt=="biso") {
-		move = moves.build.toroid({entry: this.align[n], pitch: BACKWARD, harmonics: 4, direction: this.spin[n], bend: ISOBEND, plane: this.plane[n]});
+		move = moves.build.toroid({entry: this.align[n], pitch: vs.BACKWARD, harmonics: 4, direction: this.spin[n], bend: vs.ISOBEND, plane: this.plane[n]});
 	} else if (txt=="bant") {
-		move = moves.build.toroid({entry: this.align[n], pitch: BACKWARD, harmonics: 2, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
+		move = moves.build.toroid({entry: this.align[n], pitch: vs.BACKWARD, harmonics: 2, direction: this.spin[n], bend: vs.ANTIBEND, plane: this.plane[n]});
 	} else if (txt=="1ant") {
-		move = moves.build.toroid({orient: this.align[n], entry: this.align[n], harmonics: 1, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
+		move = moves.build.toroid({orient: this.align[n], entry: this.align[n], harmonics: 1, direction: this.spin[n], bend: vs.ANTIBEND, plane: this.plane[n]});
 	} else if (txt=="2ant") {
-		move = moves.build.toroid({orient: this.align[n], entry: this.align[n], harmonics: 2, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
+		move = moves.build.toroid({orient: this.align[n], entry: this.align[n], harmonics: 2, direction: this.spin[n], bend: vs.ANTIBEND, plane: this.plane[n]});
 	} else if (txt=="3ant") {
-		move = moves.build.toroid({orient: this.align[n], entry: this.align[n], harmonics: 3, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
+		move = moves.build.toroid({orient: this.align[n], entry: this.align[n], harmonics: 3, direction: this.spin[n], bend: vs.ANTIBEND, plane: this.plane[n]});
 	} else if (txt=="4ant") {
-		move = moves.build.toroid({orient: this.align[n], entry: this.align[n], harmonics: 4, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
+		move = moves.build.toroid({orient: this.align[n], entry: this.align[n], harmonics: 4, direction: this.spin[n], bend: vs.ANTIBEND, plane: this.plane[n]});
 	} else if (txt=="6ant") {
-		move = moves.build.toroid({orient: this.align[n], entry: this.align[n], harmonics: 6, direction: this.spin[n], bend: ANTIBEND, plane: this.plane[n]});
+		move = moves.build.toroid({orient: this.align[n], entry: this.align[n], harmonics: 6, direction: this.spin[n], bend: vs.ANTIBEND, plane: this.plane[n]});
 	} else if (txt=="1pro") {
 		move = moves.build.toroid({orient: this.align[n], entry: this.align[n], harmonics: 3, direction: this.spin[n], bend: 2, plane: this.plane[n]});
 	} else if (txt=="2pro") {
-		move = moves.build.toroid({orient: this.align[n], entry: this.align[n], harmonics: 2, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
+		move = moves.build.toroid({orient: this.align[n], entry: this.align[n], harmonics: 2, direction: this.spin[n], bend: vs.PROBEND, plane: this.plane[n]});
 	} else if (txt=="bpro") {
-		move = moves.build.toroid({entry: this.align[n], pitch: BACKWARD, harmonics: 2, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
+		move = moves.build.toroid({entry: this.align[n], pitch: vs.BACKWARD, harmonics: 2, direction: this.spin[n], bend: vs.PROBEND, plane: this.plane[n]});
 	} else if (txt=="4pro") {
-		move = moves.build.toroid({entry: this.align[n], harmonics: 4, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
+		move = moves.build.toroid({entry: this.align[n], harmonics: 4, direction: this.spin[n], bend: vs.PROBEND, plane: this.plane[n]});
 	} else if (txt=="6pro") {
-		move = moves.build.toroid({entry: this.align[n], harmonics: 6, direction: this.spin[n], bend: PROBEND, plane: this.plane[n]});
+		move = moves.build.toroid({entry: this.align[n], harmonics: 6, direction: this.spin[n], bend: vs.PROBEND, plane: this.plane[n]});
 	} else if (txt=="lisb") {
 		move = moves.build.linearisobend({orient: this.align[n], entry: this.align[n], harmonics: 4, direction: this.spin[n],  plane: this.plane[n]});
 	} else if (txt=="lnt3") {
@@ -398,9 +395,9 @@ Controller.prototype.generateMove = function(n, txt) {
 	} else if (txt=="tape") {
 		move = moves.build.tapedeck({orient: this.align[n], entry: this.align[n], direction: this.spin[n],  plane: this.plane[n]});
 	} else if (txt=="idia") {
-		move = moves.build.diamond({entry: this.align[n], direction: this.spin[n], spin: INSPIN, plane: this.plane[n]});
+		move = moves.build.diamond({entry: this.align[n], direction: this.spin[n], spin: vs.INSPIN, plane: this.plane[n]});
 	} else if (txt=="adia") {
-		move = moves.build.diamond({entry: this.align[n], direction: this.spin[n], spin: ANTISPIN, plane: this.plane[n]});
+		move = moves.build.diamond({entry: this.align[n], direction: this.spin[n], spin: vs.ANTISPIN, plane: this.plane[n]});
 	}
 	return move;
 }
