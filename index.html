@@ -6,16 +6,12 @@ body {background-color: #99CCFF}
 </style>
 <title>VisualSpinner3D, by Glenn Wright</title>
 <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
-<script src="scripts/gl-matrix-min.js"></script>
-<script src="scripts/phoria-min.js"></script>
-<script src="scripts/requestAnimationFrame.js"></script>
 <script src="scripts/visual-spinner-engine.js"></script>
 <script src="scripts/visual-spinner-moves.js"></script>
 <script src="scripts/visual-spinner-ui.js"></script>
 <script>
 function init() {
 	var vs = VS3D.VisualSpinnerWidget();
-	VS3D.Constants.rescope(vs);
 	vs.embedById("vs-div");
 	var propOne = vs.addProp();
 	var propTwo = vs.addProp();

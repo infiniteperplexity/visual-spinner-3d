@@ -6,16 +6,12 @@ body {background-color: #99CCFF}
 </style>
 <title>VisualSpinner3D, by Glenn Wright</title>
 <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
-<script src="scripts/gl-matrix-min.js"></script>
-<script src="scripts/phoria-min.js"></script>
-<script src="scripts/requestAnimationFrame.js"></script>
 <script src="scripts/visual-spinner-engine.js"></script>
 <script src="scripts/visual-spinner-moves.js"></script>
 <script src="scripts/visual-spinner-ui.js"></script>
 <script>
 function init() {
 	var vs = VS3D.VisualSpinnerWidget();
-	VS3D.Constants.rescope(vs);
 	vs.embedById("vs-div");
 	var one = vs.addProp();
 	var two = vs.addProp();
@@ -31,7 +27,7 @@ function init() {
 	two.setPropAngle(vs.NINE);
 	one.nudge(0,0,0.5);
 	two.nudge(0,0,-0.5);
-	
+
 	//needed fix!
 	//prop.twist = unwind(prop.twist+this.twist_speed*SPEED);
 	var move1 = vs.Moves.build.generic({hand_speed: 1, hand_radius: 1, hand_angle: vs.THREE, prop_angle: vs.THREE, duration: 0.25})
@@ -97,7 +93,7 @@ function init() {
 		move1 = one.socket();
 		move2 = two.socket();
 	}
-	
+
 	vs.addControls("play","pause","rewind","frame","forward","reset","2d3d");
 	vs.ready();
 	vs.play();

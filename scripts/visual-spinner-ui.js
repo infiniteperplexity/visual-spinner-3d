@@ -1,4 +1,39 @@
-
+var github = "https://raw.githubusercontent.com/infiniteperplexity/visual-spinner-3d/master/scripts/";
+$.getScript(github + "gl-matrix-min.js")
+	.done(function( script, textStatus ) {
+    console.log( textStatus );
+  })
+  .fail(function( jqxhr, settings, exception ) {
+    $( "div.log" ).text( "Triggered ajaxError handler." );
+});
+$.getScript(github + "phoria-min.js")
+.done(function( script, textStatus ) {
+	console.log( textStatus );
+})
+.fail(function( jqxhr, settings, exception ) {
+	$( "div.log" ).text( "Triggered ajaxError handler." );
+});
+$.getScript(github + "three.min.js")
+.done(function( script, textStatus ) {
+	console.log( textStatus );
+})
+.fail(function( jqxhr, settings, exception ) {
+	$( "div.log" ).text( "Triggered ajaxError handler." );
+});
+$.getScript(github + "OrbitControls.js")
+.done(function( script, textStatus ) {
+	console.log( textStatus );
+})
+.fail(function( jqxhr, settings, exception ) {
+	$( "div.log" ).text( "Triggered ajaxError handler." );
+});
+$.getScript(github + "requestAnimationFrame.js")
+.done(function( script, textStatus ) {
+	console.log( textStatus );
+})
+.fail(function( jqxhr, settings, exception ) {
+	$( "div.log" ).text( "Triggered ajaxError handler." );
+});
 
 VS3D = (function (VS3D) {
 "use strict";

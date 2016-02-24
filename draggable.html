@@ -6,9 +6,6 @@ body {background-color: #99CCFF}
 </style>
 <title>VisualSpinner3D, by Glenn Wright</title>
 <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
-<script src="scripts/gl-matrix-min.js"></script>
-<script src="scripts/phoria-min.js"></script>
-<script src="scripts/requestAnimationFrame.js"></script>
 <script src="scripts/visual-spinner-engine.js"></script>
 <script src="scripts/visual-spinner-moves.js"></script>
 <script src="scripts/visual-spinner-ui.js"></script>
@@ -30,25 +27,25 @@ function init() {
 	one.nudge(0,0,0.1);
 	two.nudge(0,0,-0.1);
 	vs.camera(0,1,10);
-	
+
 	vs.addControls("play","pause","rewind","frame","forward","reset");
 	one.addMove(vs.Moves.build.antispin());
 	two.addMove(vs.Moves.build.antispin());
 	vs.addText("...click and drag me...");
-	
+
 	vs.canvas.setAttribute("onmousedown","startdrag(event)");
 	vs.canvas.setAttribute("onmouseout","enddrag(event)");
 	vs.canvas.setAttribute("onmouseup","enddrag(event)");
 	vs.canvas.setAttribute("onmousemove","duringdrag(event)");
 	vs.canvas.setAttribute("onwheel","zoom(event)");
 	vs.canvas.setAttribute("ondblclick","resetcamera(event)");
-	
+
 	vs.canvas.setAttribute("ontouchstart","startdrag(event)");
 	vs.canvas.setAttribute("ontouchleave","enddrag(event)");
 	vs.canvas.setAttribute("ontouchend","enddrag(event)");
 	vs.canvas.setAttribute("ontouchmove","duringdrag(event)");
-	
-	
+
+
 	vs.ready();
 	//vs.play();
 }
@@ -88,7 +85,7 @@ function duringdrag(event) {
 		//okay, now if we begin at the beginning...
 		dx = (dx > 0) ? (radius/100) : (-radius/100);
 		dy = (dy > 0) ? (radius/100) : (-radius/100);
-		
+
 		if (camera[0]>=0 && camera[2]>=0) {
 			camera[0]+=dx;
 			camera[2]-=dx;

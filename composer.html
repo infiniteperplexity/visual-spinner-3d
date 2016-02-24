@@ -43,16 +43,12 @@ table {position: relative; top: -20px;}
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>VisualSpinner3D Composer, by Glenn Wright</title>
 <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
-<script src="scripts/gl-matrix-min.js"></script>
-<script src="scripts/phoria-min.js"></script>
-<script src="scripts/requestAnimationFrame.js"></script>
 <script src="scripts/visual-spinner-engine.js"></script>
 <script src="scripts/visual-spinner-moves.js"></script>
 <script src="scripts/visual-spinner-ui.js"></script>
 
 <script>
 "use strict";
-VS3D.Constants.rescope();
 var nearly = VS3D.Utilities.nearly;
 var unwind = VS3D.Utilities.unwind;
 var moves = VS3D.MoveFactory();
@@ -71,7 +67,7 @@ function canvasSetup() {
 	vs.addControls("play","pause","rewind","frame","forward","reset","2d3d");
 	window.addEventListener("keydown", listenForKey, false);
 	predictions = [vs.addProp(),vs.addProp(),vs.addProp(),vs.addProp()];
-	
+
 	predictions[0].color = "0,32,64";
 	predictions[1].color = "64,0,0";
 	predictions[0].dummy = true;
@@ -80,8 +76,8 @@ function canvasSetup() {
 	predictions[3].color = "64,64,0";
 	predictions[2].dummy = true;
 	predictions[3].dummy = true;
-	
-	
+
+
 	propOne = vs.addProp();
 	propOne.color = "blue";
 	propTwo = vs.addProp();
@@ -104,7 +100,7 @@ function canvasSetup() {
 	propFour.hand.radius = 1;
 	propThree.rotateHand(SPLIT);
 	propThree.rotateProp(SPLIT);
-	
+
 	predict();
 	vs.ready();
 }
@@ -136,7 +132,7 @@ function parseRecipes(url) {
 		success: function(data) {populateMenu(data);}
 	});
 }
-	
+
 function populateMenu(json) {
 	var menu = $("#menu").children("ul");
 	var option;
@@ -232,7 +228,7 @@ function addMoveToQueue(definition, target) {
 		predict();
 	} else {
 		alert("Move not added.");
-		
+
 	}
 	predict();
 	vs.ready();
@@ -385,7 +381,7 @@ function addInput(trgt,inpt) {
 	txt.innerHTML = inpt.getAttribute("data-param")+": ";
 	popup.appendChild(document.createElement("br"));
 	popup.appendChild(txt);
-	popup.appendChild(inpt);	
+	popup.appendChild(inpt);
 }
 function textInput(definition, parameter) {
 	if (definition[parameter]===undefined) {return null;}
@@ -465,7 +461,7 @@ function submitChanges() {
 			}
 		}
 	}
-	for (var p in newdef) {	
+	for (var p in newdef) {
 		olddef[p] = newdef[p];
 	}
 	move.setAttribute("data-value",JSON.stringify(olddef));
@@ -760,7 +756,7 @@ function alignSubmit(n) {
 	prop.setPropAngle(parseFloat($('input[name=prop' + n + ']:checked').val()));
 	prop.setPivotAngle(parseFloat($('input[name=pivot' + n + ']:checked').val()));
 	prop.pivot.radius = parseFloat(document.getElementById('pradius'+n).value);
-	
+
 	var text = document.getElementById(n+"color").value;
 	var color;
 	var dark;
@@ -870,7 +866,7 @@ function loadJSON() {
 	<h1>Welcome to VisualSpinner3d. </h1>
 	<p>Drag moves from the menu to the prop queues, or drag them to the workshop and double-click to modify.</p>
 </header>
-	
+
 <div id="content">
 	<section>
 		<div id="display">
@@ -903,18 +899,18 @@ function loadJSON() {
 			</div>
 		</div>
 
-		
+
 		<div id="workshop" ondrop="dropWorkshop(event);" ondragover="allowDrop(event);">
 			<h2>Workshop</h2>
 			<ul id="thisMove"></ul>
 			<button type="button" onclick='modifyJSON();'>Modify JSON</button>
 			<button type="button" onclick="nothing();">Save</button>
 		</div>
-		
+
 		<div id="menu">
 			<h2>Menu</h2>
 			<ul></ul>
-		</div>				
+		</div>
 	</section>
 </div>
 <div style="display: none;" id="popexport">
@@ -963,13 +959,13 @@ function loadJSON() {
 						<td><input checked="checked" name="hand1" value="3.141593" type="radio">Left</td>
 						<td><input id="hradius1" min="0" max="1" step="0.5" value="1" type="number"></td>
 						<td><input name="hand1" value="0" type="radio">Right</td>
-					</tr>	
+					</tr>
 					<tr>
 						<td></td>
 						<td><input name="hand1" value="1.570796" type="radio">Down</td>
 						<td></td>
-					</tr>	
-				</tbody></table>	
+					</tr>
+				</tbody></table>
 		Prop:
 				<table>
 					<tbody><tr>
@@ -981,12 +977,12 @@ function loadJSON() {
 						<td><input checked="checked" name="prop1" value="3.141593" type="radio">Left</td>
 						<td></td>
 						<td><input name="prop1" value="0" type="radio">Right</td>
-					</tr>	
+					</tr>
 					<tr>
 						<td></td>
 						<td><input name="prop1" value="1.570796" type="radio">Down</td>
 						<td></td>
-					</tr>	
+					</tr>
 				</tbody></table>
 		Pivot:
 				<table>
@@ -999,12 +995,12 @@ function loadJSON() {
 						<td><input checked="checked" name="pivot1" value="3.141593" type="radio">Left</td>
 						<td><input id="pradius1" min="0" max="1" step="0.5" value="0" type="number"></td>
 						<td><input name="pivot1" value="0" type="radio">Right</td>
-					</tr>	
+					</tr>
 					<tr>
 						<td></td>
 						<td><input name="pivot1" value="1.570796" type="radio">Down</td>
 						<td></td>
-					</tr>	
+					</tr>
 				</tbody></table>
 	<button type="button" onclick="popAlign(1);">Cancel</button>
 	<button type="button" onclick="alignSubmit(1);">Submit</button>
@@ -1046,13 +1042,13 @@ function loadJSON() {
 						<td><input checked="checked" name="hand2" value="3.141593" type="radio">Left</td>
 						<td><input id="hradius2" min="0" max="1" step="0.5" value="1" type="number"></td>
 						<td><input name="hand2" value="0" type="radio">Right</td>
-					</tr>	
+					</tr>
 					<tr>
 						<td></td>
 						<td><input name="hand2" value="1.570796" type="radio">Down</td>
 						<td></td>
-					</tr>	
-				</tbody></table>	
+					</tr>
+				</tbody></table>
 		Prop:
 				<table>
 					<tbody><tr>
@@ -1064,12 +1060,12 @@ function loadJSON() {
 						<td><input checked="checked" name="prop2" value="3.141593" type="radio">Left</td>
 						<td></td>
 						<td><input name="prop2" value="0" type="radio">Right</td>
-					</tr>	
+					</tr>
 					<tr>
 						<td></td>
 						<td><input name="prop2" value="1.570796" type="radio">Down</td>
 						<td></td>
-					</tr>	
+					</tr>
 				</tbody></table>
 			Pivot:
 				<table>
@@ -1082,12 +1078,12 @@ function loadJSON() {
 						<td><input checked="checked" name="pivot2" value="3.141593" type="radio">Left</td>
 						<td><input id="pradius2" min="0" max="1" step="0.5" value="0" type="number"></td>
 						<td><input name="pivot2" value="0" type="radio">Right</td>
-					</tr>	
+					</tr>
 					<tr>
 						<td></td>
 						<td><input name="pivot2" value="1.570796" type="radio">Down</td>
 						<td></td>
-					</tr>	
+					</tr>
 				</tbody></table>
 	<button type="button" onclick="popAlign(2);">Cancel</button>
 	<button type="button" onclick="alignSubmit(2);">Submit</button>
@@ -1129,13 +1125,13 @@ function loadJSON() {
 						<td><input checked="checked" name="hand3" value="3.141593" type="radio">Left</td>
 						<td><input id="hradius3" min="0" max="1" step="0.5" value="1" type="number"></td>
 						<td><input name="hand3" value="0" type="radio">Right</td>
-					</tr>	
+					</tr>
 					<tr>
 						<td></td>
 						<td><input name="hand3" value="1.570796" type="radio">Down</td>
 						<td></td>
-					</tr>	
-				</tbody></table>	
+					</tr>
+				</tbody></table>
 		Prop:
 				<table>
 					<tbody><tr>
@@ -1147,12 +1143,12 @@ function loadJSON() {
 						<td><input checked="checked" name="prop3" value="3.141593" type="radio">Left</td>
 						<td></td>
 						<td><input name="prop3" value="0" type="radio">Right</td>
-					</tr>	
+					</tr>
 					<tr>
 						<td></td>
 						<td><input name="prop3" value="1.570796" type="radio">Down</td>
 						<td></td>
-					</tr>	
+					</tr>
 				</tbody></table>
 		Pivot:
 				<table>
@@ -1165,12 +1161,12 @@ function loadJSON() {
 						<td><input checked="checked" name="pivot3" value="3.141593" type="radio">Left</td>
 						<td><input id="pradius3" min="0" max="1" step="0.5" value="0" type="number"></td>
 						<td><input name="pivot3" value="0" type="radio">Right</td>
-					</tr>	
+					</tr>
 					<tr>
 						<td></td>
 						<td><input name="pivot3" value="1.570796" type="radio">Down</td>
 						<td></td>
-					</tr>	
+					</tr>
 				</tbody></table>
 	<button type="button" onclick="popAlign(3);">Cancel</button>
 	<button type="button" onclick="alignSubmit(3);">Submit</button>
@@ -1212,13 +1208,13 @@ function loadJSON() {
 						<td><input checked="checked" name="hand4" value="3.141593" type="radio">Left</td>
 						<td><input id="hradius4" min="0" max="1" step="0.5" value="1" type="number"></td>
 						<td><input name="hand4" value="0" type="radio">Right</td>
-					</tr>	
+					</tr>
 					<tr>
 						<td></td>
 						<td><input name="hand4" value="1.570796" type="radio">Down</td>
 						<td></td>
-					</tr>	
-				</tbody></table>	
+					</tr>
+				</tbody></table>
 		Prop:
 				<table>
 					<tbody><tr>
@@ -1230,12 +1226,12 @@ function loadJSON() {
 						<td><input checked="checked" name="prop4" value="3.141593" type="radio">Left</td>
 						<td></td>
 						<td><input name="prop4" value="0" type="radio">Right</td>
-					</tr>	
+					</tr>
 					<tr>
 						<td></td>
 						<td><input name="prop4" value="1.570796" type="radio">Down</td>
 						<td></td>
-					</tr>	
+					</tr>
 				</tbody></table>
 			Pivot:
 				<table>
@@ -1248,12 +1244,12 @@ function loadJSON() {
 						<td><input checked="checked" name="pivot4" value="3.141593" type="radio">Left</td>
 						<td><input id="pradius4" min="0" max="1" step="0.5" value="0" type="number"></td>
 						<td><input name="pivot4" value="0" type="radio">Right</td>
-					</tr>	
+					</tr>
 					<tr>
 						<td></td>
 						<td><input name="pivot4" value="1.570796" type="radio">Down</td>
 						<td></td>
-					</tr>	
+					</tr>
 				</tbody></table>
 	<button type="button" onclick="popAlign(4);">Cancel</button>
 	<button type="button" onclick="alignSubmit(4);">Submit</button>
