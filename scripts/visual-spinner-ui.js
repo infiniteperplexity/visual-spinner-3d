@@ -395,16 +395,20 @@ VisualSpinnerWidget.prototype.addControl = function(s) {
 			control = document.createElement("select");
 			control.appendChild(document.createElement("option"));
 			control.appendChild(document.createElement("option"));
+			control.appendChild(document.createElement("option"));
 			control.class = "vs3d-2d3d-control";
 			control.options[0].text = "2d";
 			control.options[0].value = "2d";
 			control.options[1].text = "3d";
-			control.options[1].text = "3d";
+			control.options[1].value = "3d";
+			control.options[2].text = "WebGL";
+			control.options[2].value = "WebGL";
 			control.options[1].selected = "selected";
 			control.style.width = "50px";
 			$(control).data("widget", this);
 			$(control).data("2d", new HTML5Canvas2dRenderer());
 			$(control).data("3d", new Phoria3dRenderer());
+			$(control).data("WebGL", new Phoria3dRenderer());
 			//control.onchange = function() {alert($(this).data(this.options[this.selectedIndex].value));}
 			control.onchange = function() {$(this).data("widget").swapRenderer($(this).data(this.options[this.selectedIndex].value));}
 			this.controls.push(control);
@@ -1371,10 +1375,207 @@ function PhoriaFlame(size) {
 	f.points = [f.position];
 	return f;
 }
-//*** End Phoria3dRenderer;
+
+// Begin ThreeHS3dRenderer
+	function ThreeJS3dRenderer() {}
+
+	ThreeJS3dRenderer.prototype.activate = function(widget) {
+	  //var gl, experimental;
+	  /*try { gl = canvas.getContext("webgl"); }
+	  catch (x) { gl = null; }
+
+	  if (gl == null) {
+	      try { gl = canvas.getContext("experimental-webgl"); experimental = true; }
+	      catch (x) { gl = null; }
+	  }
+	  if (gl===null) {
+	    alert("WebGL not supported!");
+	  }*/
+	  var WIDTH = 400;
+	  var HEIGHT = 400;
+	  this.renderer = new THREE.WebGLRenderer({antialias: true});
+	  //this.renderer.setSize(400,400);
+	  this.renderer.setSize(WIDTH,HEIGHT);
+	  this.renderer.setClearColor(0x333F47, 1);
+	  var div = widget.div;
+	  div.removeChild(widget.canvas);
+	  div.removeChild(div.children[0]);
+	  div.appendChild(this.renderer.domElement);
+	  div.appendChild(document.createElement('br'));
+	  //widget.canvas = div.children[0];
+
+	  //div.replaceChild(c1,c2);
+	  this.scene = new THREE.Scene();
+	  this.camera = new THREE.PerspectiveCamera(45, WIDTH/HEIGHT, 0.1, 1000);
+	  this.camera.position.set(0,1,8);
+	  this.scene.add(this.camera);
+		this.renderer.setClearColor(0x000000,1.0);
+	  var light = new THREE.PointLight(0xffffff);
+		light.position.set(-100,200,100);
+		this.scene.add(light);
+	  this.props = [];
+	  this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+	  this.renderer.render(this.scene, this.camera);
+	  this.controls.update();
+		var that = this;
+		function animate() {
+	    requestAnimationFrame(animate);
+	    that.renderer.render(that.scene,that.camera);
+	    that.controls.update();
+	  }
+	  this.requestId = animate();
+	};
+
+	ThreeJS3dRenderer.prototype.camera = function(_x,_y,_z) {
+		this.camera.position = {x: _x, y: _y, z: _z};
+	}
+	ThreeJS3dRenderer.prototype.cameraX = function() {
+		return this.camera.position.x;
+	}
+	ThreeJS3dRenderer.prototype.cameraY = function() {
+		return this.camera.position.y;
+	}
+	ThreeJS3dRenderer.prototype.cameraZ = function() {
+		return this.camera.position.z;
+	}
+	ThreeJS3dRenderer.prototype.deactivate = function(widget) {
+	  var div = widget.div;
+	  div.removeChild(this.renderer.domElement);
+	  div.removeChild(div.children[0]);
+	  div.appendChild(widget.canvas);
+	  div.appendChild(document.createElement('br'));
+		window.cancelAnimationFrame(this.requestId);
+	  //cancelAnimationFrame
+	}
+	ThreeJS3dRenderer.prototype.clean = function() {
+		//do nothing
+	}
+	ThreeJS3dRenderer.prototype.render = function(scene) {
+	  var myProp;
+	  // remove any shapes that shouldn't be there
+	  for (var i = 0; i<this.props.length; i++) {
+	    myProp = this.props[i].prop;
+	    if (scene.props.indexOf(myProp)===-1) {
+	      for (var j = 0; j<this.props[i].shapes.length; j++) {
+	        //!!!Whatever we need to do to remove old shapes
+	        this.scene.remove(this.props[i].shapes[j]);
+	        this.props[i] = null;
+	      }
+	    }
+	  }
+	  // clean up the prop registry
+	  this.props  = this.props.filter(function (x) {return x !== null;});
+	  // add any shape that need adding
+	  var newProp;
+	  for (var i = 0; i < scene.props.length; i++) {
+	    myProp = scene.props[i];
+	    var found = false;
+	    for (var j = 0; j<this.props.length; j++) {
+	      if (this.props[j].prop === myProp) {
+	        found = true;
+	        break;
+	      }
+	    }
+	    if (found===false) {
+	      newProp = new ThreeJSProp(myProp);
+	      this.props.push(newProp);
+	      for (var k=0; k<newProp.shapes.length; k++) {
+	        this.scene.add(newProp.shapes[k]);
+	      }
+	    }
+	  }
+	  // rebuild any renderers whose properties have changed
+	  for (var i = 0; i < this.props.length; i++) {
+	    if (	this.props[i].propType !== this.props[i].prop.propType
+	        || this.props[i].color !== this.props[i].prop.color
+	        ||	this.props[i].fire !== this.props[i].prop.fire)	{
+	      for (var j = 0; j<this.props[i].shapes.length; j++) {
+	        this.scene.remove(this.props[i].shapes[j]);
+	      }
+	      newProp = new ThreeJSProp(this.props[i].prop);
+	      this.props.push(newProp);
+	      for (var k=0; k<newProp.shapes.length; k++) {
+	        this.scene.add(newProp.shapes[k]);
+	      }
+	    }
+	  }
+	  var start, mat;
+		for (var i = 0; i < this.props.length; i++) {
+			// new matrix centered on the origin
+	    start = new THREE.Matrix4();
+			mat = new THREE.Matrix4();
+			myProp = this.props[i].prop;
+			// rotate and translate according to "home", "pivot", "helper", and "hand"
+	    for (s=0; s<this.props[i].shapes.length; s++) {
+	      var shape = this.props[i].shapes[s];
+	      shape.position.x = 0;
+	      shape.position.y = 0;
+	      shape.position.z = 0;
+	      shape.rotation.x = 0;
+	      shape.rotation.y = 0;
+	      shape.rotation.z = 0;
+	       for (j = HOME; j<=HAND; j++) {
+	         shape.rotateZ(-myProp[ELEMENTS[j]].azimuth);  //from y
+	         shape.rotateX(-myProp[ELEMENTS[j]].zenith);
+	         shape.translateX(myProp[ELEMENTS[j]].radius);
+	         shape.rotateX(myProp[ELEMENTS[j]].zenith);
+	         shape.rotateZ(myProp[ELEMENTS[j]].azimuth);
+	  		 }
+	  		 var s = myProp.prop.vectorize().rotate(myProp.bend,myProp.prop.vectorize().cross(myProp.axis)).spherify();
+	  		// // BEND
+	       shape.rotateZ(-s.azimuth);
+	       shape.rotateX(-s.zenith);
+	  		// // GRIP and CHOKE
+	       shape.translateX(0.5*myProp.prop.radius);
+	       //shape.rotateZ(myProp.grip);
+	       shape.translateX((-myProp.choke-0.5)*myProp.prop.radius);
+	  		// // TWIST
+	  		 if (myProp.prop.vectorize().nearly(WALL)) {
+	  		 	// handle the weird cusp
+	  		 	shape.rotateZ(-myProp.twist+WHEEL.between(myProp.axis), ZAXIS);
+	  		 } else {
+	  		 	// use the rest of the time
+	         shape.rotateZ(-myProp.twist+WALL.between(myProp.axis), ZAXIS);
+	  		 }
+	  		// so far, poi are the only props that can change visual prop radius
+	  		if (myProp.propType === "poi") {
+	  			//this.props[i].updatePoi(myProp);
+	  		}
+	  	}
+		}
+	  this.renderer.render(this.scene, this.camera);
+	  this.controls.update();
+	}
+
+	function ThreeJSProp(myProp) {
+		this.prop = myProp;
+		this.propType = myProp.propType;
+		this.color = myProp.color;
+
+		this.fire = myProp.fire;
+	  //!!!!!Need to actually draw a poi now
+	  var model = new THREE.SphereGeometry(0.2,16,16);
+	  var material = new THREE.MeshLambertMaterial({color: this.color});
+	  var sphere = new THREE.Mesh(model, material);
+	  sphere.position.x = 1;
+	  var group = new THREE.Group();
+	  group.add(sphere);
+	  model = new THREE.CylinderGeometry(0.025,0.025,1,4);
+	  material = new THREE.MeshLambertMaterial({color: "gray"});
+	  var cylinder = new THREE.Mesh(model, material);
+	  cylinder.rotateZ(Math.PI/2);
+	  cylinder.translateY(-0.5);
+	  group.add(cylinder);
+	  model = new THREE.SphereGeometry(0.075,8,8);
+	  material = new THREE.MeshLambertMaterial({color: this.color});
+	  sphere = new THREE.Mesh(model, material);
+	  group.add(sphere);
+	  this.shapes = [group];
+	}
 
 VS3D.VisualSpinnerWidget = function(options) {return new VisualSpinnerWidget(options);}
 VS3D.HTML5Canvas2dRenderer = function(options) {return new HTML5Canvas2dRenderer();}
 VS3D.Phoria3dRenderer = function(options) {return new Phoria3dRenderer();}
+VS3D.ThreeJS3dRenderer = function(options) {return new ThreeJS3dRenderer();}
 return VS3D;
 })(VS3D);
