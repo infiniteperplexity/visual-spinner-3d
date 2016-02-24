@@ -1377,8 +1377,6 @@ function PhoriaFlame(size) {
 }
 
 // Begin ThreeHS3dRenderer
-	var Three = THREE;
-	THREE = undefined;
 	function ThreeJS3dRenderer() {}
 
 	ThreeJS3dRenderer.prototype.activate = function(widget) {
@@ -1395,7 +1393,7 @@ function PhoriaFlame(size) {
 	  }*/
 	  var WIDTH = 400;
 	  var HEIGHT = 400;
-	  this.renderer = new Three.WebGLRenderer({antialias: true});
+	  this.renderer = new THREE.WebGLRenderer({antialias: true});
 	  //this.renderer.setSize(400,400);
 	  this.renderer.setSize(WIDTH,HEIGHT);
 	  this.renderer.setClearColor(0x333F47, 1);
@@ -1407,16 +1405,16 @@ function PhoriaFlame(size) {
 	  //widget.canvas = div.children[0];
 
 	  //div.replaceChild(c1,c2);
-	  this.scene = new Three.Scene();
-	  this.camera = new Three.PerspectiveCamera(45, WIDTH/HEIGHT, 0.1, 1000);
+	  this.scene = new THREE.Scene();
+	  this.camera = new THREE.PerspectiveCamera(45, WIDTH/HEIGHT, 0.1, 1000);
 	  this.camera.position.set(0,1,8);
 	  this.scene.add(this.camera);
 		this.renderer.setClearColor(0x000000,1.0);
-	  var light = new Three.PointLight(0xffffff);
+	  var light = new THREE.PointLight(0xffffff);
 		light.position.set(-100,200,100);
 		this.scene.add(light);
 	  this.props = [];
-	  this.controls = new Three.OrbitControls(this.camera, this.renderer.domElement);
+	  this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
 	  this.renderer.render(this.scene, this.camera);
 	  this.controls.update();
 		var that = this;
@@ -1554,21 +1552,21 @@ function PhoriaFlame(size) {
 
 		this.fire = myProp.fire;
 	  //!!!!!Need to actually draw a poi now
-	  var model = new Three.SphereGeometry(0.2,16,16);
-	  var material = new Three.MeshLambertMaterial({color: this.color});
-	  var sphere = new Three.Mesh(model, material);
+	  var model = new THREE.SphereGeometry(0.2,16,16);
+	  var material = new THREE.MeshLambertMaterial({color: this.color});
+	  var sphere = new THREE.Mesh(model, material);
 	  sphere.position.x = 1;
-	  var group = new Three.Group();
+	  var group = new THREE.Group();
 	  group.add(sphere);
-	  model = new Three.CylinderGeometry(0.025,0.025,1,4);
-	  material = new Three.MeshLambertMaterial({color: "gray"});
-	  var cylinder = new Three.Mesh(model, material);
+	  model = new THREE.CylinderGeometry(0.025,0.025,1,4);
+	  material = new THREE.MeshLambertMaterial({color: "gray"});
+	  var cylinder = new THREE.Mesh(model, material);
 	  cylinder.rotateZ(Math.PI/2);
 	  cylinder.translateY(-0.5);
 	  group.add(cylinder);
-	  model = new Three.SphereGeometry(0.075,8,8);
-	  material = new Three.MeshLambertMaterial({color: this.color});
-	  sphere = new Three.Mesh(model, material);
+	  model = new THREE.SphereGeometry(0.075,8,8);
+	  material = new THREE.MeshLambertMaterial({color: this.color});
+	  sphere = new THREE.Mesh(model, material);
 	  group.add(sphere);
 	  this.shapes = [group];
 	}
