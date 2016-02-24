@@ -1597,25 +1597,118 @@ function PhoriaFlame(size) {
 		this.color = myProp.color;
 
 		this.fire = myProp.fire;
+		if (myProp.propType === "poi") {
+			this.shapes = this.poiShapes(myProp);
+		} else if (myProp.propType === "staff") {
+			this.shapes = this.staffShapes(myProp);
+			//this.shapes = this.staffShapes(myProp);
+		} else if (myProp.propType === "hoop") {
+			this.shapes = this.hoopShapes(myProp);
+			//this.shapes = this.hoopShapes(myProp);
+		} else if (myProp.propType === "club") {
+			this.shapes = this.poiShapes(myProp);
+			//this.shapes = this.clubShapes(myProp);
+		} else if (myProp.propType === "fan") {
+			this.shapes = this.fanShapes(myProp);
+			//this.shapes = this.fanShapes(myProp);
+		} else if (myProp.propType === "buugeng") {
+			this.shapes = this.poiShapes(myProp);
+			//this.shapes = this.buugengShapes(myProp);
+		} else if (myProp.propType === "flipbuu") {
+			this.shapes = this.poiShapes(myProp);
+			//this.shapes = this.flipBuuShapes(myProp);
+		} else if (myProp.propType === "noprop") {
+			this.shapes = [];
+		} else {
+			this.shapes = this.poiShapes(myProp);
+		}
+		this.currentScale = myProp.prop.radius; //???
 	  //!!!!!Need to actually draw a poi now
-	  var model = new THREE.SphereGeometry(0.2,16,16);
-	  var material = new THREE.MeshLambertMaterial({color: this.color});
-	  var sphere = new THREE.Mesh(model, material);
-	  sphere.position.x = 1;
-	  var group = new THREE.Group();
-	  group.add(sphere);
-	  model = new THREE.CylinderGeometry(0.025,0.025,1,4);
-	  material = new THREE.MeshLambertMaterial({color: "gray"});
-	  var cylinder = new THREE.Mesh(model, material);
-	  cylinder.rotateZ(Math.PI/2);
-	  cylinder.translateY(-0.5);
-	  group.add(cylinder);
-	  model = new THREE.SphereGeometry(0.075,8,8);
-	  material = new THREE.MeshLambertMaterial({color: this.color});
-	  sphere = new THREE.Mesh(model, material);
-	  group.add(sphere);
-	  this.shapes = [group];
+
 	}
+
+ThreeJSProp.prototype.poiShapes = function(myProp) {
+	var model = new THREE.SphereGeometry(0.2,16,16);
+	var material = new THREE.MeshLambertMaterial({color: myProp.color});
+	var sphere = new THREE.Mesh(model, material);
+	sphere.position.x = 1;
+	var group = new THREE.Group();
+	group.add(sphere);
+	model = new THREE.CylinderGeometry(0.025,0.025,1,4);
+	material = new THREE.MeshLambertMaterial({color: "gray"});
+	var cylinder = new THREE.Mesh(model, material);
+	cylinder.rotateZ(Math.PI/2);
+	cylinder.translateY(-0.5);
+	group.add(cylinder);
+	model = new THREE.SphereGeometry(0.075,8,8);
+	material = new THREE.MeshLambertMaterial({color: myProp.color});
+	sphere = new THREE.Mesh(model, material);
+	group.add(sphere);
+	return [group];
+}
+
+ThreeJSProp.prototype.staffShapes = function(myProp) {
+	var group = new THREE.Group();
+	var model = new THREE.CylinderGeometry(0.05,0.05,2,8);
+	var material = new THREE.MeshLambertMaterial({color: myProp.color});
+	var cylinder = new THREE.Mesh(model, material);
+	cylinder.rotateZ(Math.PI/2);
+	group.add(cylinder);
+	model = new THREE.CylinderGeometry(0.065,0.065,0.2,8);
+	material = new THREE.MeshLambertMaterial({color: myProp.color});
+	cylinder = new THREE.Mesh(model, material);
+	cylinder.rotateZ(Math.PI/2);
+	group.add(cylinder);
+	return [group];
+}
+
+ThreeJSProp.prototype.hoopShapes = function(myProp) {
+	var group = new THREE.Group();
+	var model = new THREE.TorusGeometry(0.8,0.05,8,32);
+	var material = new THREE.MeshLambertMaterial({color: myProp.color});
+	var torus = new THREE.Mesh(model, material);
+	torus.rotateX(Math.PI/2);
+	group.add(torus);
+	model = new THREE.CylinderGeometry(0.075,0.075,0.2,8);
+	material = new THREE.MeshLambertMaterial({color: myProp.color});
+	var cylinder = new THREE.Mesh(model, material);
+	cylinder.rotateX(Math.PI/2);
+	cylinder.translateX(-0.8);
+	group.add(cylinder);
+	return [group];
+}
+
+ThreeJSProp.prototype.fanShapes = function(myProp) {
+	var group = new THREE.Group();
+	var model = new THREE.TorusGeometry(0.2,0.05,6,16);
+	var material = new THREE.MeshLambertMaterial({color: myProp.color});
+	var torus = new THREE.Mesh(model, material);
+	torus.rotateX(Math.PI/2);
+	group.add(torus);
+	var cylinder;
+	var nTines = 3;
+	var a = Math.PI/4;
+	for (var i=0; i<nTines; i++) {
+		model = new THREE.CylinderGeometry(0.05,0.05,0.8,8);
+		material = new THREE.MeshLambertMaterial({color: myProp.color});
+	 	cylinder = new THREE.Mesh(model, material);
+		cylinder.rotateZ(Math.PI/2);
+	 	cylinder.rotateX(-a+i*a);
+	 	cylinder.translateY(-0.6);
+	 	group.add(cylinder);
+	}
+	for (var j=0; j<nTines-1; j++) {
+	 	model = new THREE.CylinderGeometry(0.05,0.05,0.45,8);
+		material = new THREE.MeshLambertMaterial({color: myProp.color});
+	 	cylinder = new THREE.Mesh(model, material);
+		cylinder.rotateZ(Math.PI/2);
+		cylinder.rotateX(Math.PI/2);
+		cylinder.rotateX(-a/2+j*a);
+		cylinder.translateZ(0.5);
+	 	group.add(cylinder);
+	}
+	return [group];
+}
 
 VS3D.VisualSpinnerWidget = function(options) {return new VisualSpinnerWidget(options);}
 VS3D.HTML5Canvas2dRenderer = function(options) {return new HTML5Canvas2dRenderer();}
