@@ -27,7 +27,7 @@ var BEAT = VS3D.Constants.BEAT;
 function ThreeJS3dRenderer() {}
 
 ThreeJS3dRenderer.prototype.activate = function(widget) {
-  var gl, experimental;
+  //var gl, experimental;
   /*try { gl = canvas.getContext("webgl"); }
   catch (x) { gl = null; }
 
@@ -49,12 +49,12 @@ ThreeJS3dRenderer.prototype.activate = function(widget) {
   div.removeChild(div.children[0]);
   div.appendChild(this.renderer.domElement);
   div.appendChild(document.createElement('br'));
-  widget.canvas = div.children[0];
+  //widget.canvas = div.children[0];
 
   //div.replaceChild(c1,c2);
   this.scene = new THREE.Scene();
-  this.camera = new THREE.PerspectiveCamera(45, WIDTH/HEIGHT, 0.1, 20000);
-  this.camera.position.set(0,6,0);
+  this.camera = new THREE.PerspectiveCamera(45, WIDTH/HEIGHT, 0.1, 1000);
+  this.camera.position.set(0,1,8);
   this.scene.add(this.camera);
 	this.renderer.setClearColor(0x000000,1.0);
   var light = new THREE.PointLight(0xffffff);
@@ -79,108 +79,16 @@ ThreeJS3dRenderer.prototype.cameraZ = function() {
 	return this.camera.position.z;
 }
 ThreeJS3dRenderer.prototype.deactivate = function(widget) {
+  var div = widget.div;
+  div.removeChild(this.renderer.domElement);
+  div.removeChild(div.children[0]);
+  div.appendChild(widget.canvas);
+  div.appendChild(document.createElement('br'));
+  //cancelAnimationFrame
 }
 ThreeJS3dRenderer.prototype.clean = function() {
 	//do nothing
 }
-/*ThreeJS3dRenderer.prototype.render = function(scene) {
-	var myProp;
-	// remove any shapes that shouldn't be there
-	for (var i = 0; i<scene.props.length; i++) {
-		myProp = scene.props[i].prop;
-		if (scene.props.indexOf(myProp)===-1) {
-			for (var j = 0; j<scene.props[i].shapes.length; j++) {
-        //!!!Whatever we need to do to remove old shapes
-				this.scene.remove(scene.props[i].shapes[j]);
-				scene.props[i] = null;
-			}
-		}
-	}
-	// clean up the prop registry
-	scene.props = scene.props.filter(function (x) {return x !== null;});
-	// add any shape that need adding
-	var newProp;
-	for (var i = 0; i < scene.props.length; i++) {
-		myProp = scene.props[i];
-		var found = false;
-		for (var j = 0; j<this.props.length; j++) {
-			if (this.props[j].prop === myProp) {
-				found = true;
-				break;
-			}
-		}
-		if (found===false) {
-			newProp = new ThreeJSProp(myProp);
-			this.props.push(newProp);
-      //!!!Whatever we need to do to add new shapes
-			this.scene.remove(this.props[i].shapes[j]);
-			this.props[i] = null;
-		}
-	}
-	// rebuild any renderers whose properties have changed
-	for (var i = 0; i < this.props.length; i++) {
-		if (	this.props[i].propType !== this.props[i].prop.propType
-				|| this.props[i].color !== this.props[i].prop.color
-				||	this.props[i].fire !== this.props[i].prop.fire)	{
-			for (var j = 0; j<this.props[i].shapes.length; j++) {
-        //!!!
-				//this.scene.graph.splice(this.scene.graph.indexOf(this.props[i].shapes[j]),1);
-			}
-			newProp = new ThreeJSProp(this.props[i].prop);
-			this.props[i] = newProp;
-      //!!!
-			for (var k=0; k<newProp.shapes; k++) {
-				this.scene.add(newProp.shapes[k]);
-			}
-		}
-	}
-  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	var mat;
-	for (var i = 0; i < this.props.length; i++) {
-		// new matrix centered on the origin
-		mat = new THREE.Matrix4();
-		myProp = this.props[i].prop;
-		// rotate and translate according to "home", "pivot", "helper", and "hand"
-		for (j = HOME; j<=HAND; j++) {
-			mat.makeRotationZ(myProp[ELEMENTS[j]].azimuth);
-			mat.makeRotationY(myProp[ELEMENTS[j]].zenith);
-			mat.makeTranslation(0,0,myProp[ELEMENTS[j]].radius);
-			mat.makeRotationY(-myProp[ELEMENTS[j]].zenith);
-			mat.makeRotationZ(-myProp[ELEMENTS[j]].azimuth);
-		}
-		var s = myProp.prop.vectorize().rotate(myProp.bend,myProp.prop.vectorize().cross(myProp.axis)).spherify();
-		// BEND
-		mat.makeRotationZ(s.azimuth);
-		mat.makeRotationY(s.zenith);
-		// GRIP and CHOKE
-		mat.makeTranslation(0,0,0.5*myProp.prop.radius);
-		mat.makeRotationX(myProp.grip);
-		mat.makeTranslation(0,0,(-myProp.choke-0.5)*myProp.prop.radius);
-		// TWIST
-		if (myProp.prop.vectorize().nearly(WALL)) {
-			// handle the weird cusp
-			mat.makeRotationZ(myProp.twist+WHEEL.between(myProp.axis));
-		} else {
-			// use the rest of the time
-			mat.makeRotationZ(myProp.twist+WALL.between(myProp.axis));
-		}
-		for (var j = 0; j<this.props[i].shapes.length; j++) {
-			this.props[i].shapes[j].matrix.copy(mat);
-			// so far, poi are the only props that can change visual prop radius
-			if (myProp.propType === "poi") {
-				this.props[i].updatePoi(myProp);
-			}
-		}
-	}
-  this.renderer.render(this.scene, this.camera);
-}*/
-
-
-
-// add any shape that need adding
-
-// rebuild any renderers whose properties have changed
-
 ThreeJS3dRenderer.prototype.render = function(scene) {
   var myProp;
   // remove any shapes that shouldn't be there
@@ -231,7 +139,6 @@ ThreeJS3dRenderer.prototype.render = function(scene) {
     }
   }
   var start, mat;
-  var scale = 1.5;
 	for (var i = 0; i < this.props.length; i++) {
 		// new matrix centered on the origin
     start = new THREE.Matrix4();
@@ -246,29 +153,29 @@ ThreeJS3dRenderer.prototype.render = function(scene) {
       shape.rotation.x = 0;
       shape.rotation.y = 0;
       shape.rotation.z = 0;
-      for (j = HOME; j<=HAND; j++) {
-        shape.rotateY(-myProp[ELEMENTS[j]].azimuth);
-        shape.rotateX(-myProp[ELEMENTS[j]].zenith);
-        shape.translateX(myProp[ELEMENTS[j]].radius);
-        shape.rotateX(myProp[ELEMENTS[j]].zenith);
-        shape.rotateY(myProp[ELEMENTS[j]].azimuth);
-  		}
-  		var s = myProp.prop.vectorize().rotate(myProp.bend,myProp.prop.vectorize().cross(myProp.axis)).spherify();
-  		// BEND
-      shape.rotateY(-s.azimuth);
-      shape.rotateX(-s.zenith);
-  		// GRIP and CHOKE
-      shape.translateX(0.5*myProp.prop.radius);
-      shape.rotateZ(myProp.grip);
-      shape.translateX((-myProp.choke-0.5)*myProp.prop.radius);
-  		// TWIST
-  		if (myProp.prop.vectorize().nearly(WALL)) {
-  			// handle the weird cusp
-  			shape.rotateY(-myProp.twist+WHEEL.between(myProp.axis), ZAXIS);
-  		} else {
-  			// use the rest of the time
-        shape.rotateY(-myProp.twist+WALL.between(myProp.axis), ZAXIS);
-  		}
+       for (j = HOME; j<=HAND; j++) {
+         shape.rotateZ(-myProp[ELEMENTS[j]].azimuth);  //from y
+         shape.rotateX(-myProp[ELEMENTS[j]].zenith);
+         shape.translateX(myProp[ELEMENTS[j]].radius);
+         shape.rotateX(myProp[ELEMENTS[j]].zenith);
+         shape.rotateZ(myProp[ELEMENTS[j]].azimuth);
+  		 }
+  		 var s = myProp.prop.vectorize().rotate(myProp.bend,myProp.prop.vectorize().cross(myProp.axis)).spherify();
+  		// // BEND
+       shape.rotateZ(-s.azimuth);
+       shape.rotateX(-s.zenith);
+  		// // GRIP and CHOKE
+       shape.translateX(0.5*myProp.prop.radius);
+       //shape.rotateZ(myProp.grip);
+       shape.translateX((-myProp.choke-0.5)*myProp.prop.radius);
+  		// // TWIST
+  		 if (myProp.prop.vectorize().nearly(WALL)) {
+  		 	// handle the weird cusp
+  		 	shape.rotateZ(-myProp.twist+WHEEL.between(myProp.axis), ZAXIS);
+  		 } else {
+  		 	// use the rest of the time
+         shape.rotateZ(-myProp.twist+WALL.between(myProp.axis), ZAXIS);
+  		 }
   		// so far, poi are the only props that can change visual prop radius
   		if (myProp.propType === "poi") {
   			//this.props[i].updatePoi(myProp);
@@ -288,7 +195,20 @@ function ThreeJSProp(myProp) {
   var model = new THREE.SphereGeometry(0.2,16,16);
   var material = new THREE.MeshLambertMaterial({color: this.color});
   var sphere = new THREE.Mesh(model, material);
-  this.shapes = [sphere];
+  sphere.position.x = 1;
+  var group = new THREE.Group();
+  group.add(sphere);
+  model = new THREE.CylinderGeometry(0.025,0.025,1,4);
+  material = new THREE.MeshLambertMaterial({color: "gray"});
+  var cylinder = new THREE.Mesh(model, material);
+  cylinder.rotateZ(Math.PI/2);
+  cylinder.translateY(-0.5);
+  group.add(cylinder);
+  model = new THREE.SphereGeometry(0.075,8,8);
+  material = new THREE.MeshLambertMaterial({color: this.color});
+  sphere = new THREE.Mesh(model, material);
+  group.add(sphere);
+  this.shapes = [group];
 }
 </script>
 <script>
@@ -298,23 +218,26 @@ function init() {
 	vs = VS3D.VisualSpinnerWidget();
 	VS3D.Constants.rescope(vs);
 	vs.embedById("vs-div");
+  var test = vs.renderer;
   vs.swapRenderer(new ThreeJS3dRenderer(vs));
+  vs.swapRenderer(test);
 	var propOne = vs.addProp();
 	var propTwo = vs.addProp();
 	propOne.color = "red";
 	propTwo.color = "blue";
+  propOne.nudge(0,0,-0.25);
 	propOne.hand.radius = 1;
 	propTwo.hand.radius = 1;
 	propOne.addMove(vs.Moves.build.flower({spin: vs.ANTISPIN}));
-	propTwo.addMove(vs.Moves.build.flower({spin: vs.ANTISPIN, direction: vs.COUNTERCLOCKWISE}));
+  propTwo.addMove(vs.Moves.build.flower({spin: vs.ANTISPIN, direction: vs.COUNTERCLOCKWISE}));
 	vs.addControls("play","pause","rewind","frame","forward","reset","2d3d");
   vs.ready();
   function animate() {
-    requestAnimationFrame(animate);
+    return requestAnimationFrame(animate);
     vs.renderer.renderer.render(vs.renderer.scene,vs.renderer.camera);
     vs.renderer.controls.update();
   }
-  animate();
+  this.loop = animate();
 }
 </script>
 <body onload="init();">

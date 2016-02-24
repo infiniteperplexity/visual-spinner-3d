@@ -226,7 +226,7 @@ VisualSpinnerScene.prototype.advance = function(n) {
 			if (!this.props[j].dummy) {
 				this.props[j].spin();
 			}
-		}	
+		}
 		for (var j = 0; j < this.widgets.length; j++) {
 			this.widgets[j].advanceText();
 		}
@@ -356,7 +356,7 @@ VisualSpinnerWidget.prototype.addControl = function(s) {
 			this.div.appendChild(control);
 		break;
 		case "frame":
-			control = document.createElement("input");	
+			control = document.createElement("input");
 			control.type = "number";
 			control.class = "vs3d-frame-control";
 			control.value= "0";
@@ -379,7 +379,7 @@ VisualSpinnerWidget.prototype.addControl = function(s) {
 			this.div.appendChild(control);
 		break;
 		case "speed":
-			control = document.createElement("input");	
+			control = document.createElement("input");
 			control.class = "vs3d-speed-control";
 			control.type = "number";
 			control.value= "1";
@@ -392,7 +392,7 @@ VisualSpinnerWidget.prototype.addControl = function(s) {
 			this.div.appendChild(control);
 		break;
 			case "2d3d":
-			control = document.createElement("select");	
+			control = document.createElement("select");
 			control.appendChild(document.createElement("option"));
 			control.appendChild(document.createElement("option"));
 			control.class = "vs3d-2d3d-control";
@@ -458,7 +458,7 @@ VisualSpinnerWidget.prototype.stringify = function() {
         json += "}";
         return json;
 }
-VisualSpinnerWidget.prototype.parse = function(json) {	
+VisualSpinnerWidget.prototype.parse = function(json) {
         this.scene.props.length = 0;
         this.scene.starting.length = 0;
        	var jsonprops = JSON.parse(json);
@@ -503,7 +503,7 @@ function HTML5Canvas2dRenderer() {
 }
 HTML5Canvas2dRenderer.prototype.activate = function(widget) {
 	this.canvas = widget.canvas;
-	this.context = widget.canvas.getContext('2d');	
+	this.context = widget.canvas.getContext('2d');
 }
 HTML5Canvas2dRenderer.prototype.deactivate = function() {}
 HTML5Canvas2dRenderer.prototype.clean = function(scene) {
@@ -591,7 +591,7 @@ HTML5Canvas2dRenderer.prototype.color = function(s) {
 	}
 	return s;
 }
-	
+
 HTML5Canvas2dRenderer.prototype.renderHoop = function(prop) {
 	// Redundant calculation, could pass this as a parameter if necessary
 	var bend = prop.prop.vectorize().rotate(prop.bend,prop.prop.vectorize().cross(prop.axis)).spherify();
@@ -961,7 +961,7 @@ PhoriaProp.prototype.poiShapes = function(myProp) {
 	var tether = PhoriaCylinder(0.001, 1, 3);
 	PhoriaTranslatePoints(tether,[0,0,0.5]);
 	var ball = PhoriaSphere(0.2, 8);
-	var flame = PhoriaFlame(6);	
+	var flame = PhoriaFlame(6);
 	handle.style.color = PhoriaColor(myProp.color);
 	PhoriaTranslatePoints(ball,[0,0,1]);
 	PhoriaTranslatePoints(flame,[0,0,1]);
@@ -1067,7 +1067,7 @@ PhoriaProp.prototype.clubShapes = function(myProp) {
 	PhoriaTranslatePoints(segment6,[0,0,0.88]);
 	PhoriaTranslatePoints(segment7,[0,0,0.99]);
 	PhoriaTranslatePoints(tip,[0,0,1.05]);
-	var flame = PhoriaFlame(6);	
+	var flame = PhoriaFlame(6);
 	PhoriaTranslatePoints(flame,[0,0,1]);
 	if (myProp.fire === false) {
 		tip.style.color = PhoriaColor(myProp.color);
@@ -1076,8 +1076,8 @@ PhoriaProp.prototype.clubShapes = function(myProp) {
 		tip.style.color = PhoriaColor("fire");
 		return [handle,pommel,tip,segment1,segment2,segment3,segment4,segment5,segment6,segment7,flame];
 	}
-	
-	
+
+
 }
 PhoriaProp.prototype.fanShapes = function(myProp) {
 	var shapes = [];
@@ -1125,7 +1125,7 @@ PhoriaProp.prototype.fanShapes = function(myProp) {
 			shapes.push(section);
 		}
 	}
-	return shapes;	
+	return shapes;
 }
 
 //not sure if I should handle flipped buugeng using grip or the prop
@@ -1172,7 +1172,7 @@ PhoriaProp.prototype.buugengShapes = function(myProp) {
 	}
 	var handle = PhoriaCylinder(0.026, 0.1, 8);
 	var flame;
-	if (myProp.fire == true) {	
+	if (myProp.fire == true) {
 		flame = PhoriaFlame(4);
 		PhoriaTranslatePoints(flame, [0,0,1]);
 		PhoriaRotatePoints(flame, -0.075*Math.PI, "y", "z");
@@ -1230,7 +1230,7 @@ PhoriaProp.prototype.flipBuuShapes = function(myProp) {
 	}
 	var handle = PhoriaCylinder(0.026, 0.1, 8);
 	var flame;
-	if (myProp.fire == true) {	
+	if (myProp.fire == true) {
 		flame = PhoriaFlame(4);
 		PhoriaTranslatePoints(flame, [0,0,1]);
 		PhoriaRotatePoints(flame, -0.075*Math.PI, "y", "z");
@@ -1327,7 +1327,7 @@ function PhoriaColor(s) {
 	}
 	else {
 		return [255,255,255];
-	}	
+	}
 }
 
 function PhoriaCylinder(thickness, length, facets) {
@@ -1370,7 +1370,7 @@ function PhoriaFlame(size) {
 	f.textures[0] = Phoria.Util.generateRadialGradientBitmap(32,"rgba(128,64,32,1)","rgba(128,64,32,0)");
 	f.points = [f.position];
 	return f;
-}	
+}
 //*** End Phoria3dRenderer;
 
 VS3D.VisualSpinnerWidget = function(options) {return new VisualSpinnerWidget(options);}
