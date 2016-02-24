@@ -1579,3 +1579,4 @@ VS3D.Phoria3dRenderer = function(options) {return new Phoria3dRenderer();}
 VS3D.ThreeJS3dRenderer = function(options) {return new ThreeJS3dRenderer();}
 return VS3D;
 })(VS3D);
+THREE=undefined;

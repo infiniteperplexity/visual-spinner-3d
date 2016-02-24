@@ -21,13 +21,12 @@ header, section div {vertical-align: top; padding: 2.5px; border: 5px solid gray
 <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
 <script src="scripts/gl-matrix-min.js"></script>
 <script src="scripts/phoria-min.js"></script>
-
+<script src="scripts/three.min.js"></script>
+<script src="OrbitControls.js"></script>
 <script src="scripts/requestAnimationFrame.js"></script>
 <script src="scripts/visual-spinner-engine.js"></script>
 <script src="scripts/visual-spinner-moves.js"></script>
 <script src="scripts/visual-spinner-ui.js"></script>
-<script src="scripts/three.min.js"></script>
-<script src="OrbitControls.js"></script>
 <script>
 // set parameters
 //VS3D.Constants.rescope();
@@ -44,9 +43,9 @@ function init() {
 var vs;
 function canvasSetup() {
 	vs = VS3D.VisualSpinnerWidget();
-	VS3D.Constants.rescope(vs);
+	VS3D.Constants.rescope();
 	vs.embedById("display");
-	vs.swapRenderer(VS3D.ThreeJS3dRenderer());
+	//vs.swapRenderer(VS3D.ThreeJS3dRenderer());
 	var orangePoi = vs.addProp();
 	var whitePoi = vs.addProp();
 	orangePoi.color = "orange";
