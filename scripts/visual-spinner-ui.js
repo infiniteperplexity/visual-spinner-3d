@@ -13,20 +13,22 @@ $.getScript(github + "phoria-min.js")
 .fail(function( jqxhr, settings, exception ) {
 	$( "div.log" ).text( "Triggered ajaxError handler." );
 });
+// Chain loading for OrbitControls.js to handle asynchronous dependency
 $.getScript(github + "three.min.js")
 .done(function( script, textStatus ) {
 	console.log( textStatus );
+	$.getScript(github + "OrbitControls.js")
+  .done(function( script, textStatus ) {
+  	console.log( textStatus );
+  })
+  .fail(function( jqxhr, settings, exception ) {
+  	$( "div.log" ).text( "Triggered ajaxError handler." );
+  });
 })
 .fail(function( jqxhr, settings, exception ) {
 	$( "div.log" ).text( "Triggered ajaxError handler." );
 });
-$.getScript(github + "OrbitControls.js")
-.done(function( script, textStatus ) {
-	console.log( textStatus );
-})
-.fail(function( jqxhr, settings, exception ) {
-	$( "div.log" ).text( "Triggered ajaxError handler." );
-});
+
 $.getScript(github + "requestAnimationFrame.js")
 .done(function( script, textStatus ) {
 	console.log( textStatus );
@@ -1443,7 +1445,9 @@ function PhoriaFlame(size) {
 	  div.appendChild(this.renderer.domElement);
 	  div.appendChild(document.createElement('br'));
 	  this.scene = new THREE.Scene();
+
 	  this.camera = new THREE.PerspectiveCamera(45, WIDTH/HEIGHT, 0.1, 1000);
+
 	  this.camera.position.set(0,1,8);
 	  this.scene.add(this.camera);
 		this.renderer.setClearColor(0x000000,1.0);
@@ -1451,6 +1455,7 @@ function PhoriaFlame(size) {
 		light.position.set(-100,200,100);
 		this.scene.add(light);
 	  this.props = [];
+		// need to figure how to chain the loading...
 	  this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
 		var grid = new THREE.GridHelper(200,10);
 	  grid.setColors(0x333333, 0x333333);

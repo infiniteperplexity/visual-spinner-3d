@@ -40,7 +40,7 @@ var vs;
 function canvasSetup() {
 	vs = VS3D.VisualSpinnerWidget();
 	vs.embedById("display");
-	//vs.swapRenderer(VS3D.ThreeJS3dRenderer());
+	vs.swapRenderer(VS3D.ThreeJS3dRenderer());
 	var orangePoi = vs.addProp();
 	var whitePoi = vs.addProp();
 	orangePoi.color = "orange";
