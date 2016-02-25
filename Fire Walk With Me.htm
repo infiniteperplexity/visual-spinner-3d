@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"><style type="text/css">#guidat { position: fixed; top: 0; right: 0; width: auto; z-index: 1001; text-align: right; } .guidat { color: #fff; opacity: 0.97; text-align: left; float: right; margin-right: 20px; margin-bottom: 20px; background-color: #fff; } .guidat, .guidat input { font: 9.5px Lucida Grande, sans-serif; } .guidat-controllers { height: 300px; overflow-y: auto; overflow-x: hidden; background-color: rgba(0, 0, 0, 0.1); } a.guidat-toggle:link, a.guidat-toggle:visited, a.guidat-toggle:active { text-decoration: none; cursor: pointer; color: #fff; background-color: #222; text-align: center; display: block; padding: 5px; } a.guidat-toggle:hover { background-color: #000; } .guidat-controller { padding: 3px; height: 25px; clear: left; border-bottom: 1px solid #222; background-color: #111; } .guidat-controller, .guidat-controller input, .guidat-slider-bg, .guidat-slider-fg { -moz-transition: background-color 0.15s linear; -webkit-transition: background-color 0.15s linear; transition: background-color 0.15s linear; } .guidat-controller.boolean:hover, .guidat-controller.function:hover { background-color: #000; } .guidat-controller input { float: right; outline: none; border: 0; padding: 4px; margin-top: 2px; background-color: #222; } .guidat-controller select { margin-top: 4px; float: right; } .guidat-controller input:hover { background-color: #444; } .guidat-controller input:focus, .guidat-controller.active input { background-color: #555; color: #fff; } .guidat-controller.number { border-left: 5px solid #00aeff; } .guidat-controller.string { border-left: 5px solid #1ed36f; } .guidat-controller.string input { border: 0; color: #1ed36f; margin-right: 2px; width: 148px; } .guidat-controller.boolean { border-left: 5px solid #54396e; } .guidat-controller.function { border-left: 5px solid #e61d5f; } .guidat-controller.number input[type=text] { width: 35px; margin-left: 5px; margin-right: 2px; color: #00aeff; } .guidat .guidat-controller.boolean input { margin-top: 6px; margin-right: 2px; font-size: 20px; } .guidat-controller:last-child { border-bottom: none; -webkit-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.5); -moz-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.5); box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.5); } .guidat-propertyname { padding: 5px; padding-top: 7px; cursor: default; display: inline-block; } .guidat-controller .guidat-slider-bg:hover, .guidat-controller.active .guidat-slider-bg { background-color: #444; } .guidat-controller .guidat-slider-bg .guidat-slider-fg:hover, .guidat-controller.active .guidat-slider-bg .guidat-slider-fg { background-color: #52c8ff; } .guidat-slider-bg { background-color: #222; cursor: ew-resize; width: 40%; margin-top: 2px; float: right; height: 21px; } .guidat-slider-fg { cursor: ew-resize; background-color: #00aeff; height: 21px; } </style>
+	<title>Fire Walk With Me</title>
+	<!--<link rel="shortcut icon" href="favicon.ico">-->
+	<!--<meta name="viewport" content="initial-scale=1.0; maximum-scale=1.0; user-scalable=0;"/>-->
+	<meta charset="utf-8">
+	<link href="Fire%20Walk%20With%20Me_files/styles.css" type="text/css" rel="stylesheet">
+	<script async="" src="Fire%20Walk%20With%20Me_files/cbgapi.loaded_1"></script><script async="" src="Fire%20Walk%20With%20Me_files/cbgapi.loaded_0"></script><script type="text/javascript" src="Fire%20Walk%20With%20Me_files/jquery-1.js"></script>
+	<script>
+		$( init );
+
+		function init() {
+
+			$('#infoLink').bind('click',openMoreInfo);
+			$("#controlButtonWrapper").css("top",viewportHeight-25);
+		}
+
+		function openMoreInfo() {
+			$('#infoLink').unbind('click');
+
+			$("#header").animate({top: 0}, 500, function() {
+				$('#infoLink').bind('click', closeMoreInfo);
+			});
+		}
+
+		function closeMoreInfo() {
+			$('#infoLink').unbind('click');
+			$("#header").animate({top: $("#header").height()*-1 + 10}, 500, function() {
+				$('#infoLink').bind('click',openMoreInfo);
+			});
+		}
+
+	</script>
+	<script type="text/javascript">
+			var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+			document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+			</script><script src="Fire%20Walk%20With%20Me_files/ga.js" type="text/javascript"></script>
+			<script type="text/javascript">
+			try{
+			var pageTracker = _gat._getTracker("UA-181266-1");
+			pageTracker._trackPageview();
+			} catch(err) {}</script>
+<script src="Fire%20Walk%20With%20Me_files/button.js" async="" charset="utf-8" type="text/javascript"></script></head>
+<body>
+
+<div id="headerContainer">
+	<div style="top: -92px;" id="header">
+		<div id="moreInfo">
+			This demo is doing the trick with a sphere and two shader pairs, one for the noise (forked from this <a href="http://alteredqualia.com/three/examples/webgl_shader_fireball.html">experiment</a> by <a href="http://www.twitter.com/alteredq" target="_blank">@alteredq</a>)
+ and one for the displacement and coloring. This demo relies on vertex 
+texture lookup, a feature available in latest Chrome and Firefox. So if 
+it looks like an egg, upgrade your browser. Read more <a href="http://www.inear.se/2011/09/set-a-sphere-on-fire-with-three-js/">here</a>.</div>
+		<div id="infoText">FPS: 41</div>
+		<div id="titleText"><span style="display: none;" id="loading">Loading: </span>Fire Walk with Me - by <a href="http://www.twitter.com/inear" target="_blank">@inear</a></div>
+		<div id="infoLink"><a href="#">ABOUT</a></div>
+	</div>
+</div>
+
+<div id="share">
+	<iframe src="Fire%20Walk%20With%20Me_files/tweet_button.htm" title="Twitter Tweet Button" style="position: static; visibility: visible; width: 61px; height: 20px;" class="twitter-share-button twitter-share-button-rendered twitter-tweet-button" allowtransparency="true" scrolling="no" id="twitter-widget-0" frameborder="0"></iframe><script type="text/javascript" src="Fire%20Walk%20With%20Me_files/widgets.js"></script>
+	<script gapi_processed="true" type="text/javascript" src="Fire%20Walk%20With%20Me_files/plusone.js"></script>
+	<div id="___plusone_0" style="text-indent: 0px; margin: 0px; padding: 0px; background: transparent none repeat scroll 0% 0%; border-style: none; float: none; line-height: normal; font-size: 1px; vertical-align: baseline; display: inline-block; width: 90px; height: 20px;"><iframe title="+1" data-gapiattached="true" src="Fire%20Walk%20With%20Me_files/fastbutton.htm" name="I0_1456425580063" id="I0_1456425580063" vspace="0" tabindex="0" style="position: static; top: 0px; width: 90px; margin: 0px; border-style: none; left: 0px; visibility: visible; height: 20px;" scrolling="no" marginwidth="0" marginheight="0" hspace="0" frameborder="0" width="100%"></iframe></div>
+</div>
+
+<div id="uiContainer"><div style="width: 280px;" class="guidat"><div style="height: 0px; overflow-y: hidden;" class="guidat-controllers"><div style="-moz-user-select: none;" class="guidat-controller number"><span style="-moz-user-select: none;" class="guidat-propertyname">smoke</span><input value="1.2" id="smoke" type="text"><div class="guidat-slider-bg"><div style="width: 56.6038%;" class="guidat-slider-fg"></div></div></div><div style="-moz-user-select: none;" class="guidat-controller number"><span style="-moz-user-select: none;" class="guidat-propertyname">heat</span><input value="0.0185" id="heat" type="text"><div class="guidat-slider-bg"><div style="width: 50%;" class="guidat-slider-fg"></div></div></div><div style="-moz-user-select: none;" class="guidat-controller number"><span style="-moz-user-select: none;" class="guidat-propertyname">intensity</span><input value="1" id="intensity" type="text"><div class="guidat-slider-bg"><div style="width: 50%;" class="guidat-slider-fg"></div></div></div><div style="-moz-user-select: none;" class="guidat-controller number"><span style="-moz-user-select: none;" class="guidat-propertyname">shapeBiasX</span><input value="0.23" id="shapeBiasX" type="text"><div class="guidat-slider-bg"><div style="width: 23%;" class="guidat-slider-fg"></div></div></div><div style="-moz-user-select: none;" class="guidat-controller number"><span style="-moz-user-select: none;" class="guidat-propertyname">shapeBiasY</span><input value="0.88" id="shapeBiasY" type="text"><div class="guidat-slider-bg"><div style="width: 42.5926%;" class="guidat-slider-fg"></div></div></div><div style="-moz-user-select: none;" class="guidat-controller number"><span style="-moz-user-select: none;" class="guidat-propertyname">displacementScale</span><input value="22" id="displacementScale" type="text"><div class="guidat-slider-bg"><div style="width: 31.5789%;" class="guidat-slider-fg"></div></div></div><div style="-moz-user-select: none;" class="guidat-controller number"><span style="-moz-user-select: none;" class="guidat-propertyname">displacementBias</span><input value="-22" id="displacementBias" type="text"><div class="guidat-slider-bg"><div style="width: 72%;" class="guidat-slider-fg"></div></div></div><div style="-moz-user-select: none;" class="guidat-controller number"><span style="-moz-user-select: none;" class="guidat-propertyname">turbulence</span><input value="0" id="turbulence" type="text"><div class="guidat-slider-bg"><div style="width: 0%;" class="guidat-slider-fg"></div></div></div><div style="-moz-user-select: none;" class="guidat-controller number"><span style="-moz-user-select: none;" class="guidat-propertyname">twist</span><input value="0" id="twist" type="text"><div class="guidat-slider-bg"><div style="width: 0%;" class="guidat-slider-fg"></div></div></div><div style="-moz-user-select: none; cursor: pointer;" class="guidat-controller boolean"><span style="-moz-user-select: none; cursor: pointer;" class="guidat-propertyname">wireframes</span><input type="checkbox"></div></div><a href="#" class="guidat-toggle">Open Controls</a></div></div>
+
+<div style="left: 180px; top: 282.5px;" id="container"><canvas height="1000" width="720"></canvas></div>
+
+
+
+<script data-src="shaders/displacement_vertex.js" data-name="Displacement" type="x-shader/x-vertex"></script>
+<script data-src="shaders/displacement_fragment.js" data-name="Displacement" type="x-shader/x-fragment"></script>
+
+<script data-src="shaders/noise_vertex.js" data-name="Noise" type="x-shader/x-vertex"></script>
+<script data-src="shaders/noise_fragment.js" data-name="Noise" type="x-shader/x-fragment"></script>
+<!-- End Shaders -->
+
+<!--<script type="text/javascript" src="jscolor/jscolor.js"></script>-->
+<script type="text/javascript" src="Fire%20Walk%20With%20Me_files/dat.js"></script>
+<script type="text/javascript" src="Fire%20Walk%20With%20Me_files/Detector.js"></script>
+<script type="text/javascript" src="Fire%20Walk%20With%20Me_files/signals.js"></script>
+<script type="text/javascript" src="Fire%20Walk%20With%20Me_files/Library.js"></script>
+<script type="text/javascript" src="Fire%20Walk%20With%20Me_files/Tween.js"></script>
+<script type="text/javascript" src="Fire%20Walk%20With%20Me_files/Three.js"></script>
+
+<script type="text/javascript" src="Fire%20Walk%20With%20Me_files/RequestAnimationFrame.js"></script>
+<script type="text/javascript">
+
+if (! Detector.webgl) {
+	Detector.addGetWebGLMessage();
+	document.getElementById('container').innerHTML = "";
+}
+
+//scene
+var TO_RADIANS = Math.PI / 180;
+var container, stats;
+var projector, camera, cameraTarget, scene, sceneRenderTarget, renderer, postRenderTarget, cameraOrtho;
+var quadTarget,mesh;
+var dirLight, ambientLight, pointLight;
+var displacementMaterial;
+
+var viewportWidth = 720;
+var viewportHeight = 1000;
+var sphereRadius = 100;
+var properties;
+
+var noiseMaterial,noiseMap;
+var uniforms, displacementUniforms;
+
+var postprocessing = { enabled  : true };
+
+var particleCount;
+var particles;
+var particleSystem;
+var particleSpawnY;
+
+var mouse2d = new THREE.Vector2();
+
+//start engine and loading
+$(document).ready(function(){
+	mainInit();
+});
+
+function mainInit() {
+
+	properties = {
+		smoke: 1.2,
+		heat: 0.0185,
+		shapeBiasX: 0.23,
+		shapeBiasY:0.88,
+		displacementScale:22,
+		displacementBias:-22,
+		turbulence:0,
+		twist:0,
+		intensity:1.0,
+		wireframes:false
+	}
+
+	LIBRARY.Shaders.loadedSignal.add( onShadersLoaded );
+	initShaderLoading();
+
+	var gui = new DAT.GUI();
+	DAT.GUI.autoPlace = false;
+
+	$("#uiContainer").append(gui.domElement);
+
+	gui.add(properties, 'smoke').min(0).max(2.12).listen().onChange(function(newValue){
+		displacementUniforms.uSmoke.value = newValue;
+	});;
+
+	gui.add(properties, 'heat').min(0.0085).max(0.0285).listen()
+	gui.add(properties, 'intensity').min(0.7).max(1.3).listen()
+
+	gui.add(properties, 'shapeBiasX').min(0).max(1).listen().onChange(function(newValue){
+		displacementUniforms.uShapeBias.value = new THREE.Vector2(newValue,properties.shapeBiasY);
+	});
+
+	gui.add(properties, 'shapeBiasY').min(0.42).max(1.5).listen().onChange(function(newValue){
+		displacementUniforms.uShapeBias.value = new THREE.Vector2(properties.shapeBiasX,newValue);
+	});
+
+	gui.add(properties, 'displacementScale').min(16).max(35).listen().onChange(function(newValue){
+		displacementUniforms.uDisplacementScale.value = newValue;
+	});
+
+	gui.add(properties, 'displacementBias').min(-40).max(-15).listen().onChange(function(newValue){
+		displacementUniforms.uDisplacementBias.value = newValue;
+	});
+
+	gui.add(properties, 'turbulence').min(0).max(100).listen().onChange(function(newValue){
+		displacementUniforms.uTurbulence.value = newValue;
+	});
+
+	gui.add(properties, 'twist').min(0).max(720).listen().onChange(function(newValue){
+		displacementUniforms.uTwist.value = newValue;
+	});
+
+	gui.add(properties,"wireframes").onChange(function(newValue){
+		displacementMaterial.wireframe = newValue;
+	});
+
+	/*var inputEl = document.createElement("input");
+	inputEl.id = "myField1";
+
+	gui.add("color",inputEl);
+
+	var myPicker = new jscolor.color(document.getElementById('myField1'), {})
+	myPicker.fromString('99FF33')  // now you can access API via 'myPicker' variable
+*/
+	gui.close();
+
+}
+
+function onShadersLoaded() {
+
+	initEngine();
+	initPostprocessing();
+	initObjects();
+	initParticles();
+
+	window.addEventListener( 'resize', onWindowResize, false );
+	window.addEventListener( 'mousemove', onDocumentMouseMove, false );
+	onWindowResize();
+
+	initStartState();
+
+}
+
+
+
+function initEngine() {
+
+	//projector = new THREE.Projector();
+
+	container = document.getElementById('container');
+	camera = new THREE.Camera( 40, viewportWidth / viewportHeight, 1, 3000 );
+	camera.position.z = 400;
+
+	camera.updateMatrix();
+	camera.aspect = viewportWidth / viewportHeight;
+	camera.updateProjectionMatrix();
+
+	scene = new THREE.Scene();
+	sceneRenderTarget = new THREE.Scene();
+
+	cameraOrtho = new THREE.Camera();
+	cameraOrtho.projectionMatrix = THREE.Matrix4.makeOrtho( viewportWidth / - 2, viewportWidth / 2, viewportHeight / 2, viewportHeight / - 2, -10000, 10000 );
+	cameraOrtho.position.z = 100;
+
+	var plane = new THREE.PlaneGeometry( viewportWidth, viewportHeight );
+
+	quadTarget = new THREE.Mesh( plane, new THREE.MeshBasicMaterial( { color: 0xff0000 } ) );
+	quadTarget.position.z = -500;
+	sceneRenderTarget.addObject( quadTarget );
+
+	renderer = new THREE.WebGLRenderer({ antialias: false});
+	renderer.setSize(viewportWidth,viewportHeight);
+
+	if ( renderer.getContext().getParameter(renderer.getContext().MAX_VERTEX_TEXTURE_IMAGE_UNITS) == 0){
+		alert('I thought you were a techy person! Your browser does not support [VERTEX-TEXTURES-TECHY-THINGY]. Check out the "ABOUT"-section in the top bar.');
+		return;
+	}
+
+	renderer.autoClear = false;
+	renderer.sortObjects = false;
+
+	container.innerHTML = "";
+	container.appendChild(renderer.domElement);
+
+}
+
+
+function initPostprocessing() {
+
+	postprocessing.scene = new THREE.Scene();
+
+	postprocessing.camera = new THREE.Camera();
+	postprocessing.camera.projectionMatrix = THREE.Matrix4.makeOrtho( viewportWidth / - 2, viewportWidth / 2,  viewportHeight / 2, viewportHeight / - 2, -10000, 10000 );
+	postprocessing.camera.position.z = 100;
+
+	var pars = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat };
+	postprocessing.rtTexture1 = new THREE.WebGLRenderTarget( viewportWidth, viewportHeight, pars );
+	postprocessing.rtTexture2 = new THREE.WebGLRenderTarget( 512, 512, pars );
+	postprocessing.rtTexture3 = new THREE.WebGLRenderTarget( 512, 512, pars );
+
+	var screen_shader = THREE.ShaderUtils.lib["screen"];
+	var screen_uniforms = THREE.UniformsUtils.clone( screen_shader.uniforms );
+
+	screen_uniforms["tDiffuse"].texture = postprocessing.rtTexture1;
+	screen_uniforms["opacity"].value = 1;
+
+	postprocessing.materialScreen = new THREE.MeshShaderMaterial( {
+
+		uniforms: screen_uniforms,
+		vertexShader: screen_shader.vertexShader,
+		fragmentShader: screen_shader.fragmentShader,
+		blending: THREE.AdditiveBlending,
+		transparent: true
+
+	} );
+
+	var convolution_shader = THREE.ShaderUtils.lib["convolution"];
+	var convolution_uniforms = THREE.UniformsUtils.clone( convolution_shader.uniforms );
+
+	postprocessing.blurx = new THREE.Vector2( 0.001953125, 0.0 ),
+	postprocessing.blury = new THREE.Vector2( 0.0, 0.001953125 );
+
+	convolution_uniforms["tDiffuse"].texture = postprocessing.rtTexture1;
+	convolution_uniforms["uImageIncrement"].value = postprocessing.blurx;
+	convolution_uniforms["cKernel"].value = THREE.ShaderUtils.buildKernel( 4.0 );
+
+	postprocessing.materialConvolution = new THREE.MeshShaderMaterial( {
+
+		uniforms: convolution_uniforms,
+		vertexShader:   "#define KERNEL_SIZE 25.0\n" + convolution_shader.vertexShader,
+		fragmentShader: "#define KERNEL_SIZE 25\n"   + convolution_shader.fragmentShader
+
+	} );
+
+	postprocessing.quad = new THREE.Mesh( new THREE.PlaneGeometry( viewportWidth, viewportHeight ), postprocessing.materialConvolution );
+	postprocessing.quad.position.z = -500;
+	postprocessing.scene.addObject( postprocessing.quad );
+}
+
+function initObjects() {
+
+	uniforms = {
+		time:  { type: "f", value: 1.0 },
+		uSpeed:  { type: "f", value: 1.0 },
+		scale: { type: "v2", value: new THREE.Vector2( 1, 1 ) }
+	};
+
+	noiseMaterial = new THREE.MeshShaderMaterial({
+		uniforms:		 uniforms,
+		vertexShader:   LIBRARY.Shaders.Noise.vertex,
+		fragmentShader: LIBRARY.Shaders.Noise.fragment,
+		lights: false
+	});
+
+	noiseMap  = new THREE.WebGLRenderTarget( 512, 512, { minFilter: THREE.LinearMipMapLinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat } );
+
+	displacementUniforms = {
+		time:  { type: "f", value: 1.0 },
+		tHeightMap:  { type: "t",  value: 1, texture: noiseMap },
+		uDisplacementBias: { type: "f", value: properties.displacementBias },
+		uDisplacementScale: { type: "f", value: properties.displacementScale },
+		uColor1: { type: "c", value: new THREE.Color( 0xffff00 ) },
+		uColor2: { type: "c", value: new THREE.Color( 0xff0000 ) },
+		uSmoke: { type: "f", value: properties.smoke },
+		uShapeBias: { type: "v2", value: new THREE.Vector2(properties.shapeBiasX,properties.shapeBiasY) },
+		uScreenHeight: { type: "f", value: viewportHeight },
+		uTurbulence: { type: "f", value: properties.turbulence },
+		uTwist: { type: "f", value: properties.twist }
+	};
+
+	displacementMaterial = new THREE.MeshShaderMaterial({
+		wireframe:false,
+		transparent:true,
+		uniforms:		displacementUniforms,
+		vertexShader:   LIBRARY.Shaders.Displacement.vertex,
+		fragmentShader: LIBRARY.Shaders.Displacement.fragment,
+		lights: false
+	});
+
+	var geometrySphere = new THREE.SphereGeometry( sphereRadius, 140, 100 );
+	geometrySphere.computeFaceNormals();
+	mesh = new THREE.Mesh( geometrySphere, displacementMaterial );
+	mesh.position.y = -40;
+	mesh.depthTest = false;
+	scene.addObject( mesh );
+}
+
+
+function initParticles() {
+
+	particleCount = 100;
+	particles = new THREE.Geometry();
+
+
+	var pMaterial = new THREE.ParticleBasicMaterial({
+			color: 0xffff00,
+			size: 1,
+			opacity:0.4,
+			blending: THREE.AdditiveBlending
+		});
+
+
+	for(var p = 0; p < particleCount; p++) {
+
+		var radius =  sphereRadius*0.3;
+		var angle = Math.random() * (Math.PI * 2)
+		var pX = Math.sin(angle) * radius,
+			pY = Math.random() * 400,
+			pZ = Math.cos(angle) * radius,
+		    particle = new THREE.Vertex(
+				new THREE.Vector3(pX, pY, pZ)
+			);
+
+		particle.velocity = new THREE.Vector3(
+			Math.random()-0.5,				// x
+			Math.random()*0.2 + 0.8,	// y
+			Math.random()-0.5);				// z
+
+		particles.vertices.push(particle);
+	}
+
+	// create the particle system
+	particleSystem = new THREE.ParticleSystem(
+		particles,
+		pMaterial);
+
+	particleSystem.position.y = sphereRadius*-0.2;
+
+	particleSystem.sortParticles = false;
+
+	// add it to the scene
+	mesh.addChild(particleSystem);
+}
+
+function initStartState() {
+
+	$("#loading").delay(500).hide( function(){
+		closeMoreInfo();
+	});
+
+	animate();
+}
+
+//game loop
+function animate() {
+	requestAnimationFrame(animate);
+	render()
+}
+
+
+function render() {
+
+	renderer.clear();
+
+	displacementUniforms.time.value += properties.heat*.3;
+
+	uniforms.uSpeed.value += properties.heat;
+	uniforms.time.value += properties.heat*.3;
+
+	mesh.rotation.y += ((mouse2d.x+0.8)-mesh.rotation.y)/5;
+
+	quadTarget.materials[ 0 ] = noiseMaterial;
+	renderer.render( sceneRenderTarget, cameraOrtho, noiseMap, true );
+
+	//update particles
+	var pCount = particleCount;
+	while(pCount--) {
+
+		var particle = particles.vertices[pCount];
+
+		if(particle.position.y > 300) {
+			particle.position.y = 0;
+			var radius =  sphereRadius*0.3;
+			var angle = Math.random() * (Math.PI * 2);
+			particle.position.x = Math.sin(angle) * radius;
+			particle.position.z = Math.cos(angle) * radius;
+		}
+
+		particle.position.x += Math.sin(uniforms.time.value*30*particle.velocity.x)*0.5;
+		particle.position.z += Math.cos(uniforms.time.value*30*particle.velocity.x)*0.5;
+		particle.position.y += properties.heat*100*particle.velocity.y;
+
+	}
+	particleSystem.geometry.__dirtyVertices = true;
+
+	if ( postprocessing.enabled ) {
+		// Render scene into texture
+		renderer.render( scene, camera, postprocessing.rtTexture1, true );
+
+		// Render quad with blured scene into texture (convolution pass 1)
+		postprocessing.quad.materials = [ postprocessing.materialConvolution ];
+		postprocessing.materialConvolution.uniforms.tDiffuse.texture = postprocessing.rtTexture1;
+		postprocessing.materialConvolution.uniforms.uImageIncrement.value = postprocessing.blurx;
+
+		renderer.render( postprocessing.scene, postprocessing.camera, postprocessing.rtTexture2, true );
+
+		// Render quad with blured scene into texture (convolution pass 2)
+		postprocessing.materialConvolution.uniforms.tDiffuse.texture = postprocessing.rtTexture2;
+		postprocessing.materialConvolution.uniforms.uImageIncrement.value = postprocessing.blury;
+
+		renderer.render( postprocessing.scene, postprocessing.camera, postprocessing.rtTexture3, true );
+
+		// Render original scene with superimposed blur to texture
+		postprocessing.quad.materials = [ postprocessing.materialScreen ];
+		postprocessing.materialScreen.uniforms.tDiffuse.texture = postprocessing.rtTexture3;
+		postprocessing.materialScreen.uniforms.opacity.value = properties.intensity;
+
+		renderer.render( postprocessing.scene, postprocessing.camera, postprocessing.rtTexture1, false );
+
+		// Render to screen
+		postprocessing.materialScreen.uniforms.tDiffuse.texture = postprocessing.rtTexture1;
+		renderer.render( postprocessing.scene, postprocessing.camera );
+
+	} else {
+		renderer.render( scene, camera );
+	}
+
+	//TWEEN.update();
+
+	updateFPS()
+}
+
+
+
+function onDocumentMouseMove( event ) {
+	event.preventDefault();
+
+	mouse2d.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	mouse2d.y = 1- ( event.clientY / window.innerHeight );
+}
+
+
+function onWindowResize() {
+	$("#container").css({
+		left:( ( window.innerWidth - viewportWidth)/2) + 'px',
+		top: ( ( window.innerHeight - viewportHeight  ) / 2 ) + 'px'
+	});
+
+	/*$("#share").css({
+		left:( ( window.innerWidth -$("#share").width() )) + 'px',
+	});*/
+
+	displacementUniforms.uScreenHeight.value =  viewportHeight;
+
+}
+
+var _frames = 0;
+var _time;
+var _timeLastFrame = new Date().getTime();
+var _fps = "";
+var _mb = 0;
+var _timeLastSecond = new Date().getTime();
+
+function updateFPS() {
+
+	_frames ++;
+	_time = new Date().getTime();
+
+	_ms = _time - _timeLastFrame;
+
+	_timeLastFrame = _time;
+
+	if ( _time > _timeLastSecond + 1000 ) {
+
+		_fps = Math.round( ( _frames * 1000) / ( _time - _timeLastSecond ) );
+		//_mb = performance.memory.usedJSHeapSize * 0.000000954;
+
+		$("#infoText").html("FPS: " + _fps);
+
+		_timeLastSecond = _time;
+		_frames = 0;
+
+	}
+}
+
+</script>
+
+
+<div id="guidat"></div><iframe tabindex="-1" style="width: 1px; height: 1px; position: absolute; top: -100px;" src="Fire%20Walk%20With%20Me_files/postmessageRelay.htm" id="oauth2relay1688442093" name="oauth2relay1688442093"></iframe><iframe style="position: absolute; visibility: hidden; display: none; width: 0px; height: 0px; padding: 0px; border: medium none;" allowfullscreen="true" allowtransparency="true" scrolling="no" id="rufous-sandbox" frameborder="0"></iframe></body><!-- Shaders --></html>
