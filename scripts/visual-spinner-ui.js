@@ -1628,8 +1628,61 @@ function PhoriaFlame(size) {
 	}
 
 ThreeJSProp.prototype.poiShapes = function(myProp) {
+	// this stuff isn't working yet
+	var nvertex = document.getElementById('nvertex').textContent;
+	var nfragment = document.getElementById('nfragment').textContent;
+	var dvertex = document.getElementById('dvertex').textContent;
+	var dfragment = document.getElementById('dfragment').textContent;
+	var defaults = {
+		smoke: 1.2,
+		heat: 0.0185,
+		shapeBiasX: 0.23,
+		shapeBiasY:0.88,
+		displacementScale:22,
+		displacementBias:-22,
+		turbulence:0,
+		twist:0,
+		intensity:1.0,
+		wireframes:false
+	};
+	var nuniforms = {
+		time:  { type: "f", value: 1.0 },
+		uSpeed:  { type: "f", value: 1.0 },
+		scale: { type: "v2", value: new THREE.Vector2( 1, 1 ) }
+	};
+
+	var noiseMaterial = new THREE.ShaderMaterial({
+		uniforms:		 nuniforms,
+		vertexShader:   nvertex,
+		fragmentShader: nfragment,
+		lights: false
+	});
+
+	var noiseMap  = new THREE.WebGLRenderTarget( 512, 512, { minFilter: THREE.LinearMipMapLinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat } );
+	var	duniforms = {
+			time:  { type: "f", value: 1.0 },
+			tHeightMap:  { type: "t",  value: 1, texture: noiseMap },
+			uDisplacementBias: { type: "f", value: defaults.displacementBias },
+			uDisplacementScale: { type: "f", value: defaults.displacementScale },
+			uColor1: { type: "c", value: new THREE.Color( 0xffff00 ) },
+			uColor2: { type: "c", value: new THREE.Color( 0xff0000 ) },
+			uSmoke: { type: "f", value: defaults.smoke },
+			uShapeBias: { type: "v2", value: new THREE.Vector2(defaults.shapeBiasX,defaults.shapeBiasY) },
+			uScreenHeight: { type: "f", value: 400 },
+			uTurbulence: { type: "f", value: defaults.turbulence },
+			uTwist: { type: "f", value: defaults.twist }
+	};
+	var material;
 	var model = new THREE.SphereGeometry(0.2,16,16);
-	var material = new THREE.MeshLambertMaterial({color: myProp.color});
+	material = new THREE.MeshLambertMaterial({color: myProp.color});
+	//  material = new THREE.ShaderMaterial({
+	//  	vertexShader: dvertex,
+	//  	fragmentShader: dfragment,
+	//  	uniforms: duniforms,
+	//  	transparent: true,
+	//  	lights: false,
+	//  	wireframe: false
+	//  });
 	var sphere = new THREE.Mesh(model, material);
 	sphere.position.x = 1;
 	var group = new THREE.Group();

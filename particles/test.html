@@ -1,0 +1,542 @@
+
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	<title>Fire Walk With Me</title>
+	<!--<link rel="shortcut icon" href="favicon.ico">-->
+	<!--<meta name="viewport" content="initial-scale=1.0; maximum-scale=1.0; user-scalable=0;"/>-->
+	<meta charset="utf-8">
+	<link href="css/styles.css" type="text/css" rel="stylesheet"/>
+	<script type="text/javascript" src="js/jquery-1.6.2.min.js"></script>
+	<script>
+		$( init );
+
+		function init() {
+
+			$('#infoLink').bind('click',openMoreInfo);
+			$("#controlButtonWrapper").css("top",viewportHeight-25);
+		}
+
+		function openMoreInfo() {
+			$('#infoLink').unbind('click');
+
+			$("#header").animate({top: 0}, 500, function() {
+				$('#infoLink').bind('click', closeMoreInfo);
+			});
+		}
+
+		function closeMoreInfo() {
+			$('#infoLink').unbind('click');
+			$("#header").animate({top: $("#header").height()*-1 + 10}, 500, function() {
+				$('#infoLink').bind('click',openMoreInfo);
+			});
+		}
+
+	</script>
+	<script type="text/javascript">
+			var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+			document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+			</script>
+			<script type="text/javascript">
+			try{
+			var pageTracker = _gat._getTracker("UA-181266-1");
+			pageTracker._trackPageview();
+			} catch(err) {}</script>
+</head>
+<body>
+
+<div id="headerContainer">
+	<div id="header">
+		<div id="moreInfo">
+			This demo is doing the trick with a sphere and two shader pairs, one for the noise (forked from this <a href="http://alteredqualia.com/three/examples/webgl_shader_fireball.html">experiment</a> by <a href="http://www.twitter.com/alteredq" target="_blank">@alteredq</a>) and one for the displacement and coloring. This demo relies on vertex texture lookup, a feature available in latest Chrome and Firefox. So if it looks like an egg, upgrade your browser. Read more <a href="http://www.inear.se/2011/09/set-a-sphere-on-fire-with-three-js/">here</a>.</div>
+		<div id="infoText"></div>
+		<div id="titleText"><span id="loading">Loading: </span>Fire Walk with Me - by <a href="http://www.twitter.com/inear" target="_blank">@inear</a></div>
+		<div id="infoLink"><a href="#">ABOUT</a></div>
+	</div>
+</div>
+
+<div id="share">
+	<a href='http://twitter.com/share' class='twitter-share-button'  data-via='inear'>Tweet</a><script type='text/javascript' src='http://platform.twitter.com/widgets.js'></script>
+	<script type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>
+	<g:plusone size="medium"></g:plusone>
+</div>
+
+<div id="uiContainer"></div>
+
+<div id="container"></div>
+</body>
+
+<!-- Shaders -->
+<script data-src="shaders/displacement_vertex.js" data-name="Displacement" type="x-shader/x-vertex"></script>
+<script data-src="shaders/displacement_fragment.js" data-name="Displacement" type="x-shader/x-fragment"></script>
+
+<script data-src="shaders/noise_vertex.js" data-name="Noise" type="x-shader/x-vertex"></script>
+<script data-src="shaders/noise_fragment.js" data-name="Noise" type="x-shader/x-fragment"></script>
+<!-- End Shaders -->
+
+<!--<script type="text/javascript" src="jscolor/jscolor.js"></script>-->
+<script type="text/javascript" src="js/dat.gui.js"></script>
+<script type="text/javascript" src="js/Detector.js"></script>
+<script type="text/javascript" src="js/signals.js"></script>
+<script type="text/javascript" src="js/Library.js"></script>
+<script type="text/javascript" src="js/Tween.js"></script>
+<script type="text/javascript" src="js/Three.js"></script>
+
+<script type="text/javascript" src="js/RequestAnimationFrame.js"></script>
+<script type="text/javascript">
+
+if (! Detector.webgl) {
+	Detector.addGetWebGLMessage();
+	document.getElementById('container').innerHTML = "";
+}
+
+//scene
+var TO_RADIANS = Math.PI / 180;
+var container, stats;
+var projector, camera, cameraTarget, scene, sceneRenderTarget, renderer, postRenderTarget, cameraOrtho;
+var quadTarget,mesh;
+var dirLight, ambientLight, pointLight;
+var displacementMaterial;
+
+var viewportWidth = 720;
+var viewportHeight = 1000;
+var sphereRadius = 100;
+var properties;
+
+var noiseMaterial,noiseMap;
+var uniforms, displacementUniforms;
+
+var postprocessing = { enabled  : true };
+
+var particleCount;
+var particles;
+var particleSystem;
+var particleSpawnY;
+
+var mouse2d = new THREE.Vector2();
+
+//start engine and loading
+$(document).ready(function(){
+	mainInit();
+});
+
+function mainInit() {
+
+	properties = {
+		smoke: 1.2,
+		heat: 0.0185,
+		shapeBiasX: 0.23,
+		shapeBiasY:0.88,
+		displacementScale:22,
+		displacementBias:-22,
+		turbulence:0,
+		twist:0,
+		intensity:1.0,
+		wireframes:false
+	}
+
+	LIBRARY.Shaders.loadedSignal.add( onShadersLoaded );
+	initShaderLoading();
+
+	var gui = new DAT.GUI();
+	DAT.GUI.autoPlace = false;
+
+	$("#uiContainer").append(gui.domElement);
+
+	gui.add(properties, 'smoke').min(0).max(2.12).listen().onChange(function(newValue){
+		displacementUniforms.uSmoke.value = newValue;
+	});;
+
+	gui.add(properties, 'heat').min(0.0085).max(0.0285).listen()
+	gui.add(properties, 'intensity').min(0.7).max(1.3).listen()
+
+	gui.add(properties, 'shapeBiasX').min(0).max(1).listen().onChange(function(newValue){
+		displacementUniforms.uShapeBias.value = new THREE.Vector2(newValue,properties.shapeBiasY);
+	});
+
+	gui.add(properties, 'shapeBiasY').min(0.42).max(1.5).listen().onChange(function(newValue){
+		displacementUniforms.uShapeBias.value = new THREE.Vector2(properties.shapeBiasX,newValue);
+	});
+
+	gui.add(properties, 'displacementScale').min(16).max(35).listen().onChange(function(newValue){
+		displacementUniforms.uDisplacementScale.value = newValue;
+	});
+
+	gui.add(properties, 'displacementBias').min(-40).max(-15).listen().onChange(function(newValue){
+		displacementUniforms.uDisplacementBias.value = newValue;
+	});
+
+	gui.add(properties, 'turbulence').min(0).max(100).listen().onChange(function(newValue){
+		displacementUniforms.uTurbulence.value = newValue;
+	});
+
+	gui.add(properties, 'twist').min(0).max(720).listen().onChange(function(newValue){
+		displacementUniforms.uTwist.value = newValue;
+	});
+
+	gui.add(properties,"wireframes").onChange(function(newValue){
+		displacementMaterial.wireframe = newValue;
+	});
+
+	/*var inputEl = document.createElement("input");
+	inputEl.id = "myField1";
+
+	gui.add("color",inputEl);
+
+	var myPicker = new jscolor.color(document.getElementById('myField1'), {})
+	myPicker.fromString('99FF33')  // now you can access API via 'myPicker' variable
+*/
+	gui.close();
+
+}
+
+function onShadersLoaded() {
+
+	initEngine();
+	initPostprocessing();
+	initObjects();
+	initParticles();
+
+	window.addEventListener( 'resize', onWindowResize, false );
+	window.addEventListener( 'mousemove', onDocumentMouseMove, false );
+	onWindowResize();
+
+	initStartState();
+
+}
+
+
+
+function initEngine() {
+
+	//projector = new THREE.Projector();
+
+	container = document.getElementById('container');
+	camera = new THREE.Camera( 40, viewportWidth / viewportHeight, 1, 3000 );
+	camera.position.z = 400;
+
+	camera.updateMatrix();
+	camera.aspect = viewportWidth / viewportHeight;
+	camera.updateProjectionMatrix();
+
+	scene = new THREE.Scene();
+	sceneRenderTarget = new THREE.Scene();
+
+	cameraOrtho = new THREE.Camera();
+	cameraOrtho.projectionMatrix = THREE.Matrix4.makeOrtho( viewportWidth / - 2, viewportWidth / 2, viewportHeight / 2, viewportHeight / - 2, -10000, 10000 );
+	cameraOrtho.position.z = 100;
+
+	var plane = new THREE.PlaneGeometry( viewportWidth, viewportHeight );
+
+	quadTarget = new THREE.Mesh( plane, new THREE.MeshBasicMaterial( { color: 0xff0000 } ) );
+	quadTarget.position.z = -500;
+	sceneRenderTarget.addObject( quadTarget );
+
+	renderer = new THREE.WebGLRenderer({ antialias: false});
+	renderer.setSize(viewportWidth,viewportHeight);
+
+	if ( renderer.getContext().getParameter(renderer.getContext().MAX_VERTEX_TEXTURE_IMAGE_UNITS) == 0){
+		alert('I thought you were a techy person! Your browser does not support [VERTEX-TEXTURES-TECHY-THINGY]. Check out the "ABOUT"-section in the top bar.');
+		return;
+	}
+
+	renderer.autoClear = false;
+	renderer.sortObjects = false;
+
+	container.innerHTML = "";
+	container.appendChild(renderer.domElement);
+
+}
+
+
+function initPostprocessing() {
+
+	postprocessing.scene = new THREE.Scene();
+
+	postprocessing.camera = new THREE.Camera();
+	postprocessing.camera.projectionMatrix = THREE.Matrix4.makeOrtho( viewportWidth / - 2, viewportWidth / 2,  viewportHeight / 2, viewportHeight / - 2, -10000, 10000 );
+	postprocessing.camera.position.z = 100;
+
+	var pars = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat };
+	postprocessing.rtTexture1 = new THREE.WebGLRenderTarget( viewportWidth, viewportHeight, pars );
+	postprocessing.rtTexture2 = new THREE.WebGLRenderTarget( 512, 512, pars );
+	postprocessing.rtTexture3 = new THREE.WebGLRenderTarget( 512, 512, pars );
+
+	var screen_shader = THREE.ShaderUtils.lib["screen"];
+	var screen_uniforms = THREE.UniformsUtils.clone( screen_shader.uniforms );
+
+	screen_uniforms["tDiffuse"].texture = postprocessing.rtTexture1;
+	screen_uniforms["opacity"].value = 1;
+
+	postprocessing.materialScreen = new THREE.MeshShaderMaterial( {
+
+		uniforms: screen_uniforms,
+		vertexShader: screen_shader.vertexShader,
+		fragmentShader: screen_shader.fragmentShader,
+		blending: THREE.AdditiveBlending,
+		transparent: true
+
+	} );
+
+	var convolution_shader = THREE.ShaderUtils.lib["convolution"];
+	var convolution_uniforms = THREE.UniformsUtils.clone( convolution_shader.uniforms );
+
+	postprocessing.blurx = new THREE.Vector2( 0.001953125, 0.0 ),
+	postprocessing.blury = new THREE.Vector2( 0.0, 0.001953125 );
+
+	convolution_uniforms["tDiffuse"].texture = postprocessing.rtTexture1;
+	convolution_uniforms["uImageIncrement"].value = postprocessing.blurx;
+	convolution_uniforms["cKernel"].value = THREE.ShaderUtils.buildKernel( 4.0 );
+
+	postprocessing.materialConvolution = new THREE.MeshShaderMaterial( {
+
+		uniforms: convolution_uniforms,
+		vertexShader:   "#define KERNEL_SIZE 25.0\n" + convolution_shader.vertexShader,
+		fragmentShader: "#define KERNEL_SIZE 25\n"   + convolution_shader.fragmentShader
+
+	} );
+
+	postprocessing.quad = new THREE.Mesh( new THREE.PlaneGeometry( viewportWidth, viewportHeight ), postprocessing.materialConvolution );
+	postprocessing.quad.position.z = -500;
+	postprocessing.scene.addObject( postprocessing.quad );
+}
+
+function initObjects() {
+
+	uniforms = {
+		time:  { type: "f", value: 1.0 },
+		uSpeed:  { type: "f", value: 1.0 },
+		scale: { type: "v2", value: new THREE.Vector2( 1, 1 ) }
+	};
+
+	noiseMaterial = new THREE.MeshShaderMaterial({
+		uniforms:		 uniforms,
+		vertexShader:   LIBRARY.Shaders.Noise.vertex,
+		fragmentShader: LIBRARY.Shaders.Noise.fragment,
+		lights: false
+	});
+
+	noiseMap  = new THREE.WebGLRenderTarget( 512, 512, { minFilter: THREE.LinearMipMapLinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat } );
+
+	displacementUniforms = {
+		time:  { type: "f", value: 1.0 },
+		tHeightMap:  { type: "t",  value: 1, texture: noiseMap },
+		uDisplacementBias: { type: "f", value: properties.displacementBias },
+		uDisplacementScale: { type: "f", value: properties.displacementScale },
+		uColor1: { type: "c", value: new THREE.Color( 0xffff00 ) },
+		uColor2: { type: "c", value: new THREE.Color( 0xff0000 ) },
+		uSmoke: { type: "f", value: properties.smoke },
+		uShapeBias: { type: "v2", value: new THREE.Vector2(properties.shapeBiasX,properties.shapeBiasY) },
+		uScreenHeight: { type: "f", value: viewportHeight },
+		uTurbulence: { type: "f", value: properties.turbulence },
+		uTwist: { type: "f", value: properties.twist }
+	};
+
+	displacementMaterial = new THREE.MeshShaderMaterial({
+		wireframe:false,
+		transparent:true,
+		uniforms:		displacementUniforms,
+		vertexShader:   LIBRARY.Shaders.Displacement.vertex,
+		fragmentShader: LIBRARY.Shaders.Displacement.fragment,
+		lights: false
+	});
+
+	var geometrySphere = new THREE.SphereGeometry( sphereRadius, 140, 100 );
+	geometrySphere.computeFaceNormals();
+	mesh = new THREE.Mesh( geometrySphere, displacementMaterial );
+	mesh.position.y = -40;
+	mesh.depthTest = false;
+	scene.addObject( mesh );
+}
+
+
+function initParticles() {
+
+	particleCount = 100;
+	particles = new THREE.Geometry();
+
+
+	var pMaterial = new THREE.ParticleBasicMaterial({
+			color: 0xffff00,
+			size: 1,
+			opacity:0.4,
+			blending: THREE.AdditiveBlending
+		});
+
+
+	for(var p = 0; p < particleCount; p++) {
+
+		var radius =  sphereRadius*0.3;
+		var angle = Math.random() * (Math.PI * 2)
+		var pX = Math.sin(angle) * radius,
+			pY = Math.random() * 400,
+			pZ = Math.cos(angle) * radius,
+		    particle = new THREE.Vertex(
+				new THREE.Vector3(pX, pY, pZ)
+			);
+
+		particle.velocity = new THREE.Vector3(
+			Math.random()-0.5,				// x
+			Math.random()*0.2 + 0.8,	// y
+			Math.random()-0.5);				// z
+
+		particles.vertices.push(particle);
+	}
+
+	// create the particle system
+	particleSystem = new THREE.ParticleSystem(
+		particles,
+		pMaterial);
+
+	particleSystem.position.y = sphereRadius*-0.2;
+
+	particleSystem.sortParticles = false;
+
+	// add it to the scene
+	mesh.addChild(particleSystem);
+}
+
+function initStartState() {
+
+	$("#loading").delay(500).hide( function(){
+		closeMoreInfo();
+	});
+
+	animate();
+}
+
+//game loop
+function animate() {
+	requestAnimationFrame(animate);
+	render()
+}
+
+
+function render() {
+
+	renderer.clear();
+
+	displacementUniforms.time.value += properties.heat*.3;
+
+	uniforms.uSpeed.value += properties.heat;
+	uniforms.time.value += properties.heat*.3;
+
+	mesh.rotation.y += ((mouse2d.x+0.8)-mesh.rotation.y)/5;
+
+	quadTarget.materials[ 0 ] = noiseMaterial;
+	renderer.render( sceneRenderTarget, cameraOrtho, noiseMap, true );
+
+	//update particles
+	var pCount = particleCount;
+	while(pCount--) {
+
+		var particle = particles.vertices[pCount];
+
+		if(particle.position.y > 300) {
+			particle.position.y = 0;
+			var radius =  sphereRadius*0.3;
+			var angle = Math.random() * (Math.PI * 2);
+			particle.position.x = Math.sin(angle) * radius;
+			particle.position.z = Math.cos(angle) * radius;
+		}
+
+		particle.position.x += Math.sin(uniforms.time.value*30*particle.velocity.x)*0.5;
+		particle.position.z += Math.cos(uniforms.time.value*30*particle.velocity.x)*0.5;
+		particle.position.y += properties.heat*100*particle.velocity.y;
+
+	}
+	particleSystem.geometry.__dirtyVertices = true;
+
+	if ( postprocessing.enabled ) {
+		// Render scene into texture
+		renderer.render( scene, camera, postprocessing.rtTexture1, true );
+
+		// Render quad with blured scene into texture (convolution pass 1)
+		postprocessing.quad.materials = [ postprocessing.materialConvolution ];
+		postprocessing.materialConvolution.uniforms.tDiffuse.texture = postprocessing.rtTexture1;
+		postprocessing.materialConvolution.uniforms.uImageIncrement.value = postprocessing.blurx;
+
+		renderer.render( postprocessing.scene, postprocessing.camera, postprocessing.rtTexture2, true );
+
+		// Render quad with blured scene into texture (convolution pass 2)
+		postprocessing.materialConvolution.uniforms.tDiffuse.texture = postprocessing.rtTexture2;
+		postprocessing.materialConvolution.uniforms.uImageIncrement.value = postprocessing.blury;
+
+		renderer.render( postprocessing.scene, postprocessing.camera, postprocessing.rtTexture3, true );
+
+		// Render original scene with superimposed blur to texture
+		postprocessing.quad.materials = [ postprocessing.materialScreen ];
+		postprocessing.materialScreen.uniforms.tDiffuse.texture = postprocessing.rtTexture3;
+		postprocessing.materialScreen.uniforms.opacity.value = properties.intensity;
+
+		renderer.render( postprocessing.scene, postprocessing.camera, postprocessing.rtTexture1, false );
+
+		// Render to screen
+		postprocessing.materialScreen.uniforms.tDiffuse.texture = postprocessing.rtTexture1;
+		renderer.render( postprocessing.scene, postprocessing.camera );
+
+	} else {
+		renderer.render( scene, camera );
+	}
+
+	//TWEEN.update();
+
+	updateFPS()
+}
+
+
+
+function onDocumentMouseMove( event ) {
+	event.preventDefault();
+
+	mouse2d.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	mouse2d.y = 1- ( event.clientY / window.innerHeight );
+}
+
+
+function onWindowResize() {
+	$("#container").css({
+		left:( ( window.innerWidth - viewportWidth)/2) + 'px',
+		top: ( ( window.innerHeight - viewportHeight  ) / 2 ) + 'px'
+	});
+
+	/*$("#share").css({
+		left:( ( window.innerWidth -$("#share").width() )) + 'px',
+	});*/
+
+	displacementUniforms.uScreenHeight.value =  viewportHeight;
+
+}
+
+var _frames = 0;
+var _time;
+var _timeLastFrame = new Date().getTime();
+var _fps = "";
+var _mb = 0;
+var _timeLastSecond = new Date().getTime();
+
+function updateFPS() {
+
+	_frames ++;
+	_time = new Date().getTime();
+
+	_ms = _time - _timeLastFrame;
+
+	_timeLastFrame = _time;
+
+	if ( _time > _timeLastSecond + 1000 ) {
+
+		_fps = Math.round( ( _frames * 1000) / ( _time - _timeLastSecond ) );
+		//_mb = performance.memory.usedJSHeapSize * 0.000000954;
+
+		$("#infoText").html("FPS: " + _fps);
+
+		_timeLastSecond = _time;
+		_frames = 0;
+
+	}
+}
+
+</script>
+
+</html>
