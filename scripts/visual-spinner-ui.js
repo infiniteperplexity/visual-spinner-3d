@@ -1419,6 +1419,25 @@ function PhoriaFlame(size) {
 	return f;
 }
 
+var github = "https://raw.githubusercontent.com/infiniteperplexity/visual-spinner-3d/master/scripts/";
+// load custom shaders
+var vShader;
+var fShader;
+$.ajax({
+	url : "scripts/vertex.vert",
+  dataType: "text",
+  success : function (result) {
+		vShader = result;
+  }
+});
+$.ajax({
+	url : "scripts/fragment.frag",
+  dataType: "text",
+  success : function (result) {
+		fShader = result;
+  }
+});
+
 // Begin ThreeHS3dRenderer
 	function ThreeJS3dRenderer() {}
 
@@ -1434,6 +1453,7 @@ function PhoriaFlame(size) {
 	  if (gl===null) {
 	    alert("WebGL not supported!");
 	  }*/
+		this.timestamp = Date.now();
 	  var WIDTH = 400;
 	  var HEIGHT = 400;
 	  this.renderer = new THREE.WebGLRenderer({antialias: true});
@@ -1581,12 +1601,14 @@ function PhoriaFlame(size) {
 	  		 	// use the rest of the time
 	         shape.rotateZ(-myProp.twist+WALL.between(myProp.axis), ZAXIS);
 	  		 }
-	  		// so far, poi are the only props that can change visual prop radius
-	  		if (myProp.propType === "poi") {
-	  			//this.props[i].updatePoi(myProp);
-	  		}
+				 //update or animate prop if necessary
 	  	}
+			if (this.props[i].updateProp) {
+				this.props[i].updateProp(this);
+			}
 		}
+
+		//material.uniforms
 	  this.renderer.render(this.scene, this.camera);
 	  this.controls.update();
 	}
@@ -1627,62 +1649,37 @@ function PhoriaFlame(size) {
 
 	}
 
+ThreeJSProp.prototype.updateProp = function(renderer) {
+	for (var i=0; i<this.shapes.length; i++) {
+		var children = this.shapes[i].children;
+		for (var j=0; j<children.length; j++) {
+			if (children[j].material.uniforms) {
+				children[j].material.uniforms['time'].value = 0.00025*(Date.now()-renderer.timestamp);
+			}
+		}
+	}
+};
+
 ThreeJSProp.prototype.poiShapes = function(myProp) {
 	// this stuff isn't working yet
-	var nvertex = document.getElementById('nvertex').textContent;
-	var nfragment = document.getElementById('nfragment').textContent;
-	var dvertex = document.getElementById('dvertex').textContent;
-	var dfragment = document.getElementById('dfragment').textContent;
-	var defaults = {
-		smoke: 1.2,
-		heat: 0.0185,
-		shapeBiasX: 0.23,
-		shapeBiasY:0.88,
-		displacementScale:22,
-		displacementBias:-22,
-		turbulence:0,
-		twist:0,
-		intensity:1.0,
-		wireframes:false
-	};
-	var nuniforms = {
-		time:  { type: "f", value: 1.0 },
-		uSpeed:  { type: "f", value: 1.0 },
-		scale: { type: "v2", value: new THREE.Vector2( 1, 1 ) }
-	};
-
-	var noiseMaterial = new THREE.ShaderMaterial({
-		uniforms:		 nuniforms,
-		vertexShader:   nvertex,
-		fragmentShader: nfragment,
-		lights: false
-	});
-
-	var noiseMap  = new THREE.WebGLRenderTarget( 512, 512, { minFilter: THREE.LinearMipMapLinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat } );
-	var	duniforms = {
-			time:  { type: "f", value: 1.0 },
-			tHeightMap:  { type: "t",  value: 1, texture: noiseMap },
-			uDisplacementBias: { type: "f", value: defaults.displacementBias },
-			uDisplacementScale: { type: "f", value: defaults.displacementScale },
-			uColor1: { type: "c", value: new THREE.Color( 0xffff00 ) },
-			uColor2: { type: "c", value: new THREE.Color( 0xff0000 ) },
-			uSmoke: { type: "f", value: defaults.smoke },
-			uShapeBias: { type: "v2", value: new THREE.Vector2(defaults.shapeBiasX,defaults.shapeBiasY) },
-			uScreenHeight: { type: "f", value: 400 },
-			uTurbulence: { type: "f", value: defaults.turbulence },
-			uTwist: { type: "f", value: defaults.twist }
-	};
 	var material;
 	var model = new THREE.SphereGeometry(0.2,16,16);
-	material = new THREE.MeshLambertMaterial({color: myProp.color});
-	//  material = new THREE.ShaderMaterial({
-	//  	vertexShader: dvertex,
-	//  	fragmentShader: dfragment,
-	//  	uniforms: duniforms,
-	//  	transparent: true,
-	//  	lights: false,
-	//  	wireframe: false
-	//  });
+	//material = new THREE.MeshLambertMaterial({color: myProp.color});
+	var loader = new THREE.TextureLoader();
+	material = new THREE.ShaderMaterial( {
+		uniforms: {
+				tExplosion: {
+						type: "t",
+						value: loader.load( 'scripts/explosion.png' )
+				},
+				time: { // float initialized to 0
+						type: "f",
+						value: 0.0
+				}
+		},
+		vertexShader: vShader,
+		fragmentShader: fShader
+	} );
 	var sphere = new THREE.Mesh(model, material);
 	sphere.position.x = 1;
 	var group = new THREE.Group();
