@@ -89,6 +89,8 @@ var ANTISPIN = Constants.ANTISPIN = -1;
 var CATEYE = Constants.CATEYE = -1;
 var FORWARD = Constants.FORWARD = 1;
 var BACKWARD = Constants.BACKWARD = -1;
+var NONE = Constants.NONE = 0;
+var NOBEND = Constants.NOBEND = 0;
 var PROBEND = Constants.PROBEND = 3;
 var ISOBEND = Constants.ISOBEND = 1;
 var ANTIBEND = Constants.ANTIBEND = -1;

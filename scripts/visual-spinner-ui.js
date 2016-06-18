@@ -1,41 +1,31 @@
+//"Import" is not yet implemented in any browser so we use this horrible hacky thing...
 var github = "https://raw.githubusercontent.com/infiniteperplexity/visual-spinner-3d/master/scripts/";
+
 $.getScript(github + "gl-matrix-min.js")
 	.done(function( script, textStatus ) {
-    console.log( textStatus );
-  })
-  .fail(function( jqxhr, settings, exception ) {
-    $( "div.log" ).text( "Triggered ajaxError handler." );
-});
 $.getScript(github + "phoria-min.js")
-.done(function( script, textStatus ) {
-	console.log( textStatus );
-})
-.fail(function( jqxhr, settings, exception ) {
+	.done(function( script, textStatus ) {
+$.getScript(github + "three.min.js")
+	.done(function( script, textStatus ) {
+$.getScript(github + "OrbitControls.js")
+  .done(function( script, textStatus ) {
+
+console.log( textStatus );
+
+}).fail(function( jqxhr, settings, exception ) {
 	$( "div.log" ).text( "Triggered ajaxError handler." );
 });
-// Chain loading for OrbitControls.js to handle asynchronous dependency
-$.getScript(github + "three.min.js")
-.done(function( script, textStatus ) {
-	console.log( textStatus );
-	$.getScript(github + "OrbitControls.js")
-  .done(function( script, textStatus ) {
-  	console.log( textStatus );
-  })
-  .fail(function( jqxhr, settings, exception ) {
-  	$( "div.log" ).text( "Triggered ajaxError handler." );
-  });
-})
-.fail(function( jqxhr, settings, exception ) {
+}).fail(function( jqxhr, settings, exception ) {
 	$( "div.log" ).text( "Triggered ajaxError handler." );
+});
+}).fail(function( jqxhr, settings, exception ) {
+  $( "div.log" ).text( "Triggered ajaxError handler." );
+});
+}).fail(function( jqxhr, settings, exception ) {
+  $( "div.log" ).text( "Triggered ajaxError handler." );
 });
 
-$.getScript(github + "requestAnimationFrame.js")
-.done(function( script, textStatus ) {
-	console.log( textStatus );
-})
-.fail(function( jqxhr, settings, exception ) {
-	$( "div.log" ).text( "Triggered ajaxError handler." );
-});
+
 
 VS3D = (function (VS3D) {
 "use strict";

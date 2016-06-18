@@ -62,6 +62,8 @@ var ANTISPIN = Constants.ANTISPIN;
 var CATEYE = Constants.CATEYE;
 var FORWARD = Constants.FORWARD;
 var BACKWARD = Constants.BACKWARD;
+var NONE = Constants.NONE;
+var NOBEND = Constants.NOBEND;
 var PROBEND = Constants.PROBEND;
 var ISOBEND = Constants.ISOBEND;
 var ANTIBEND = Constants.ANTIBEND;
@@ -288,7 +290,7 @@ Constants.parse = function(hash) {
 		}
 	}
 	return converted;
-}
+};
 
 
 
