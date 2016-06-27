@@ -5,6 +5,7 @@
 "Point Isolation": 				{"recipe": "pointiso"},
 "Drag Stall": 					{"recipe": "drag"},
 "Follow Stall": 				{"recipe": "follow"},
+"R-Type": 				{"recipe": "rtype"},
 "One-Petal In-Spin Flower":		{"recipe": "flower", "petals": 1},
 "Two-Petal In-Spin Flower":		{"recipe": "flower", "petals": 2},
 "Four-Petal In-Spin Flower":	{"recipe": "flower"},
