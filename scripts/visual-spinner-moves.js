@@ -530,6 +530,7 @@ MoveFactory.variant("extension",{name: "Extension", petals: 0},"flower");
 MoveFactory.variant("pointiso",{name: "Point Isolation", petals: 0, mode: "BOX"},"flower");
 MoveFactory.variant("drag",{name: "Drag", petals: 0, mode: "DRAG"},"flower");
 MoveFactory.variant("follow",{name: "Follow", petals: 0, mode: "FOLLOW"},"flower");
+MoveFactory.variant("rtype",{name: "R-Type", petals: -1, mode: "BOX"},"flower");
 
 
 
