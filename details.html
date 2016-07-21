@@ -74,7 +74,7 @@ The engine does not model the human body, so even though you can model the prop 
 </ul>
 </p>
 <p>
-Also note that this is not the only way prop movements can be formally modeled.  In particular, you may have seen <a href="http://www.drexfactor.com/weirdscience/2014/05/07/mathematical_approach_classifying_poi_patterns_modeling_flowers_and_third_or">Ben Drexler</a>, among others, model props using trigonometric functions parameterized with respect to time, using Cartesian coordinates.  That approach is both interesting and mathematically elegant for modeling flowers and certain other moves, but I found that it becomes unmanageably complex as a general tool for modeling prop movements.
+Also note that this is not the only way prop movements can be formally modeled.  You may have seen <a href="http://www.drexfactor.com/weirdscience/2014/05/07/mathematical_approach_classifying_poi_patterns_modeling_flowers_and_third_or">Ben Drexler</a>, among others, model props using trigonometric functions parameterized with respect to time, using Cartesian coordinates.  That approach is mathematically elegant for modeling flowers and certain other moves, but I found that it becomes unwieldy when modeling more general prop movements.
 </p>
 <br>
 <h3>
@@ -118,10 +118,10 @@ moves.build.flower({
 });
 </code>
 <p>
-Using recipes, you can generate complex "quintuple spherical" movements using keywords that make sense to spinners (you don't actually have to specify every option; for example, direction defaults to CLOCKWISE and plane defaults to WALL.)
+Using recipes, you can generate complex "quintuple spherical" movements using keywords that make sense to spinners.  (You don't have to provide every option; for example, direction defaults to CLOCKWISE and plane defaults to WALL.)
 </p>
 <p>
-When you give VisualSpinner3D a recipe, it builds a series of MoveLinks according to the options you provided and bundles them together in a MoveChain.  It also tags the MoveChain with a list of all the selected options, called the <b>definition.</b>  The definition isn't very appealing to the human eye...
+When you give VisualSpinner3D a recipe, it builds a series of MoveLinks based in the options you provided and bundles them together in a MoveChain.  It also tags the MoveChain with a list of all the selected options, called the <b>definition.</b>  The definition isn't very appealing to the human eye...
 </p>
 <code>
 {
