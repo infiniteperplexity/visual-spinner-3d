@@ -73,6 +73,9 @@ The engine does not model the human body, so even though you can model the prop 
 </li>
 </ul>
 </p>
+<p>
+Also note that this is not the only way prop movements can be formally modeled.  In particular, you may have seen <a href="http://www.drexfactor.com/weirdscience/2014/05/07/mathematical_approach_classifying_poi_patterns_modeling_flowers_and_third_or">Ben Drexler</a>, among others, model props using trigonometric functions parameterized with respect to time, using Cartesian coordinates.  That approach is both interesting and mathematically elegant for modeling flowers and certain other moves, but I found that it becomes unmanageably complex as a general tool for modeling prop movements.
+</p>
 <br>
 <h3>
 Moves:
@@ -94,10 +97,31 @@ In VisualSpinner3D, the "leaves"  called <b>MoveLinks</b>  contain simple instru
 Recipes:
 </h3>
 <p>
-Even though we could combine movements into chunks of any size, it is easiest for spinners to think of them in terms of familiar "moves."  VisualSpinner3D models moves using <b>recipes</b>, which are sets of instructions for building a MoveChain out of MoveLinks.  For example, the "flower" recipe generates a number of petals (MoveLinks) and combines them together to form a flower (MoveChain.)  By default, the flower recipe creates a flower that has four in-spin petals in diamond mode, spins clockwise from the "3 o' clock" position in the wall plane, with a hand extension of one prop length, centered around the origin (roughly, the spinner's chest.)  But when you use a recipe, you can change any or all of these options; for example, you could change the "petals", "spin", and "entry" options to make a three-petal anti-spin flower that begins at the six o' clock position in the wall plane.  Different recipes have different options; for example, the "toroid" recipe has an option called "pitch" that describes which direction the prop bends toward.
+Even though we could combine movements into chunks of any size, it is easiest for spinners to think of them in terms of familiar "moves."  VisualSpinner3D models moves using <b>recipes</b>, which are sets of instructions for building a MoveChain out of MoveLinks.  For example, the "flower" recipe generates a number of petals (MoveLinks) and combines them together to form a flower (MoveChain.)  By default, the flower recipe creates a flower that has four in-spin petals in diamond mode, spins clockwise from the "3 o' clock" position in the wall plane, with a hand extension of one prop length, centered around the origin (roughly, the spinner's chest.)  But when you use a recipe, you can change any or all of these options; for example, you could change the "petals", "spin", and "entry" options to make a three-petal anti-spin flower that begins at the six o' clock position in the wall plane.  Different recipes have different options; for example, the "toroid" recipe has an option called "pitch" that describes which direction the prop bends toward (whenever possible I have tried to use terminology that already exists in the spinning community, but in some cases, such as the "pitch" of a toroid, I was not aware of any existing terms so I had to invent them.)
 </p>
 <p>
-When a recipe creates a move, it tags the MoveChain with a list of all the selected options, called the <b>definition.</b>  The definition isn't very appealing to the human eye...
+Recipes look something like this:
+</p>
+<code>
+moves.build.flower({
+<br>
+&nbsp;direction: CLOCKWISE,
+<br>
+&nbsp;spin: ANTISPIN,
+<br>
+&nbsp;petals: 4,
+<br>
+&nbsp;mode: DIAMOND,
+<br>
+&nbsp;plane: WALL
+<br>
+});
+</code>
+<p>
+Using recipes, you can generate complex "quintuple spherical" movements using keywords that make sense to spinners (you don't actually have to specify every option; for example, direction defaults to CLOCKWISE and plane defaults to WALL.)
+</p>
+<p>
+When you give VisualSpinner3D a recipe, it builds a series of MoveLinks according to the options you provided and bundles them together in a MoveChain.  It also tags the MoveChain with a list of all the selected options, called the <b>definition.</b>  The definition isn't very appealing to the human eye...
 </p>
 <code>
 {
@@ -133,10 +157,10 @@ When a recipe creates a move, it tags the MoveChain with a list of all the selec
 &nbsp;},
 <br>
 &nbsp;"pivot_angle": 0,
-<br>&nbsp;"pivot_radius": 0,
 <br>
-&nbsp;"phase": 1
-<br>}
+&nbsp;"pivot_radius": 0
+<br>
+}
 </code>
 <p>
 ...however, this list tells VisualSpinner3D everything it needs to know about how to build that move from scratch.  That's helpful for a number of reasons.  First, it means we can "save our work" by exporting the text of the definition to a file, using a format called <a href="http://json.org/">JSON</a>, and re-load it later.  Second, it means the engine can tweak the move in order to ensure smooth transitions, using a system called <b>socketing.</b>
