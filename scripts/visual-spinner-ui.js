@@ -40,6 +40,7 @@ function loadScripts(callback) {
 	$.getScript(github + "gl-matrix-min.js",function() {
 		console.log("test this thing!");
 	});
+}
 //Bring some Constants into the current namespace, for convenience
 var ELEMENTS = VS3D.Constants.ELEMENTS;
 var HOME = VS3D.Constants.HOME;
