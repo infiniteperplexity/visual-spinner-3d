@@ -139,6 +139,7 @@ VisualSpinnerWidget.prototype.embedById = function(id) {
 VisualSpinnerWidget.prototype.ready = function(callback) {
 	callback = callback || function() {};
 	let that = this;
+	console.log("or here, even?");
 	loadScripts(function() {
 		console.log("ready");
 		if (that.renderer===null) {
