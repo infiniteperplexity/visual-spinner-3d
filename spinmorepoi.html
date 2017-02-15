@@ -28,7 +28,7 @@ function init() {
 	vs = VS3D.VisualSpinnerWidget();
 	vs.embedById("vs-div");
 	twoD = VS3D.HTML5Canvas2dRenderer();
-	threeD = vs.renderer;
+	threeD = VS3D.Phoria3dRenderer();
 	// optionally, pull parameters from URL
 	var params = [	"1prop","2prop","3prop","4prop",
 					"1plane","2plane","3plane","4plane",
