@@ -68,8 +68,9 @@ function init() {
 	}
 	// set up controller
 	controller.updateParameters();
-	vs.play();
-
+	vs.ready(function() {
+		vs.play();
+	});
 }
 
 function Controller() {

@@ -55,7 +55,7 @@ function VisualSpinnerWidget(options) {
 	this.scene = new VisualSpinnerScene(); //can be reassigned
 	this.scene.widgets.push(this);
 	//this.renderer = new HTML5Canvas2dRenderer(); // for now;
-	this.renderer = new Phoria3dRenderer();
+	this.renderer = null;
 	this.controls = []; // a list of control elements
 	this.annotations = [];
 	this.textCursor = 0;
@@ -134,15 +134,20 @@ VisualSpinnerWidget.prototype.embedById = function(id) {
 	this.div.style.position = "relative";
 	this.div.appendChild(this.text);
 }
-VisualSpinnerWidget.prototype.ready = function() {
+VisualSpinnerWidget.prototype.ready = function(callback) {
+	callback = callback || function() {};
 	let that = this;
 	loadScripts(function() {
+		if (that.renderer===null) {
+			that.renderer = new Phoria3dRenderer();
+		}
 		that.renderer.activate(that);
 		that.renderer.render(that.scene);
 		for (var i = 0; i<that.scene.props.length; i++) {
 			that.scene.starting[i].orientToProp(that.scene.props[i]);
 		}
 		that.renderText();
+		callback();
 	});
 };
 
@@ -836,7 +841,9 @@ HTML5Canvas2dRenderer.prototype.drawFlame = function(x,y) {
 
 
 // *** Glenn Wright's 3D renderer using Phoria.js for HTML5 Canvas ***
-function Phoria3dRenderer() {}
+function Phoria3dRenderer() {
+	this.props = [];
+}
 
 Phoria3dRenderer.prototype.activate = function(widget) {
 	var canvas = widget.canvas;
@@ -867,7 +874,6 @@ Phoria3dRenderer.prototype.activate = function(widget) {
 	light.direction.y = 1;
 	light.direction.z = 0;
 	this.scene.graph.push(light);
-	this.props = [];
 }
 Phoria3dRenderer.prototype.camera = function(_x,_y,_z) {
 	this.scene.camera.position = {x: _x, y: _y, z: _z};

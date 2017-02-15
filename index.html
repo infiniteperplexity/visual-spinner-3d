@@ -29,8 +29,10 @@ function init() {
 	propTwo.addMove(vs.Moves.build.flower({direction: 1-(i%2)*2, entry: propTwo.socket().hand.angle, spin: vs.ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
 
 	vs.addControls("play","pause","rewind","frame","forward","reset","2d3d");
-	vs.ready();
-	vs.play();
+	vs.ready(function() {
+		vs.play();
+	});
+
 }
 </script>
 </head><body onload="init();">
