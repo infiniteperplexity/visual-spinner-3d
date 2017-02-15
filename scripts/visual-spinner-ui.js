@@ -1,5 +1,6 @@
 //"Import" is not yet implemented in any browser so we use this horrible hacky thing...
 function loadScripts(callback) {
+	console.log("do we even get here???");
 	var github = "https://raw.githubusercontent.com/infiniteperplexity/visual-spinner-3d/master/scripts/";
 
 	$.getScript(github + "gl-matrix-min.js")
