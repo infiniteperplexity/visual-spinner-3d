@@ -175,13 +175,17 @@ VisualSpinnerScene.prototype.spinfail = function() {
 
 VisualSpinnerWidget.prototype.swapScene = function(scene) {
 	this.scene.widgets.splice(this.scene.widgets.indexOf(this));
-	this.renderer.deactivate(this);
+	if (this.renderer) {
+		this.renderer.deactivate(this);
+	}
 	this.scene = scene;
 	this.scene.widgets.push(this);
 	this.renderer.activate(this);
 }
 VisualSpinnerWidget.prototype.swapRenderer = function(r) {
-	this.renderer.deactivate(this);
+	if (this.renderer) {
+		this.renderer.deactivate(this);
+	}
 	this.renderer = r;
 	r.activate(this);
 }
