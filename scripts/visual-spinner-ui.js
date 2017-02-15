@@ -1,10 +1,10 @@
 //"Import" is not yet implemented in any browser so we use this horrible hacky thing...
 function loadScripts(callback) {
-	console.log("do we even get here???");
 	var github = "https://raw.githubusercontent.com/infiniteperplexity/visual-spinner-3d/master/scripts/";
 
 	$.getScript(github + "gl-matrix-min.js")
 		.done(function( script, textStatus ) {
+			console.log("does one thing get done?");
 	$.getScript(github + "phoria-min.js")
 		.done(function( script, textStatus ) {
 	$.getScript(github + "three.min.js")
@@ -139,7 +139,6 @@ VisualSpinnerWidget.prototype.embedById = function(id) {
 VisualSpinnerWidget.prototype.ready = function(callback) {
 	callback = callback || function() {};
 	let that = this;
-	console.log("or here, even?");
 	loadScripts(function() {
 		console.log("ready");
 		if (that.renderer===null) {
