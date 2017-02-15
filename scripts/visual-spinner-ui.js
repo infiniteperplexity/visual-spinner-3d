@@ -2,7 +2,10 @@
 function loadScripts(callback) {
 	var github = "https://raw.githubusercontent.com/infiniteperplexity/visual-spinner-3d/master/scripts/";
 
-	$.getScript(github + "gl-matrix-min.js")
+	$.getScript(github + "gl-matrix-min.js",function() {
+		console.log("test this thing!");
+	});
+	/*$.getScript(github + "gl-matrix-min.js")
 		.done(function( script, textStatus ) {
 			$( "div.log" ).text( "Do we need to use this?" );
 			console.log("does one thing get done?");
@@ -31,7 +34,7 @@ function loadScripts(callback) {
 	});
 }
 
-
+*/
 
 VS3D = (function (VS3D) {
 "use strict";
