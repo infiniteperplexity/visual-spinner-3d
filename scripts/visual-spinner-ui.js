@@ -128,11 +128,11 @@ VisualSpinnerWidget.prototype.embedById = function(id) {
 	this.canvas.width = this.width;
 	this.div.appendChild(document.createElement("br"));
 	this.context.fillRect(0,0,this.width,this.height);
-	this.renderer.activate(this);
 	this.div.style.position = "relative";
 	this.div.appendChild(this.text);
 }
 VisualSpinnerWidget.prototype.ready = function() {
+	this.renderer.activate(this);
 	this.renderer.render(this.scene);
 	for (var i = 0; i<this.scene.props.length; i++) {
 		this.scene.starting[i].orientToProp(this.scene.props[i]);
