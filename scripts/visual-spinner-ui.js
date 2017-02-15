@@ -1,10 +1,5 @@
 //"Import" is not yet implemented in any browser so we use this horrible hacky thing...
-function loadScripts(callback) {
-	var github = "https://raw.githubusercontent.com/infiniteperplexity/visual-spinner-3d/master/scripts/";
 
-	$.getScript(github + "gl-matrix-min.js",function() {
-		console.log("test this thing!");
-	});
 	/*$.getScript(github + "gl-matrix-min.js")
 		.done(function( script, textStatus ) {
 			$( "div.log" ).text( "Do we need to use this?" );
@@ -38,6 +33,13 @@ function loadScripts(callback) {
 
 VS3D = (function (VS3D) {
 "use strict";
+
+function loadScripts(callback) {
+	var github = "https://raw.githubusercontent.com/infiniteperplexity/visual-spinner-3d/master/scripts/";
+
+	$.getScript(github + "gl-matrix-min.js",function() {
+		console.log("test this thing!");
+	});
 //Bring some Constants into the current namespace, for convenience
 var ELEMENTS = VS3D.Constants.ELEMENTS;
 var HOME = VS3D.Constants.HOME;
