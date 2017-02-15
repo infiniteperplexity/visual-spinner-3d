@@ -4,6 +4,7 @@ function loadScripts(callback) {
 
 	$.getScript(github + "gl-matrix-min.js")
 		.done(function( script, textStatus ) {
+			$( "div.log" ).text( "Do we need to use this?" );
 			console.log("does one thing get done?");
 	$.getScript(github + "phoria-min.js")
 		.done(function( script, textStatus ) {
