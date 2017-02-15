@@ -56,13 +56,10 @@ function init() {
 	vs3.addText("Pro-Bend Toroid (top view)");
 
 
-	vs.ready(function() {
-		vs2.ready(function() {
-			vs3.ready(function () {
-				vs.play();
-			});
-		});
-	});
+	vs.ready();
+	vs2.ready();
+	vs3.ready();
+	vs.play();
 }
 
 

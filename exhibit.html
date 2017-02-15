@@ -36,10 +36,8 @@ function init() {
 		vs.parseFile("http://infiniteperplexity.github.io/visual-spinner-3d/json/qt3d.json");
 	}
 	vs.addControls("play","pause","rewind","frame","forward","reset","2d3d");
-	vs.ready(function() {
-		vs.play();
-	});
-
+	vs.ready();
+	vs.play();
 }
 </script>
 <body onload="init();">

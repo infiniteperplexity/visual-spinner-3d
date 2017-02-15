@@ -77,10 +77,8 @@ function init() {
 	propTwo.addMove(vs.Moves.build.staticspin({extend: 1, duration: 0.25, speed: 2, direction: vs.CCW}));
 
 	vs.addControls("play","pause","rewind","frame","forward","reset","2d3d");
-	vs.ready(function() {
-		vs.play();
-	});
-
+	vs.ready();
+	vs.play();
 }
 </script>
 <body onload="init();">
