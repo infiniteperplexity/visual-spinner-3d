@@ -30,12 +30,6 @@ function init() {
 	var vs3 = VS3D.VisualSpinnerWidget();
 	vs2.embedById("vs-div2");
 	vs3.embedById("vs-div3");
-	vs2.swapScene(vs.scene);
-	vs3.swapScene(vs.scene);
-	vs.camera(0,1,10);
-	vs2.camera(10,1,0);
-	vs3.camera(1,10,0);
-
 	vs.addControls("play","pause","rewind","frame","forward","reset");
 	vs2.addControls("play","pause","rewind","frame","forward","reset");
 	vs3.addControls("play","pause","rewind","frame","forward","reset");
@@ -59,6 +53,11 @@ function init() {
 	vs.ready();
 	vs2.ready();
 	vs3.ready();
+	vs2.swapScene(vs.scene);
+	vs3.swapScene(vs.scene);
+	vs.camera(0,1,10);
+	vs2.camera(10,1,0);
+	vs3.camera(1,10,0);
 	vs.play();
 }
 

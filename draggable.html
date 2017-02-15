@@ -28,8 +28,6 @@ function init() {
 	one.setPropAngle(vs.NINE);
 	one.nudge(0,0,0.1);
 	two.nudge(0,0,-0.1);
-	vs.camera(0,1,10);
-
 	vs.addControls("play","pause","rewind","frame","forward","reset");
 	one.addMove(vs.Moves.build.antispin());
 	two.addMove(vs.Moves.build.antispin());
@@ -49,6 +47,7 @@ function init() {
 
 
 	vs.ready();
+	vs.camera(0,1,10);
 	//vs.play();
 }
 
