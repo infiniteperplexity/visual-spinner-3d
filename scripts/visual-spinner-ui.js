@@ -1,46 +1,5 @@
-//"Import" is not yet implemented in any browser so we use this horrible hacky thing...
-
-	/*$.getScript(github + "gl-matrix-min.js")
-		.done(function( script, textStatus ) {
-			$( "div.log" ).text( "Do we need to use this?" );
-			console.log("does one thing get done?");
-	$.getScript(github + "phoria-min.js")
-		.done(function( script, textStatus ) {
-	$.getScript(github + "three.min.js")
-		.done(function( script, textStatus ) {
-	$.getScript(github + "OrbitControls.js")
-	  .done(function( script, textStatus ) {
-
-	console.log( textStatus );
-	console.log("loaded");
-	callback();
-
-	}).fail(function( jqxhr, settings, exception ) {
-		$( "div.log" ).text( "Triggered ajaxError handler." );
-	});
-	}).fail(function( jqxhr, settings, exception ) {
-		$( "div.log" ).text( "Triggered ajaxError handler." );
-	});
-	}).fail(function( jqxhr, settings, exception ) {
-	  $( "div.log" ).text( "Triggered ajaxError handler." );
-	});
-	}).fail(function( jqxhr, settings, exception ) {
-	  $( "div.log" ).text( "Triggered ajaxError handler." );
-	});
-}
-
-*/
-
 VS3D = (function (VS3D) {
 "use strict";
-
-function loadScripts(callback) {
-	var github = "https://raw.githubusercontent.com/infiniteperplexity/visual-spinner-3d/master/scripts/";
-
-	$.getScript(github + "gl-matrix-min.js",function() {
-		console.log("test this thing!");
-	});
-}
 //Bring some Constants into the current namespace, for convenience
 var ELEMENTS = VS3D.Constants.ELEMENTS;
 var HOME = VS3D.Constants.HOME;
@@ -143,22 +102,28 @@ VisualSpinnerWidget.prototype.embedById = function(id) {
 	this.div.style.position = "relative";
 	this.div.appendChild(this.text);
 }
-VisualSpinnerWidget.prototype.ready = function(callback) {
-	callback = callback || function() {};
-	let that = this;
-	loadScripts(function() {
-		console.log("ready");
-		if (that.renderer===null) {
-			that.renderer = new Phoria3dRenderer();
+VisualSpinnerWidget.prototype.ready = function() {
+	if (this.renderer===null) {
+		let useRenderer = null;
+		try {
+			Phoria;
+			useRenderer = Phoria3dRenderer;
+		} catch(e) {
+			try {
+				THREE;
+				useRenderer = ThreeJSRenderer;
+			} catch(e) {
+				useRenderer = HTML5Canvas2dRenderer;
+			}
 		}
-		that.renderer.activate(that);
-		that.renderer.render(that.scene);
-		for (var i = 0; i<that.scene.props.length; i++) {
-			that.scene.starting[i].orientToProp(that.scene.props[i]);
-		}
-		that.renderText();
-		callback();
-	});
+		this.renderer = new useRenderer();
+	}
+	this.renderer.activate(this);
+	this.renderer.render(this.scene);
+	for (var i = 0; i<this.scene.props.length; i++) {
+		this.scene.starting[i].orientToProp(this.scene.props[i]);
+	}
+	this.renderText();
 };
 
 VisualSpinnerWidget.prototype.addProp = function(optionalProp) {
@@ -1488,18 +1453,22 @@ $.ajax({
 		this.scene.add(light);
 	  this.props = [];
 		// need to figure how to chain the loading...
-	  this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
 		var grid = new THREE.GridHelper(200,10);
 	  grid.setColors(0x333333, 0x333333);
 	  this.scene.add(grid);
 	  this.scene.fog = new THREE.FogExp2( 0x000000, 0.0128 );
 	  this.renderer.render(this.scene, this.camera);
-	  this.controls.update();
+		if (THREE.OrbitControls) {
+			this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+			this.controls.update();
+		}
 		var that = this;
 		function animate() {
 	    requestAnimationFrame(animate);
 	    that.renderer.render(that.scene,that.camera);
-	    that.controls.update();
+			if (THREE.OrbitControls) {
+	    	that.controls.update();
+			}
 	  }
 	  this.requestId = animate();
 	};
@@ -1622,7 +1591,9 @@ $.ajax({
 
 		//material.uniforms
 	  this.renderer.render(this.scene, this.camera);
-	  this.controls.update();
+		if (THREE.OrbitControls) {
+	  	this.controls.update();
+		}
 	}
 
 	function ThreeJSProp(myProp) {

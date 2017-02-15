@@ -6,6 +6,9 @@ body {background-color: #99CCFF}
 </style>
 <title>VisualSpinner3D, by Glenn Wright</title>
 <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="scripts/three.min.js"></script>
+<script src="scripts/gl-matrix-min.js"></script>
+<script src="scripts/phoria-min.js"></script>
 <script src="scripts/visual-spinner-engine.js"></script>
 <script src="scripts/visual-spinner-moves.js"></script>
 <script src="scripts/visual-spinner-ui.js"></script>
@@ -29,11 +32,8 @@ function init() {
 	propTwo.addMove(vs.Moves.build.flower({direction: 1-(i%2)*2, entry: propTwo.socket().hand.angle, spin: vs.ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
 
 	vs.addControls("play","pause","rewind","frame","forward","reset","2d3d");
-	vs.ready(function() {
-		vs.play();
-		console.log("testing");
-	});
-
+	vs.ready();
+	vs.play();
 }
 </script>
 </head><body onload="init();">
