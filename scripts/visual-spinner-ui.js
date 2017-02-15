@@ -135,13 +135,14 @@ VisualSpinnerWidget.prototype.embedById = function(id) {
 	this.div.appendChild(this.text);
 }
 VisualSpinnerWidget.prototype.ready = function() {
+	let that = this;
 	loadScripts(function() {
-		this.renderer.activate(this);
-		this.renderer.render(this.scene);
-		for (var i = 0; i<this.scene.props.length; i++) {
-			this.scene.starting[i].orientToProp(this.scene.props[i]);
+		that.renderer.activate(that);
+		that.renderer.render(that.scene);
+		for (var i = 0; i<that.scene.props.length; i++) {
+			that.scene.starting[i].orientToProp(that.scene.props[i]);
 		}
-		this.renderText();
+		that.renderText();
 	});
 };
 
