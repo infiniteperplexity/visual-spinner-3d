@@ -1,29 +1,32 @@
 //"Import" is not yet implemented in any browser so we use this horrible hacky thing...
-var github = "https://raw.githubusercontent.com/infiniteperplexity/visual-spinner-3d/master/scripts/";
+function loadScripts(callback) {
+	var github = "https://raw.githubusercontent.com/infiniteperplexity/visual-spinner-3d/master/scripts/";
 
-$.getScript(github + "gl-matrix-min.js")
-	.done(function( script, textStatus ) {
-$.getScript(github + "phoria-min.js")
-	.done(function( script, textStatus ) {
-$.getScript(github + "three.min.js")
-	.done(function( script, textStatus ) {
-$.getScript(github + "OrbitControls.js")
-  .done(function( script, textStatus ) {
+	$.getScript(github + "gl-matrix-min.js")
+		.done(function( script, textStatus ) {
+	$.getScript(github + "phoria-min.js")
+		.done(function( script, textStatus ) {
+	$.getScript(github + "three.min.js")
+		.done(function( script, textStatus ) {
+	$.getScript(github + "OrbitControls.js")
+	  .done(function( script, textStatus ) {
 
-console.log( textStatus );
+	console.log( textStatus );
+	callback();
 
-}).fail(function( jqxhr, settings, exception ) {
-	$( "div.log" ).text( "Triggered ajaxError handler." );
-});
-}).fail(function( jqxhr, settings, exception ) {
-	$( "div.log" ).text( "Triggered ajaxError handler." );
-});
-}).fail(function( jqxhr, settings, exception ) {
-  $( "div.log" ).text( "Triggered ajaxError handler." );
-});
-}).fail(function( jqxhr, settings, exception ) {
-  $( "div.log" ).text( "Triggered ajaxError handler." );
-});
+	}).fail(function( jqxhr, settings, exception ) {
+		$( "div.log" ).text( "Triggered ajaxError handler." );
+	});
+	}).fail(function( jqxhr, settings, exception ) {
+		$( "div.log" ).text( "Triggered ajaxError handler." );
+	});
+	}).fail(function( jqxhr, settings, exception ) {
+	  $( "div.log" ).text( "Triggered ajaxError handler." );
+	});
+	}).fail(function( jqxhr, settings, exception ) {
+	  $( "div.log" ).text( "Triggered ajaxError handler." );
+	});
+}
 
 
 
@@ -132,13 +135,15 @@ VisualSpinnerWidget.prototype.embedById = function(id) {
 	this.div.appendChild(this.text);
 }
 VisualSpinnerWidget.prototype.ready = function() {
-	this.renderer.activate(this);
-	this.renderer.render(this.scene);
-	for (var i = 0; i<this.scene.props.length; i++) {
-		this.scene.starting[i].orientToProp(this.scene.props[i]);
-	}
-	this.renderText();
-}
+	loadScripts(function() {
+		this.renderer.activate(this);
+		this.renderer.render(this.scene);
+		for (var i = 0; i<this.scene.props.length; i++) {
+			this.scene.starting[i].orientToProp(this.scene.props[i]);
+		}
+		this.renderText();
+	});
+};
 
 VisualSpinnerWidget.prototype.addProp = function(optionalProp) {
 	var p = optionalProp || VS3D.Prop();
