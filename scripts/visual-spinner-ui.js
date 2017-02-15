@@ -12,6 +12,7 @@ function loadScripts(callback) {
 	  .done(function( script, textStatus ) {
 
 	console.log( textStatus );
+	console.log("loaded");
 	callback();
 
 	}).fail(function( jqxhr, settings, exception ) {
@@ -138,6 +139,7 @@ VisualSpinnerWidget.prototype.ready = function(callback) {
 	callback = callback || function() {};
 	let that = this;
 	loadScripts(function() {
+		console.log("ready");
 		if (that.renderer===null) {
 			that.renderer = new Phoria3dRenderer();
 		}
