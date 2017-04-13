@@ -104,6 +104,8 @@ Controller.prototype.updateParameters = function() {
 	for(var i = 1; i<=vs.scene.props.length; i++) {
 		list = document.getElementById(i+"prop");
 		txt = list.options[list.selectedIndex].value;
+		// console.log(vs.scene.props)
+		// console.log("TEXT>>>>",txt,"<<<<")
 		if (txt==="poi") {
 			vs.scene.props[i-1].propType = "poi";
 			vs.scene.props[i-1].fire = false;
@@ -149,7 +151,7 @@ Controller.prototype.updateParameters = function() {
 		if (txt=="twelve") {
 			this.align[i-1] = vs.TWELVE;
 		} else if (txt=="six") {
-			this.align[i-1] = vs.vs.SIX;
+			this.align[i-1] = vs.SIX;
 		} else if (txt=="three") {
 			this.align[i-1] = vs.THREE;
 		} else if (txt=="nine") {
@@ -231,8 +233,8 @@ Controller.prototype.generateMove = function(n, txt) {
 		move = moves.build.flower({entry: this.align[n], mode: vs.BOX, direction: this.spin[n], plane: this.plane[n], spin: vs.ANTISPIN});
 		move.align("hand",this.align[n]);
 	} else if (txt=="hcap") {
-		if (this.align[n] == vs.TWELVE || this.align[n] == vs.vs.SIX) {
-			move = moves.build.ccap({orient: this.align[n]+this.spin[n]*vs.vs.QUARTER, direction: this.spin[n], plane: this.plane[n]});
+		if (this.align[n] == vs.TWELVE || this.align[n] == vs.SIX) {
+			move = moves.build.ccap({orient: this.align[n]+this.spin[n]*vs.QUARTER, direction: this.spin[n], plane: this.plane[n]});
 		} else {
 			move = moves.build.ccap({orient: this.align[n], direction: this.spin[n], plane: this.plane[n]});
 		}
