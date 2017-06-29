@@ -25,8 +25,7 @@ function init() {
 	one.hand.radius = 1;
 	two.hand.radius = 1;
 	one.setHandAngle(vs.NINE);
-	one.setPropAngle(vs.NINE);
-	one.nudge(0,0,0.1);
+	one.setPropAngle(vs.NINE);	one.nudge(0,0,0.1);
 	two.nudge(0,0,-0.1);
 	var vs2 = VS3D.VisualSpinnerWidget();
 	var vs3 = VS3D.VisualSpinnerWidget();
@@ -35,12 +34,12 @@ function init() {
 	vs.addControls("play","pause","rewind","frame","forward","reset");
 	vs2.addControls("play","pause","rewind","frame","forward","reset");
 	vs3.addControls("play","pause","rewind","frame","forward","reset");
-	one.addMove(vs.Moves.build.antibend());
-	two.addMove(vs.Moves.build.antibend());
-	one.addMove(vs.Moves.build.isobend());
-	two.addMove(vs.Moves.build.isobend());
-	one.addMove(vs.Moves.build.probend());
-	two.addMove(vs.Moves.build.probend());
+	one.addMove(vs.Moves.build.antibend({twist: vs.QUARTER}));
+	two.addMove(vs.Moves.build.antibend({twist: vs.QUARTER}));
+	one.addMove(vs.Moves.build.isobend({twist: vs.QUARTER}));
+	two.addMove(vs.Moves.build.isobend({twist: vs.QUARTER}));
+	one.addMove(vs.Moves.build.probend({twist: vs.QUARTER}));
+	two.addMove(vs.Moves.build.probend({twist: vs.QUARTER}));
 	vs.addText("Anti-Bend Toroid (front view)");
 	vs2.addText("Anti-Bend Toroid (side view)");
 	vs3.addText("Anti-Bend Toroid (top view)");
