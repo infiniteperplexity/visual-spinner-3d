@@ -1,0 +1,1 @@
+DraggableSVG = require('react-draggable-svg');
