@@ -103,11 +103,11 @@ class DragRect extends Draggable {
   }
   getCenterX = () => {
     let e = this.element;
-    return parseInt(e.getAttribute("x")+e.getAttribute("width")/2);
+    return parseInt(e.getAttribute("x"))+parseInt(e.getAttribute("width")/2);
   }
   getCenterY = () => {
     let e = this.element;
-    return parseInt(e.getAttribute("y")+e.getAttribute("height")/2);
+    return parseInt(e.getAttribute("y"))+parseInt(e.getAttribute("height")/2);
   }
   setCenterX = (x) => {
     this.setState({x: x});
