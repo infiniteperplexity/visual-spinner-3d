@@ -1,5 +1,7 @@
 // http://www.codedread.com/blog/archives/2005/12/21/how-to-enable-dragging-in-svg/
 
+// might need a polyfill for Internet Explorer for getScreenCTM?
+
 // var m = El.getScreenCTM();
 // var p = document.documentElement.createSVGPoint();
 // p.x = evt.clientX;
@@ -15,15 +17,7 @@ const UNIT = 50;
 const UNITS = 11;
 const HALF = UNIT/2;
 
-function parentSVG(el) {
-  while (el.nodeName!=="svg") {
-    el = el.parentNode;
-    if (el===null) {
-      return null;
-    }
-  }
-  return el;
-}
+
 
 // A basic React component with some properties that I don't manually create
 class Grid extends React.Component {
@@ -37,13 +31,16 @@ class Grid extends React.Component {
     }
     return (
       <svg ref={(svg)=>(this.svg=svg)} width={UNIT*UNITS} height={UNIT*UNITS}>
-        {grid}
-        <DragRect svg={this.svg} x={HALF*UNITS} y={HALF*UNITS} width={UNIT} height={UNIT} />
+        {grid} 
+        <Draggable>
+          <rect x={HALF*UNITS} y={HALF*UNITS} width={UNIT} height={UNIT} stroke="gray" strokeWidth="1" fill="green" />
+        </Draggable>
       </svg>
     );
   }
 };
-
+// {grid}
+// <DragRect svg={this.svg} x={HALF*UNITS} y={HALF*UNITS} width={UNIT} height={UNIT} />
 
 
 class GridTarget extends React.Component {
@@ -61,21 +58,33 @@ class Draggable extends React.Component {
     super(props, context);
     this.state = {
       dragging: false,
-      xoffset: null,
-      yoffset: null
+      xoffset: 0,
+      yoffset: 0,
+      anchorX: 0,
+      anchorY: 0
     };
+  }
+  componentDidMount() {
+    let e = this.element;
+    while (e.nodeName!=="svg") {
+      e = e.parentNode;
+      if (e===null) {
+        return null;
+      }
+    }
+    // matrix transformation stuff
+    this.point = e.createSVGPoint();
+    this.matrix = this.element.getScreenCTM().inverse();
   }
   handleMouseDown = (event) => {
     event.preventDefault();
     this.setState({dragging: true});
-    // create a point in the SVG's coordinate system
-    let p = parentSVG(this.element).createSVGPoint();
-    p.x = event.clientX;
-    p.y = event.clientY;
-    let m = this.element.getScreenCTM();
-    p = p.matrixTransform(m.inverse());
-    this.setState({xoffset: p.x - this.getCenterX()});
-    this.setState({yoffset: p.y - this.getCenterY()});
+    // note: harmless violation of React state management practices
+    this.point.x = event.clientX;
+    this.point.y = event.clientY;
+    let p = this.point.matrixTransform(this.matrix);
+    this.setState({xoffset: p.x - this.state.anchorX});
+    this.setState({yoffset: p.y - this.state.anchorY});
   }
   handleMouseUp = (event) => {
     event.preventDefault();
@@ -87,61 +96,37 @@ class Draggable extends React.Component {
   }
   handleMouseMove = (event) => {
     event.preventDefault();
-    let p = parentSVG(this.element).createSVGPoint();
-    p.x = event.clientX;
-    p.y = event.clientY;
+    // note: harmless violation of React state management practices
+    this.point.x = event.clientX;
+    this.point.y = event.clientY;
     if(this.state.dragging) {
-      let m = this.element.getScreenCTM();
-      p = p.matrixTransform(m.inverse());
-      this.setCenterX(p.x-this.state.xoffset);
-      this.setCenterY(p.y-this.state.yoffset);
+      let p = this.point.matrixTransform(this.matrix);
+      this.setState({anchorX: p.x-this.state.xoffset});
+      this.setState({anchorY: p.y-this.state.yoffset});
     }
-  }
-}
-
-class DragRect extends Draggable {
-  constructor(props, context) {
-    super(props, context);
-    this.state = {
-      ...this.state,
-      x: props.x,
-      y: props.y
-    }
-  }
-  getCenterX = () => {
-    let e = this.element;
-    return parseInt(e.getAttribute("x"))+parseInt(e.getAttribute("width")/2);
-  }
-  getCenterY = () => {
-    let e = this.element;
-    return parseInt(e.getAttribute("y"))+parseInt(e.getAttribute("height")/2);
-  }
-  setCenterX = (x) => {
-    this.setState({x: x});
-  }
-  setCenterY = (y) => {
-    this.setState({y: y});
   }
   render() {
-    let {height, width} = this.props;
-    let {x, y} = this.state;
     return (
-      <rect ref={(e)=>(this.element=e)} x={x-width/2} y={y-height/2} width={width} height={height} stroke="gray" strokeWidth="1" fill="green"
+      <g 
+        ref={(e)=>(this.element=e)}
+        transform={"translate("+this.state.anchorX+","+this.state.anchorY+")"}
         onMouseDown={this.handleMouseDown}
         onMouseUp={this.handleMouseUp}
         onMouseMove={this.handleMouseMove}
         onMouseLeave={this.handleMouseLeave}
-      />
+      >
+        {this.props.children}
+      </g>
     );
   }
 }
+
 // A Higher-Order Component made using ReactRedux.connect
   // attaches properties to the "wrapped" component
 let App = ReactRedux.connect(
   (state)=>({}),
   (dispatch)=>({
-      inc: ()=>{dispatch({type: "inc"})},
-      dec: ()=>{dispatch({type: "dec"})}
+      f: ()=>{dispatch({})}
   })
 )(Grid);
 
