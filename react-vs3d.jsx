@@ -24,43 +24,82 @@ class Grid extends React.Component {
   }
 };
 
-          // draggable="true"
-          // onDragStart={this.handleDrag}
-          // onDragOver={this.allowDrop}
-          // onDragLeave={this.dragLeave}
-          // onDrop={this.handleDrop}
+
 
 class GridTarget extends React.Component {
-  allowDrop = (event) => {
-    event.preventDefault();
-    event.target.style.strokeWidth = 3;
-  }
-  dragLeave = (event) => {
-    event.preventDefault();
-    event.target.style.strokeWidth = 1;
-  }
   render() {
     let {x, y} = this.props;
     return [
-    
-      <line key="h" x1={x-HALF} y1={y} x2={x+HALF} y2={y} style={{stroke: "gray", strokeWidth: 1}}
-        onDragOver={this.allowDrop} onDragLeave={this.dragLeave} />,
-      <line key="v" x1={x} y1={y-HALF} x2={x} y2={y+HALF} style={{stroke: "gray", strokeWidth: 1}} 
-        onDragOver={this.allowDrop} onDragLeave={this.dragLeave} />
+      <line key="h" x1={x-HALF} y1={y} x2={x+HALF} y2={y} style={{stroke: "gray", strokeWidth: 1}} />,
+      <line key="v" x1={x} y1={y-HALF} x2={x} y2={y+HALF} style={{stroke: "gray", strokeWidth: 1}} />
     ]
   };
 }
 
-function Dragger({x, y}) {
-  return (
-    <g>
-    <circle draggable={true}
-      onDragStart={() => console.log('drag start')}
-      onDragOver={() => console.log('on drag over')}
-      onDrop={() => console.log('on drop')}
-      cx={y} cy={y} r={2*UNIT} stroke="gray" strokeWidth="1" fill="green"/>
-    </g>
-  );
+class Draggable extends React.Component () {
+  constructor() {
+    this.state = {
+      dragging: false,
+      xoffset: null,
+      yoffset: null
+    };
+  }
+  handleMouseDown = (event) => {
+    this.setState({dragging: true});
+    let e = this.element;
+    let p = e.createSVGPoint();
+    p.x = event.clientX;
+    p.y = event.clientY;
+    let m = e.getScreenCTM();
+    p = p.matrixTransform(m.inverse());
+    this.sep.x = event.clientX;
+    p.y = event.clientY;tState({xoffset: p.x - parseInt(this.getCenterX())};
+    this.setState({yoffset: p.y - parseInt(this.getCenterY())};
+  }
+  handleMouseUp = (event) => {
+    this.setState({dragging: false});
+  }
+  handleMouseMove = (event) => {
+    let e = this.element;
+    let p = e.createSVGPoint();
+    p.x = event.clientX;
+    p.y = event.clientY;
+    if(this.state.dragging) {
+      let m = e.getScreenCTM():
+      p = p.matrixTransform(m.inverse());
+      this.setCenterX(p.x-this.state.xoffset);
+      this.setCenterY(p.y-this.state.yoffset);
+    }
+  }
+}
+
+class DragRect extends Draggable {
+  getCenterX = () => {
+    let e = this.element;
+    return parseInt(e.getAttribute("x")+e.getAttribute("width")/2);
+  }
+  getCenterY = () => {
+    let e = this.element;
+    return parseInt(e.getAttribute("y")+e.getAttribute("height")/2);
+  }
+  setCenterX = (x) => {
+    let e = this.element;
+    e.setAttribute("x",x);
+  }
+  setCenterY = (y) => {
+    let e = this.element;
+    e.setAttribute("y",y);
+  }
+  render() {
+    let {x, y, height, width} = this.props;
+    return (
+      <rect ref={this.element} x={x-width/2} y={y-height/2} width={width} height={height} stroke="gray" strokeWidth="1" fill="green"
+        onMouseDown={this.handleMouseDown}
+        onMouseUp={this.handleMouseUp}
+        onMouseMove={this.handleMouseMove}
+      />
+    );
+  }
 }
 // A Higher-Order Component made using ReactRedux.connect
   // attaches properties to the "wrapped" component
