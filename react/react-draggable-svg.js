@@ -1,36 +1,32 @@
-// http://www.codedread.com/blog/archives/2005/12/21/how-to-enable-dragging-in-svg/
-
-// might need a polyfill for Internet Explorer for getScreenCTM?
-
-// var m = El.getScreenCTM();
-// var p = document.documentElement.createSVGPoint();
-// p.x = evt.clientX;
-// p.y = evt.clientY;
-// p = p.matrixTransform(m.inverse());
-
-// and point p will now be in user coordinate system of the element El.
-
-//Returns a DOMMatrix representing the matrix that transforms the current element's coordinate system to the coordinate system of the SVG viewport for the SVG document fragment.
-
-let destination = document.querySelector("#container");
-const UNIT = 50;
-const UNITS = 11;
-const HALF = UNIT/2;
-
-
-
-// A basic React component with some properties that I don't manually create
-
+let DraggableSVGs = [];
 
 class DragSVG extends React.Component {
   constructor(props, context) {
     super(props, context);
-    this.draggedElement = null;
   }
-
+  componentDidMount() {
+    this.dragID = DraggableSVGs.length;
+    DraggableSVGs.push(this);
+    this.dragging = null;
+  }
+  handleMouseMove = (event) => {
+    if (this.dragging) {
+      event.preventDefault();
+      this.dragging.handleMouseMove.call(this.dragging, event);
+    }
+  }
+  handleMouseUp = (event) => {
+    if (this.dragging) {
+      event.preventDefault();
+      this.dragging.handleMouseUp.call(this.dragging, event);
+    }
+  }
   render() {
     return (
-      <svg>
+      <svg 
+        onMouseMove={this.handleMouseMove}
+        onMouseUp={this.handleMouseUp} 
+        ...this.props} >
         {this.props.children}
       </svg>
     );
@@ -46,16 +42,18 @@ class Grid extends React.Component {
         grid[i].push(<GridTarget key={i+","+j} x={i*UNIT+HALF} y={j*UNIT+HALF} />);
       }
     }
+    let dragID = "WALL";
     return (
-      <svg width={UNIT*UNITS} height={UNIT*UNITS}>
+      <DragSVG dragID={dragID} width={UNIT*UNITS} height={UNIT*UNITS}>
         {grid} 
-        <Draggable>
-          <rect x={HALF*UNITS} y={HALF*UNITS} width={UNIT} height={UNIT} stroke="gray" strokeWidth="1" fill="green" />
+        <Draggable dragID={dragID}>
+          <circle cx={HALF*UNITS} cy={HALF*UNITS} r={HALF} stroke="gray" strokeWidth="1" fill="green" />
         </Draggable>
-      </svg>
+      </DragSVG>
     );
   }
 };
+// <svg width={UNIT*UNITS} height={UNIT*UNITS}>
 // {grid}
 // <DragRect svg={this.svg} x={HALF*UNITS} y={HALF*UNITS} width={UNIT} height={UNIT} />
 
@@ -73,6 +71,7 @@ class GridTarget extends React.Component {
 class Draggable extends React.Component {
   constructor(props, context) {
     super(props, context);
+    this.dragID = props.dragID;
     this.state = {
       beingDragged: false,
       xoffset: 0,
@@ -80,6 +79,7 @@ class Draggable extends React.Component {
       anchorX: 0,
       anchorY: 0
     };
+    this.svg = props.svg;
   }
   componentDidMount() {
     let e = this.element;
@@ -96,6 +96,7 @@ class Draggable extends React.Component {
   handleMouseDown = (event) => {
     event.preventDefault();
     this.setState({beingDragged: true});
+    DragSpaces[this.dragID].dragging = this;
     // note: harmless violation of React state management practices
     this.point.x = event.clientX;
     this.point.y = event.clientY;
@@ -106,10 +107,11 @@ class Draggable extends React.Component {
   handleMouseUp = (event) => {
     event.preventDefault();
     this.setState({beingDragged: false});
+    DragSpaces[this.dragID].dragging = null;
   }
   handleMouseLeave = (event) => {
-    event.preventDefault();
-    this.setState({beingDragged: false});
+    //event.preventDefault();
+    //this.setState({beingDragged: false});
   }
   handleMouseMove = (event) => {
     event.preventDefault();
