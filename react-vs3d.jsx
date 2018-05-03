@@ -1,9 +1,29 @@
 // http://www.codedread.com/blog/archives/2005/12/21/how-to-enable-dragging-in-svg/
 
+// var m = El.getScreenCTM();
+// var p = document.documentElement.createSVGPoint();
+// p.x = evt.clientX;
+// p.y = evt.clientY;
+// p = p.matrixTransform(m.inverse());
+
+// and point p will now be in user coordinate system of the element El.
+
+//Returns a DOMMatrix representing the matrix that transforms the current element's coordinate system to the coordinate system of the SVG viewport for the SVG document fragment.
+
 let destination = document.querySelector("#container");
 const UNIT = 50;
 const UNITS = 11;
 const HALF = UNIT/2;
+
+function parentSVG(el) {
+  while (el.nodeName!=="svg") {
+    el = el.parentNode;
+    if (el===null) {
+      return null;
+    }
+  }
+  return el;
+}
 
 // A basic React component with some properties that I don't manually create
 class Grid extends React.Component {
@@ -16,9 +36,9 @@ class Grid extends React.Component {
       }
     }
     return (
-      <svg width={UNIT*UNITS} height={UNIT*UNITS}>
+      <svg ref={(svg)=>(this.svg=svg)} width={UNIT*UNITS} height={UNIT*UNITS}>
         {grid}
-        <Dragger x={HALF*UNITS} y={HALF*UNITS} />
+        <DragRect svg={this.svg} x={HALF*UNITS} y={HALF*UNITS} width={UNIT} height={UNIT} />
       </svg>
     );
   }
@@ -36,8 +56,9 @@ class GridTarget extends React.Component {
   };
 }
 
-class Draggable extends React.Component () {
-  constructor() {
+class Draggable extends React.Component {
+  constructor(props, context) {
+    super(props, context);
     this.state = {
       dragging: false,
       xoffset: null,
@@ -46,26 +67,24 @@ class Draggable extends React.Component () {
   }
   handleMouseDown = (event) => {
     this.setState({dragging: true});
-    let e = this.element;
-    let p = e.createSVGPoint();
+    // create a point in the SVG's coordinate system
+    let p = parentSVG(this.element).createSVGPoint();
     p.x = event.clientX;
     p.y = event.clientY;
-    let m = e.getScreenCTM();
+    let m = this.element.getScreenCTM();
     p = p.matrixTransform(m.inverse());
-    this.sep.x = event.clientX;
-    p.y = event.clientY;tState({xoffset: p.x - parseInt(this.getCenterX())};
-    this.setState({yoffset: p.y - parseInt(this.getCenterY())};
+    this.setState({xoffset: p.x - this.getCenterX()});
+    this.setState({yoffset: p.y - this.getCenterY()});
   }
   handleMouseUp = (event) => {
     this.setState({dragging: false});
   }
   handleMouseMove = (event) => {
-    let e = this.element;
-    let p = e.createSVGPoint();
+    let p = parentSVG(this.element).createSVGPoint();
     p.x = event.clientX;
     p.y = event.clientY;
     if(this.state.dragging) {
-      let m = e.getScreenCTM():
+      let m = this.element.getScreenCTM();
       p = p.matrixTransform(m.inverse());
       this.setCenterX(p.x-this.state.xoffset);
       this.setCenterY(p.y-this.state.yoffset);
@@ -74,6 +93,14 @@ class Draggable extends React.Component () {
 }
 
 class DragRect extends Draggable {
+  constructor(props, context) {
+    super(props, context);
+    this.state = {
+      ...this.state,
+      x: props.x,
+      y: props.y
+    }
+  }
   getCenterX = () => {
     let e = this.element;
     return parseInt(e.getAttribute("x")+e.getAttribute("width")/2);
@@ -83,17 +110,16 @@ class DragRect extends Draggable {
     return parseInt(e.getAttribute("y")+e.getAttribute("height")/2);
   }
   setCenterX = (x) => {
-    let e = this.element;
-    e.setAttribute("x",x);
+    this.setState({x: x});
   }
   setCenterY = (y) => {
-    let e = this.element;
-    e.setAttribute("y",y);
+    this.setState({y: y});
   }
   render() {
-    let {x, y, height, width} = this.props;
+    let {height, width} = this.props;
+    let {x, y} = this.state;
     return (
-      <rect ref={this.element} x={x-width/2} y={y-height/2} width={width} height={height} stroke="gray" strokeWidth="1" fill="green"
+      <rect ref={(e)=>(this.element=e)} x={x-width/2} y={y-height/2} width={width} height={height} stroke="gray" strokeWidth="1" fill="green"
         onMouseDown={this.handleMouseDown}
         onMouseUp={this.handleMouseUp}
         onMouseMove={this.handleMouseMove}
