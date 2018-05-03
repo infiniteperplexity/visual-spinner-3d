@@ -66,6 +66,7 @@ class Draggable extends React.Component {
     };
   }
   handleMouseDown = (event) => {
+    event.preventDefault();
     this.setState({dragging: true});
     // create a point in the SVG's coordinate system
     let p = parentSVG(this.element).createSVGPoint();
@@ -77,9 +78,15 @@ class Draggable extends React.Component {
     this.setState({yoffset: p.y - this.getCenterY()});
   }
   handleMouseUp = (event) => {
+    event.preventDefault();
+    this.setState({dragging: false});
+  }
+  handleMouseLeave = (event) => {
+    event.preventDefault();
     this.setState({dragging: false});
   }
   handleMouseMove = (event) => {
+    event.preventDefault();
     let p = parentSVG(this.element).createSVGPoint();
     p.x = event.clientX;
     p.y = event.clientY;
@@ -123,6 +130,7 @@ class DragRect extends Draggable {
         onMouseDown={this.handleMouseDown}
         onMouseUp={this.handleMouseUp}
         onMouseMove={this.handleMouseMove}
+        onMouseLeave={this.handleMouseLeave}
       />
     );
   }
