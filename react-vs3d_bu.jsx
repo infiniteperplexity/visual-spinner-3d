@@ -21,41 +21,16 @@ const HALF = UNIT/2;
 
 // A basic React component with some properties that I don't manually create
 
-let DragSpaces = {}
 
 class DragSVG extends React.Component {
   constructor(props, context) {
     super(props, context);
-    DragSpaces[props.dragID] = this;
-    this.dragging = null;
+    this.draggedElement = null;
   }
-  handleMouseMove = (event) => {
-    if (this.dragging) {
-      event.preventDefault();
-      this.dragging.handleMouseMove.call(this.dragging, event);
-    }
-  }
-  handleMouseUp = (event) => {
-    if (this.dragging) {
-      event.preventDefault();
-      this.dragging.handleMouseUp.call(this.dragging, event);
-    }
-  }
-  handleMouseLeave = (event) => {
-    if (this.dragging) {
-      event.preventDefault();
-      this.dragging.handleMouseUp.call(this.dragging, event);
-    }
-  }
+
   render() {
     return (
-      <svg
-        width={this.props.width}
-        height={this.props.height}
-        onMouseMove={this.handleMouseMove}
-        onMouseUp={this.handleMouseUp}
-        onMouseLeave={this.handleMouseLeave}
-      >
+      <svg>
         {this.props.children}
       </svg>
     );
@@ -71,18 +46,16 @@ class Grid extends React.Component {
         grid[i].push(<GridTarget key={i+","+j} x={i*UNIT+HALF} y={j*UNIT+HALF} />);
       }
     }
-    let dragID = "WALL";
     return (
-      <DragSVG dragID={dragID} width={UNIT*UNITS} height={UNIT*UNITS}>
+      <svg width={UNIT*UNITS} height={UNIT*UNITS}>
         {grid} 
-        <Draggable dragID={dragID}>
-          <circle cx={HALF*UNITS} cy={HALF*UNITS} r={HALF} stroke="gray" strokeWidth="1" fill="green" />
+        <Draggable>
+          <rect x={HALF*UNITS} y={HALF*UNITS} width={UNIT} height={UNIT} stroke="gray" strokeWidth="1" fill="green" />
         </Draggable>
-      </DragSVG>
+      </svg>
     );
   }
 };
-// <svg width={UNIT*UNITS} height={UNIT*UNITS}>
 // {grid}
 // <DragRect svg={this.svg} x={HALF*UNITS} y={HALF*UNITS} width={UNIT} height={UNIT} />
 
@@ -100,7 +73,6 @@ class GridTarget extends React.Component {
 class Draggable extends React.Component {
   constructor(props, context) {
     super(props, context);
-    this.dragID = props.dragID;
     this.state = {
       beingDragged: false,
       xoffset: 0,
@@ -108,7 +80,6 @@ class Draggable extends React.Component {
       anchorX: 0,
       anchorY: 0
     };
-    this.svg = props.svg;
   }
   componentDidMount() {
     let e = this.element;
@@ -125,7 +96,6 @@ class Draggable extends React.Component {
   handleMouseDown = (event) => {
     event.preventDefault();
     this.setState({beingDragged: true});
-    DragSpaces[this.dragID].dragging = this;
     // note: harmless violation of React state management practices
     this.point.x = event.clientX;
     this.point.y = event.clientY;
@@ -136,11 +106,10 @@ class Draggable extends React.Component {
   handleMouseUp = (event) => {
     event.preventDefault();
     this.setState({beingDragged: false});
-    DragSpaces[this.dragID].dragging = null;
   }
   handleMouseLeave = (event) => {
-    //event.preventDefault();
-    //this.setState({beingDragged: false});
+    event.preventDefault();
+    this.setState({beingDragged: false});
   }
   handleMouseMove = (event) => {
     event.preventDefault();
