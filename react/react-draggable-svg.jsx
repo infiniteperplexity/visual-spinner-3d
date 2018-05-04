@@ -76,8 +76,8 @@ class DraggableG extends React.Component {
     this.dsvg_point.x = event.clientX;
     this.dsvg_point.y = event.clientY;
     let p = this.dsvg_point.matrixTransform(this.dsvg_matrix);
-    this.setState({dsvg_xoffset: p.x - this.state.dsvg_x});
-    this.setState({dsvg_yoffset: p.y - this.state.dsvg_y});
+    this.setState({dsvg_xoffset: p.x-this.state.dsvg_x});
+    this.setState({dsvg_yoffset: p.y-this.state.dsvg_y});
   }
   handleMouseUp = (event) => {
     event.preventDefault();
