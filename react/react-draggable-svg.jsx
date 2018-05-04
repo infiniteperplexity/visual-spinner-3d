@@ -1,7 +1,20 @@
+let dsvg_MouseHandler = {
+  listeners: []
+};
+function dsvg_handleMouseUp(event) {
+  for (let listener of dsvg_MouseHandler.listeners) {
+    if (listener.handleMouseUp) {
+      listener.handleMouseUp(event);
+    }
+  }
+}
+document.body.addEventListener("mouseup",dsvg_handleMouseUp);
+
 class DraggableSVG extends React.Component {
   constructor(props, context) {
     super(props, context);
     this.dsvg_dragging = null;
+    dsvg_MouseHandler.listeners.push(this);
   }
   handleMouseMove = (event) => {
     if (this.dsvg_dragging) {
@@ -18,10 +31,10 @@ class DraggableSVG extends React.Component {
   render() {
     return (
       <svg 
-        ref={(e)=>(this.dsvg_element=e)}
+        ref={(e)=>(this.dsvg=e)}
         onMouseMove={this.handleMouseMove}
         onMouseUp={this.handleMouseUp} 
-        ...this.props} >
+        {...this.props} >
         {this.props.children}
       </svg>
     );
@@ -38,10 +51,10 @@ class DraggableG extends React.Component {
       dsvg_x: 0,
       dsvg_y: 0
     };
-    if (!props.svg) {
+    if (!props.dsvg) {
       throw new Error("DraggableG not provided with a parent DraggableSVG.");
     }
-    this.dsvg_parent = props.svg;
+    this.dsvg_parent = props.dsvg;
   }
   componentDidMount() {
     let e = this.dsvg_gelement;
@@ -58,7 +71,7 @@ class DraggableG extends React.Component {
   handleMouseDown = (event) => {
     event.preventDefault();
     this.setState({dsvg_dragged: true});
-    this.dsvg_parent.dsvg_element.dsvg_dragging = this;
+    this.dsvg_parent.dsvg.dsvg_dragging = this;
     // note: harmless violation of React state management practices
     this.dsvg_point.x = event.clientX;
     this.dsvg_point.y = event.clientY;
@@ -69,7 +82,7 @@ class DraggableG extends React.Component {
   handleMouseUp = (event) => {
     event.preventDefault();
     this.setState({dsvg_dragged: false});
-    this.dsvg_component.dsvg_element.dsvg_dragging = null;
+    this.dsvg_parent.dsvg.dsvg_dragging = null;
   }
   handleMouseMove = (event) => {
     event.preventDefault();
