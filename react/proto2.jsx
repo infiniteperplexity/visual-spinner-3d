@@ -35,24 +35,23 @@ class DragSVG extends React.Component {
       dragging: null,
       dragID: props.dragID
     }
-    this.dragging = null;
   }
   handleMouseMove = (event) => {
-    if (this.dragging) {
+    if (this.info.dragging) {
       event.preventDefault();
-      this.dragging.handleMouseMove.call(this.info.dragging, event);
+      this.info.dragging.handleMouseMove.call(this.info.dragging, event);
     }
   }
   handleMouseUp = (event) => {
-    if (this.dragging) {
+    if (this.info.dragging) {
       event.preventDefault();
-      this.dragging.handleMouseUp.call(this.info.dragging, event);
+      this.info.dragging.handleMouseUp.call(this.info.dragging, event);
     }
   }
   handleMouseLeave = (event) => {
-    if (this.dragging) {
+    if (this.info.dragging) {
       event.preventDefault();
-      this.dragging.handleMouseUp.call(this.info.dragging, event);
+      this.info.dragging.handleMouseUp.call(this.info.dragging, event);
     }
   }
   render() {
@@ -70,57 +69,39 @@ class DragSVG extends React.Component {
   }
 }
 
-class Grid extends React.Component {
-  render() {
-    let grid = [];
-    for (let i=0; i<UNITS; i++) {
-      grid.push([])
-      for (let j=0; j<UNITS; j++) {
-        grid[i].push(<GridTarget key={i+","+j}  x={i*UNIT+HALF} y={j*UNIT+HALF} />);
-      }
+function Grid(props, context) {
+  let grid = [];
+  for (let i=0; i<UNITS; i++) {
+    grid.push([])
+    for (let j=0; j<UNITS; j++) {
+      grid[i].push(<GridTarget key={i+","+j}  x={i*UNIT+HALF} y={j*UNIT+HALF} />);
     }
-    let dragID = "WALL";
-    return (
-      <DragSVG dragID={dragID} width={UNIT*UNITS} height={UNIT*UNITS}>
-        {grid} 
-        <PropComponent dragID={dragID} prop="red" color="red" {...this.props}/>
-        <PropComponent dragID={dragID} prop="blue" color="blue" {...this.props}/>
-      </DragSVG>
-    );
   }
-};
-
-function PropJointComponent(props) {
-  let {prop, node1, node2} = props;
-  let {x: x1, y: y1} = props.props[prop][node1];
-  let {x: x2, y: y2} = props.props[prop][node2];
   return (
-    <line x1={0+X0} y1={0+Y0} x2={x2+X0} y2={y2+Y0} style={{stroke: "gray", strokeWidth: 3}}/>
+    <DragSVG dragID={props.dragID} width={UNIT*UNITS} height={UNIT*UNITS}>
+      {grid} 
+      <PropNode prop="red" color="red" {...props}/>
+      <PropNode prop="blue" color="blue" {...props}/>
+    </DragSVG>
   );
 }
 
-function PropComponent(props) {
-  return ([
-    <PropNodeComponent key={HAND} node={HAND} {...props}>
-      <circle cx={X0} cy={Y0} r={UNIT/8} stroke="gray" strokeWidth="1" fill="gray" />
-      <PropJointComponent key={HAND+0.5} node1={HAND} node2={HEAD} {...props}/>,
-      <PropNodeComponent key={HEAD} node={HEAD} {...props}>,
-        <circle cx={X0} cy={Y0} r={UNIT/4} stroke="gray" strokeWidth="1" fill={props.color} />
-      </PropNodeComponent>
-    </PropNodeComponent>,
-  ]);
+function PropJointComponent(props) {
+  let {prop, node} = props;
+  let {x, y} = props.props[prop][node];
+  return (
+    <line x1={X0} y1={Y0} x2={x+X0} y2={y+Y0} style={{stroke: "gray", strokeWidth: 3}}/>
+  );
 }
 
-
-
-
-class PropNodeComponent extends React.Component {
+class PropNode extends React.Component {
   constructor(props, context) {
     super(props, context);
     // this stuff is not really "state" in the sense Redux cares about
     this.info = {
       prop: props.prop,
-      node: props.node,
+      node: props.node || 0,
+      color: props.color,
       dragID: props.dragID,
       beingDragged: false,
       xoffset: 0,
@@ -144,9 +125,9 @@ class PropNodeComponent extends React.Component {
   }
   handleMouseDown = (event) => {
     event.preventDefault();
-    if (DragSpaces[this.info.dragID].dragging === null) { 
+    if (DragSpaces[this.info.dragID].info.dragging === null) { 
       this.info.beingDragged = true;
-      DragSpaces[this.info.dragID].dragging = this;
+      DragSpaces[this.info.dragID].info.dragging = this;
     }
     // note: harmless violation of React state management practices
     this.info.point.x = event.clientX;
@@ -159,7 +140,7 @@ class PropNodeComponent extends React.Component {
   handleMouseUp = (event) => {
     event.preventDefault();
     this.info.beingDragged = false;
-    DragSpaces[this.info.dragID].dragging = null;
+    DragSpaces[this.info.dragID].info.dragging = null;
   }
   handleMouseLeave = (event) => {
     //event.preventDefault();
@@ -182,6 +163,17 @@ class PropNodeComponent extends React.Component {
   }
   render() {
     let {x, y} = this.props.props[this.info.prop][this.info.node];
+    let r = (this.info.node===HEAD) ? (UNIT/4) : (UNIT/8);
+    let fill = (this.info.node===HEAD) ? this.info.color : "gray";
+    let tether = null;
+    let child = null;
+    console.log(this.info.node);
+    console.log(NODES.length);
+    if (this.info.node<NODES.length-1) {
+      let {x: x2, y: y2} = this.props.props[this.info.prop][this.info.node+1];
+      tether = <line x1={X0} y1={Y0} x2={X0+x2} y2={Y0+y2} style={{stroke: "gray", strokeWidth: 3}} />
+      child = <PropNode node={this.info.node+1} {...this.props} />;
+    }
     return (
       <g 
         ref={(e)=>(this.element=e)}
@@ -191,7 +183,9 @@ class PropNodeComponent extends React.Component {
         onMouseMove={this.handleMouseMove}
         onMouseLeave={this.handleMouseLeave}
       >
-        {this.props.children}
+        <circle cx={X0} cy={Y0} r={r} stroke="gray" strokeWidth="1" fill={fill} />
+        {tether}
+        {child}
       </g>
     );
   }
@@ -237,7 +231,7 @@ class GridTarget extends React.Component {
 store = Redux.createStore(reducer);
 ReactDOM.render(
   <ReactRedux.Provider store={store}>
-    <App />
+    <App dragID="WALL"/>
   </ReactRedux.Provider>,
   destination
 );
