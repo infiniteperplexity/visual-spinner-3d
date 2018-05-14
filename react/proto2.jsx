@@ -12,7 +12,6 @@ let Props = {
   "red": newProp({head: {x: 1, y: 0}}),
   "blue": newProp({head: {x: 0, y: 1}})
 };
-
 // Node structure of Props
 let NODES = [0,1,2,3,4], [BODY,PIVOT,HELPER,HAND,HEAD] = NODES;
 
@@ -39,6 +38,10 @@ function clone(obj) {
   }
   return nobj;
 }
+function round(n, step) {
+  return Math.round(n/step)*step;
+}
+
 // prevent recursive handling of double-clicks
 let doubleClickHandled = false;
 function handleDoubleClick() {
@@ -182,8 +185,10 @@ class PropNode extends React.Component {
       this.props.setNode({
         prop: this.info.prop,
         node: this.info.node,
-        x: p.x-this.info.xoffset,
-        y: p.y-this.info.yoffset
+        //x: p.x-this.info.xoffset,
+        //y: p.y-this.info.yoffset
+        x: round(p.x-this.info.xoffset, UNIT),
+        y: round(p.y-this.info.yoffset, UNIT)
       });
     }
   }
