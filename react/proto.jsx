@@ -2,46 +2,62 @@ let destination = document.querySelector("#container");
 const UNIT = 50;
 const UNITS = 11;
 const HALF = UNIT/2;
+let X0 = HALF*UNITS;
+let Y0 = HALF*UNITS;
 
 let store;
 
-let propRegistry = {
+let Props = {
   "red": {
     hand: {
       x: 0,
       y: 0
     },
     head: {
-      x: 1,
-      y: 1
+      x: UNIT,
+      y: 0
     }
   }
 };
 
 let DragSpaces = {};
 
+function clone(obj) {
+  let nobj = {...obj};
+  for (let prop in nobj) {
+    if (typeof(nobj[prop])==="object") {
+      nobj[prop] = {...clone(nobj[prop])};
+    }
+  }
+  return nobj;
+}
+
 class DragSVG extends React.Component {
   constructor(props, context) {
     super(props, context);
     DragSpaces[props.dragID] = this;
+    this.info = {
+      dragging: null,
+      dragID: props.dragID
+    }
     this.dragging = null;
   }
   handleMouseMove = (event) => {
     if (this.dragging) {
       event.preventDefault();
-      this.dragging.handleMouseMove.call(this.dragging, event);
+      this.dragging.handleMouseMove.call(this.info.dragging, event);
     }
   }
   handleMouseUp = (event) => {
     if (this.dragging) {
       event.preventDefault();
-      this.dragging.handleMouseUp.call(this.dragging, event);
+      this.dragging.handleMouseUp.call(this.info.dragging, event);
     }
   }
   handleMouseLeave = (event) => {
     if (this.dragging) {
       event.preventDefault();
-      this.dragging.handleMouseUp.call(this.dragging, event);
+      this.dragging.handleMouseUp.call(this.info.dragging, event);
     }
   }
   render() {
@@ -72,19 +88,34 @@ class Grid extends React.Component {
     return (
       <DragSVG dragID={dragID} width={UNIT*UNITS} height={UNIT*UNITS}>
         {grid} 
-        <PropNodeComponent dragID={dragID} {...this.props}>
-          <circle cx={HALF*UNITS} cy={HALF*UNITS} r={HALF} stroke="gray" strokeWidth="1" fill="green" />
+        <PropNodeComponent prop="red" node="hand" dragID={dragID} {...this.props}>
+          <circle cx={X0} cy={Y0} r={UNIT/4} stroke="gray" strokeWidth="1" fill="gray" />
+        </PropNodeComponent>
+        <PropJointComponent prop="red" node1="hand" node2="head" {...this.props}/>
+        <PropNodeComponent prop="red" node="head" dragID={dragID} {...this.props}>
+          <circle cx={X0} cy={Y0} r={UNIT/4} stroke="gray" strokeWidth="1" fill="red" />
         </PropNodeComponent>
       </DragSVG>
     );
   }
 };
 
+function PropJointComponent(props) {
+  let {prop, node1, node2} = props;
+  let {x: x1, y: y1} = props.props[prop][node1];
+  let {x: x2, y: y2} = props.props[prop][node2];
+  return (
+    <line x1={x1+X0} y1={y1+Y0} x2={x2+X0} y2={y2+Y0} style={{stroke: "gray", strokeWidth: 3}}/>
+  );
+}
+
 class PropNodeComponent extends React.Component {
   constructor(props, context) {
     super(props, context);
     // this stuff is not really "state" in the sense Redux cares about
     this.info = {
+      prop: props.prop,
+      node: props.node,
       dragID: props.dragID,
       beingDragged: false,
       xoffset: 0,
@@ -114,8 +145,9 @@ class PropNodeComponent extends React.Component {
     this.info.point.x = event.clientX;
     this.info.point.y = event.clientY;
     let p = this.info.point.matrixTransform(this.info.matrix);
-    this.info.xoffset = p.x - this.props.anchorX;
-    this.info.yoffset = p.y - this.props.anchorY;
+    let {x, y} = this.props.props[this.info.prop][this.info.node];
+    this.info.xoffset = p.x - x;
+    this.info.yoffset = p.y - y;
   }
   handleMouseUp = (event) => {
     event.preventDefault();
@@ -133,15 +165,20 @@ class PropNodeComponent extends React.Component {
     this.info.point.y = event.clientY;
     if (this.info.beingDragged) {
       let p = this.info.point.matrixTransform(this.info.matrix);
-      this.props.setX(p.x-this.info.xoffset);
-      this.props.setY(p.y-this.info.yoffset);
+      this.props.setNode({
+        prop: this.info.prop,
+        node: this.info.node,
+        x: p.x-this.info.xoffset,
+        y: p.y-this.info.yoffset
+      });
     }
   }
   render() {
+    let {x, y} = this.props.props[this.info.prop][this.info.node];
     return (
       <g 
         ref={(e)=>(this.element=e)}
-        transform={"translate("+this.props.anchorX+","+this.props.anchorY+")"}
+        transform={"translate("+x+","+y+")"}
         onMouseDown={this.handleMouseDown}
         onMouseUp={this.handleMouseUp}
         onMouseMove={this.handleMouseMove}
@@ -156,13 +193,9 @@ class PropNodeComponent extends React.Component {
 // A Higher-Order Component made using ReactRedux.connect
   // attaches properties to the "wrapped" component
 let App = ReactRedux.connect(
-  (state)=>({
-    anchorX: state.anchorX,
-    anchorY: state.anchorY
-  }),
+  (state)=>({props: state.props}),
   (dispatch)=>({
-      setX: (x)=>dispatch({type: "setX", x: x}),
-      setY: (y)=>dispatch({type: "setY", y: y})
+      setNode: (args)=>dispatch({type: "setNode", ...args})
   })
 )(Grid);
 
@@ -170,15 +203,15 @@ let App = ReactRedux.connect(
 function reducer(state, action) {
   if (state === undefined) {
     return {
-      anchorX: 0,
-      anchorY: 0
+      props: clone(Props)
     };
   }
   switch (action.type) {
-    case "setX":
-      return {...state, anchorX: action.x};
-    case "setY":
-      return {...state, anchorY: action.y};
+    case "setNode":
+      let {prop, node, x, y} = action;
+      let props = clone(state.props);
+      props[prop][node] = {x: x, y: y};
+      return {...state, props: props};
     default:
       return state;
   }

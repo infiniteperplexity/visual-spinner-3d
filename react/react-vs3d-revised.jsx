@@ -16,6 +16,25 @@ const UNIT = 50;
 const UNITS = 11;
 const HALF = UNIT/2;
 
+
+// a reducer function for a Redux store
+function reducer(state, action) {
+  if (state === undefined) {
+    return {
+      one: {x: HALF*UNITS, y: HALF*UNITS, color: "red"},
+      two: {x: HALY*UNITS, y: HALF*UNITS, color: "blue"}
+    };
+  }
+  switch (action.type) {
+    case "move":
+      state = {...state};
+      state[move.thing] = {x: action.x, y: action.y, ...state[move.thing]}
+      return state;
+    default:
+      return state;
+  }
+}
+
 class Grid extends React.Component {
   componentDidMount() {
     this.dragging = null;
@@ -49,8 +68,9 @@ class Grid extends React.Component {
         height={UNIT*UNITS}
       >
         {grid} 
-        <PropNode dsvg={this} x={HALF*UNITS} y={HALF*UNITS} fill="red" />
-        <PropNode dsvg={this} x={HALF*UNITS} y={HALF*UNITS} fill="blue" />
+        <PropNode dsvg={this} thing={store.get.one} x={jointThing.one.x} y={jointThing.one.y} fill={jointThing.one.color} />
+        <line x1={jointThing.one.x} y1={jointThing.one.y} x2={jointThing.two.x} y2={jointThing.two.y} style={{stroke: "black", strokeWidth: 3}}/>
+        <PropNode dsvg={this} thing={jointThing.two} x={jointThing.two.x} y={jointThing.two.y} fill={jointThing.two.color} />
       </svg>
     );
   }
@@ -70,6 +90,7 @@ class PropNode extends React.Component {
       throw new Error("DraggableG not provided with a parent DraggableSVG.");
     }
     this.dsvg = props.dsvg;
+    this.thing = props.thing;
   }
   componentDidMount() {
     let e = this.element;
@@ -91,21 +112,6 @@ class PropNode extends React.Component {
     this.point.x = event.clientX;
     this.point.y = event.clientY;
     let p = this.point.matrixTransform(this.matrix);
-<<<<<<< HEAD
-    this.setState({xoffset: p.x - this.state.anchorX});
-    this.setState({yoffset: p.y - this.state.anchorY});
-    console.log("offset:",this.state.xoffset, this.state.yoffset);
-  }
-  handleMouseUp = (event) => {
-    event.preventDefault();
-    this.setState({beingDragged: false});
-    DragSpaces[this.dragID].dragging = null;
-    console.log("anchor:",this.state.anchorX, this.state.anchorY);
-  }
-  handleMouseLeave = (event) => {
-    //event.preventDefault();
-    //this.setState({beingDragged: false});
-=======
     this.setState({xoffset: p.x-this.state.dragx});
     this.setState({yoffset: p.y-this.state.dragy});
   }
@@ -113,7 +119,6 @@ class PropNode extends React.Component {
     event.preventDefault();
     this.setState({dragged: false});
     this.dsvg.dragging = null;
->>>>>>> 78951c228252f7e550664955a200df61d6183d7b
   }
   handleMouseMove = (event) => {
     event.preventDefault();
@@ -128,10 +133,12 @@ class PropNode extends React.Component {
   }
   render() {
     let {x, y, fill} = this.props;
+    this.thing.x = this.state.dragx;
+    this.thing.y = this.state.dragy;
     return (
       <g 
         ref={(e)=>(this.element=e)}
-        transform={"translate("+this.state.dragx+","+this.state.dragy+")"}
+        transform={"translate("+this.thing.x+","+this.thing.y+")"}
         onMouseDown={this.handleMouseDown}
         onMouseUp={this.handleMouseUp}
         onMouseMove={this.handleMouseMove}
@@ -159,27 +166,9 @@ class GridTarget extends React.Component {
 let App = ReactRedux.connect(
   (state)=>({}),
   (dispatch)=>({
-      f: ()=>{dispatch({})}
+      move: (thing, x, y)=>{dispatch({type: "move", thing: thing, x: x, y: y})}
   })
 )(Grid);
-
-// a reducer function for a Redux store
-function reducer(state, action) {
-  if (state === undefined) {
-    return {
-      nodes: []
-    };
-  }
-  let n = state.n;
-  switch (action.type) {
-    case "inc":
-      return {n: n+1};
-    case "dec":
-      return {n: n-1};
-    default:
-      return state;
-  }
-}
 
 // create the store inline
 ReactDOM.render(
@@ -188,74 +177,3 @@ ReactDOM.render(
   </ReactRedux.Provider>,
   destination
 );
-
-
-class DraggableG extends React.Component {
-  constructor(props, context) {
-    super(props, context);
-    this.state = {
-      dsvg_dragged: false,
-      dsvg_xoffset: 0,
-      dsvg_yoffset: 0,
-      dsvg_x: 0,
-      dsvg_y: 0
-    };
-    if (!props.dsvg) {
-      throw new Error("DraggableG not provided with a parent DraggableSVG.");
-    }
-    this.dsvg_parent = props.dsvg;
-  }
-  componentDidMount() {
-    let e = this.dsvg_gelement;
-    while (e.nodeName!=="svg") {
-      e = e.parentNode;
-      if (e===null) {
-        return null;
-      }
-    }
-    // matrix transformation stuff
-    this.dsvg_point = e.createSVGPoint();
-    this.dsvg_matrix = this.dsvg_gelement.getScreenCTM().inverse();
-  }
-  handleMouseDown = (event) => {
-    event.preventDefault();
-    this.setState({dsvg_dragged: true});
-    this.dsvg_parent.dsvg.dsvg_dragging = this;
-    // note: harmless violation of React state management practices
-    this.dsvg_point.x = event.clientX;
-    this.dsvg_point.y = event.clientY;
-    let p = this.dsvg_point.matrixTransform(this.dsvg_matrix);
-    this.setState({dsvg_xoffset: p.x-this.state.dsvg_x});
-    this.setState({dsvg_yoffset: p.y-this.state.dsvg_y});
-  }
-  handleMouseUp = (event) => {
-    event.preventDefault();
-    this.setState({dsvg_dragged: false});
-    this.dsvg_parent.dsvg.dsvg_dragging = null;
-  }
-  handleMouseMove = (event) => {
-    event.preventDefault();
-    // note: harmless violation of React state management practices
-    this.dsvg_point.x = event.clientX;
-    this.dsvg_point.y = event.clientY;
-    if(this.state.dsvg_dragged) {
-      let p = this.dsvg_point.matrixTransform(this.dsvg_matrix);
-      this.setState({dsvg_x: p.x-this.state.dsvg_xoffset});
-      this.setState({dsvg_y: p.y-this.state.dsvg_yoffset});
-    }
-  }
-  render() {
-    return (
-      <g 
-        ref={(e)=>(this.dsvg_gelement=e)}
-        transform={"translate("+this.state.dsvg_x+","+this.state.dsvg_y+")"}
-        onMouseDown={this.handleMouseDown}
-        onMouseUp={this.handleMouseUp}
-        onMouseMove={this.handleMouseMove}
-        onMouseLeave={this.handleMouseLeave}
-      >
-        {this.props.children}
-      </g>
-    );
-  }
-}
