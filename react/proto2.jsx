@@ -1,13 +1,22 @@
+//target Div
 let destination = document.querySelector("#container");
+
 const UNIT = 50;
 const UNITS = 11;
 const HALF = UNIT/2;
 let X0 = HALF*UNITS;
 let Y0 = HALF*UNITS;
 
-let store;
+// registry of all props
+let Props = {
+  "red": newProp({head: {x: 1, y: 0}}),
+  "blue": newProp({head: {x: 0, y: 1}})
+};
+
+// Node structure of Props
 let NODES = [0,1,2,3,4], [BODY,PIVOT,HELPER,HAND,HEAD] = NODES;
 
+// factory function for new props
 function newProp({body={x:0, y:0},pivot={x:0, y:0},helper={x:0,y:0},hand={x:0,y:0}, head={x:1,y:1}}) {
   return [
     {x: body.x*UNIT, y: body.y*UNIT},
@@ -18,13 +27,9 @@ function newProp({body={x:0, y:0},pivot={x:0, y:0},helper={x:0,y:0},hand={x:0,y:
   ];
 }
 
-let Props = {
-  "red": newProp({head: {x: 1, y: 0}}),
-  "blue": newProp({head: {x: 0, y: 1}})
-};
-
-let DragSpaces = {};
-
+// reference to Redux store
+let store;
+//utility function for immutable state
 function clone(obj) {
   let nobj = {...obj};
   for (let prop in nobj) {
@@ -34,11 +39,49 @@ function clone(obj) {
   }
   return nobj;
 }
+// prevent recursive handling of double-clicks
+let doubleClickHandled = false;
+function handleDoubleClick() {
+  doubleClickHandled = true;
+  setInterval(()=>(doubleClickHandled=false),0);
+}
 
+// App, basically
+function Grid(props, context) {
+  let grid = [];
+  for (let i=0; i<UNITS; i++) {
+    grid.push([])
+    for (let j=0; j<UNITS; j++) {
+      grid[i].push(<GridTarget key={i+","+j}  x={i*UNIT+HALF} y={j*UNIT+HALF} />);
+    }
+  }
+  return (
+    <DragSVG dragID={props.dragID} width={UNIT*UNITS} height={UNIT*UNITS}>
+      {grid} 
+      <PropNode prop="red" color="red" {...props}/>
+      <PropNode prop="blue" color="blue" {...props}/>
+    </DragSVG>
+  );
+}
+
+
+class GridTarget extends React.Component {
+  render() {
+    let {x, y} = this.props;
+    return [
+      <line key="h" x1={x-HALF} y1={y} x2={x+HALF} y2={y} style={{stroke: "gray", strokeWidth: 1}} />,
+      <line key="v" x1={x} y1={y-HALF} x2={x} y2={y+HALF} style={{stroke: "gray", strokeWidth: 1}} />
+    ]
+  };
+}
+
+
+// Draggable SVG area
+let Draggables = {};
 class DragSVG extends React.Component {
   constructor(props, context) {
     super(props, context);
-    DragSpaces[props.dragID] = this;
+    Draggables[props.dragID] = this;
     this.info = {
       dragging: null,
       dragID: props.dragID
@@ -77,31 +120,6 @@ class DragSVG extends React.Component {
   }
 }
 
-function Grid(props, context) {
-  let grid = [];
-  for (let i=0; i<UNITS; i++) {
-    grid.push([])
-    for (let j=0; j<UNITS; j++) {
-      grid[i].push(<GridTarget key={i+","+j}  x={i*UNIT+HALF} y={j*UNIT+HALF} />);
-    }
-  }
-  return (
-    <DragSVG dragID={props.dragID} width={UNIT*UNITS} height={UNIT*UNITS}>
-      {grid} 
-      <PropNode prop="red" color="red" {...props}/>
-      <PropNode prop="blue" color="blue" {...props}/>
-    </DragSVG>
-  );
-}
-
-function PropJointComponent(props) {
-  let {prop, node} = props;
-  let {x, y} = props.props[prop][node];
-  return (
-    <line x1={X0} y1={Y0} x2={x+X0} y2={y+Y0} style={{stroke: "gray", strokeWidth: 3}}/>
-  );
-}
-
 class PropNode extends React.Component {
   constructor(props, context) {
     super(props, context);
@@ -133,9 +151,9 @@ class PropNode extends React.Component {
   }
   handleMouseDown = (event) => {
     event.preventDefault();
-    if (DragSpaces[this.info.dragID].info.dragging === null) { 
+    if (Draggables[this.info.dragID].info.dragging === null) { 
       this.info.beingDragged = true;
-      DragSpaces[this.info.dragID].info.dragging = this;
+      Draggables[this.info.dragID].info.dragging = this;
     }
     // note: harmless violation of React state management practices
     this.info.point.x = event.clientX;
@@ -148,7 +166,7 @@ class PropNode extends React.Component {
   handleMouseUp = (event) => {
     event.preventDefault();
     this.info.beingDragged = false;
-    DragSpaces[this.info.dragID].info.dragging = null;
+    Draggables[this.info.dragID].info.dragging = null;
   }
   handleMouseLeave = (event) => {
     //event.preventDefault();
@@ -169,6 +187,13 @@ class PropNode extends React.Component {
       });
     }
   }
+  handleDoubleClick = (event) => {
+    if (doubleClickHandled===false) {
+      event.preventDefault();
+      handleDoubleClick();
+      alert("testing!");
+    }
+  }
   render() {
     let {x, y} = this.props.props[this.info.prop][this.info.node];
     let r = (this.info.node===HEAD) ? (UNIT/4) : (UNIT/8);
@@ -184,6 +209,7 @@ class PropNode extends React.Component {
       <g 
         ref={(e)=>(this.element=e)}
         transform={"translate("+x+","+y+")"}
+        onDoubleClick={this.handleDoubleClick}
         onMouseDown={this.handleMouseDown}
         onMouseUp={this.handleMouseUp}
         onMouseMove={this.handleMouseMove}
@@ -222,16 +248,6 @@ function reducer(state, action) {
     default:
       return state;
   }
-}
-
-class GridTarget extends React.Component {
-  render() {
-    let {x, y} = this.props;
-    return [
-      <line key="h" x1={x-HALF} y1={y} x2={x+HALF} y2={y} style={{stroke: "gray", strokeWidth: 1}} />,
-      <line key="v" x1={x} y1={y-HALF} x2={x} y2={y+HALF} style={{stroke: "gray", strokeWidth: 1}} />
-    ]
-  };
 }
 
 store = Redux.createStore(reducer);
