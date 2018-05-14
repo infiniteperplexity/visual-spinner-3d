@@ -6,13 +6,21 @@ let X0 = HALF*UNITS;
 let Y0 = HALF*UNITS;
 
 let store;
+let NODES = [0,1,2,3,4], [BODY,PIVOT,HELPER,HAND,HEAD] = NODES;
 
-let HAND = 0, HEAD = 1;
-let NODES = [HAND, HEAD];
+function newProp({body={x:0, y:0},pivot={x:0, y:0},helper={x:0,y:0},hand={x:0,y:0}, head={x:1,y:1}}) {
+  return [
+    {x: body.x*UNIT, y: body.y*UNIT},
+    {x: pivot.x*UNIT, y: pivot.y*UNIT},
+    {x: helper.x*UNIT, y: helper.y*UNIT},
+    {x: hand.x*UNIT, y: hand.y*UNIT},
+    {x: head.x*UNIT, y: head.y*UNIT}
+  ];
+}
 
 let Props = {
-  "red": [{x: 0, y: 0}, {x: UNIT, y: UNIT}],
-  "blue": [{x: 0, y: 0}, {x: -UNIT, y: -UNIT}]
+  "red": newProp({head: {x: 1, y: 0}}),
+  "blue": newProp({head: {x: 0, y: 1}})
 };
 
 let DragSpaces = {};
@@ -167,12 +175,10 @@ class PropNode extends React.Component {
     let fill = (this.info.node===HEAD) ? this.info.color : "gray";
     let tether = null;
     let child = null;
-    console.log(this.info.node);
-    console.log(NODES.length);
     if (this.info.node<NODES.length-1) {
       let {x: x2, y: y2} = this.props.props[this.info.prop][this.info.node+1];
       tether = <line x1={X0} y1={Y0} x2={X0+x2} y2={Y0+y2} style={{stroke: "gray", strokeWidth: 3}} />
-      child = <PropNode node={this.info.node+1} {...this.props} />;
+      child = <PropNode {...this.props} node={this.info.node+1} />;
     }
     return (
       <g 
