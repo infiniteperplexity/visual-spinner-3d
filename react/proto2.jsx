@@ -7,17 +7,12 @@ let Y0 = HALF*UNITS;
 
 let store;
 
+let HAND = 0, HEAD = 1;
+let NODES = [HAND, HEAD];
+
 let Props = {
-  "red": {
-    hand: {
-      x: 0,
-      y: 0
-    },
-    head: {
-      x: UNIT,
-      y: 0
-    }
-  }
+  "red": [{x: 0, y: 0}, {x: UNIT, y: UNIT}],
+  "blue": [{x: 0, y: 0}, {x: -UNIT, y: -UNIT}]
 };
 
 let DragSpaces = {};
@@ -88,13 +83,8 @@ class Grid extends React.Component {
     return (
       <DragSVG dragID={dragID} width={UNIT*UNITS} height={UNIT*UNITS}>
         {grid} 
-        <PropNodeComponent prop="red" node="hand" dragID={dragID} {...this.props}>
-          <circle cx={X0} cy={Y0} r={UNIT/8} stroke="gray" strokeWidth="1" fill="gray" />
-        </PropNodeComponent>
-        <PropJointComponent prop="red" node1="hand" node2="head" {...this.props}/>
-        <PropNodeComponent prop="red" node="head" dragID={dragID} {...this.props}>
-          <circle cx={X0} cy={Y0} r={UNIT/4} stroke="gray" strokeWidth="1" fill="red" />
-        </PropNodeComponent>
+        <PropComponent dragID={dragID} prop="red" color="red" {...this.props}/>
+        <PropComponent dragID={dragID} prop="blue" color="blue" {...this.props}/>
       </DragSVG>
     );
   }
@@ -108,6 +98,21 @@ function PropJointComponent(props) {
     <line x1={x1+X0} y1={y1+Y0} x2={x2+X0} y2={y2+Y0} style={{stroke: "gray", strokeWidth: 3}}/>
   );
 }
+
+function PropComponent(props) {
+  return ([
+    <PropNodeComponent key={HAND} node={HAND} {...props}>
+      <circle cx={X0} cy={Y0} r={UNIT/8} stroke="gray" strokeWidth="1" fill="gray" />
+    </PropNodeComponent>,
+    <PropJointComponent key={HAND+0.5} node1={HAND} node2={HEAD} {...props}/>,
+    <PropNodeComponent key={HEAD} node={HEAD} {...props}>,
+      <circle cx={X0} cy={Y0} r={UNIT/4} stroke="gray" strokeWidth="1" fill={props.color} />
+    </PropNodeComponent>
+  ]);
+}
+
+
+
 
 class PropNodeComponent extends React.Component {
   constructor(props, context) {
