@@ -95,7 +95,7 @@ function PropJointComponent(props) {
   let {x: x1, y: y1} = props.props[prop][node1];
   let {x: x2, y: y2} = props.props[prop][node2];
   return (
-    <line x1={x1+X0} y1={y1+Y0} x2={x2+X0} y2={y2+Y0} style={{stroke: "gray", strokeWidth: 3}}/>
+    <line x1={0+X0} y1={0+Y0} x2={x2+X0} y2={y2+Y0} style={{stroke: "gray", strokeWidth: 3}}/>
   );
 }
 
@@ -103,11 +103,11 @@ function PropComponent(props) {
   return ([
     <PropNodeComponent key={HAND} node={HAND} {...props}>
       <circle cx={X0} cy={Y0} r={UNIT/8} stroke="gray" strokeWidth="1" fill="gray" />
+      <PropJointComponent key={HAND+0.5} node1={HAND} node2={HEAD} {...props}/>,
+      <PropNodeComponent key={HEAD} node={HEAD} {...props}>,
+        <circle cx={X0} cy={Y0} r={UNIT/4} stroke="gray" strokeWidth="1" fill={props.color} />
+      </PropNodeComponent>
     </PropNodeComponent>,
-    <PropJointComponent key={HAND+0.5} node1={HAND} node2={HEAD} {...props}/>,
-    <PropNodeComponent key={HEAD} node={HEAD} {...props}>,
-      <circle cx={X0} cy={Y0} r={UNIT/4} stroke="gray" strokeWidth="1" fill={props.color} />
-    </PropNodeComponent>
   ]);
 }
 
@@ -144,8 +144,10 @@ class PropNodeComponent extends React.Component {
   }
   handleMouseDown = (event) => {
     event.preventDefault();
-    this.info.beingDragged = true;
-    DragSpaces[this.info.dragID].dragging = this;
+    if (DragSpaces[this.info.dragID].dragging === null) { 
+      this.info.beingDragged = true;
+      DragSpaces[this.info.dragID].dragging = this;
+    }
     // note: harmless violation of React state management practices
     this.info.point.x = event.clientX;
     this.info.point.y = event.clientY;
@@ -204,7 +206,7 @@ let App = ReactRedux.connect(
   })
 )(Grid);
 
-// a reducer function for a Redux store
+//a reducer function for a Redux store
 function reducer(state, action) {
   if (state === undefined) {
     return {
