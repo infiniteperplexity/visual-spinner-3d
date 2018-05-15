@@ -22,3 +22,23 @@ function newProp({body={x:0, y:0},/*pivot={x:0, y:0},helper={x:0,y:0},*/hand={x:
     {x: head.x*UNIT, y: head.y*UNIT}
   ];
 }
+
+
+let vs = VS3D.VisualSpinnerWidget();
+let Props1 = {
+	"red": vs.addProp(),
+	"blue": vs.addProp()
+}
+
+Props1.red.color = "red";
+Props1.blue.color = "blue";
+Props1.red.hand.radius = 0;
+Props1.blue.hand.radius = 0;
+Props1.blue.rotateHand(vs.QUARTER);
+Props1.blue.rotateProp(vs.QUARTER);
+function setupCanvas() {
+	vs.embedById("display");
+	vs.ready();
+}
+setTimeout(setupCanvas,100);
+

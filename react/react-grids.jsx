@@ -13,7 +13,7 @@ function App(props, context) {
       <div className="track frame">
         <p>track-based view of prop movement sequences</p>
       </div>
-      <div className="frame">
+      <div className="frame" id="display">
         <p>VS3D view goes here</p>
       </div>
       <div className="frame">
