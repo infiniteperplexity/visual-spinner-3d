@@ -1,8 +1,8 @@
 //target Div
 let destination = document.querySelector("#container");
 
-const UNIT = 50;
-const UNITS = 11;
+const UNIT = 100;
+const UNITS = 5;
 const HALF = UNIT/2;
 let X0 = HALF*UNITS;
 let Y0 = HALF*UNITS;
@@ -13,14 +13,14 @@ let Props = {
   "blue": newProp({head: {x: 0, y: 1}})
 };
 // Node structure of Props
-let NODES = [0,1,2,3,4], [BODY,PIVOT,HELPER,HAND,HEAD] = NODES;
+let NODES = [0,1,2/*,3,4*/], [BODY,/*PIVOT,HELPER,*/HAND,HEAD] = NODES;
 
 // factory function for new props
-function newProp({body={x:0, y:0},pivot={x:0, y:0},helper={x:0,y:0},hand={x:0,y:0}, head={x:1,y:1}}) {
+function newProp({body={x:0, y:0},/*pivot={x:0, y:0},helper={x:0,y:0},*/hand={x:0,y:0}, head={x:1,y:1}}) {
   return [
     {x: body.x*UNIT, y: body.y*UNIT},
-    {x: pivot.x*UNIT, y: pivot.y*UNIT},
-    {x: helper.x*UNIT, y: helper.y*UNIT},
+//    {x: pivot.x*UNIT, y: pivot.y*UNIT},
+//    {x: helper.x*UNIT, y: helper.y*UNIT},
     {x: hand.x*UNIT, y: hand.y*UNIT},
     {x: head.x*UNIT, y: head.y*UNIT}
   ];
@@ -53,11 +53,11 @@ function handleDoubleClick() {
 function Grid(props, context) {
   let grid = [];
   for (let i=0; i<UNITS; i++) {
-    let x = UNIT*i-HALF;
+    let x = UNIT*i+HALF;
     grid.push(<line key={i} x1={x} y1={0} x2={x} y2={UNITS*UNIT} style={{stroke: "gray", strokeWidth: 1}}/>);
   }  
   for (let j=0; j<UNITS; j++) {
-    let y = UNIT*j-HALF;
+    let y = UNIT*j+HALF;
     grid.push(<line key={UNITS+j} x1={0} y1={y} x2={UNITS*UNIT} y2={y} style={{stroke: "gray", strokeWidth: 1}}/>);
   }
   let registry = [];
@@ -67,11 +67,20 @@ function Grid(props, context) {
   return (
     <DragSVG width={UNIT*UNITS} height={UNIT*UNITS} {...props}>
       {grid} 
+      <UnitCircle x={X0} y={Y0} />
+      <circle cx={X0} cy={Y0} r={2*UNIT} fill="none" stroke="#DDDDDD" />
       {registry}
     </DragSVG>
   );
 }
 
+function UnitCircle(props, context) {
+  let {x, y} = props;
+  return [
+    <circle cx={x} cy={y} r={HALF} fill="none" stroke="#DDDDDD" />,  
+    <circle cx={x} cy={y} r={UNIT} fill="none" stroke="#DDDDDD" />
+  ];
+}
 // Draggable SVG area
 let Draggables = {};
 class DragSVG extends React.Component {
@@ -177,8 +186,8 @@ class PropNode extends React.Component {
       this.props.setNode({
         prop: this.info.prop,
         node: this.info.node,
-        x: round(p.x-this.info.xoffset, UNIT),
-        y: round(p.y-this.info.yoffset, UNIT)
+        x: round(p.x-this.info.xoffset, HALF),
+        y: round(p.y-this.info.yoffset, HALF)
       });
     }
   }
@@ -191,13 +200,14 @@ class PropNode extends React.Component {
   }
   render() {
     let {x, y} = this.props.props[this.info.prop][this.info.node];
-    let r = UNIT/16;
+    let r = UNIT/24;
     if (this.info.node===HAND) {
-      r = UNIT/8;
+      r = UNIT/16;
     } else if (this.info.node===HEAD) {
-      r = UNIT/4;
+      r = UNIT/8;
     }
-    let fill = (this.info.node===HEAD) ? this.info.color : "gray";
+    let fill = ([HEAD,HAND].includes(this.info.node)) ? this.info.color : "gray";
+    let stroke = ([HEAD,HAND].includes(this.info.node)) ? "gray" : this.info.color;
     let tether = null;
     let child = null;
     if (this.info.node<NODES.length-1) {
@@ -221,7 +231,7 @@ class PropNode extends React.Component {
         onMouseMove={this.handleMouseMove}
         onMouseLeave={this.handleMouseLeave}
       >
-        <circle cx={X0} cy={Y0} r={r} stroke="gray" strokeWidth="1" fill={fill} />
+        <circle cx={X0} cy={Y0} r={r} stroke={stroke} strokeWidth="1" fill={fill} />
         {tether}
         {child}
       </g>
