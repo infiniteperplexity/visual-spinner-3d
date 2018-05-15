@@ -53,10 +53,12 @@ function handleDoubleClick() {
 function Grid(props, context) {
   let grid = [];
   for (let i=0; i<UNITS; i++) {
-    grid.push([])
-    for (let j=0; j<UNITS; j++) {
-      grid[i].push(<GridTarget key={i+","+j}  x={i*UNIT+HALF} y={j*UNIT+HALF} />);
-    }
+    let x = UNIT*i-HALF;
+    grid.push(<line key={i} x1={x} y1={0} x2={x} y2={UNITS*UNIT} style={{stroke: "gray", strokeWidth: 1}}/>);
+  }  
+  for (let j=0; j<UNITS; j++) {
+    let y = UNIT*j-HALF;
+    grid.push(<line key={UNITS+j} x1={0} y1={y} x2={UNITS*UNIT} y2={y} style={{stroke: "gray", strokeWidth: 1}}/>);
   }
   return (
     <DragSVG dragID={props.dragID} width={UNIT*UNITS} height={UNIT*UNITS}>
@@ -66,18 +68,6 @@ function Grid(props, context) {
     </DragSVG>
   );
 }
-
-
-class GridTarget extends React.Component {
-  render() {
-    let {x, y} = this.props;
-    return [
-      <line key="h" x1={x-HALF} y1={y} x2={x+HALF} y2={y} style={{stroke: "gray", strokeWidth: 1}} />,
-      <line key="v" x1={x} y1={y-HALF} x2={x} y2={y+HALF} style={{stroke: "gray", strokeWidth: 1}} />
-    ]
-  };
-}
-
 
 // Draggable SVG area
 let Draggables = {};
@@ -185,8 +175,6 @@ class PropNode extends React.Component {
       this.props.setNode({
         prop: this.info.prop,
         node: this.info.node,
-        //x: p.x-this.info.xoffset,
-        //y: p.y-this.info.yoffset
         x: round(p.x-this.info.xoffset, UNIT),
         y: round(p.y-this.info.yoffset, UNIT)
       });
@@ -196,18 +184,29 @@ class PropNode extends React.Component {
     if (doubleClickHandled===false) {
       event.preventDefault();
       handleDoubleClick();
-      alert("testing!");
+      console.log("double clicked");
     }
   }
   render() {
     let {x, y} = this.props.props[this.info.prop][this.info.node];
-    let r = (this.info.node===HEAD) ? (UNIT/4) : (UNIT/8);
+    let r = UNIT/16;
+    if (this.info.node===HAND) {
+      r = UNIT/8;
+    } else if (this.info.node===HEAD) {
+      r = UNIT/4;
+    }
     let fill = (this.info.node===HEAD) ? this.info.color : "gray";
     let tether = null;
     let child = null;
     if (this.info.node<NODES.length-1) {
       let {x: x2, y: y2} = this.props.props[this.info.prop][this.info.node+1];
-      tether = <line x1={X0} y1={Y0} x2={X0+x2} y2={Y0+y2} style={{stroke: "gray", strokeWidth: 3}} />
+      let style = {stroke: "gray"};
+      if (this.info.node===HAND) {
+        style.strokeWidth = 3;
+      } else {
+        style.strokeDasharray="5,5";
+      }
+      tether = <line x1={X0} y1={Y0} x2={X0+x2} y2={Y0+y2} style={style} />
       child = <PropNode {...this.props} node={this.info.node+1} />;
     }
     return (
