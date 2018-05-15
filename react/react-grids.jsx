@@ -9,10 +9,25 @@ function handleDoubleClick() {
 
 function App(props, context) {
   return (
-    <div>
-      <Grid dragID="WALL" {...props} />
-      <Grid dragID="WHEEL" {...props} />
+    <div className="app">
+      <div className="track frame">
+        <p>track-based view of prop movement sequences</p>
+      </div>
+      <div className="frame">
+        <p>VS3D view goes here</p>
+      </div>
+      <div className="frame">
+        <Grid dragID="WALL" {...props} />
+      </div>
+      <div className="frame">
+        <Grid dragID="WHEEL" {...props} />
+      </div>
+      <div className="frame">
       <Grid dragID="FLOOR" {...props} />
+      </div>
+      <div className="frame">
+        <p>edit attributes of selected prop here</p>
+      </div>
     </div>
   );
 }
