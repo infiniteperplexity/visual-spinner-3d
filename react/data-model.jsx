@@ -70,7 +70,17 @@ function node2vector(node) {
 	return sphere2vector(radius, zenith, azimuth, 0.001);
 }
 
+// should bypass this and do it in the store directly
+// this should probably be a redux action (store.dispatch)
 let Props = {
   "red": newProp({hand: node2vector(VProps.red.hand), head: node2vector(VProps.red.prop)}),
   "blue": newProp({hand: node2vector(VProps.blue.hand), head: node2vector(VProps.blue.prop)})
 };
+
+// manually update the VS3D interface
+function vs3dUpdate() {
+	// store.getState()
+	// extract rza values from the Redux store
+	// set hand zenith, radius for each prop
+	// do we need to trigger a re-render manually?
+}
