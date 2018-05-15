@@ -60,11 +60,14 @@ function Grid(props, context) {
     let y = UNIT*j-HALF;
     grid.push(<line key={UNITS+j} x1={0} y1={y} x2={UNITS*UNIT} y2={y} style={{stroke: "gray", strokeWidth: 1}}/>);
   }
+  let registry = [];
+  for (let key of props.order) {
+    registry.push(<PropNode key={key} prop={key} color={key} {...props} />);
+  }
   return (
-    <DragSVG dragID={props.dragID} width={UNIT*UNITS} height={UNIT*UNITS}>
+    <DragSVG width={UNIT*UNITS} height={UNIT*UNITS} {...props}>
       {grid} 
-      <PropNode prop="red" color="red" {...props}/>
-      <PropNode prop="blue" color="blue" {...props}/>
+      {registry}
     </DragSVG>
   );
 }
@@ -155,6 +158,7 @@ class PropNode extends React.Component {
     let {x, y} = this.props.props[this.info.prop][this.info.node];
     this.info.xoffset = p.x - x;
     this.info.yoffset = p.y - y;
+    this.props.setTop(this.info.prop);
   }
   handleMouseUp = (event) => {
     event.preventDefault();
@@ -162,8 +166,6 @@ class PropNode extends React.Component {
     Draggables[this.info.dragID].info.dragging = null;
   }
   handleMouseLeave = (event) => {
-    //event.preventDefault();
-    //this.setState({beingDragged: false});
   }
   handleMouseMove = (event) => {
     event.preventDefault();
@@ -230,9 +232,13 @@ class PropNode extends React.Component {
 // A Higher-Order Component made using ReactRedux.connect
   // attaches properties to the "wrapped" component
 let App = ReactRedux.connect(
-  (state)=>({props: state.props}),
+  (state)=>({
+    props: state.props,
+    order: state.order
+  }),
   (dispatch)=>({
-      setNode: (args)=>dispatch({type: "setNode", ...args})
+      setNode: (args)=>dispatch({type: "setNode", ...args}),
+      setTop: (top)=>dispatch({type: "setTop", top: top})
   })
 )(Grid);
 
@@ -240,7 +246,8 @@ let App = ReactRedux.connect(
 function reducer(state, action) {
   if (state === undefined) {
     return {
-      props: clone(Props)
+      props: clone(Props),
+      order: Object.keys(Props)
     };
   }
   switch (action.type) {
@@ -249,6 +256,10 @@ function reducer(state, action) {
       let props = clone(state.props);
       props[prop][node] = {x: x, y: y};
       return {...state, props: props};
+    case "setTop":
+      let order = [...state.order];
+      order.push(order.splice(order.indexOf(action.top),1)[0]);
+      return {...state, order};
     default:
       return state;
   }
