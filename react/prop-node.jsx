@@ -1,6 +1,3 @@
-function round(n, step) {
-  return Math.round(n/step)*step;
-}
 
 class PropNode extends React.Component {
   constructor(props, context) {
