@@ -4,35 +4,21 @@ const HALF = UNIT/2;
 let X0 = HALF*UNITS;
 let Y0 = HALF*UNITS;
 
-// registry of all props
-
 // Node structure of Props
 let NODES = [0,1,2/*,3,4*/], [BODY,/*PIVOT,HELPER,*/HAND,HEAD] = NODES;
 
-// factory function for new props
-function newProp({body={x:0, y:0},/*pivot={x:0, y:0},helper={x:0,y:0},*/hand={x:0,y:0}, head={x:1,y:1}}) {
-  return [
-    {x: body.x*UNIT, y: body.y*UNIT},
-//    {x: pivot.x*UNIT, y: pivot.y*UNIT},
-//    {x: helper.x*UNIT, y: helper.y*UNIT},
-    {x: hand.x*UNIT, y: hand.y*UNIT},
-    {x: head.x*UNIT, y: head.y*UNIT}
-  ];
-}
-
-
 let vs = VS3D.VisualSpinnerWidget();
-let VProps = {
+let Props = {
 	"red": vs.addProp(),
 	"blue": vs.addProp()
 }
 
-VProps.red.color = "red";
-VProps.blue.color = "blue";
-VProps.red.hand.radius = 0;
-VProps.blue.hand.radius = 0;
-VProps.blue.rotateHand(vs.QUARTER);
-VProps.blue.rotateProp(vs.QUARTER);
+Props.red.color = "red";
+Props.blue.color = "blue";
+Props.red.hand.radius = 0;
+Props.blue.hand.radius = 0;
+Props.blue.rotateHand(vs.QUARTER);
+Props.blue.rotateProp(vs.QUARTER);
 function setupCanvas() {
 	vs.embedById("display");
 	vs.ready();
@@ -44,9 +30,9 @@ function round(n, step) {
 }
 
 function vector2sphere(x,y,z,precision) {
-	let r = Math.sqrt(x*x+y*y+z*z);
+	let r = Math.sqrt(x*x+y*y+z*z) || vs.TINY;
 	let zz = Math.acos(z/r);
-	let a = Math.atan2(y,z);
+	let a = Math.atan2(y,x);
 	if (precision) {
 		r = round(r,precision);
 	}
@@ -65,17 +51,14 @@ function sphere2vector(r,z,a,precision) {
 	return {x: x, y: y, z: zz};
 }
 
+
 function node2vector(node) {
-	let {radius, zenith, azimuth} = node;
-	return sphere2vector(radius, zenith, azimuth, 0.001);
+  let {radius, zenith, azimuth} = node;
+  return sphere2vector(UNIT*radius, zenith, azimuth, 1);
 }
 
 // should bypass this and do it in the store directly
 // this should probably be a redux action (store.dispatch)
-let Props = {
-  "red": newProp({hand: node2vector(VProps.red.hand), head: node2vector(VProps.red.prop)}),
-  "blue": newProp({hand: node2vector(VProps.blue.hand), head: node2vector(VProps.blue.prop)})
-};
 
 // manually update the VS3D interface
 function vs3dUpdate() {

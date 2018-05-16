@@ -47,6 +47,7 @@ class PropNode extends React.Component {
     event.preventDefault();
     this.info.beingDragged = false;
     Draggables[this.info.dragID].info.dragging = null;
+    reactToVS3D();
   }
   handleMouseLeave = (event) => {
   }
