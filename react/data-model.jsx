@@ -9,16 +9,16 @@ let NODES = [0,1,2/*,3,4*/], [BODY,/*PIVOT,HELPER,*/HAND,HEAD] = NODES;
 
 let vs = VS3D.VisualSpinnerWidget();
 let Props = {
-	"red": vs.addProp(),
-	"blue": vs.addProp()
+	"orange": vs.addProp(),
+	"white": vs.addProp()
 }
 
-Props.red.color = "red";
-Props.blue.color = "blue";
-Props.red.hand.radius = 0;
-Props.blue.hand.radius = 0;
-Props.blue.rotateHand(vs.QUARTER);
-Props.blue.rotateProp(vs.QUARTER);
+Props.orange.color = "orange";
+Props.white.color = "white";
+Props.orange.hand.radius = 0;
+Props.white.hand.radius = 0;
+Props.white.rotateHand(vs.QUARTER);
+Props.white.rotateProp(vs.QUARTER);
 function setupCanvas() {
 	vs.embedById("display");
 	vs.ready();
@@ -58,12 +58,12 @@ function node2vector(node) {
 }
 
 // should bypass this and do it in the store directly
-// this should probably be a redux action (store.dispatch)
+// this should probably be a orangeux action (store.dispatch)
 
 // manually update the VS3D interface
 function vs3dUpdate() {
 	// store.getState()
-	// extract rza values from the Redux store
+	// extract rza values from the orangeux store
 	// set hand zenith, radius for each prop
 	// do we need to trigger a re-render manually?
 }

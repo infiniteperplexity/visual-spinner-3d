@@ -14,13 +14,15 @@ function clone(obj) {
 let AppComponent = ReactRedux.connect(
   (state)=>({
     props: state.props,
-    order: state.order
+    order: state.order,
+    frame: state.frame
   }),
   (dispatch)=>({
       setNode: (args)=>dispatch({type: "setNode", ...args}),
       setTop: (top)=>dispatch({type: "setTop", top: top}),
       synchFrom: ()=>dispatch({type: "synchFrom"}),
-      synchTo: ()=>dispatch({type: "synchTo"})
+      synchTo: ()=>dispatch({type: "synchTo"}),
+      gotoFrame: (n)=>dispatch({type: "gotoFrame", n: n})
   })
 )(App);
 
@@ -65,14 +67,16 @@ function reactToVS3D() {
     vprop.prop.azimuth = round(head.a,aprec);
   }
   vs.renderer.render(vs.scene);
-  //vs.ready();
 }
+
+
 //a reducer function for a Redux store
 function reducer(state, action) {
   if (state === undefined) {
     return {
       props: vs3dToReact(),
-      order: Object.keys(Props)
+      order: Object.keys(Props),
+      frame: 0
     };
   }
   switch (action.type) {
@@ -88,6 +92,9 @@ function reducer(state, action) {
       let order = [...state.order];
       order.push(order.splice(order.indexOf(action.top),1)[0]);
       return {...state, order};
+    case "gotoFrame":
+      let n = gotoVS3DFrame(action.n);
+      return {...state, frame: n, props: vs3dToReact()};
     default:
       return state;
   }

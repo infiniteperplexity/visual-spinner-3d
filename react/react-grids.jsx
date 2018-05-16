@@ -26,6 +26,7 @@ function App(props, context) {
       <Grid dragID="FLOOR" {...props} />
       </div>
       <div className="frame">
+        <PropControls {...props} />
         <p>edit attributes of selected prop here</p>
       </div>
     </div>
