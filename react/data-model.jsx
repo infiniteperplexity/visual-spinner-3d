@@ -25,6 +25,24 @@ function setupCanvas() {
 }
 setTimeout(setupCanvas,100);
 
+function unwind(angle) {
+    while (angle<0) {angle+=(2*Math.PI);}
+    while (angle>(2*Math.PI)) {angle = angle%(2*Math.PI);}
+    return angle;
+}
+
+
+// it's strange that we allow unwinding even though we don't know it's an angle...
+function nearly(n1,n2, delta) {
+	if (delta===undefined) {
+		delta = 0.01;
+	}
+	n1 = unwind(n1);
+	n2 = unwind(n2);
+	if (Math.abs(n1-n2)<delta) {return true;}
+	else if (Math.abs(Math.abs(n1-n2)-2*Math.PI)<delta) {return true;}
+	else {return false;}
+}
 function round(n, step) {
   return Math.round(n/step)*step;
 }
