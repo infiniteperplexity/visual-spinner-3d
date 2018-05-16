@@ -1,0 +1,11 @@
+1) The current "radius/zenith/azimuth" system has undesirable properties that a "radius/angle/bearing" system would improve:
+	a) The coordinates do not match astronomical conventions.
+	b) "azimuth" doesn't share a name with "angle", even though the most common case is the wall plane, where azimuth is angle.
+	c) "azimuth" is an intimidating name, moreso than "bearing"
+
+2) It seems as though the move system is too tightly coupled to the core of the engine.  It's easy to imagine wanting other conventions for how the spinning works.  You might want ones that can be layered separately, ones that follow trigonometric equations, ones that are relative, ones that are absolute, ones that are in conventional planes, ones that are in spherical planes, and so on.
+
+3) I have a vague sense that this should be more functional, rather than object-oriented:
+	a) I had to break out vector2sphere and so on.
+	b) I can't use the props directly in React.
+	c) Right now, Moves have "socket", "spin", "reorient/refit/adjust", and "extend".
