@@ -1,18 +1,19 @@
 let VS3D = function() {
-
+	let VS3D = {};
 	// helpful constants
-	const SMALL = 0.001;
-	const TINY = 0.0001;
-	const UNIT = 2*Math.PI/360;
-	const HEAD = 4;
-	const HAND = 3;
-	const HELPER = 2;
-	const PIVOT = 1;
-	const BODY = 0;
-	const NODES = ["body","pivot","helper","hand","head"];
-	const WALL = plane(0,1,0);
-	const WHEEL = plane(1,0,0);
-	const FLOOR = plane(0,0,1);
+	const SMALL = VS3D.SMALL = 0.001;
+	const TINY = VS3D.TINY = 0.0001;
+	const UNIT = VS3D.UNIT = 2*Math.PI/360;
+	const HEAD = VS3D.HEAD = 4;
+	const HAND = VS3D.HAND = 3;
+	const HELPER = VS3D.HELPER = 2;
+	const PIVOT = VS3D.PIVOT = 1;
+	const BODY = VS3D.BODY = 0;
+	const NODES = VS3D.NODES = ["body","pivot","helper","hand","head"];
+	const WALL = VS3D.WALL = plane(0,1,0);
+	const WHEEL = VS3D.WHEEL = plane(1,0,0);
+	const FLOOR = VS3D.FLOOR = plane(0,0,1);
+	const BEATS = 90;
 
 	// immutability helper
 	function clone(obj) {
@@ -50,15 +51,15 @@ let VS3D = function() {
     	return a;
 	}
 	// nearly, but for angles
-	angle.nearly = function(a1, a2, delta) {
+	function angle$nearly(a1, a2, delta) {
 		a1 = angle(a1);
 		a2 = 
 		angle(a2);
 		return (nearly(a1,a2,delta) || nearly(a1+1,a2,delta) || nearly(a1,a2+1,delta));
 	}
 	// zeroish, but for angles
-	angle.zeroish = function(a, delta) {
-		return angle.nearly(a, 0, delta);
+	function angle$zeroish(a, delta) {
+		return angle$nearly(a, 0, delta);
 	}
 
 	// compose scalars into vector
@@ -66,16 +67,16 @@ let VS3D = function() {
 		return {x: x, y: y, z: z};
 	}
 	// nearly, but for vectors
-	vector.nearly = function(v1,v2,delta) {
+	function vector$nearly(v1,v2,delta) {
 		return (nearly(v1.x,v2.x,delta) && nearly(v1.y,v2.y,delta) && nearly(v1.z,v2.z,delta));
 	}
 	// zeroish, but for vectors
-	vector.zeroish = function(vec,delta) {
-		return vector.nearly(vec,vector(0,0,0),delta);
+	function vector$zeroish(vec,delta) {
+		return vector$nearly(vec,vector(0,0,0),delta);
 	}
 	// find the unit vector of a vector
 	function unitize(vec) {
-		if (vector.zeroish(vec)) {
+		if (vector$zeroish(vec)) {
 			return clone(vec);
 		}
 		let {x, y, z} = vec;
@@ -101,7 +102,7 @@ let VS3D = function() {
 		return vector.unitize(v);
 	}
 	// rotate a vector around an axis
-	function rotate(v, a, axis) {
+	function vector$rotate(v, a, axis) {
 		axis = axis || WALL;
 		let {x, y, z} = v;
 		let {u, v, w} = axis;
@@ -163,7 +164,7 @@ let VS3D = function() {
 
  	// compose a spherical coordinate from a scalar and two angles
 	function sphere(r,a,b) {
-		return {r: r, a: a, b: b};
+		return {r: r, a: angle(a), b: angle(b)};
 	}
 	// convert a spherical coordinate into a vector
 	function vectorize(s) {
@@ -174,32 +175,32 @@ let VS3D = function() {
 		return {x: x, y: y, z: z};
 	}
 	// nearly, but for spherical coordinates
-	sphere.nearly = function(s1,s2,delta) {
-		let v1 = sphere.vectorize(s1);
-		let v2 = sphere.vectorize(s2);
-		return vector.nearly(v1,v2,delta);
+	function sphere$nearly(s1,s2,delta) {
+		let v1 = vectorize(s1);
+		let v2 = vectorize(s2);
+		return vector$nearly(v1,v2,delta);
 	}
 	// nearly, but for spherical coordinates
-	sphere.zeroish = function(s,delta) {
+	function sphere$zeroish(s,delta) {
 		let s2 = sphere(0,0,0);
-		return sphere.nearly(s,s2,delta);
+		return sphere$nearly(s,s2,delta);
 	}
 	// vector, but aliased for clarity
 	function plane(x, y, z) {
 		return vector(x, y, z);
 	}
 	// set a particular angle from the reference vector in a plane
-	plane.set = function(radius, a, p) {
-		p = p || WALL;
-		let v = unitize(rotate(reference(p));
-		v = {radius: r, ...v};
-		return spherify(v);
+	function angle$vectorize(ang, p) {
+		let v = vector$rotate(reference(p || WALL);
+		return v;
 	}
-	// rotate a certain amount from the reference vector in a plane
-	plane.rotate(s, degrees, p) {
+	function angle$spherify(ang, p) {
+		return spherify(plane$angle2vector(ang, p));
+	}
+	function angle$rotate(s, ang, p) {
 		p = p || WALL;
 		let {r, a, b} = s;
-		if (angle.zeroish(degrees)) {
+		if (angle$zeroish(ang)) {
 			return sphere(r, a, b);
 		}
 		r = r || TINY;
@@ -208,7 +209,7 @@ let VS3D = function() {
 		// if (sphere.zeroish(project)) {
 		// 	projected = sphere(TINY,TINY,TINY);
 		// }
-		let v = unitize(rotate(projected, degrees, p));
+		let v = unitize(vector$rotate(projected, ang, p));
 		s = spherify(v);
 		return {r: r, ...s}
 	}
@@ -228,18 +229,14 @@ let VS3D = function() {
 		args.helper.r = args.helper.r || TINY;
 		args.hand.r = args.hand.r || TINY;
 		args.head.r = args.head.r || TINY;
-		// "grip" could represent any point along the circumference of a hoop; for poi and staff, 0 or PI are the only sensible values
-		args.grip = args.grip || 0;
+		// "arc" could represent any point along the circumference of a hoop; for poi and staff, 0 or PI are the only sensible values
+		args.arc = args.arc || 0;
 		// "twist" has no visible effect for poi or staff, but for hoop or fans it represents twisting the grip
 		args.twist = args.twist || 0;
 		// "choke" tells how far up the prop is being gripped, e.g. for poi gunslingers	
 		args.choke = args.choke || 0;
 		// "bend" is used mostly for plane-bending moves, and represents a tilt in the prop's plane relative to the axis of motion
-		args.tilt = args.tilt || 0;
-		// do cosmetic properties really belong here?
-		args.type = args.type || "poi";
-		args.color = args.color || "red";
-		args.fire = (args.fire===true) ? true : false;
+		args.bend = args.bend || 0;
 		return {
 			nodes: [
 				body: args.body,
@@ -248,15 +245,56 @@ let VS3D = function() {
 				hand: args.hand,
 				head: args.head
 			],
-			grip: args.grip,
-			twist: args.twist,
-			choke: args.choke,
-			tilt: args.tilt,
-			rendering: {
-				type: args.type,
-				color: args.color,
-				fire: args.fire
+			grip: {
+				arc: angle(args.arc),
+				twist: angle(args.twist),
+				choke: angle(args.choke),
+				bend: angle(args.bend),
 			}
 		}
 	}
+	// some all nodes from home to the chosen node
+	function nodeSum = function(prop, node) {
+		let [xs, ys, zs] = [0, 0, 0];
+		for (let i=BODY; i<node; i++) {
+			let {x, y, z} = vectorize(prop[i]);
+			xs+=x;
+			ys+=y;
+			zs+=z;
+		}
+		return spherify(vector(xs,ys,zs));
+	}
+
+
+	VS3D.clone = clone;
+	VS3D.round = round;
+	VS3D.zeroish = zeroish;
+	VS3D.nearly = nearly;
+	VS3D.angle = angle;
+	VS3D.angle$nearly = angle$nearly;
+	VS3D.angle$zeroish = angle$zeroish;
+	VS3D.angle$vectorize = angle$vectorize;
+	VS3D.angle$spherify = angle$spherify;
+	VS3D.angle$rotate = angle$rotate;
+	VS3D.vector = vector;
+	VS3D.vector$nearly = vector$nearly;
+	VS3D.vector$zeroish = vector$zeroish;
+	VS3D.vector$unitize = unitize;
+	VS3D.vector$magnitude = magnitude;
+	VS3D.vector$spherify = spherify;
+	VS3D.vector$bisector = bisector;
+	VS3D.vector$between = between;
+	VS3D.vector$project = project;
+	VS3D.vector$cross = cross;
+	VS3D.vector$dot = dot;
+	VS3D.vector$between = between;
+	VS3D.vector$rotate = vector$rotate;
+	VS3D.sphere = sphere;
+	VS3D.sphere$vectorize = vectorize;
+	VS3D.plane = plane;
+	VS3D.plane$reference = reference;
+	VS3D.newProp = newProp;
+	VS3D.nodeSum = nodeSum;
+
+	return VS3D;
 }();
