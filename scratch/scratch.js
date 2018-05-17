@@ -1,7 +1,9 @@
 let VS3D = function() {
+
+	// helpful constants
 	const SMALL = 0.001;
 	const TINY = 0.0001;
-	//const UNIT = 2*Math.PI; let's get rid of this and scale it to 1
+	const UNIT = 2*Math.PI/360;
 	const HEAD = 4;
 	const HAND = 3;
 	const HELPER = 2;
@@ -12,9 +14,7 @@ let VS3D = function() {
 	const WHEEL = plane(1,0,0);
 	const FLOOR = plane(0,0,1);
 
-	function round(n, step) {
- 		return Math.round(n/step)*step;
-	}
+	// immutability helper
 	function clone(obj) {
 	  let nobj = {...obj};
 	  for (let prop in nobj) {
@@ -25,14 +25,21 @@ let VS3D = function() {
 	  return nobj;
 	}
 
+	// *** scalar functions
+	function round(n, step) {
+ 		return Math.round(n/step)*step;
+	}
+	// is this scalar close enough to zero?
 	function zeroish(n, delta) {
 		return nearly(n, 0, delta);
 	}
+	// are these two scalars close enough?
 	function nearly(n1, n2, delta) {
 		delta = delta || TINY;
 		return (Math.abs(n1-n2)<delta);
 	}
 
+	// normalize scalars into angles
 	function angle(a) {
     	while (a<0) {
     		a+=1;
@@ -42,25 +49,31 @@ let VS3D = function() {
     	}
     	return a;
 	}
+	// nearly, but for angles
 	angle.nearly = function(a1, a2, delta) {
 		a1 = angle(a1);
 		a2 = 
 		angle(a2);
 		return (nearly(a1,a2,delta) || nearly(a1+1,a2,delta) || nearly(a1,a2+1,delta));
 	}
+	// zeroish, but for angles
 	angle.zeroish = function(a, delta) {
 		return angle.nearly(a, 0, delta);
 	}
 
+	// compose scalars into vector
 	function vector(x,y,z) {
 		return {x: x, y: y, z: z};
 	}
+	// nearly, but for vectors
 	vector.nearly = function(v1,v2,delta) {
 		return (nearly(v1.x,v2.x,delta) && nearly(v1.y,v2.y,delta) && nearly(v1.z,v2.z,delta));
 	}
+	// zeroish, but for vectors
 	vector.zeroish = function(vec,delta) {
 		return vector.nearly(vec,vector(0,0,0),delta);
 	}
+	// find the unit vector of a vector
 	function unitize(vec) {
 		if (vector.zeroish(vec)) {
 			return clone(vec);
@@ -69,21 +82,25 @@ let VS3D = function() {
 		let len = magnitude(vec);
 		return vector(x/len,y/len,z/len);
 	}
+	// find the magnitude of a vector
 	function magnitude(vec) {
 		let {x, y, z} = vec;
 		return Math.sqrt(x*x+y*y+z*z);
 	}
+	// convert a vector to spherical coordinates
 	function spherify(vec) {
 		let {x, y, z} = vec;
 		let r = Math.sqrt(x*x+y*y+z*z) || TINY;
-		let a = Math.acos(z/r);
-		let b = Math.atan2(y,x);
+		let a = Math.acos(z/r)/UNIT;
+		let b = Math.atan2(y,x)/UNIT;
 		return {r: r, a: a, b: b};
 	}
-	function diagonal(v1, v2) {
+	// find the vector halfway between two vectors
+	function bisector(v1, v2) {
 		let v = vector(v1.x+v2.x, v1.y+v2.y, v1.z+v2.z);
 		return vector.unitize(v);
 	}
+	// rotate a vector around an axis
 	function rotate(v, a, axis) {
 		axis = axis || WALL;
 		let {x, y, z} = v;
@@ -91,13 +108,14 @@ let VS3D = function() {
 		let s = (u*x+v*y+w*z);
 		let t = (u*u+v*v+w*w);
 		let sq = Math.sqrt(t);
-		let cs = Math.cos(a*2*Math.PI);
-		let sn = Math.sin(a*2*Math.PI);
+		let cs = Math.cos(a*UNIT);
+		let sn = Math.sin(a*UNIT);
 		let a = (u*s*(1-cs)+t*x*cs+sq*(v*z-w*y)*sn)/t;
 		let b = (v*s*(1-cs)+t*y*cs+sq*(w*x-u*z)*sn)/t;
 		let c = (w*s*(1-cs)+t*z*cs+sq*(u*y-v*x)*sn)/t;
 		return vector(a,b,c);
 	}
+	// cross product of two vectors
 	function cross = function(v1, v2) {
 		let {x1, y1, z1} = v1;
 		let {x2, y2, z2} = v2;
@@ -106,11 +124,13 @@ let VS3D = function() {
 		let z = x1*y2 - y1*x2;
 		return vector(x,y,z);
 	}
+	// dot product of two vectors
 	function dot = function(v1, v2) {
 		let {x1, y1, z1} = v1;
 		let {x2, y2, z2} = v2;
 		return x1*x2+y1*y2+z1*z2;
 	}
+	// project a vector onto the plane defined by an axis
 	function project = function(vec, axis) {
 		axis = axis || WALL;
 		let {vx, vy, vz} = vec;
@@ -121,12 +141,13 @@ let VS3D = function() {
 		let z = vz-d*az;
 		return vector(x,y,z);
 	}
+	// calculate the angle between two vectors
 	function between = function(v1, v2) {
 		let {x1, y1, z1} = v1;
 		let {x2, y2, z2} = v2;
 		let c = magnitude(cross(v1, v2));
 		let d = dot(v1, v2);
-		return Math.atan(c, dot);
+		return Math.atan2(c, dot)/UNIT;
 	}
 	// reference vector is arbitrarily defined
 	function reference = function(vec) {
@@ -139,35 +160,42 @@ let VS3D = function() {
 		// otherwise, return the intersection of this and the floor plane in the first or second quadrant
 		return unitize(vector(0,Math.abs(z),-x));
 	}
- 
+
+ 	// compose a spherical coordinate from a scalar and two angles
 	function sphere(r,a,b) {
 		return {r: r, a: a, b: b};
 	}
+	// convert a spherical coordinate into a vector
 	function vectorize(s) {
 		let {r, a, b} = s;
-		let x = r*Math.cos(2*Math.PI*a)*Math.sin(2*Math.PI*b);
-		let y = r*Math.sin(2*Math.PI*a)*Math.sin(2*Math.PI*b);
-		let z = r*Math.cos(2*Math.PI*a);
+		let x = r*Math.cos(UNIT*a)*Math.sin(UNIT*b);
+		let y = r*Math.sin(UNIT*a)*Math.sin(UNIT*b);
+		let z = r*Math.cos(UNIT*a);
 		return {x: x, y: y, z: z};
 	}
+	// nearly, but for spherical coordinates
 	sphere.nearly = function(s1,s2,delta) {
 		let v1 = sphere.vectorize(s1);
 		let v2 = sphere.vectorize(s2);
 		return vector.nearly(v1,v2,delta);
 	}
+	// nearly, but for spherical coordinates
 	sphere.zeroish = function(s,delta) {
 		let s2 = sphere(0,0,0);
 		return sphere.nearly(s,s2,delta);
 	}
+	// vector, but aliased for clarity
 	function plane(x, y, z) {
 		return vector(x, y, z);
 	}
+	// set a particular angle from the reference vector in a plane
 	plane.set = function(radius, a, p) {
 		p = p || WALL;
 		let v = unitize(rotate(reference(p));
 		v = {radius: r, ...v};
 		return spherify(v);
 	}
+	// rotate a certain amount from the reference vector in a plane
 	plane.rotate(s, degrees, p) {
 		p = p || WALL;
 		let {r, a, b} = s;
@@ -184,8 +212,8 @@ let VS3D = function() {
 		s = spherify(v);
 		return {r: r, ...s}
 	}
-
-	function prop(args) {
+	// create a new prop
+	function newProp(args) {
 		args = args || {};
 		// set default values for node positions
 		args.home = args.home || {r: TINY, a: 0, b: 0};
