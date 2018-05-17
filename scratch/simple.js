@@ -28,12 +28,12 @@ VS3D = function(VS3D) {
 		return move;
 	}
 	function move$type(move) {
-		if (move.x!==undefined || move.y!==undefined || move.z!==undefined) {
+		if (move.r!==undefined || move.a!==undefined || move.b!==undefined) {
+			return move$sphere;
+		} else if (move.x!==undefined || move.y!==undefined || move.z!==undefined) {
 			return move$vector;
 		} else if (move.arc!==undefined || move.twist!==undefined || move.choke!==undefined || move.bend!==undefined) {
 			return move$grip;
-		} else if (move.r!==undefined || move.a!==undefined || move.b!==undefined) {
-			return move$sphere;
 		} else {
 			throw new Error("checking type of invalid move.");
 		}
@@ -60,7 +60,7 @@ VS3D = function(VS3D) {
 	}
 
 	// derive position from a parameterized movement and time
-	function move$calculate(move, t) {
+	function move$spin(move, t) {
 		if (move$type(move)===move$vector) {
 			let x = move.x + move.vx*t + move.ax*t*t/2;
 			let y = move.y + move.vy*t + move.ay*t*t/2;
@@ -80,35 +80,58 @@ VS3D = function(VS3D) {
 		}
 	}
 
-
-	function plane$setNode(radius, a, p) {
-		p = p || WALL;
-		let v = unitize(vector$rotate(reference(p));
-		v = {radius: r, ...v};
-		return spherify(v);
-	}
-
-	// maybe combine NodeSegment and GripSegment?
+	// so...should this have a plane?  or does the whole SimpleMove have a plane?
 	function NodeSegment(args) {
 		args = args || {};
-		// for spinning
-		this.speed = args.speed || 0;
-		this.end_speed = args.end_speed || this.speed;
-		this.extend = args.extend || 0;
-		this.end_extend = args.end_extend || this.extend; 
-		// for sliding
+		// do we want this? prolly not because it will override everything
+		if (args.move) {
+			this.move = clone(args.move);
+			return this;
+		}
+		this.radius = args.radius || 0;
 		this.angle = args.angle || 0;
-		this.slide = args.slide || 0;
-		this.end_slide = args.end_slide || this.slide;
-		// for both
 		this.plane = VS3D.clone(args.plane) || VS3D.WALL;
-		// internal
-		if (this.slide!==0 || this.end_slide!==0) {
+		// for sliding
+		if (args.slide!==undefined) {
+			this.slide = args.slide;
+			this.slide.angle = args.slide.angle || 0;
+			this.slide.speed = args.slide.speed || 0;
+			this.slide.end_speed = args.slide.end_speed || 0;
 			let {x, y, z} = VS3D.angle$vectorize(this.angle, this.plane);
-			let a = (this.end_slide-this.slide)/2;
-			let v = this.slide;
-			this.move = move$vector({x:0,y:0,z:0,vx:v*x,vy:v*y,vz:v*z,ax:a*x,ay:a*y,az:a*z});
+			let r = this.radius;
+			let {vx, vy, vz} = VS3D.angle$vectorize(this.slide.angle, this.plane);
+			let a = (this.slide.end_speed-this.slide.speed)/2;
+			let v = this.slide.speed;
+			this.move = move$vector({x:r*x,y:r*y,z:r*z,vx:v*vx,vy:v*vy,vz:v*vz,ax:a*vx,ay:a*vy,az:a*vz});
+		} else if (args.arc!==undefined || args.bend!==undefined || args.choke!==undefined || args.twist!==undefined) {
+			this.arc = args.arc || {};
+			this.arc.angle = args.arc.angle || 0;
+			this.arc.speed = args.arc.speed || 0;
+			this.arc.end_speed = args.arc.end_speed || this.arc.speed;
+			this.bend.angle = args.bend.angle || 0;
+			this.bend.speed = args.bend.speed || 0;
+			this.bend.end_speed = args.bend.end_speed || this.bend.speed;
+			this.choke.radius = args.choke.radius || 0;
+			this.choke.speed = args.choke.speed || 0;
+			this.choke.end_speed = args.choke.end_speed || this.bend.speed;
+			this.twist.angle = args.twist.angle || 0;
+			this.twist.speed = args.twist.speed || 0;
+			this.twist.end_speed = args.twist.end_speed || this.twist.speed;
+			this.move = move$grip({
+				arc: this.arc.angle, bend: this.bend.angle,
+				choke: this.choke.radius, twist: this.twist.angle,
+				va: this.arc.speed, vb: this.bend.speed,
+				vc: this.choke.speed, vt: this.twist.speed,
+				aa: (this.arc.speed-this.arc.end_speed)/2,
+				ab: (this.bend.speed-this.bend.end_speed)/2,
+				ac: (this.choke.speed-this.choke_speed)/2,
+				at: (this.twist.speed-this.twist.end_speed)/2
+			});
 		} else {
+			this.speed = args.speed || 0;
+			this.end_speed = args.end_speed || this.speed;
+			this.extend = args.extend || 0;
+			this.end_extend = args.end_extend || this.extend; 
 			let vr = this.extend;
 			let ar = (this.end_extend-this.extend)/2;
 			// ummm...so, we're going to multiple something here...
@@ -121,8 +144,8 @@ VS3D = function(VS3D) {
 			this.move = move$sphere({r:0,a:0,b:0,vr:vr,va:va,vb:vb,ar:ar,aa:aa,ab:ab});
 		}
 	}
-	NodeSegment.prototype.clone = function() {
-		return new NodeSegment(this);
+	NodeSegment.prototype.clone = function(args) {
+		return new NodeSegment(args, ...this);
 	}
 	NodeSegment.prototype.spin = function(t) {
 		return move$spin(this.move, t);
@@ -131,8 +154,10 @@ VS3D = function(VS3D) {
 		let node = move$spin(this.move, t);
 		if (move$type(this.move)===move$sphere) {
 			let {r, a, b} = node;
+			// wait this is all wrong...
 			return [
 				this.clone(),
+				new SimpleMove({radius: r, })
 				move$sphere({r: r, a: a, b: b, ...this.move})
 			];
 		} else if (move$type(this.move)===move$vector) {
@@ -141,8 +166,21 @@ VS3D = function(VS3D) {
 				this.clone(),
 				move$vector({x: x, y: y, z: z, ...this.move})
 			];
+		} else if (move$type(this.move)===move$grip) {
+			let {arc, bend, choke, twist} = move$spin(this.move, t);
+			let {va, vb, vc, vt, aa, ab, ac, at} = this.move;
+			let angle = VS3D.angle;
+			return [
+				this.clone(), 
+				move$grip({
+					arc: angle(arc), bend: angle(bend), choke: choke, twist: angle(twist),
+					va: va+aa*t, vb: vb+ab*t, vb: vb+ab*t, vt: vb+at*t,
+					...this.move
+				})
+			];
 		}
 	}
+	// wait this isn't right, is it?
 	NodeSegment.prototype.align = function(node) {
 		if (move$type(this.move)===move$sphere) {
 			let {r, a, b} = node;
@@ -152,51 +190,12 @@ VS3D = function(VS3D) {
 			let {x, y, z} = VS3D.vectorize(node);
 			let {vx, vy, vz, ax, ay, az} = this.move;
 			return move$vector({x: x, y: y, z: z, vx: vx+ax*t, vy: vy+ay*t, vz: az*t, ...this.move});
+		} else if (move$type(this.move)===move$grip) {
+			let {arc, bend, choke, twist} = grip;
+			return move$grip({arc: arc, bend: bend, choke: choke, twist: twist, ...this.move})
 		}
 	}
-	// wait a second...choke is linear, the rest are angular
-	function GripSegment(args) {
-		args = args || {};
-		// all these represent velocities, not positions
-		this.arc = args.arc || 0;
-		this.end_arc = args.end_arc || this.arc;
-		this.bend = args.bend || 0;
-		this.end_bend = args.end_bend || this.bend;
-		this.choke = args.choke || 0;
-		this.end_choke = args.end_choke || this.choke;
-		this.twist = args.twist || 0;
-		this.end_twist = args.end_twist || this.twist;
-		this.move = move$grip({
-			arc: 0, bend: 0, choke: 0, twist: 0,
-			va: this.arc,vb: this.bend, vc: this.choke, vt: this.twist,
-			aa: (this.end_arc-this.arc)/2, ab: (this.end_bend-this.bend)/2,
-			ac: (this.end_choke-this.choke)/2, at: (this.end_twist-this.twist)/2
-		});
-	}
-	GripSegment.prototype.clone = function() {
-		return new GripSegment(this);
-	}
-	GripSegment.prototype.spin = function(t) {
-		return move$spin(this.move, t);
-	}
-	GripSegment.prototype.split = function(t) {
-		let {arc, bend, choke, twist} = move$spin(this.move, t);
-		let {va, vb, vc, vt, aa, ab, ac, at} = this.move;
-		let angle = VS3D.angle;
-		return [
-			this.clone(), 
-			move$grip({
-				arc: angle(arc), bend: angle(bend), choke: choke, twist: angle(twist),
-				va: va+aa*t, vb: vb+ab*t, vb: vb+ab*t, vt: vb+at*t,
-				...this.move
-			})
-		];
-	}
-	GripSegment.prototype.align = function(grip) {
-		let {arc, bend, choke, twist} = grip;
-		return move$grip({arc: arc, bend: bend, choke: choke, twist: twist, ...this.move})
-	}
-	function MoveSegment(args) {
+	function SimpleMove(args) {
 		args = args || {};
 		this.nodes = {
 			body: NodeSegment(args.body || {}),
@@ -205,14 +204,14 @@ VS3D = function(VS3D) {
 			hand: NodeSegment(args.hand || {}),
 			head: NodeSegment(args.head || {speed: 1})
 		};
-		this.grip = GripSegment(args.grip || {});
+		this.grip = NodeSegment(args.grip || {arc: {}, bend: {}, choke: {}, twist: {});
 		this.beats = args.beats || 1;
 	}
-	MoveSegment.prototype.children = [];
-	MoveSegment.prototype.beats = function() {
-		return this.beats;
+	SimpleMove.prototype.children = [];
+	SimpleMove.prototype.ticks = function() {
+		return this.beats*VS3D.BEATS;
 	}
-	MoveSegment.prototype.spin = function(t) {
+	SimpleMove.prototype.spin = function(t) {
 		let grip = this.grip.spin(t);
 		let args = {
 			body: this.nodes.body.spin(t),
@@ -227,7 +226,7 @@ VS3D = function(VS3D) {
 		}
 		return VS3D.newProp(args);
 	}
-	MoveSegment.prototype.split = function(t) {
+	SimpleMove.prototype.split = function(t) {
 		let one = this.clone();
 		let two = this.clone();
 		for (let n in this.nodes) {
@@ -238,7 +237,7 @@ VS3D = function(VS3D) {
 		one.beats = this.beats - two.beats;
 		return [one,two];
 	}
-	MoveSegment.prototype.socket = function() {
+	SimpleMove.prototype.socket = function() {
 		let grip = grip: this.grip.spin(this.beats*VS3D.BEATS);
 		let args = {
 			body: this.nodes.body.spin(this.beats*VS3D.BEATS),
@@ -253,21 +252,34 @@ VS3D = function(VS3D) {
 		};
 		return VS3D.newProp(args);
 	}
-	MoveSegment.prototype.head = function() {
+	SimpleMove.prototype.head = function() {
 		return this;
 	}
-	MoveSegment.prototype.tail = function() {
+	SimpleMove.prototype.tail = function() {
 		return this;
 	}
-	MoveSegment.prototype.align = function(prop) {
+	SimpleMove.prototype.align = function(prop) {
 		let aligned = this.clone();
 		// body, pivot, and helper don't have to align
 		aligned.hand = this.nodes.hand.align(VS3D.nodeSum(prop, HAND));
 		aligned.head = this.nodes.head.align(VS3D.nodeSum(prop, HEAD));
 		return aligned;
 	}
-	MoveSegment.prototype.clone = function() {
-		return new MoveSegment(this);
+	SimpleMove.prototype.clone = function() {
+		return new SimpleMove(this);
+	}
+	SimpleMove.prototype.extend = function() {
+		return this.clone().align(this.socket());
+	}
+	SimpleMove.prototype.concat = function(move) {
+		let one = this.clone();
+		let two = move.align(one);
+		if (two.children.length>0) {
+			two.children = [one].concat(two.children);
+			return two;
+		} else {
+			return new MoveChain([one, two]);
+		}
 	}
 	function MoveChain(arr) {
 		arr = arr || [];
@@ -278,12 +290,12 @@ VS3D = function(VS3D) {
 			return this;
 		}
 	}
-	MoveChain.prototype.beats = function() {
-		let beats = 0;
+	MoveChain.prototype.ticks = function() {
+		let ticks = 0;
 		for (let child of children) {
-			beats+=child.beats;
+			ticks+=child.ticks();
 		}
-		return beats;
+		return ticks;
 	}
 	MoveChain.prototype.spin = function(t) {
 		let n = this._segmentAt(t);
@@ -320,21 +332,39 @@ VS3D = function(VS3D) {
 		let arr = this.children.map((e)=>e.clone());
 		return new MoveChain(arr);
 	}
+	MoveChain.prototype.extend = function() {
+		return this.tail().extend();
+	}
 	MoveChain.prototype._segmentAt = function(t) {
 		let ticks = 0;
 		let current = -1;
 		while (ticks<t) {
 			current+=1;
-			ticks+=this.children[current].beats*VS3D.BEATS;
+			ticks+=this.children[current].ticks();
 		}
 		return current;
 	}
 	MoveChain.prototype._ticksBefore = function(n) {
 		let ticks = 0;
 		for (let i=0; i<n; i++) {
-			ticks+=this.children[i].beats*VS3D.BEATS;
+			ticks+=this.children[i].ticks();
 		}
 		return ticks;
 	}
+	MoveChain.prototype.concat = function(move) {
+		let one = this.clone();
+		let two = move.clone();
+		if (two.children.length>0) {
+			one.children = one.children.concat(two.children);
+		} lese {
+			one.children.push(two);
+		}
+		return one;
+	}
 	// maybe NodeChain / GripChain?
+	// maybe merge NodeSegment and GripSegment
+	VS3D.NodeSegment = NodeSegment;
+	VS3D.SimpleMove = SimpleMove;
+	VS3D.MoveChain = MoveChain;
+	return VS3D;
 }(VS3D);
