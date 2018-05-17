@@ -309,7 +309,12 @@ VS3D = function(VS3D) {
 		return this.children[this.children.length-1];
 	}
 	MoveChain.prototype.align = function(prop) {
-		
+		let aligned = this.clone();
+		clone.children[0] = clone.children[0].align(prop);
+		for (let i=1; i<this.children.length; i++) {
+			clone.children[i] = clone.children[i].align(clone.children[i-1].socket());
+		}
+		return clone;
 	}
 	MoveChain.prototype.clone = function() {
 		let arr = this.children.map((e)=>e.clone());
