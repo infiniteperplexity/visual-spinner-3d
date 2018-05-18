@@ -1,0 +1,27 @@
+<!--Distributed under GNU Public License version 3-->
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>VisualSpinner3D Composer, by Glenn Wright</title>
+</head>
+<script src="vs3d.js"></script>
+<script src="three.min.js"></script>
+<script src="render.js"></script>
+<script>
+	let renderer;
+	let prop = newProp();
+	prop.nodes[HAND].r = 1;
+	prop.nodes[HAND].b = 0;
+	prop.nodes[HEAD].a = 90;
+	function init() {
+		renderer = new ThreeRenderer(document.getElementById("display"));
+		renderer.update(prop);
+	}
+	
+</script>
+<body onload="init();">
+	<div id="display">
+	</div>
+</body>
+</html>
