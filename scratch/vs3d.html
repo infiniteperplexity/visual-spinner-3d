@@ -11,11 +11,12 @@
 <script>
 	let renderer;
 	let prop = newProp();
-	prop.nodes[HAND].r = 1;
-	prop.nodes[HAND].b = 0;
-	prop.nodes[HEAD].a = 90;
 	function init() {
 		renderer = new ThreeRenderer(document.getElementById("display"));
+		renderer.update(prop);
+	}
+	function update(t) {
+		spin(prop, t);
 		renderer.update(prop);
 	}
 	

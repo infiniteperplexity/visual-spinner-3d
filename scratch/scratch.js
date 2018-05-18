@@ -263,12 +263,12 @@ let VS3D = function() {
 	function nodeSum = function(prop, node) {
 		let [xs, ys, zs] = [0, 0, 0];
 		for (let i=BODY; i<node; i++) {
-			let {x, y, z} = vectorize(prop[i]);
+			let {x, y, z} = sphere$vectorize(prop[i]);
 			xs+=x;
 			ys+=y;
 			zs+=z;
 		}
-		return spherify(vector(xs,ys,zs));
+		return vector$spherify(vector(xs,ys,zs));
 	}
 
 

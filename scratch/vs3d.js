@@ -14,7 +14,10 @@
 	const XAXIS = vector(1,0,0);
 	const YAXIS = vector(0,1,0);
 	const ZAXIS = vector(0,0,1);
-	const BEATS = 90;
+	const MEASURE = 4;
+	const TICKS = 360;
+	const BEAT = TICKS/MEASURE;
+	const SPEED = 1;
 
 	/// immutability helper
 	function clone(obj) {
@@ -44,10 +47,10 @@
 	// normalize scalars into angles
 	function angle(a) {
     	while (a<0) {
-    		a+=1;
+    		a+=(2*Math.PI/UNIT);
     	}
-    	while (a>1) {
-    		a-=1;
+    	while (a>(2*Math.PI/UNIT)) {
+    		a-=(2*Math.PI/UNIT);
     	}
     	return a;
 	}
@@ -260,6 +263,113 @@
 				twist: angle(args.twist),
 				choke: angle(args.choke),
 				bend: angle(args.bend),
+			}
+		}
+	}
+
+
+	function nodeSum(prop, node) {
+		let [xs, ys, zs] = [0, 0, 0];
+		for (let i=BODY; i<node; i++) {
+			let {x, y, z} = sphere$vectorize(prop[i]);
+			xs+=x;
+			ys+=y;
+			zs+=z;
+		}
+		return vector$spherify(vector(xs,ys,zs));
+	}
+
+
+
+	function move$sphere(args) {
+		args = args || {};
+		let move = {};
+		for (let e of ["r","a","b","vr","va","vb","ar","aa","ab"]) {
+			move[e] = args[e] || 0;
+		}
+		return move;
+	}
+	// parameterized slide
+	function move$vector(args) {
+		args = args || {};
+		let move = {};
+		for (let e of ["x","y","z","vx","vy","vz","ax","ay","az"]) {
+			move[e] = args[e] || 0;
+		}
+		return move;
+	}
+	// parameterized grip shift or plane bend
+	function move$grip(args) {
+		args = args || {};
+		let move = {};
+		for (let e of ["arc","twist","choke","bend","va","vt","vc","vb","aa","at","ac","ab"]) {
+			move[e] = args[e] || 0;
+		}
+		return move;
+	}
+	function move$type(move) {
+		if (move.r!==undefined || move.a!==undefined || move.b!==undefined) {
+			return move$sphere;
+		} else if (move.x!==undefined || move.y!==undefined || move.z!==undefined) {
+			return move$vector;
+		} else if (move.arc!==undefined || move.twist!==undefined || move.choke!==undefined || move.bend!==undefined) {
+			return move$grip;
+		} else {
+			throw new Error("checking type of invalid move.");
+		}
+	}
+	// yield a new parameterized move starting at t
+	function move$split(move, t) {
+		if (move$type(move)===move$vector) {
+			let x = move.x + move.vx*t + move.ax*t*t/2;
+			let y = move.y + move.vy*t + move.ay*t*t/2;
+			let z = move.z + move.vz*t + move.az*t*t/2;
+			return move$vector({x: x, y: y, z: z, ...move});
+		} else if (move$type(move)===move$grip) {
+			let arc = move.arc + move.va*t + move.aa*t*t/2;
+			let twist = move.twist + move.vt*t + move.at*t*t/2;
+			let choke = move.choke + move.vc*t + move.ac*t*t/2;
+			let bend = move.bend + move.vb*t + move.ab*t*t/2;
+			return move$grip({arc: arc, twist: twist, choke: choke, bend: bend, ...move});
+		} else if (move$type(move)===move$sphere) {
+			let r = move.r + move.vr*t + move.ar*t*t/2;
+			let a = move.a + move.va*t + move.aa*t*t/2;
+			let b = move.b + move.vb*t + move.ab*t*t/2;
+			return move$sphere({r: r, a: a, b: b, ...move});
+		}
+	}
+
+	// derive position from a parameterized movement and time
+	function move$spin(move, t) {
+		if (move$type(move)===move$vector) {
+			let x = move.x + move.vx*t + move.ax*t*t/2;
+			let y = move.y + move.vy*t + move.ay*t*t/2;
+			let z = move.z + move.vz*t + move.az*t*t/2;
+			return vector$spherify(vector(x,y,z))
+		} else if (move$type(move)===move$grip) {
+			let arc = move.arc + move.va*t + move.aa*t*t/2;
+			let twist = move.twist + move.vt*t + move.at*t*t/2;
+			let choke = move.choke + move.vc*t + move.ac*t*t/2;
+			let bend = move.bend + move.vb*t + move.ab*t*t/2;
+			return {arc: arc, twist: twist, choke: choke, bend: bend};
+		} else if (move$type(move)===move$sphere) {
+			let r = move.r + move.vr*t + move.ar*t*t/2;
+			let a = move.a + move.va*t + move.aa*t*t/2;
+			let b = move.b + move.vb*t + move.ab*t*t/2;
+			console.log(a);
+			return sphere(r,a,b);
+		}
+	}
+
+	function spin(prop, t) {
+		// do it mutable for now
+		for (let i=BODY; i<=HEAD; i++) {
+			let {r, a, b} = prop.nodes[i];
+			if (i===HEAD || i===HAND) {
+				prop.nodes[i] = move$spin(move$sphere({r: r, a: a, b: b, va: 1}),t);
+				console.log(prop.nodes[i].a);
+			} else {
+				prop.nodes[i] = move$spin(move$sphere({r: r, a: a, b: b}),t);
 			}
 		}
 	}
