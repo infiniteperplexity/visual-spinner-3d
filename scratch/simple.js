@@ -83,11 +83,6 @@ VS3D = function(VS3D) {
 	// so...should this have a plane?  or does the whole SimpleMove have a plane?
 	function NodeSegment(args) {
 		args = args || {};
-		// do we want this? prolly not because it will override everything
-		if (args.move) {
-			this.move = clone(args.move);
-			return this;
-		}
 		this.radius = args.radius || 0;
 		this.angle = args.angle || 0;
 		this.plane = VS3D.clone(args.plane) || VS3D.WALL;
@@ -152,19 +147,12 @@ VS3D = function(VS3D) {
 	}
 	NodeSegment.prototype.split = function(t) {
 		let node = move$spin(this.move, t);
-		if (move$type(this.move)===move$sphere) {
-			let {r, a, b} = node;
-			// wait this is all wrong...
+		if (move$type(this.move)===move$sphere || move$type(this.move===move$vector)) {
+			let a = VS3D.sphere$planify(node, this.plane);
+			// but we still need to get the speeds right
 			return [
 				this.clone(),
-				new SimpleMove({radius: r, })
-				move$sphere({r: r, a: a, b: b, ...this.move})
-			];
-		} else if (move$type(this.move)===move$vector) {
-			let {x, y, z} = VS3D.vectorize(node);
-			return [
-				this.clone(),
-				move$vector({x: x, y: y, z: z, ...this.move})
+				new SimpleMove({radius: node.r, angle: a, ...this})
 			];
 		} else if (move$type(this.move)===move$grip) {
 			let {arc, bend, choke, twist} = move$spin(this.move, t);
@@ -172,6 +160,7 @@ VS3D = function(VS3D) {
 			let angle = VS3D.angle;
 			return [
 				this.clone(), 
+				this.
 				move$grip({
 					arc: angle(arc), bend: angle(bend), choke: choke, twist: angle(twist),
 					va: va+aa*t, vb: vb+ab*t, vb: vb+ab*t, vt: vb+at*t,
@@ -181,11 +170,13 @@ VS3D = function(VS3D) {
 		}
 	}
 	// wait this isn't right, is it?
+	// this has trouble with planes.
 	NodeSegment.prototype.align = function(node) {
 		if (move$type(this.move)===move$sphere) {
 			let {r, a, b} = node;
-			let {vr, va, vb, ar, aa, ab} = this.move;
-			return move$sphere({r: r, a: a, b: b, vr: vr+ar*t, va: va+aa*t, vb: vb+ab*t, ...this.move});
+			// is there a reverse to angle$spherify?  we could certainly project the sphere into a plane.
+			return new NodeSegment({radius: r, angle: })
+			//return move$sphere({r: r, a: a, b: b, vr: vr+ar*t, va: va+aa*t, vb: vb+ab*t, ...this.move});
 		} else if (move$type(this.move)===move$vector) {
 			let {x, y, z} = VS3D.vectorize(node);
 			let {vx, vy, vz, ax, ay, az} = this.move;
@@ -195,30 +186,81 @@ VS3D = function(VS3D) {
 			return move$grip({arc: arc, bend: bend, choke: choke, twist: twist, ...this.move})
 		}
 	}
+
+	const SPEED = VS3D.SPEED = VS3D.UNIT/4;
+
+	function newGrip(args) {
+		let arc = args.arc || 0;
+		let bend = args.bend || 0;
+		let choke = args.choke || 0;
+		let twist = args.twist || 0;
+		return move$grip({
+			arc: 0, bend: 0, choke: 1, twist: 0,
+			va: 0, vb: 0, vc: 0, vt: 0,
+			aa: 0, ab: 0, ac: 0, at: 0
+		});
+	}
+	function newNode(args) {
+		let radius = args.radius;
+		let angle = args.angle;
+		let plane = args.plane;
+		let end = args.end || {};
+		let beats = args.beats;
+		let TICKS = args.beats*90; //or something
+		if (args.slide!==undefined) {
+			// let slide = args.slide;
+			// slide.angle = args.slide.angle || 0;
+			// slide.speed = args.slide.speed || 0;
+			// slide.end_speed = args.slide.end_speed || 0;
+			// let {x, y, z} = VS3D.angle$vectorize(angle, plane);
+			// let r = radius;
+			// let {vx, vy, vz} = VS3D.angle$vectorize(slide.angle, plane);
+			// let a = (slide.end_speed-slide.speed)/ticks;
+			// let v = slide.speed;
+			// return move$vector({x:r*x,y:r*y,z:r*z,vx:v*vx,vy:v*vy,vz:v*vz,ax:a*vx,ay:a*vy,az:a*vz});
+		} else {
+			let speed = args.speed || 0;
+			let extend = args.extend || 0;
+			end.speed = end.speed || speed;
+			end.extend = end.extend || extend;
+			end.angle = end.angle || angle+speed*TICKS;
+			end.radius = end.radius || radius+extend*TICKS;
+			// let's not do acceleration yet
+			let {a, b} = VS3D.angle$spherify(speed, plane);
+			let {va, vb} = VS3D.angle$spherify(speed, plane);
+			return move$sphere({
+				r: radius, a: a*angle, b: b*angle,
+				vr: extend, va: va*speed, vb: vb*speed,
+				ar: 0, aa: 0, ab: 0
+			});
+		}
+	}
+
 	function SimpleMove(args) {
 		args = args || {};
-		this.nodes = {
-			body: NodeSegment(args.body || {}),
-			pivot: NodeSegment(args.pivot || {}),
-			helper: NodeSegment(args.helper || {}),
-			hand: NodeSegment(args.hand || {}),
-			head: NodeSegment(args.head || {speed: 1})
-		};
-		this.grip = NodeSegment(args.grip || {arc: {}, bend: {}, choke: {}, twist: {});
+		this.plane = args.plane || VS3D.WALL;
 		this.beats = args.beats || 1;
+		let ticks = this.beats*VS3D.BEATS;
+		this.nodes = {};
+		for (let n of VS3D.NODES) {
+			let node = args[n] || {};
+			this.nodes[n] = newNode({plane: this.plane, beats: this.beats, ...node});
+		}
+		let grip = args.grip || {arc: {}, bend: {}, choke: {}, twist: {}};
+		this.grip = newNode({plane: this.plane, beats: this.beats, ...grip});
 	}
 	SimpleMove.prototype.children = [];
 	SimpleMove.prototype.ticks = function() {
 		return this.beats*VS3D.BEATS;
 	}
 	SimpleMove.prototype.spin = function(t) {
-		let grip = this.grip.spin(t);
+		let grip = move$spin(this.grip, t);
 		let args = {
-			body: this.nodes.body.spin(t),
-			pivot: this.nodes.pivot.spin(t),
-			helper: this.nodes.helper.spin(t),
-			hand: this.nodes.hand.spin(t),
-			head: this.nodes.head.spin(t),
+			body: move$spin(this.nodes.body, t),
+			pivot: move$spin(this.nodes.pivot, t),
+			helper: move$spin(this.nodes.helper, t),
+			hand: move$spin(this.nodes.hand, t),
+			head: move$spin(this.nodes.head, t),
 			arc: grip.arc,
 			bend: grip.bend,
 			choke: grip.choke,
@@ -227,6 +269,7 @@ VS3D = function(VS3D) {
 		return VS3D.newProp(args);
 	}
 	SimpleMove.prototype.split = function(t) {
+		/// BROKEN
 		let one = this.clone();
 		let two = this.clone();
 		for (let n in this.nodes) {
@@ -238,19 +281,7 @@ VS3D = function(VS3D) {
 		return [one,two];
 	}
 	SimpleMove.prototype.socket = function() {
-		let grip = grip: this.grip.spin(this.beats*VS3D.BEATS);
-		let args = {
-			body: this.nodes.body.spin(this.beats*VS3D.BEATS),
-			pivot: this.nodes.pivot.spin(this.beats*VS3D.BEATS),
-			helper: this.nodes.helper.spin(this.beats*VS3D.BEATS),
-			hand: this.nodes.hand.spin(this.beats*VS3D.BEATS),
-			head: this.nodes.head.spin(this.beats*VS3D.BEATS),
-			arc: grip.arc,
-			bend: grip.bend,
-			choke: grip.choke,
-			twist: grip.twist
-		};
-		return VS3D.newProp(args);
+		return this.spin(this.beats*VS3D.BEATS);
 	}
 	SimpleMove.prototype.head = function() {
 		return this;
@@ -259,14 +290,26 @@ VS3D = function(VS3D) {
 		return this;
 	}
 	SimpleMove.prototype.align = function(prop) {
+		// BROKEN
 		let aligned = this.clone();
 		// body, pivot, and helper don't have to align
 		aligned.hand = this.nodes.hand.align(VS3D.nodeSum(prop, HAND));
 		aligned.head = this.nodes.head.align(VS3D.nodeSum(prop, HEAD));
 		return aligned;
 	}
-	SimpleMove.prototype.clone = function() {
-		return new SimpleMove(this);
+	SimpleMove.prototype.clone = function(args) {
+		let cargs = {plane: this.plane, beats: this.beats};
+		let socket = this.socket();
+		for (let n of nodes) {
+			let begin = this.nodes[n];
+			let end = socket.nodes[n];
+			let VS3D.sphere$planify
+			if (move$type(begin)===move$sphere) {
+
+			}
+		}
+
+		return new SimpleMove(cargs);
 	}
 	SimpleMove.prototype.extend = function() {
 		return this.clone().align(this.socket());

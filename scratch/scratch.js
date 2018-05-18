@@ -185,6 +185,12 @@ let VS3D = function() {
 		let s2 = sphere(0,0,0);
 		return sphere$nearly(s,s2,delta);
 	}
+	// convert a spherical coordinate to an angle in a given plane
+	function planify(s, p) {
+		p = p || WALL;
+		let v = project(vectorize(s),p);
+		return between(v,reference(p));
+	}
 	// vector, but aliased for clarity
 	function plane(x, y, z) {
 		return vector(x, y, z);
@@ -195,7 +201,7 @@ let VS3D = function() {
 		return v;
 	}
 	function angle$spherify(ang, p) {
-		return spherify(plane$angle2vector(ang, p));
+		return spherify(angle$vectorize(ang, p));
 	}
 	function angle$rotate(s, ang, p) {
 		p = p || WALL;
@@ -238,13 +244,13 @@ let VS3D = function() {
 		// "bend" is used mostly for plane-bending moves, and represents a tilt in the prop's plane relative to the axis of motion
 		args.bend = args.bend || 0;
 		return {
-			nodes: [
+			nodes: {
 				body: args.body,
 				pivot: args.pivot,
 				helper: args.helper,
 				hand: args.hand,
 				head: args.head
-			],
+			},
 			grip: {
 				arc: angle(args.arc),
 				twist: angle(args.twist),
@@ -290,7 +296,10 @@ let VS3D = function() {
 	VS3D.vector$between = between;
 	VS3D.vector$rotate = vector$rotate;
 	VS3D.sphere = sphere;
+	VS3D.sphere$nearly = sphere$nearly;
+	VS3D.sphere$zeroish = sphere$zeroish;
 	VS3D.sphere$vectorize = vectorize;
+	VS3D.sphere$planify = planify;
 	VS3D.plane = plane;
 	VS3D.plane$reference = reference;
 	VS3D.newProp = newProp;
