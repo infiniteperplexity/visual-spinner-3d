@@ -60,20 +60,21 @@ ThreeRenderer.prototype.update = function(prop) {
 	this.shapes.rotation.y = 0;
 	this.shapes.rotation.z = 0;
 	for (let i=BODY; i<=HAND; i++) {
-		this.shapes.rotateZ(-prop.nodes[i].a*UNIT);
-		this.shapes.rotateY(-prop.nodes[i].b*UNIT);
-		this.shapes.translateOnAxis(XAXIS,+prop.nodes[i].r);
-		this.shapes.rotateZ(+prop.nodes[i].a*UNIT);
-		this.shapes.rotateY(+prop.nodes[i].b*UNIT);
+		let node = NODES[i];
+		this.shapes.rotateZ(-prop[node].a*UNIT);
+		this.shapes.rotateY(-prop[node].b*UNIT);
+		this.shapes.translateOnAxis(XAXIS,+prop[node].r);
+		this.shapes.rotateZ(+prop[node].a*UNIT);
+		this.shapes.rotateY(+prop[node].b*UNIT);
 	}
-	this.shapes.rotateZ(-prop.nodes[HEAD].a*UNIT);
-	this.shapes.rotateY(-prop.nodes[HEAD].b*UNIT);
+	this.shapes.rotateZ(-prop.head.a*UNIT);
+	this.shapes.rotateY(-prop.head.b*UNIT);
 	// leave HEAD.r out of this for now
 	// leave bend out of this for now
 	// leave grip out of this for now
 	// leave twist out of this for now
 	// choke
 	//shape.translate(0.5*myProp.prop.radius);
-	this.shapes.translateOnAxis(XAXIS,-(prop.grip.choke)*prop.nodes[HEAD].r);
+	this.shapes.translateOnAxis(XAXIS,-(prop.grip.c)*prop.head.r);
 	this.renderer.render(this.scene, this.camera);
 }

@@ -1,4 +1,4 @@
-	// useful constants
+		// useful constants
 	const SMALL = 0.001;
 	const TINY = 0.0001;
 	const UNIT = 2*Math.PI/360;
@@ -225,53 +225,38 @@
 	}
 
 	// create a new, default prop
-	function newProp(args) {
+	function Prop(args) {
 		args = args || {};
-		// wait...does a prop have a plane?
-		//args.plane = args.plane ||
 		// set default values for node positions
-		args.body = args.body || {r: TINY, a: 0, b: 0};
-		args.pivot = args.pivot || {r: TINY, a: 0, b: 0};
-		args.helper = args.helper || {r: TINY, a: 0, b: 0};
-		args.hand = args.hand || {r: TINY, a: 0, b: 0};
+		args.body = args.body || {r: 0, a: 0, b: 0};
+		args.pivot = args.pivot || {r: 0, a: 0, b: 0};
+		args.helper = args.helper || {r: 0, a: 0, b: 0};
+		args.hand = args.hand || {r: 0, a: 0, b: 0};
 		// all zeroes except for head
 		args.head = args.head || {r: 1, a: 0, b: 0};
-		// tweak all zeroes to TINY to avoid math errors
-		args.body.r = args.body.r || TINY;
-		args.pivot.r = args.pivot.r || TINY;
-		args.helper.r = args.helper.r || TINY;
-		args.hand.r = args.hand.r || TINY;
-		args.head.r = args.head.r || TINY;
-		// "arc" could represent any point along the circumference of a hoop; for poi and staff, 0 or PI are the only sensible values
-		args.arc = args.arc || 0;
-		// "twist" has no visible effect for poi or staff, but for hoop or fans it represents twisting the grip
-		args.twist = args.twist || 0;
-		// "choke" tells how far up the prop is being gripped, e.g. for poi gunslingers	
-		args.choke = args.choke || 0;
-		// "bend" is used mostly for plane-bending moves, and represents a tilt in the prop's plane relative to the axis of motion
-		args.bend = args.bend || 0;
+
+		// do I allow "radius", "angle", or "bearing"?
+		// also, don't I need angles here?
+		args.body.r = args.body.r || args.body.radius || 0;
+		args.pivot.r = args.pivot.r || 0;
+		args.helper.r = args.helper.r || 0;
+		args.hand.r = args.hand.r || 0;
+		args.head.r = args.head.r || 0;
+		args.grip = args.grip || {a: 0, b: 0, c:0, t:0}
 		return {
-			nodes: [
-				args.body,
-				args.pivot,
-				args.helper,
-				args.hand,
-				args.head
-			],
-			grip: {
-				arc: angle(args.arc),
-				twist: angle(args.twist),
-				choke: angle(args.choke),
-				bend: angle(args.bend),
-			}
+			body: args.body,
+			pivot: args.pivot,
+			helper: args.helper,
+			hand: args.hand,
+			head: args.head,
+			grip: args.grip
 		}
 	}
 
-
-	function nodeSum(prop, node) {
+	function node$sum(prop, n) {
 		let [xs, ys, zs] = [0, 0, 0];
-		for (let i=BODY; i<node; i++) {
-			let {x, y, z} = sphere$vectorize(prop[i]);
+		for (let i=BODY; i<n; i++) {
+			let {x, y, z} = sphere$vectorize(prop[NODES[i]]);
 			xs+=x;
 			ys+=y;
 			zs+=z;
@@ -279,97 +264,123 @@
 		return vector$spherify(vector(xs,ys,zs));
 	}
 
-
-
-	function move$sphere(args) {
-		args = args || {};
-		let move = {};
-		for (let e of ["r","a","b","vr","va","vb","ar","aa","ab"]) {
-			move[e] = args[e] || 0;
-		}
-		return move;
-	}
-	// parameterized slide
-	function move$vector(args) {
-		args = args || {};
-		let move = {};
-		for (let e of ["x","y","z","vx","vy","vz","ax","ay","az"]) {
-			move[e] = args[e] || 0;
-		}
-		return move;
-	}
-	// parameterized grip shift or plane bend
-	function move$grip(args) {
-		args = args || {};
-		let move = {};
-		for (let e of ["arc","twist","choke","bend","va","vt","vc","vb","aa","at","ac","ab"]) {
-			move[e] = args[e] || 0;
-		}
-		return move;
-	}
-	function move$type(move) {
-		if (move.r!==undefined || move.a!==undefined || move.b!==undefined) {
-			return move$sphere;
-		} else if (move.x!==undefined || move.y!==undefined || move.z!==undefined) {
-			return move$vector;
-		} else if (move.arc!==undefined || move.twist!==undefined || move.choke!==undefined || move.bend!==undefined) {
-			return move$grip;
-		} else {
-			throw new Error("checking type of invalid move.");
-		}
-	}
-	// yield a new parameterized move starting at t
-	function move$split(move, t) {
-		if (move$type(move)===move$vector) {
-			let x = move.x + move.vx*t + move.ax*t*t/2;
-			let y = move.y + move.vy*t + move.ay*t*t/2;
-			let z = move.z + move.vz*t + move.az*t*t/2;
-			return move$vector({x: x, y: y, z: z, ...move});
-		} else if (move$type(move)===move$grip) {
-			let arc = move.arc + move.va*t + move.aa*t*t/2;
-			let twist = move.twist + move.vt*t + move.at*t*t/2;
-			let choke = move.choke + move.vc*t + move.ac*t*t/2;
-			let bend = move.bend + move.vb*t + move.ab*t*t/2;
-			return move$grip({arc: arc, twist: twist, choke: choke, bend: bend, ...move});
-		} else if (move$type(move)===move$sphere) {
-			let r = move.r + move.vr*t + move.ar*t*t/2;
-			let a = move.a + move.va*t + move.aa*t*t/2;
-			let b = move.b + move.vb*t + move.ab*t*t/2;
-			return move$sphere({r: r, a: a, b: b, ...move});
-		}
+	prop$merge(prop, move) {
+		return {
+			body: {...prop.body, ...move.body},
+			pivot: {...prop.pivot, ...move.pivot},
+			helper: {...prop.helper, ...move.helper},
+			hand: {...prop.hand, ...move.hand},
+			head: {...prop.head, ...move.head},
+			grip: {...prop.grip, ...move.grip}
+		};
 	}
 
-	// derive position from a parameterized movement and time
-	function move$spin(move, t) {
-		if (move$type(move)===move$vector) {
-			let x = move.x + move.vx*t + move.ax*t*t/2;
-			let y = move.y + move.vy*t + move.ay*t*t/2;
-			let z = move.z + move.vz*t + move.az*t*t/2;
-			return vector$spherify(vector(x,y,z))
-		} else if (move$type(move)===move$grip) {
-			let arc = move.arc + move.va*t + move.aa*t*t/2;
-			let twist = move.twist + move.vt*t + move.at*t*t/2;
-			let choke = move.choke + move.vc*t + move.ac*t*t/2;
-			let bend = move.bend + move.vb*t + move.ab*t*t/2;
-			return {arc: arc, twist: twist, choke: choke, bend: bend};
-		} else if (move$type(move)===move$sphere) {
-			let r = move.r + move.vr*t + move.ar*t*t/2;
-			let a = move.a + move.va*t + move.aa*t*t/2;
-			let b = move.b + move.vb*t + move.ab*t*t/2;
-			console.log(a);
-			return sphere(r,a,b);
-		}
-	}
-
-	function spin(prop, t) {
-		// do it mutable for now
-		for (let i=BODY; i<=HEAD; i++) {
-			let {r, a, b} = prop.nodes[i];
-			if (i===HEAD || i===HAND) {
-				prop.nodes[i] = move$spin(move$sphere({r: r, a: a, b: b, va: 1}),t);
-				console.log(prop.nodes[i].a);
-			} else {
-				prop.nodes[i] = move$spin(move$sphere({r: r, a: a, b: b}),t);
+	function spin(prop, move, t) {
+		if (Array.isArray(move)) {
+			let tally = 0;
+			for (let i=1; i<move.length; i++) {
+				tally+=move[i].beats*BEAT;
+				if (t<tally || i>=move.length-1) {
+					return spin(prop, move[i], t+move[i].beats*BEAT-tally);
+				}
 			}
+		} else {
+			return prop$spin(prop$merge(prop, move), t);
+		}
+	}
+
+	function motion$type(args) {
+		// placeholder logic
+		return motion$spin;
+	}
+	function motion$spin(args, t) {
+		for (let e of ["r","a","vr","va","ar","aa"]) {
+			args[e] = args[e] || 0;
+		}
+		let r = args.r + args.vr*t + args.ar*t*t;
+		let a = args.a + args.va*t*SPEED + args.aa*t*t*SPEED*SPEED;
+		let p = args.p || WALL;
+		return {r: r, ...angle$spherify(a, p)};
+	}
+
+	function rename$args(args) {
+		let aliases = {
+			radius: "r",
+			r0: "r",
+			radius0: "r",
+			radius1: "r1",
+			angle: "a",
+			angle0: "a",
+			a0: "a",
+			angle1: "a1",
+			extend0: "extend"
+		}
+		// ...and so on
+	}
+	// where does the plane and solving and stuff come in?
+	function node$spin(args, t) {
+		args = rename$args(args);
+		// I think we want to solve and resolve defaults here.
+		args.t = t;
+		if (motion$type(args)===motion$spin) {
+			let rargs = {x0: args.r, x1: args.r1, v0: args.extend, v1: args.extend1, t: t};
+			let aargs = {x0: args.a, x1: args.a1, v0: args.speed, v1: args.speed1, spins: args.spins, t: t}
+			let {x0: r, v0: vr, a: ar} = solve(rargs);
+			let {x0: a, v0: va, a: aa} = angle$solve(aargs);
+			return motion.spin({r: r, vr: vr, ar: ar, a: a, va: va, aa: aa},t);
+		}
+	}
+
+	let solve = function(args) {
+		let {x0, x1, v0, v1, a, t} = args;
+		let known = {};
+		for (let arg in args) {
+			known[args] = true;
+		}
+		if (known.x0 && known.x1 && known.v0 && known.t) {
+			a = 2*((x0-x1)/(t*t)-v0/t);
+			v1 = v0+a*t;
+		} else if (known.x0 && known.v0 && known.a && known.t) {
+			x1 = x0+v0*t+a*t*t/2;
+			v1 = v0+a*t;
+		} else if (known.x0 && known.v0 && known.v1 && known.t) {
+			a = (v1-v0)/t;
+			x1 = x0+v0*t+a*t*t/2;
+		} else {
+			console.log(vals);
+			throw new Error("solving method unimplemented.");
+		}
+		return {x0: x0, x1: x1, v0: v0, v1: v1, a: a, t: t};
+	}
+
+
+	function prop$spin(args, t) {
+		args.body = args.body || {r: 0, a: 0, b: 0};
+		args.pivot = args.pivot || {r: 0, a: 0, b: 0};
+		args.helper = args.helper || {r: 0, a: 0, b: 0};
+		args.hand = args.hand || {r: 0, a: 0, b: 0};
+		args.head = args.head || {r: 0, a: 0, b: 0};
+		args.grip = args.grip || {a: 0, b: 0, c: 0, t: 0};
+		return {
+			body: node$spin(args.body, t),
+			pivot: node$spin(args.pivot, t),
+			helper: node$spin(args.helper, t),
+			hand: node$spin(args.hand, t),
+			head: node$spin(args.head, t)
+			// ,
+			// grip: node$spin(args.grip, t)
+		}
+	}
+
+	// now figure out chaining, and *maybe* figure out named moves
+
+	function move$socket(move) {
+		return prop$spin(move, move.beats*BEAT-1);
+	}
+	// this would realign the various moves as needed
+	function move$chain(arr) {
+		let chain = [arr[0]];
+		for (let i=1; i<arr.length; i++) {
+
 		}
 	}

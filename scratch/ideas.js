@@ -1,13 +1,103 @@
-let move$sphere = function({})
+	function spin(one, two, three) {
+		// need to handle arrays as well
+		if (typeof(three)==="number") {
+			if (one.nodes) {
+				prop$spin({...one, ...two}, three);
+			} else {
+				node$spin({...one, ...two}, three);
+			}
+		} else if (typeof(two)==="number") {
+			if (one.nodes) {
+				prop$spin(one, two);
+			} else {
+				node$spin(one, two);
+			}
+		}
+	}
+	// ugh...so...in args, you'd want to name the nodes.  but in props, you'd want it as an array.
+	// this "parsing" step is going to be very important...it takes the readable args, solves for the missing values, 
+	// and so on.
+	function prop$spin(args, t) {
+		// is this where I add default nodes if they're missing?
+		// wait...this needs to make a new prop...
+		return newProp({
+			nodes: args.nodes.map((node))
+		});
+		for (let node of arg.nodes) {
+			node$spin({p: ...args.p, ...node}, t);
+		}
+	}
 
-let node$spin = function(node, move, t) {
-	let r = node.r + move.vr*t + move.ar*t*t;
-	let a = node.a + move.va*t*SPEED + move.aa*t*t*SPEED*SPEED;
-	let b = node.b + move.vb*t*SPEED + move.ab*t*t*SPEED*SPEED;
-	return sphere(r, a, b);
-}
+	function node$spin(args, t) {
+		return motion$type(args)(args, t);
+	}
 
-// solve for unknown scalar moments
+	function motion$angle(args, t) {
+		for (let e of ["r","a","vr","va","ar","aa"]) {
+			args[e] = args[e] || 0;
+		}
+		let r = args.r + args.vr*t + args.ar*t*t;
+		let a = args.a + args.va*t*SPEED + args.aa*t*t*SPEED*SPEED;
+		let p = args.p || WALL;
+		return {r: r, ...angle$spherify(a, p)};
+	}
+
+	function motion$vector(args, t) {
+		for (let e of ["x","y","z","vx","vy","vz","ax","ay","az"]) {
+			args[e] = args[e] || 0;
+		}
+		let x = args.x + args.vx*t + args.ax*t*t;
+		let y = args.y + args.vy*t + args.ay*t*t;
+		let z = args.z + args.vz*t + args.az*t*t;
+		return vector(x,y,z);
+	}
+
+
+	function motion$defaults(args) {
+		args = args || {};
+		let m = {};
+		if (motion$type(args)===motion$vector) {
+			let m = {};
+			for (let e of ["x","y","z","vx","vy","vz","ax","ay","az"]) {
+				m[e] = args[e] || 0;
+			}
+			return m;
+		} else if (motion$type(args)===motion$grip) {
+			for (let e of ["arc","twist","choke","bend","va","vt","vc","vb","aa","at","ac","ab"]) {
+				m[e] = args[e] || 0;
+			}
+		} else {
+			for (let e of ["r","a","vr","va","ar","aa"]) {
+				m[e] = args[e] || 0;
+			}
+			m.p = p || WALL;
+			return m;
+		}
+	}
+	function motion$type(m) {
+		if (m.x!==undefined || m.y!==undefined || m.z!==undefined) {
+			return motion$vector;
+		} else if (m.arc!==undefined || m.twist!==undefined || m.choke!==undefined || m.bend!==undefined) {
+			return motion$grip;
+		} else if (m.r!==undefined || m.a!==undefined || m.p!==undefined) {
+			return motion$angle;
+		} else {
+			throw new Error("checking type of invalid motion.");
+		}
+	}
+	function motion$spin(m) {
+		return motion$type(m)(m);
+	}
+
+
+	let node$spin = function(node, move, t) {
+		let r = node.r + move.vr*t + move.ar*t*t;
+		let a = node.a + move.va*t*SPEED + move.aa*t*t*SPEED*SPEED;
+		return sphere(r, a, b);
+	}
+
+
+	// solve for unknown scalar moments
 let solve = function(args) {
 	let {x0, x1, v0, v1, a, t} = args;
 	let known = {};
