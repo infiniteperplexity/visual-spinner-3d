@@ -48,6 +48,7 @@ function ThreeRenderer(el) {
 	this.shapes = poiShapes();
 	this.scene.add(this.shapes);
 	this.renderer.render(this.scene, this.camera);
+	this.tick = 0;
 }
 
 
@@ -77,4 +78,13 @@ ThreeRenderer.prototype.update = function(prop) {
 	//shape.translate(0.5*myProp.prop.radius);
 	this.shapes.translateOnAxis(XAXIS,-(prop.grip.c)*prop.head.r);
 	this.renderer.render(this.scene, this.camera);
+}
+
+ThreeRenderer.prototype.play = function(prop, move, intv) {
+	setInterval(()=>{
+		// ugh, this is wrong...shouldn't start with prop moved each time...
+		spin(prop, move, this.tick);
+		this.update(prop);
+		this.tick = (this.tick + 1)%move.beats;
+	}, intv || 10);
 }
