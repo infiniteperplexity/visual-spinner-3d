@@ -96,7 +96,7 @@
 	function vector$spherify(vec) {
 		let {x, y, z} = vec;
 		let r = Math.sqrt(x*x+y*y+z*z) || TINY;
-		let a = Math.acos(z/r)/UNIT;
+		let a = (Math.acos(z/r)-Math.PI/2)/UNIT;
 		let b = Math.atan2(y,x)/UNIT;
 		return {r: r, a: a, b: b};
 	}
@@ -106,6 +106,7 @@
 		return vector$unitize(v);
 	}
 	// rotate a vector around an axis
+	// doesn't 
 	function vector$rotate(vec, ang, axis) {
 		axis = axis || WALL;
 		let {x, y, z} = vec;
@@ -156,14 +157,14 @@
 	}
 	// reference vector is arbitrarily defined
 	function plane$reference(vec) {
+		// this has been tested only for the main three planes
 		let {x,y,z} = vec;
-		// god knows if this even right anymore...
 		// if this is FLOOR or the zero vector, use the +x axis
 		if (x===0 && y===0) {
 			return vector(1,0,0);
 		}
 		// otherwise, return the intersection of this and the floor plane in the first or second quadrant
-		return vector$unitize(vector(0,Math.abs(z),-x));
+		return vector$unitize(vector(Math.abs(y),0,-x));
 	}
 
  	// compose a spherical coordinate from a scalar and two angles
@@ -176,6 +177,8 @@
 		let x = r*Math.cos(UNIT*a)*Math.sin(UNIT*b);
 		let y = r*Math.sin(UNIT*a)*Math.sin(UNIT*b);
 		let z = r*Math.cos(UNIT*a);
+		//let z = r*Math.sin(UNIT*a)*Math.sin(UNIT*b);
+		//let y = r*Math.cos(UNIT*a);
 		return {x: x, y: y, z: z};
 	}
 	// nearly, but for spherical coordinates
@@ -201,7 +204,8 @@
 	}
 	// set a particular angle from the reference vector in a plane
 	function angle$vectorize(ang, p) {
-		let v = vector$rotate(plane$reference(p || WALL));
+		p = p || WALL;
+		let v = vector$rotate(plane$reference(p), ang, p);
 		return v;
 	}
 	function angle$spherify(ang, p) {
@@ -253,6 +257,92 @@
 		}
 	}
 
+	function spin(move, t) {
+		return prop$spin()
+	// 	if (Array.isArray(move)) {
+	// 		let tally = 0;
+	// 		for (let i=1; i<move.length; i++) {
+	// 			tally+=move[i].beats*BEAT;
+	// 			if (t<tally || i>=move.length-1) {
+	// 				return spin(prop, move[i], t+move[i].beats*BEAT-tally);
+	// 			}
+	// 		}
+	// 	} else {
+			//return prop$spin(prop$merge(prop, move), t);
+		// }
+		return prop$spin(move, t);
+	}
+
+
+	function prop$merge(prop, move) {
+		return {
+			body: {...prop.body, ...move.body},
+			pivot: {...prop.pivot, ...move.pivot},
+			helper: {...prop.helper, ...move.helper},
+			hand: {...prop.hand, ...move.hand},
+			head: {...prop.head, ...move.head},
+			grip: {...prop.grip, ...move.grip}
+		};
+	}
+
+
+	function prop$spin(args, t) {
+		args.body = args.body || {r: 0, a: 0, b: 0};
+		args.pivot = args.pivot || {r: 0, a: 0, b: 0};
+		args.helper = args.helper || {r: 0, a: 0, b: 0};
+		args.hand = args.hand || {r: 0, a: 0, b: 0};
+		args.head = args.head || {r: 1, a: 0, b: 0};
+		args.grip = args.grip || {a: 0, b: 0, c: 0, t: 0};
+
+		return {
+			body: node$spin(args.body, t),
+			pivot: node$spin(args.pivot, t),
+			helper: node$spin(args.helper, t),
+			hand: node$spin(args.hand, t),
+			head: node$spin(args.head, t),
+			grip: {a: 0, b: 0, c: 0, t: 0}
+			// ,
+			// grip: node$spin(args.grip, t)
+		}
+	}
+
+	// where does the plane and solving and stuff come in?
+	function node$spin(args, t) {
+		//args = rename$args(args);
+		// I think we want to solve and resolve defaults here.
+		//args.t = t;
+		let {r, vr, ar, a, va, aa, p} = args;
+		// if (motion$type(args)===motion$spin) {
+			// let rargs = {x0: args.r, x1: args.r1, v0: args.extend, v1: args.extend1, t: t};
+			// le
+			// aargs = {x0: args.a, x1: args.a1, v0: args.speed, v1: args.speed1, spins: args.spins, t: t}
+			// console.log(aargs);
+			// let {x0: r, v0: vr, a: ar} = /*solve(rargs);*/ rargs;
+			// let {x0: a, v0: va, a: aa} = /*angle$solve(aargs);*/ aargs;
+			return motion$spin({r: r, vr: vr, ar: ar, a: a, va: va, aa: aa, p:p},t);
+		// }
+	}
+
+	function motion$spin(args, t) {
+		for (let e of ["r","a","vr","va","ar","aa"]) {
+			args[e] = args[e] || 0;
+		}
+		args.p = args.p || WALL;
+		let r = args.r + args.vr*t + args.ar*t*t;
+		let a = args.a + args.va*t*SPEED + args.aa*t*t*SPEED*SPEED;
+		let p = args.p;
+		return {...angle$spherify(a, p), r: r};
+	}
+
+// renderer.goto(prop, {head:{va: 1}}, 45)
+
+
+
+
+
+
+
+
 	function node$sum(prop, n) {
 		let [xs, ys, zs] = [0, 0, 0];
 		for (let i=BODY; i<n; i++) {
@@ -264,44 +354,14 @@
 		return vector$spherify(vector(xs,ys,zs));
 	}
 
-	prop$merge(prop, move) {
-		return {
-			body: {...prop.body, ...move.body},
-			pivot: {...prop.pivot, ...move.pivot},
-			helper: {...prop.helper, ...move.helper},
-			hand: {...prop.hand, ...move.hand},
-			head: {...prop.head, ...move.head},
-			grip: {...prop.grip, ...move.grip}
-		};
-	}
 
-	function spin(prop, move, t) {
-		if (Array.isArray(move)) {
-			let tally = 0;
-			for (let i=1; i<move.length; i++) {
-				tally+=move[i].beats*BEAT;
-				if (t<tally || i>=move.length-1) {
-					return spin(prop, move[i], t+move[i].beats*BEAT-tally);
-				}
-			}
-		} else {
-			return prop$spin(prop$merge(prop, move), t);
-		}
-	}
+
 
 	function motion$type(args) {
 		// placeholder logic
 		return motion$spin;
 	}
-	function motion$spin(args, t) {
-		for (let e of ["r","a","vr","va","ar","aa"]) {
-			args[e] = args[e] || 0;
-		}
-		let r = args.r + args.vr*t + args.ar*t*t;
-		let a = args.a + args.va*t*SPEED + args.aa*t*t*SPEED*SPEED;
-		let p = args.p || WALL;
-		return {r: r, ...angle$spherify(a, p)};
-	}
+
 
 	function rename$args(args) {
 		let aliases = {
@@ -316,19 +376,6 @@
 			extend0: "extend"
 		}
 		// ...and so on
-	}
-	// where does the plane and solving and stuff come in?
-	function node$spin(args, t) {
-		args = rename$args(args);
-		// I think we want to solve and resolve defaults here.
-		args.t = t;
-		if (motion$type(args)===motion$spin) {
-			let rargs = {x0: args.r, x1: args.r1, v0: args.extend, v1: args.extend1, t: t};
-			let aargs = {x0: args.a, x1: args.a1, v0: args.speed, v1: args.speed1, spins: args.spins, t: t}
-			let {x0: r, v0: vr, a: ar} = solve(rargs);
-			let {x0: a, v0: va, a: aa} = angle$solve(aargs);
-			return motion.spin({r: r, vr: vr, ar: ar, a: a, va: va, aa: aa},t);
-		}
 	}
 
 	let solve = function(args) {
@@ -354,23 +401,7 @@
 	}
 
 
-	function prop$spin(args, t) {
-		args.body = args.body || {r: 0, a: 0, b: 0};
-		args.pivot = args.pivot || {r: 0, a: 0, b: 0};
-		args.helper = args.helper || {r: 0, a: 0, b: 0};
-		args.hand = args.hand || {r: 0, a: 0, b: 0};
-		args.head = args.head || {r: 0, a: 0, b: 0};
-		args.grip = args.grip || {a: 0, b: 0, c: 0, t: 0};
-		return {
-			body: node$spin(args.body, t),
-			pivot: node$spin(args.pivot, t),
-			helper: node$spin(args.helper, t),
-			hand: node$spin(args.hand, t),
-			head: node$spin(args.head, t)
-			// ,
-			// grip: node$spin(args.grip, t)
-		}
-	}
+
 
 	// now figure out chaining, and *maybe* figure out named moves
 
