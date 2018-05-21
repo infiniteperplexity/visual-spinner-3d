@@ -63,7 +63,7 @@ ThreeRenderer.prototype.update = function(prop) {
 		let node = NODES[i];
 		this.shapes.rotateZ(-prop[node].a*UNIT);
 		this.shapes.rotateY(-prop[node].b*UNIT);
-		this.shapes.translateOnAxis(XAXIS,+prop[node].r);
+		this.shapes.translateOnAxis(YAXIS,+prop[node].r);
 		this.shapes.rotateZ(+prop[node].a*UNIT);
 		this.shapes.rotateY(+prop[node].b*UNIT);
 	}
@@ -75,7 +75,7 @@ ThreeRenderer.prototype.update = function(prop) {
 	// leave twist out of this for now
 	// choke
 	//shape.translate(0.5*myProp.prop.radius);
-	this.shapes.translateOnAxis(XAXIS,-(prop.grip.c)*prop.head.r);
+	this.shapes.translateOnAxis(YAXIS,-(prop.grip.c)*prop.head.r);
 	this.renderer.render(this.scene, this.camera);
 }
 

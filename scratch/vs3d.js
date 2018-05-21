@@ -155,6 +155,10 @@
 		axis = axis || WALL;
 		let {x: vx, y: vy, z: vz} = vec;
 		let {x: ax, y: ay, z: az} = axis;
+		// adding this, trying to get it right...
+		// ay = -ay;
+		// az = -az;
+		// let d = vector$dot(vec, vector(ax, ay, az));
 		let d = vector$dot(vec, axis);
 		let x = vx-d*ax;
 		let y = vy-d*ay;
@@ -167,7 +171,7 @@
 		let {x: x2, y: y2, z: z2} = v2;
 		let c = vector$magnitude(vector$cross(v1, v2));
 		let d = vector$dot(v1, v2);
-		return Math.atan2(c, dot)/UNIT;
+		return Math.atan2(c, d)/UNIT;
 	}
 	// reference vector is arbitrarily defined
 	function plane$reference(vec) {
@@ -210,6 +214,7 @@
 		p = p || WALL;
 		let v = vector$project(sphere$vectorize(s),p);
 		return vector$between(v,plane$reference(p));
+		// this should be returning an angle, though, right?
 	}
 	// vector, but aliased for clarity
 	function plane(x, y, z) {
@@ -255,10 +260,20 @@
 		// do I allow "radius", "angle", or "bearing"?
 		// also, don't I need angles here?
 		args.body.r = args.body.r || args.body.radius || 0;
-		args.pivot.r = args.pivot.r || 0;
-		args.helper.r = args.helper.r || 0;
-		args.hand.r = args.hand.r || 0;
-		args.head.r = args.head.r || 0;
+		args.body.a = args.body.a || args.body.angle|| 0;
+		args.body.b = args.body.b || args.body.bearing || 0;
+		args.pivot.r = args.pivot.r || args.pivot.radius || 0;
+		args.pivot.a = args.pivot.a || args.pivot.angle|| 0;
+		args.pivot.b = args.pivot.b || args.pivot.bearing || 0;
+		args.helper.r = args.helper.r || args.helper.radius || 0;
+		args.helper.a = args.helper.a || args.helper.angle|| 0;
+		args.helper.b = args.helper.b || args.helper.bearing || 0;
+		args.hand.r = args.hand.r || args.hand.radius || 0;
+		args.hand.a = args.hand.a || args.hand.angle|| 0;
+		args.hand.b = args.hand.b || args.hand.bearing || 0;
+		args.head.r = args.head.r || args.head.radius || 0;
+		args.head.a = args.head.a || args.head.angle|| 0;
+		args.head.b = args.head.b || args.head.bearing || 0;
 		args.grip = args.grip || {a: 0, b: 0, c:0, t:0}
 		return {
 			body: args.body,
@@ -275,7 +290,7 @@
 			t = m;
 			m = p;
 		} else {
-			m = merge(p, m);
+			m = conform(m, p);
 		}
 		if (Array.isArray(m)) {
 			let past = 0;
@@ -308,18 +323,29 @@
 		clearInterval(spinterval);
 	}
 
-	function merge(prop, move) {
+	function conform(move, prop) {
 		// works on arrays of moves as well
 		if (Array.isArray(move)) {
-			return [merge(prop,move[0]), ...move.slice(1)];
+			return [conform(move[0],prop), ...move.slice(1)];
 		} else {
+			let plane = move.p || WALL;
+			let {body, pivot, helper, hand, head, grip} = prop;
+			// console.log(hand);
+			// console.log(sphere$planify(hand,plane));
+			// console.log(head);
+			// console.log(sphere$planify(hand,plane));
+			body = {r: body.r, a: sphere$planify(body, plane), p: plane};
+			pivot = {r: pivot.r, a: sphere$planify(pivot, plane), p: plane};
+			helper = {r: helper.r, a: sphere$planify(helper, plane), p: plane};
+			hand = {r: hand.r, a: sphere$planify(hand, plane), p: plane};
+			head = {r: head.r, a: sphere$planify(head, plane), p: plane};
 			return {
-				body: {...prop.body, ...move.body},
-				pivot: {...prop.pivot, ...move.pivot},
-				helper: {...prop.helper, ...move.helper},
-				hand: {...prop.hand, ...move.hand},
-				head: {...prop.head, ...move.head},
-				grip: {...prop.grip, ...move.grip}
+				body: {...body, ...move.body},
+				pivot: {...pivot, ...move.pivot},
+				helper: {...helper, ...move.helper},
+				hand: {...hand, ...move.hand},
+				head: {...head, ...move.head},
+				grip: {...grip, ...move.grip}
 			};
 		}
 	}
@@ -443,16 +469,23 @@
 
 
 	// now figure out chaining, and *maybe* figure out named moves
-
-	function move$socket(move) {
+	function socket(move) {
+		move.beats = move.beats || 1;
 		return prop$spin(move, move.beats*BEAT-1);
 	}
 	// this would realign the various moves as needed
-	function move$chain(arr) {
-		let chain = [arr[0]];
-		for (let i=1; i<arr.length; i++) {
-
+	function chain(prop, arr) {
+		if (Array.isArray(prop)) {
+			arr = prop;
+		} else {
+			arr[0] = conform(arr[0],prop);
 		}
+		for (let i=1; i<arr.length; i++) {
+			console.log(socket(arr[i-1]));
+			console.log(conform(arr[i],socket(arr[i-1])))
+			arr[i] = conform(arr[i],socket(arr[i-1]));
+		}
+		return arr;
 	}
 
 
