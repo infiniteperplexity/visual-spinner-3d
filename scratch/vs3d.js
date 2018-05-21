@@ -270,33 +270,58 @@
 		}
 	}
 
-	function spin(prop, move, t) {
-		//return prop$spin()
-	// 	if (Array.isArray(move)) {
-	// 		let tally = 0;
-	// 		for (let i=1; i<move.length; i++) {
-	// 			tally+=move[i].beats*BEAT;
-	// 			if (t<tally || i>=move.length-1) {
-	// 				return spin(prop, move[i], t+move[i].beats*BEAT-tally);
-	// 			}
-	// 		}
-	// 	} else {
-
-			return prop$spin(prop$merge(prop, move), t);
-		// }
-		//return prop$spin(move, t);
+	function spin(p, m, t) {
+		if (typeof(m)==="number") {
+			t = m;
+			m = p;
+		} else {
+			m = merge(p, m);
+		}
+		if (Array.isArray(m)) {
+			let past = 0;
+			let i = 0;
+			while (past<t) {
+				let ticks = m[i].beats*BEAT || 1*BEAT;
+				if (past+ticks>=t) {
+					return prop$spin(m[i], t-past);
+				} else {
+					past+=ticks;
+					i=(i+1)%m.length;
+				}
+			}
+		}
+		return prop$spin(m, t);
 	}
 
 
-	function prop$merge(prop, move) {
-		return {
-			body: {...prop.body, ...move.body},
-			pivot: {...prop.pivot, ...move.pivot},
-			helper: {...prop.helper, ...move.helper},
-			hand: {...prop.hand, ...move.hand},
-			head: {...prop.head, ...move.head},
-			grip: {...prop.grip, ...move.grip}
-		};
+	let spinterval;
+	function play(prop, move, callback, intv) {
+		intv = intv || 10;
+		let t = 0;
+		playInterval = setInterval(()=>{
+			callback(spin(prop, move, t));
+			t+=1;
+		},intv);
+	}
+
+	function stop() {
+		clearInterval(spinterval);
+	}
+
+	function merge(prop, move) {
+		// works on arrays of moves as well
+		if (Array.isArray(move)) {
+			return [merge(prop,move[0]), ...move.slice(1)];
+		} else {
+			return {
+				body: {...prop.body, ...move.body},
+				pivot: {...prop.pivot, ...move.pivot},
+				helper: {...prop.helper, ...move.helper},
+				hand: {...prop.hand, ...move.hand},
+				head: {...prop.head, ...move.head},
+				grip: {...prop.grip, ...move.grip}
+			};
+		}
 	}
 
 
@@ -314,32 +339,17 @@
 			hand: node$spin(args.hand, t),
 			head: node$spin(args.head, t),
 			grip: {a: 0, b: 0, c: 0, t: 0}
-			// ,
-			// grip: node$spin(args.grip, t)
 		}
 	}
 
 
-	// this is where the problem is.
-
-	// where does the plane and solving and stuff come in?
 	function node$spin(args, t) {
-		//args = rename$args(args);
-		// I think we want to solve and resolve defaults here.
-		//args.t = t;
-		let {r, vr, ar, a, va, aa, p} = args;
-		// if (motion$type(args)===motion$spin) {
-			// let rargs = {x0: args.r, x1: args.r1, v0: args.extend, v1: args.extend1, t: t};
-			// le
-			// aargs = {x0: args.a, x1: args.a1, v0: args.speed, v1: args.speed1, spins: args.spins, t: t}
-			// console.log(aargs);
-			// let {x0: r, v0: vr, a: ar} = /*solve(rargs);*/ rargs;
-			// let {x0: a, v0: va, a: aa} = /*angle$solve(aargs);*/ aargs;
-			return motion$spin({r: r, vr: vr, ar: ar, a: a, va: va, aa: aa, p:p}, t);
-		// }
+		aargs = alias(args);
+		let {r, vr, ar, a, va, aa, p} = aargs;
+		return motion$rotate({r: r, vr: vr, ar: ar, a: a, va: va, aa: aa, p:p}, t);
 	}
 
-	function motion$spin(args, t) {
+	function motion$rotate(args, t) {
 		for (let e of ["r","a","vr","va","ar","aa"]) {
 			args[e] = args[e] || 0;
 		}
@@ -350,14 +360,18 @@
 		return {...angle$spherify(a, p), r: r};
 	}
 
-// renderer.goto(prop, {head:{va: 1}}, 45)
+	function motion$slide(args, t) {
 
+	}
 
+	function motion$grip(args, t) {
 
+	}
 
-
-
-
+	function motion$type(args) {
+		// placeholder logic
+		return motion$rotate;
+	}
 
 	function node$sum(prop, n) {
 		let [xs, ys, zs] = [0, 0, 0];
@@ -371,15 +385,7 @@
 	}
 
 
-
-
-	function motion$type(args) {
-		// placeholder logic
-		return motion$spin;
-	}
-
-
-	function rename$args(args) {
+	function alias(args) {
 		let aliases = {
 			radius: "r",
 			r0: "r",
@@ -389,10 +395,27 @@
 			angle0: "a",
 			a0: "a",
 			angle1: "a1",
-			extend0: "extend"
+			speed: "va",
+			speed0: "va",
+			speed1: "va1"
 		}
-		// ...and so on
+		let vals = ["r","r1","a","a1","va","vr","va1","vr1"];
+		let nargs = {};
+		for (let val of vals) {
+			if (nargs[val]===undefined) {
+				nargs[val] = args[val];
+			}
+		}
+		for (let alias in aliases) {
+			let val = aliases[alias];
+			if (args[val]===undefined && args[alias]!==undefined) {
+				nargs[val] = args[alias];
+			}
+		}
+		return nargs;
 	}
+
+
 
 	let solve = function(args) {
 		let {x0, x1, v0, v1, a, t} = args;
@@ -431,3 +454,7 @@
 
 		}
 	}
+
+
+
+	//renderer.play(prop,[{hand: {r: 1, va: 1}, head:{va: -1}}, {hand: {r: 1, va: 1}, head:{va: 1}}]);

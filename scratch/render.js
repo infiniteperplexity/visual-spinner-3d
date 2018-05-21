@@ -80,16 +80,7 @@ ThreeRenderer.prototype.update = function(prop) {
 }
 
 ThreeRenderer.prototype.play = function(prop, move, intv) {
-	move = {...prop, ...move};
-	move.beats = move.beats || 1;
-	this.prop = prop;
-	let interval = setInterval(()=>{
-		// ugh, this is wrong...shouldn't start with prop moved each time...
-		this.prop = spin(this.prop, move, 1);
-		this.update(this.prop);
-		this.tick+=1;
-		//this.tick = (this.tick + 1)%move.beats;
-	}, intv || 10);
+	play(prop, move, (p)=>this.update(p),intv);
 }
 
 ThreeRenderer.prototype.goto = function(prop, move, t) {
