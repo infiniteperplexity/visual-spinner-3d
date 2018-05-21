@@ -8,9 +8,12 @@
 	const HAND = 3;
 	const HEAD = 4;
 	const NODES = ["body","pivot","helper","hand","head"];
-	const WALL = plane(0,1,0);
+	// const WALL = plane(0,0,-1);
+	// const WHEEL = plane(1,0,0);
+	// const FLOOR = plane(0,-1,0);
+	const WALL = plane(0,0,1);
 	const WHEEL = plane(1,0,0);
-	const FLOOR = plane(0,0,1);
+	const FLOOR = plane(0,1,0);
 	const XAXIS = vector(1,0,0);
 	const YAXIS = vector(0,1,0);
 	const ZAXIS = vector(0,0,1);
@@ -119,6 +122,9 @@
 		axis = axis || WALL;
 		let {x, y, z} = vec;
 		let {x: u, y: v, z: w} = axis;
+		// the y and z axes are flipped
+		v = -v;
+		w = -w;
 		let s = (u*x+v*y+w*z);
 		let t = (u*u+v*v+w*w);
 		let sq = Math.sqrt(t);
@@ -167,12 +173,12 @@
 	function plane$reference(vec) {
 		// this has been tested only for the main three planes
 		let {x,y,z} = vec;
-		// if this is FLOOR or the zero vector, use the +x axis
+		// if this is WALL or the zero vector, use the +y axis
 		if (x===0 && y===0) {
-			return vector(1,0,0);
+			return vector(0,1,0);
 		}
-		// otherwise, return the intersection of this and the floor plane in the first or second quadrant
-		return vector$unitize(vector(Math.abs(y),0,-x));
+		// otherwise, return the intersection of this and the WALL plane in the first or second quadrant
+		return vector$unitize(vector(y,x,0));
 	}
 
  	// compose a spherical coordinate from a scalar and two angles
