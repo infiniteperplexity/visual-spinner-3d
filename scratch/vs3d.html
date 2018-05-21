@@ -15,9 +15,11 @@
 		renderer = new ThreeRenderer(document.getElementById("display"));
 		renderer.update(prop);
 	}
+	
+	let move = {head: {va: 1}};
 	function update(t) {
-		spin(prop, t);
-		renderer.update(prop);
+		let p = renderer.update(spin(prop,move,t));
+		return p;
 	}
 	
 </script>

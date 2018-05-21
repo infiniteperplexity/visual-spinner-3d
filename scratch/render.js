@@ -3,13 +3,12 @@ function poiShapes() {
 		new THREE.SphereGeometry(0.2,16,16),
 		new THREE.MeshLambertMaterial({color: "red"})
 	);
-	head.position.x = 1;
+	head.position.y = 1;
 	let tether = new THREE.Mesh(
 		new THREE.CylinderGeometry(0.025,0.025,1,4),
 		new THREE.MeshLambertMaterial({color: "white"})
 	);
-	tether.rotateZ(Math.PI/2);
-	tether.translateY(-0.5);
+	tether.translateY(0.5);
 	let handle = new THREE.Mesh(
 		new THREE.SphereGeometry(0.075,8,8),
 		new THREE.MeshLambertMaterial({color: "red"})

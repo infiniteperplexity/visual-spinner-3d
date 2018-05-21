@@ -92,14 +92,22 @@
 		let {x, y, z} = vec;
 		return Math.sqrt(x*x+y*y+z*z);
 	}
-	// convert a vector to spherical coordinates
+	// convert a vector to intuitive-spherical coordinates
 	function vector$spherify(vec) {
 		let {x, y, z} = vec;
 		let r = Math.sqrt(x*x+y*y+z*z) || TINY;
-		let a = (Math.acos(z/r)-Math.PI/2)/UNIT;
-		let b = Math.atan2(y,x)/UNIT;
+		let a = Math.acos(y/r)/UNIT;
+		let b = Math.atan2(z,x)/UNIT;
+		if (Math.abs(b)>90) {
+			b = Math.sign(b)*(180-b);
+			a = angle(0-a);
+		}
+		a = angle(a);
+		b = angle(b);
 		return {r: r, a: a, b: b};
 	}
+
+
 	// find the vector halfway between two vectors
 	function vector$bisector(v1, v2) {
 		let v = vector(v1.x+v2.x, v1.y+v2.y, v1.z+v2.z);
@@ -174,13 +182,12 @@
 	// convert a spherical coordinate into a vector
 	function sphere$vectorize(s) {
 		let {r, a, b} = s;
-		let x = r*Math.cos(UNIT*a)*Math.sin(UNIT*b);
-		let y = r*Math.sin(UNIT*a)*Math.sin(UNIT*b);
-		let z = r*Math.cos(UNIT*a);
-		//let z = r*Math.sin(UNIT*a)*Math.sin(UNIT*b);
-		//let y = r*Math.cos(UNIT*a);
+		let x = r*Math.sin(UNIT*a)*Math.cos(UNIT*b);
+		let z = r*Math.sin(UNIT*a)*Math.sin(UNIT*b);
+		let y = r*Math.cos(UNIT*a);
 		return {x: x, y: y, z: z};
 	}
+
 	// nearly, but for spherical coordinates
 	function sphere$nearly(s1,s2,delta) {
 		let v1 = sphere$vectorize(s1);
