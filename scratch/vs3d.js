@@ -257,8 +257,8 @@
 		}
 	}
 
-	function spin(move, t) {
-		return prop$spin()
+	function spin(prop, move, t) {
+		//return prop$spin()
 	// 	if (Array.isArray(move)) {
 	// 		let tally = 0;
 	// 		for (let i=1; i<move.length; i++) {
@@ -268,9 +268,10 @@
 	// 			}
 	// 		}
 	// 	} else {
-			//return prop$spin(prop$merge(prop, move), t);
+
+			return prop$spin(prop$merge(prop, move), t);
 		// }
-		return prop$spin(move, t);
+		//return prop$spin(move, t);
 	}
 
 
@@ -293,7 +294,6 @@
 		args.hand = args.hand || {r: 0, a: 0, b: 0};
 		args.head = args.head || {r: 1, a: 0, b: 0};
 		args.grip = args.grip || {a: 0, b: 0, c: 0, t: 0};
-
 		return {
 			body: node$spin(args.body, t),
 			pivot: node$spin(args.pivot, t),
@@ -305,6 +305,9 @@
 			// grip: node$spin(args.grip, t)
 		}
 	}
+
+
+	// this is where the problem is.
 
 	// where does the plane and solving and stuff come in?
 	function node$spin(args, t) {
@@ -319,7 +322,7 @@
 			// console.log(aargs);
 			// let {x0: r, v0: vr, a: ar} = /*solve(rargs);*/ rargs;
 			// let {x0: a, v0: va, a: aa} = /*angle$solve(aargs);*/ aargs;
-			return motion$spin({r: r, vr: vr, ar: ar, a: a, va: va, aa: aa, p:p},t);
+			return motion$spin({r: r, vr: vr, ar: ar, a: a, va: va, aa: aa, p:p}, t);
 		// }
 	}
 
