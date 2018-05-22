@@ -336,6 +336,8 @@
 
 
 	function prop$spin(args, t) {
+		let p = args.p || WALL;
+		let beats = args.beats || 1;
 		// should I be passing plane here, and beats?
 		args.body = args.body || {r: 0, a: 0, b: 0};
 		args.pivot = args.pivot || {r: 0, a: 0, b: 0};
@@ -345,12 +347,12 @@
 		args.grip = args.grip || {a: 0, b: 0, c: 0, t: 0};
 		// see, I probably should be passing plane and beats here...
 		return {
-			body: node$spin(args.body, t),
-			pivot: node$spin(args.pivot, t),
-			helper: node$spin(args.helper, t),
-			hand: node$spin(args.hand, t),
-			head: node$spin(args.head, t),
-			grip: {a: 0, b: 0, c: 0, t: 0}
+			body: node$spin({beats: beats, p: p, ...args.body}, t),
+			pivot: node$spin({beats: beats, p: p, ...args.pivot}, t),
+			helper: node$spin({beats: beats, p: p, ...args.helper}, t),
+			hand: node$spin({beats: beats, p: p, ...args.hand}, t),
+			head: node$spin({beats: beats, p: p, ...args.head}, t),
+			grip: {beats: beats, p: p, a: 0, b: 0, c: 0, t: 0}
 		}
 	}
 
@@ -362,9 +364,9 @@
 		// we could do it in the solver...
 	function node$spin(args, t) {
 		args = alias(args);
-		let {p} = args;
-		let {x0: r, v0: vr, a: ar} = solve({x0: args.r, x1: args.r1, v0: args.vr, v1: args.vr1, a: args.ar, t: t});
-		let {x0: a, v0: va, a: aa} = solve({x0: args.a, x1: args.a1, v0: args.va, v1: args.va1, a: args.aa, t: t, c: args.c});
+		let {p, beats} = args;
+		let {x0: r, v0: vr, a: ar} = solve({x0: args.r, x1: args.r1, v0: args.vr, v1: args.vr1, a: args.ar, t: beats*BEAT});
+		let {x0: a, v0: va, a: aa} = solve({x0: args.a, x1: args.a1, v0: args.va, v1: args.va1, a: args.aa, t: beats*BEAT, c: args.c});
 		return motion$rotate({r: parseInt(r), vr: parseInt(vr), ar: ar, a: a, va: va, aa: aa, p:p}, t);
 	}
 
@@ -422,7 +424,7 @@
 			loops: "c",
 			petals: "c"
 		}
-		let vals = ["r","r1","a","a1","va","vr","va1","vr1","c","p"];
+		let vals = ["r","r1","a","a1","va","vr","va1","vr1","c","p","beats"];
 		let nargs = {};
 		for (let val of vals) {
 			if (nargs[val]===undefined) {
