@@ -71,6 +71,7 @@ VS3D = function() {
 	const BACKWARD = VS3D.BACKWARD = -1;
 	const NONE = VS3D.NONE = 0;
 
+	let MoveFactory = {};
 
 	/// immutability helper
 	function clone(obj) {
@@ -414,9 +415,6 @@ VS3D = function() {
 		return prop$spin(move, move.beats*BEAT-1);
 	}
 
-
-	let MoveFactory = {};
-
 	function realign(prop, move) {
 		if (move.name) {
 			// or something like this
@@ -677,6 +675,37 @@ VS3D = function() {
 		this.stop();
 		this.goto(0);
 	}
+
+
+	MoveFactory.build = {};
+	MoveFactory.defaults = {
+		plane: WALL,
+		entry: NORTH,
+		orient: NORTH,
+		beats: 4,
+		speed: 1,
+		direction: CLOCKWISE
+	}
+	MoveFactory.recipe = function(name, defs, f) {
+		MoveFactory.build[name] = function(args) {
+			// may need to decompose the individual nodes and spread them
+			return f({...args, ...defs, ...defaults})
+		}
+	}
+	MoveFactory.variant = function(name, recipe, defs) {
+		MoveFactory.build[name] = function(args) {
+			// may need to decompose the individual nodes and spread them
+			return MoveFactory.build[recipe]({...args, ...defs});
+		}
+	}
+	MoveFactory.realign = function(name, move) {
+		// here's our big, complicated logic from the old version
+		// ...
+		// ...
+		// ...
+		return move;
+	}
+
 
 	VS3D.clone = clone;
 	VS3D.round = round;
