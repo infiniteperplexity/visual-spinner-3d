@@ -9,12 +9,17 @@
 <script src="three.min.js"></script>
 <script src="render.js"></script>
 <script>
-	let renderer;
+	let renderer, player;
 	let prop = new Prop({hand: {r: 1, a: 0}});
-	let move = chain([conform({hand: {speed: 1}, head: {va: -3}},prop), {hand: {speed: 1}, head: {va: 3}}]);
 	function init() {
 		renderer = new ThreeRenderer(document.getElementById("display"));
 		renderer.update(prop);
+		player = new Player({props: [prop]});
+		player.props[0].addMove({hand: {speed: 1}, head: {va: -3}});
+		player.props[0].addMove({hand: {speed: 1}, head: {va: 1}, beats: 3});
+		player.render = function(prop) {
+			renderer.update(prop);
+		}
 	}
 
 </script>

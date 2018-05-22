@@ -285,12 +285,13 @@
 		}
 	}
 
+	// given that I'm making Player, should this still overload?
 	function spin(p, m, t) {
 		if (typeof(m)==="number") {
 			t = m;
 			m = p;
 		} else {
-			m = conform(m, p);
+			m = fit(p, m);
 		}
 		if (Array.isArray(m)) {
 			let past = 0;
@@ -308,32 +309,13 @@
 		return prop$spin(m, t);
 	}
 
-
-	let spinterval;
-	function play(prop, move, callback, intv) {
-		intv = intv || 10;
-		let t = 0;
-		playInterval = setInterval(()=>{
-			callback(spin(prop, move, t));
-			t+=1;
-		},intv);
-	}
-
-	function stop() {
-		clearInterval(spinterval);
-	}
-
-	function conform(move, prop) {
+	function fit(prop, move) {
 		// works on arrays of moves as well
 		if (Array.isArray(move)) {
-			return [conform(move[0],prop), ...move.slice(1)];
+			return chain(prop, move);
 		} else {
 			let plane = move.p || WALL;
 			let {body, pivot, helper, hand, head, grip} = prop;
-			// console.log(hand);
-			// console.log(sphere$planify(hand,plane));
-			// console.log(head);
-			// console.log(sphere$planify(hand,plane));
 			body = {r: body.r, a: sphere$planify(body, plane), p: plane};
 			pivot = {r: pivot.r, a: sphere$planify(pivot, plane), p: plane};
 			helper = {r: helper.r, a: sphere$planify(helper, plane), p: plane};
@@ -345,7 +327,9 @@
 				helper: {...helper, ...move.helper},
 				hand: {...hand, ...move.hand},
 				head: {...head, ...move.head},
-				grip: {...grip, ...move.grip}
+				grip: {...grip, ...move.grip},
+				beats: move.beats,
+				p: move.p
 			};
 		}
 	}
@@ -372,7 +356,8 @@
 	function node$spin(args, t) {
 		aargs = alias(args);
 		let {r, vr, ar, a, va, aa, p} = aargs;
-		return motion$rotate({r: r, vr: vr, ar: ar, a: a, va: va, aa: aa, p:p}, t);
+		// integer rounding good?
+		return motion$rotate({r: parseInt(r), vr: parseInt(vr), ar: ar, a: a, va: va, aa: aa, p:p}, t);
 	}
 
 	function motion$rotate(args, t) {
@@ -475,19 +460,56 @@
 	}
 	// this would realign the various moves as needed
 	function chain(prop, arr) {
-		if (Array.isArray(prop)) {
-			arr = prop;
-		} else {
-			arr[0] = conform(arr[0],prop);
-		}
+		arr[0] = fit(prop,arr[0]);
 		for (let i=1; i<arr.length; i++) {
-			console.log(socket(arr[i-1]));
-			console.log(conform(arr[i],socket(arr[i-1])))
-			arr[i] = conform(arr[i],socket(arr[i-1]));
+			arr[i] = fit(socket(arr[i-1]),arr[i]);
 		}
 		return arr;
 	}
 
 
-
-	//renderer.play(prop,[{hand: {r: 1, va: 1}, head:{va: -1}}, {hand: {r: 1, va: 1}, head:{va: 1}}]);
+	// should the props get wrappers? it seems that way...
+	function PlayerPropWrapper(prop) {
+		this.prop = prop;
+		this.moves = [];
+	}
+	PlayerPropWrapper.prototype.addMove = function(move) {
+		// check to see if it's an array?
+		if (this.moves.length===0) {
+			this.moves.push(fit(this.prop, move));
+		} else {
+			this.moves.push(fit(socket(this.moves[this.moves.length-1]), move));
+		}
+	}
+	function Player(args) {
+		this.props = args.props.map((p)=>(new PlayerPropWrapper(p))) || [];
+		this.speed = args.speed || 10;
+		this.rate = args.rate || 1;
+		this.tick = 0;
+	}
+	// should the callback be able to take cosmetic properties?
+	Player.prototype.render = function(prop) {};
+	Player.prototype.goto = function(t) {
+		this.tick = t;
+		for (let i=0; i<this.props.length; i++) {
+			this.render(spin(this.props[i].prop, this.props[i].moves, this.tick));
+		}
+	}
+	Player.prototype.play = function() {
+		this._interval = setInterval(()=>{
+			for (let i=0; i<this.props.length; i++) {
+				this.render(spin(this.props[i].prop, this.props[i].moves, this.tick));
+			}
+			this.tick+=this.rate;
+		}, this.speed);
+	}
+	Player.prototype.stop = function() {
+		clearInterval(this.interval);
+	}
+	Player.prototype.addProp = function(prop) {
+		this.props.push(new PlayerPropWrapper(prop));
+	}
+	Player.prototype.reset = function() {
+		this.stop();
+		this.goto(0);
+	}
