@@ -61,21 +61,21 @@ ThreeRenderer.prototype.update = function(prop) {
 	this.shapes.rotation.z = 0;
 	for (let i=BODY; i<=HAND; i++) {
 		let node = NODES[i];
-		this.shapes.rotateZ(-prop[node].a*UNIT);
 		this.shapes.rotateY(-prop[node].b*UNIT);
+		this.shapes.rotateZ(-prop[node].a*UNIT);
 		this.shapes.translateOnAxis(YAXIS,+prop[node].r);
 		this.shapes.rotateZ(+prop[node].a*UNIT);
 		this.shapes.rotateY(+prop[node].b*UNIT);
 	}
-	this.shapes.rotateZ(-prop.head.a*UNIT);
 	this.shapes.rotateY(-prop.head.b*UNIT);
+	this.shapes.rotateZ(-prop.head.a*UNIT);
 	// leave HEAD.r out of this for now
 	// leave bend out of this for now
 	// leave grip out of this for now
 	// leave twist out of this for now
 	// choke
 	//shape.translate(0.5*myProp.prop.radius);
-	this.shapes.translateOnAxis(YAXIS,-(prop.grip.c)*prop.head.r);
+	//this.shapes.translateOnAxis(YAXIS,-(prop.grip.c)*prop.head.r);
 	this.renderer.render(this.scene, this.camera);
 }
 

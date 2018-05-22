@@ -10,13 +10,13 @@
 <script src="render.js"></script>
 <script>
 	let renderer, player;
-	let prop = new Prop({hand: {r: 1, a: 0}});
+	let prop = new Prop({hand: {r: 1}});
+	let move = {hand: {r: 1, a: 0, a1: 90}, head: {r: 1, a:0, a1: 90}, beats: 1};
 	function init() {
 		renderer = new ThreeRenderer(document.getElementById("display"));
 		renderer.update(prop);
 		player = new Player({props: [prop]});
-		player.props[0].addMove({hand: {speed: 1}, head: {va: -3}});
-		player.props[0].addMove({hand: {speed: 1}, head: {va: 1}, beats: 3});
+		player.props[0].addMove(move);
 		player.render = function(prop) {
 			renderer.update(prop);
 		}

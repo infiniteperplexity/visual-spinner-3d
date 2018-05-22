@@ -1,7 +1,9 @@
 - Make named moves.
 - Build all the named moves.
-- Get rid of unised files.
 - Integrate it with React.
 - Finish the solver.
-- Test other planes.
+	- Seems to solve based on t parameter rather than beats.
+		- Figure out the right way to pass down beats and plane.
+	- Test out other configurations.
+* Test other planes.
 - Get the grip stuff working right.

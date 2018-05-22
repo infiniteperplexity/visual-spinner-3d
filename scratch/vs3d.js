@@ -336,12 +336,14 @@
 
 
 	function prop$spin(args, t) {
+		// should I be passing plane here, and beats?
 		args.body = args.body || {r: 0, a: 0, b: 0};
 		args.pivot = args.pivot || {r: 0, a: 0, b: 0};
 		args.helper = args.helper || {r: 0, a: 0, b: 0};
 		args.hand = args.hand || {r: 0, a: 0, b: 0};
 		args.head = args.head || {r: 1, a: 0, b: 0};
 		args.grip = args.grip || {a: 0, b: 0, c: 0, t: 0};
+		// see, I probably should be passing plane and beats here...
 		return {
 			body: node$spin(args.body, t),
 			pivot: node$spin(args.pivot, t),
@@ -353,13 +355,16 @@
 	}
 
 
+	// okay...so, the challenge with the solver...
+		// we need to put defaults in there somewhere
+		// we're currently doing it in motion$rotate
+		// but we need to do it before, right?
+		// we could do it in the solver...
 	function node$spin(args, t) {
-		aargs = alias(args);
-		let {p} = aargs;
-		let {r, vr, ar} = aargs;
-		let {a, va, aa} = aargs;
-		//let {x0: r, v0: vr, a: ar} = solve({x0: args.r, x1: args.r1, vr: args.vr, vr1: args.vr1, a: args.ar, t: t});
-		//let {x0: a, v0: va, a: aa} = solve({x0: args.ar, x1: args.a1, vr: args.va, vr1: args.va1, a: args.aa, t: t, c: args.c});
+		args = alias(args);
+		let {p} = args;
+		let {x0: r, v0: vr, a: ar} = solve({x0: args.r, x1: args.r1, v0: args.vr, v1: args.vr1, a: args.ar, t: t});
+		let {x0: a, v0: va, a: aa} = solve({x0: args.a, x1: args.a1, v0: args.va, v1: args.va1, a: args.aa, t: t, c: args.c});
 		return motion$rotate({r: parseInt(r), vr: parseInt(vr), ar: ar, a: a, va: va, aa: aa, p:p}, t);
 	}
 
@@ -417,7 +422,7 @@
 			loops: "c",
 			petals: "c"
 		}
-		let vals = ["r","r1","a","a1","va","vr","va1","vr1","c"];
+		let vals = ["r","r1","a","a1","va","vr","va1","vr1","c","p"];
 		let nargs = {};
 		for (let val of vals) {
 			if (nargs[val]===undefined) {
@@ -434,14 +439,14 @@
 	}
 
 	function solve(args) {
-		console.log(args);
 		let {x0, x1, v0, v1, a, t} = args;
 		// where do we set defaults?
 		let known = {};
 		for (let arg in args) {
-			known[args] = true;
+			if (args[arg]!==undefined) {
+				known[arg] = true;
+			}
 		}
-		console.log(known);
 		// solve for acceleration given starting and ending position
 		if (known.x0 && known.x1 && known.v0 && known.t) {
 			a = 2*((x0-x1)/(t*t)-v0/t);
@@ -454,8 +459,28 @@
 		} else if (known.x0 && known.v0 && known.v1 && known.t) {
 			a = (v1-v0)/t;
 			x1 = x0+v0*t+a*t*t/2;
+		// impute acceleration to zero
+		} else if (known.x0 && known.v0) {
+			a = 0;
+			v1 = 0;
+			x1 = x0+v0*t;
+		} else if (known.x0 && known.x1) {
+			a = 0;
+			v0 = (x1-x0)/t;
+			v1 = v0;
+		} else if (known.x0) {
+			a = 0;
+			v1 = 0;
+			v0 = 0;
+			x1 = x0;
+		} else if (!(known.x0)) {
+			x0 = 0;
+			x1 = 0;
+			v0 = 0;
+			v1 = 0;
+			a = 0;
 		} else {
-			console.log(vals);
+			console.log(args);
 			throw new Error("solving method unimplemented.");
 		}
 		return {x0: x0, x1: x1, v0: v0, v1: v1, a: a, t: t};
@@ -552,7 +577,7 @@
 		}, this.speed);
 	}
 	Player.prototype.stop = function() {
-		clearInterval(this.interval);
+		clearInterval(this._interval);
 	}
 	Player.prototype.addProp = function(prop) {
 		this.props.push(new PlayerPropWrapper(prop));
