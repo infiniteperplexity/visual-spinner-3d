@@ -1,9 +1,9 @@
-VS3D = function(VS3D) {
+var VS3D = function(VS3D) {
 
 	let defaults = {
 		plane: WALL,
-		entry: EAST,
-		orient: EAST,
+		entry: NORTH,
+		orient: NORTH,
 		beats: 4,
 		speed: 1,
 		direction: CLOCKWISE

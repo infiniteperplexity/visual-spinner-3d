@@ -1,26 +1,76 @@
-		// useful constants
-	const SMALL = 0.001;
-	const TINY = 0.0001;
-	const UNIT = 2*Math.PI/360;
-	const BODY = 0;
-	const PIVOT = 1;
-	const HELPER = 2;
-	const HAND = 3;
-	const HEAD = 4;
-	const NODES = ["body","pivot","helper","hand","head"];
-	// const WALL = plane(0,0,-1);
-	// const WHEEL = plane(1,0,0);
-	// const FLOOR = plane(0,-1,0);
-	const WALL = plane(0,0,1);
-	const WHEEL = plane(1,0,0);
-	const FLOOR = plane(0,1,0);
-	const XAXIS = vector(1,0,0);
-	const YAXIS = vector(0,1,0);
-	const ZAXIS = vector(0,0,1);
-	const MEASURE = 4;
-	const TICKS = 360;
-	const BEAT = TICKS/MEASURE;
-	const SPEED = 1;
+VS3D = function() {
+	let VS3D = {};
+	// useful constants
+	const SMALL = VS3D.SMALL = 0.001;
+	const TINY = VS3D.TINY = 0.0001;
+	const UNIT = VS3D.UNIT = 2*Math.PI/360;
+	const BODY = VS3D.BODY = 0;
+	const PIVOT = VS3D.PIVOT = 1;
+	const HELPER = VS3D.HELPER =2;
+	const HAND = VS3D.HAND = 3;
+	const HEAD = VS3D.HEAD = 4;
+	const NODES = VS3D.NODES = ["body","pivot","helper","hand","head"];
+	const WALL = VS3D.WALL = plane(0,0,1);
+	const WHEEL = VS3D.WHEEL = plane(1,0,0);
+	const FLOOR = VS3D.FLOOR = plane(0,1,0);
+	const XAXIS = VS3D.XAXIS = vector(1,0,0);
+	const YAXIS = VS3D.YAXIS = vector(0,1,0);
+	const ZAXIS = VS3D.ZAXIS = vector(0,0,1);
+	const MEASURE = VS3D.MEASURE = 4;
+	const TICKS = VS3D.TICKS = 360;
+	const BEAT = VS3D.BEAT = TICKS/MEASURE;
+	const SPEED = VS3D.SPEED = 1;
+
+
+
+	const NORTH = VS3D.NORTH = 0;
+	const EAST = VS3D.EAST = 0.25*2*Math.PI*UNIT;
+	const SOUTH = VS3D.SOUTH = 0.50*2*Math.PI*UNIT;
+	const WEST = VS3D.WEST = 0.75*2*Math.PI*UNIT;
+	const NORTHEAST = VS3D.NORTHEAST = 0.125*2*Math.PI*UNIT;
+	const SOUTHEAST = VS3D.SOUTHEAST = 0.375*2*Math.PI*UNIT;
+	const SOUTHWEST = VS3D.SOUTHWEST = 0.625*2*Math.PI*UNIT;
+	const NORTHWEST = VS3D.NORTHWEST = 0.875*2*Math.PI*UNIT;
+	const NEAR = VS3D.NEAR = 0.25*2*Math.PI*UNIT;
+	const FAR = VS3D.FAR = 0.75*2*Math.PI*UNIT;
+	const N = VS3D.N = NORTH;
+	const E = VS3D.E = EAST;
+	const S = VS3D.S = SOUTH;
+	const W = VS3D.W = WEST;
+	const NE = VS3D.NE = NORTHEAST;
+	const SE = VS3D.SE = SOUTHEAST;
+	const SW = VS3D.SW = SOUTHWEST;
+	const NW = VS3D.NW = NORTHWEST;
+	const TWELVE = VS3D.TWELVE = NORTH;
+	const THREE = VS3D.THREE = EAST;
+	const SIX = VS3D.SIX = SOUTH;
+	const NINE = VS3D.NINE = WEST;
+	const UP = VS3D.UP = NORTH;
+	const DOWN = VS3D.DOWN = SOUTH;
+	const RIGHT = VS3D.RIGHT = EAST;
+	const LEFT = VS3D.LEFT = WEST;
+
+	const CLOCKWISE = VS3D.CLOCKWISE = 1;
+	const COUNTERCLOCKWISE = VS3D.COUNTERCLOCKWISE = -1;
+	const CW = VS3D.CW = CLOCKWISE;
+	const COUNTER = VS3D.COUNTER = COUNTERCLOCKWISE;
+	const CCW = VS3D.CCW = COUNTERCLOCKWISE;
+	const QUARTER = VS3D.QUARTER = 0.25*2*Math.PI*UNIT;
+	const HALF = VS3D.HALF = 2*QUARTER;
+	const SPLIT = VS3D.SPLIT = HALF;
+	const SAME = VS3D.SAME = 0;
+	const TOGETHER = VS3D.TOGETHER = 0;
+	const OPPOSITE = VS3D.OPPOSITE = SPLIT;
+	const TOG = VS3D.TOG = TOGETHER;
+	const OPP = VS3D.OPP = OPPOSITE;
+	const DIAMOND = VS3D.DIAMOND = 0;
+	const BOX = VS3D.BOX = SPLIT;
+	const INSPIN = VS3D.INSPIN = 1;
+	const FORWARD = VS3D.FORWARD = 1;
+	const ANTISPIN = VS3D.ANTISPIN = -1;
+	const BACKWARD = VS3D.BACKWARD = -1;
+	const NONE = VS3D.NONE = 0;
+
 
 	/// immutability helper
 	function clone(obj) {
@@ -237,10 +287,6 @@
 		}
 		r = r || TINY;
 		let projected = vector$project(sphere$vectorize(s),p);
-		// is this necessary?
-		// if (sphere.zeroish(project)) {
-		// 	projected = sphere(TINY,TINY,TINY);
-		// }
 		let v = vector$unitize(vector$rotate(projected, ang, p));
 		s = vector$spherify(v);
 		return {r: r, ...s}
@@ -310,10 +356,12 @@
 	}
 
 	function fit(prop, move) {
-		// works on arrays of moves as well
 		if (Array.isArray(move)) {
 			return chain(prop, move);
 		} else {
+			if (move.nofit) {
+				return move;
+			}
 			let plane = move.p || WALL;
 			let {body, pivot, helper, hand, head, grip} = prop;
 			body = {r: body.r, a: sphere$planify(body, plane), p: plane};
@@ -321,17 +369,85 @@
 			helper = {r: helper.r, a: sphere$planify(helper, plane), p: plane};
 			hand = {r: hand.r, a: sphere$planify(hand, plane), p: plane};
 			head = {r: head.r, a: sphere$planify(head, plane), p: plane};
-			return {
-				body: {...body, ...move.body},
-				pivot: {...pivot, ...move.pivot},
-				helper: {...helper, ...move.helper},
-				hand: {...hand, ...move.hand},
-				head: {...head, ...move.head},
-				grip: {...grip, ...move.grip},
-				beats: move.beats,
-				p: move.p
-			};
+			if (	sphere$nearly(node$sum(prop, HAND),node$sum(move$spherify(move), HAND))
+					&& sphere$nearly(node$sum(prop, HEAD),node$sum(move$spherify(move), HEAD))) {
+				return move;
+			} else {
+				return realign(prop, move);
+			}
 		}
+	}
+	function node$sum(prop, n) {
+		let [xs, ys, zs] = [0, 0, 0];
+		for (let i=BODY; i<n; i++) {
+			let {x, y, z} = sphere$vectorize(prop[NODES[i]]);
+			xs+=x;
+			ys+=y;
+			zs+=z;
+		}
+		return vector$spherify(vector(xs,ys,zs));
+	}
+
+	function move$spherify(move) {
+		let {p, body, pivot, helper, hand, head, grip, beats} = move;
+		p = p || WALL;
+		body = (body) ? {r: body.r, ...angle$spherify(body.a, p)} : sphere(0,0,0);
+		pivot = (pivot) ? {r: pivot.r, ...angle$spherify(pivot.a, p)} : sphere(0,0,0);
+		helper = (helper) ? {r: helper.r, ...angle$spherify(helper.a, p)} : sphere(0,0,0);
+		hand = (hand) ? {r: hand.r, ...angle$spherify(hand.a, p)} : sphere(0,0,0);
+		head = (head) ? {r: head.r, ...angle$spherify(head.a, p)} : sphere(1,0,0);
+		return {
+			body: body,
+			pivot: pivot,
+			helper: helper,
+			hand: hand,
+			head: head,
+			grip: grip,
+			p: p,
+			beats: beats
+		};
+	}
+
+	// now figure out chaining, and *maybe* figure out named moves
+	function socket(move) {
+		move.beats = move.beats || 1;
+		return prop$spin(move, move.beats*BEAT-1);
+	}
+
+
+	let MoveFactory = {};
+
+	function realign(prop, move) {
+		if (move.name) {
+			// or something like this
+			return MoveFactory[move.name].realign(prop);
+		}
+		let plane = move.p || WALL;
+		// !!!in a perfect world, this would have a preference for keeping defaults on body, pivot, or hinge
+		let {body, pivot, helper, hand, head, grip} = prop;
+		body = {r: body.r, a: sphere$planify(body, plane), p: plane};
+		pivot = {r: pivot.r, a: sphere$planify(pivot, plane), p: plane};
+		helper = {r: helper.r, a: sphere$planify(helper, plane), p: plane};
+		hand = {r: hand.r, a: sphere$planify(hand, plane), p: plane};
+		head = {r: head.r, a: sphere$planify(head, plane), p: plane};
+		return {
+			body: {...body, ...move.body},
+			pivot: {...pivot, ...move.pivot},
+			helper: {...helper, ...move.helper},
+			hand: {...hand, ...move.hand},
+			head: {...head, ...move.head},
+			grip: {...grip, ...move.grip},
+			beats: move.beats,
+			p: move.p
+		};
+	}
+
+	function chain(prop, arr) {
+		arr[0] = fit(prop,arr[0]);
+		for (let i=1; i<arr.length; i++) {
+			arr[i] = fit(socket(arr[i-1]),arr[i]);
+		}
+		return arr;
 	}
 
 
@@ -367,7 +483,9 @@
 		let {p, beats} = args;
 		let {x0: r, v0: vr, a: ar} = solve({x0: args.r, x1: args.r1, v0: args.vr, v1: args.vr1, a: args.ar, t: beats*BEAT});
 		let {x0: a, v0: va, a: aa} = solve({x0: args.a, x1: args.a1, v0: args.va, v1: args.va1, a: args.aa, t: beats*BEAT, c: args.c});
-		return motion$rotate({r: parseInt(r), vr: parseInt(vr), ar: ar, a: a, va: va, aa: aa, p:p}, t);
+		//return motion$rotate({r: parseInt(r), vr: parseInt(vr), ar: ar, a: a, va: va, aa: aa, p:p}, t);
+		return motion$rotate({r: r, vr: vr, ar: ar, a: a, va: va, aa: aa, p:p}, t);
+
 	}
 
 	function motion$rotate(args, t) {
@@ -375,8 +493,8 @@
 			args[e] = args[e] || 0;
 		}
 		args.p = args.p || WALL;
-		let r = args.r + args.vr*t + args.ar*t*t;
-		let a = args.a + args.va*t*SPEED + args.aa*t*t*SPEED*SPEED;
+		let r = args.r + args.vr*t + args.ar*t*t/2;
+		let a = args.a + args.va*t*SPEED + args.aa*t*t*SPEED*SPEED/2;
 		let p = args.p;
 		return {...angle$spherify(a, p), r: r};
 	}
@@ -392,17 +510,6 @@
 	function motion$type(args) {
 		// placeholder logic
 		return motion$rotate;
-	}
-
-	function node$sum(prop, n) {
-		let [xs, ys, zs] = [0, 0, 0];
-		for (let i=BODY; i<n; i++) {
-			let {x, y, z} = sphere$vectorize(prop[NODES[i]]);
-			xs+=x;
-			ys+=y;
-			zs+=z;
-		}
-		return vector$spherify(vector(xs,ys,zs));
 	}
 
 
@@ -525,30 +632,12 @@
 
 
 
-
-
-
-	// now figure out chaining, and *maybe* figure out named moves
-	function socket(move) {
-		move.beats = move.beats || 1;
-		return prop$spin(move, move.beats*BEAT-1);
-	}
-	// this would realign the various moves as needed
-	function chain(prop, arr) {
-		arr[0] = fit(prop,arr[0]);
-		for (let i=1; i<arr.length; i++) {
-			arr[i] = fit(socket(arr[i-1]),arr[i]);
-		}
-		return arr;
-	}
-
-
 	// should the props get wrappers? it seems that way...
-	function PlayerPropWrapper(prop) {
+	function PropWrapper(prop) {
 		this.prop = prop;
 		this.moves = [];
 	}
-	PlayerPropWrapper.prototype.addMove = function(move) {
+	PropWrapper.prototype.addMove = function(move) {
 		// check to see if it's an array?
 		if (this.moves.length===0) {
 			this.moves.push(fit(this.prop, move));
@@ -557,7 +646,7 @@
 		}
 	}
 	function Player(args) {
-		this.props = args.props.map((p)=>(new PlayerPropWrapper(p))) || [];
+		this.props = args.props.map((p)=>(new PropWrapper(p))) || [];
 		this.speed = args.speed || 10;
 		this.rate = args.rate || 1;
 		this.tick = 0;
@@ -588,3 +677,53 @@
 		this.stop();
 		this.goto(0);
 	}
+
+	VS3D.clone = clone;
+	VS3D.round = round;
+	VS3D.zeroish = zeroish;
+	VS3D.nearly = nearly;
+	VS3D.angle = angle;
+	VS3D.angle$nearly = angle$nearly;
+	VS3D.vector$nearly = vector$nearly;
+	VS3D.vector$zeroish = vector$zeroish;
+	VS3D.vector$unitize = vector$unitize;
+	VS3D.vector$magnitude = vector$magnitude;
+	VS3D.vector$spherify = vector$spherify;
+	VS3D.vector$bisector = vector$bisector;
+	VS3D.vector$rotate = vector$rotate;
+	VS3D.vector$cross = vector$cross;
+	VS3D.vector$dot = vector$dot;
+	VS3D.vector$project = vector$project;
+	VS3D.vector$between = vector$between;
+	VS3D.sphere = sphere;
+	VS3D.sphere$vectorize = sphere$vectorize;
+	VS3D.sphere$nearly = sphere$nearly;
+	VS3D.sphere$zeroish = sphere$zeroish;
+	VS3D.sphere$planify = sphere$planify;
+	VS3D.plane = plane;
+	VS3D.plane$reference = plane$reference;
+	VS3D.angle$vectorize = angle$vectorize;
+	VS3D.angle$spherify = angle$spherify;
+	VS3D.angle$rotate = angle$rotate;
+	VS3D.Prop = Prop;
+	VS3D.spin = spin;
+	VS3D.fit = fit;
+	VS3D.node$sum = node$sum;
+	VS3D.move$spherify = move$spherify;
+	VS3D.socket = socket;
+	VS3D.MoveFactory = MoveFactory;
+	VS3D.realign = realign;
+	VS3D.chain = chain;
+	VS3D.prop$spin = prop$spin;
+	VS3D.node$spin = node$spin;
+	VS3D.motion$rotate = motion$rotate;
+	VS3D.motion$slide = motion$slide;
+	VS3D.motion$grip = motion$grip;
+	VS3D.motion$type = motion$type;
+	VS3D.alias = alias;
+	VS3D.solve = solve;
+	VS3D.angle$solve = angle$solve;
+	VS3D.PropWrapper = PropWrapper;
+	VS3D.Player = Player;
+	return VS3D;
+}();

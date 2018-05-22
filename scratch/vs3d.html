@@ -10,12 +10,13 @@
 <script src="render.js"></script>
 <script>
 	let renderer, player;
-	let prop = new Prop({hand: {r: 1}});
-	let move = {hand: {r: 1, a: 0, a1: 90}, head: {r: 1, a:0, a1: 90}, beats: 1};
+	let prop = new VS3D.Prop({hand: {r: 1}});
+	// wait...why does this work like so?
+	let move = {hand: {r: 1, a: 0, va: 0, va1: 1}, head: {r: 1, va: 0, va1: 1}, beats: 4};
 	function init() {
-		renderer = new ThreeRenderer(document.getElementById("display"));
+		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
 		renderer.update(prop);
-		player = new Player({props: [prop]});
+		player = new VS3D.Player({props: [prop]});
 		player.props[0].addMove(move);
 		player.render = function(prop) {
 			renderer.update(prop);

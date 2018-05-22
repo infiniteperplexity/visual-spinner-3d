@@ -1,9 +1,5 @@
 - Make named moves.
-- Build all the named moves.
+- Comborific.
 - Integrate it with React.
-- Finish the solver.
-	- Seems to solve based on t parameter rather than beats.
-		- Figure out the right way to pass down beats and plane.
-	- Test out other configurations.
-* Test other planes.
 - Get the grip stuff working right.
+- I should probably try to inject defaults in some smarter place.
