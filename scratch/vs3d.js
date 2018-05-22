@@ -355,8 +355,11 @@
 
 	function node$spin(args, t) {
 		aargs = alias(args);
-		let {r, vr, ar, a, va, aa, p} = aargs;
-		// integer rounding good?
+		let {p} = aargs;
+		let {r, vr, ar} = aargs;
+		let {a, va, aa} = aargs;
+		//let {x0: r, v0: vr, a: ar} = solve({x0: args.r, x1: args.r1, vr: args.vr, vr1: args.vr1, a: args.ar, t: t});
+		//let {x0: a, v0: va, a: aa} = solve({x0: args.ar, x1: args.a1, vr: args.va, vr1: args.va1, a: args.aa, t: t, P: args/P});
 		return motion$rotate({r: parseInt(r), vr: parseInt(vr), ar: ar, a: a, va: va, aa: aa, p:p}, t);
 	}
 
@@ -426,20 +429,24 @@
 		return nargs;
 	}
 
-
-
-	let solve = function(args) {
+	function solve(args) {
+		console.log(args);
 		let {x0, x1, v0, v1, a, t} = args;
+		// where do we set defaults?
 		let known = {};
 		for (let arg in args) {
 			known[args] = true;
 		}
+		console.log(known);
+		// solve for acceleration given starting and ending position
 		if (known.x0 && known.x1 && known.v0 && known.t) {
 			a = 2*((x0-x1)/(t*t)-v0/t);
 			v1 = v0+a*t;
+		// solve for end position given acceleration
 		} else if (known.x0 && known.v0 && known.a && known.t) {
 			x1 = x0+v0*t+a*t*t/2;
 			v1 = v0+a*t;
+		// solve for end position and acceleration given final position
 		} else if (known.x0 && known.v0 && known.v1 && known.t) {
 			a = (v1-v0)/t;
 			x1 = x0+v0*t+a*t*t/2;
@@ -449,6 +456,43 @@
 		}
 		return {x0: x0, x1: x1, v0: v0, v1: v1, a: a, t: t};
 	}
+
+	function angle$solve(args) {
+		let {x0, x1, v0, v1, a, t, P} = args;
+		// should this default to clockwise, or to the shortest path?
+		let known = {};
+		for (let arg in args) {
+			known[args] = true;
+		}
+		// solve for acceleration given starting and ending position
+			// default to shortest angle
+		if (known.x0 && known.x1 && known.v0 && known.t ) {
+			if (P===undefined) {
+				P = (Math.abs(x1-x0)*UNIT > Math.PI) ? -1 : 1;
+			}
+			// this isn't quite right
+			x1 - Math.sign(P) + 2*Math.PI/UNIT;
+			// adjust x0 and x1 based on units and default
+			a = 2*((x0-x1)/(t*t)-v0/t);
+			v1 = v0+a*t;
+		// solve for end position given acceleration
+			// gives period exactly
+		} else if (known.x0 && known.v0 && known.a && known.t) {
+			x1 = x0+v0*t+a*t*t/2;
+			v1 = v0+a*t;
+		// solve for end position and acceleration given final position
+			// gives period exactly
+		} else if (known.x0 && known.v0 && known.v1 && known.t) {
+			a = (v1-v0)/t;
+			x1 = x0+v0*t+a*t*t/2;
+		} else {
+			console.log(vals);
+			throw new Error("solving method unimplemented.");
+		}
+		return {x0: x0, x1: x1, v0: v0, v1: v1, a: a, t: t};
+	}
+
+
 
 
 
