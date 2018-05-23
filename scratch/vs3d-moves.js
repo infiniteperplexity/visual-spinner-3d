@@ -157,12 +157,15 @@ VS3D = (function(VS3D) {
 		options => {
 			let {beats, mode, speed, hand, head, spin, orient, direction, petals} = options;
 			let v = (spin===INSPIN) ? (petals+1) : (petals-1);
-			// here's a tricky thing...we don't necessarily *want* a default mode.
-				// if you pass a mode, that makes it so this can't line up as it wants to
+			//mode is a "soft default"
+			let hangle = orient+mode;
+			if (head.a!==undefined) {
+				hangle = hand.a;
+			}
 			let segment = Move(merge(options,{
 				beats: beats/4,
 				hand: {...hand, a: orient, va: direction*speed},
-				head: {...head, a: orient+mode, va: v*spin*direction*speed}
+				head: {...head, a: hangle, va: v*spin*direction*speed}
 			}));
 			let move = chain([
 				segment,
@@ -182,11 +185,18 @@ VS3D = (function(VS3D) {
 		},
 		options => {
 			let {beats, mode, speed, hand, head, spin, orient, direction} = options;
+			let hangle = mode;
+			if (head.a) {
+				hangle = head.a;
+			} else if (spin===ANTISPIN) {
+				// mode is not a very intuitive parameter for cateyes
+				hangle = -hangle;
+			}
 			let segment = Move({
 				...options,
 				beats: beats/4,
-				hand: {...hand, va: direction*speed},
-				head: {head: {...head, a: mode}, va: spin*direction*speed}
+				hand: {...hand, a: orient, va: direction*speed},
+				head: {head: {...head, a: hangle}, va: spin*direction*speed}
 			});
 			let move = chain([
 				segment,

@@ -11,8 +11,8 @@
 <script src="vs3d-render.js"></script>
 <script>
 	let renderer, player;
-	let prop = new VS3D.Prop({hand: {r: 0.5, a: 180}, head: {a: 180}});
-	let move = {recipe: "ccap", orient: 180}
+	let prop = new VS3D.Prop({hand: {r: 1, a: 180}, head: {a: 0}});
+	let move = {recipe: "flower"};
 	function init() {
 		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
 		renderer.update(prop);

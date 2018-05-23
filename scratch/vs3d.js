@@ -509,14 +509,14 @@ VS3D = function() {
 			p: plane
 		};
 		if (move.recipe) {
-			console.log("arguments:");
-			console.log(merge(aligned, move));
+			// console.log("arguments:");
+			// console.log(merge(aligned, move));
 			// should I also refit, or will it already be fit properly?
 			let built = build(move.recipe, merge(aligned, move));
-			console.log("initial form:");
-			console.log(built);
-			console.log("socket:");
-			console.log(socket(aligned));
+			// console.log("initial form:");
+			// console.log(built);
+			// console.log("socket:");
+			// console.log(socket(aligned));
 			return realign(socket(aligned), built);
 		}
 		return aligned;
