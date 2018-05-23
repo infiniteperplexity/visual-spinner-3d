@@ -65,18 +65,17 @@ VS3D = (function(VS3D) {
 	const BACKWARD = VS3D.BACKWARD;
 	const NONE = VS3D.NONE;
 
-	let MoveFactory = VS3D.MoveFactory;
+	let recipe = VS3D.recipe;
 	let Move = VS3D.Move;
 	let chain = VS3D.chain;
-	let socket = VS3D.socket;
-	let realign = VS3D.realign;
+	let merge = VS3D.merge;
 
-	MoveFactory.recipe(
+	recipe(
 		"ccap",
 		{
 			hand: {r: 1}
 		},
-		function(options) {
+		options => {
 			let {beats, speed, hand, spin, orient, direction} = options;
 			let move = chain([
 				Move({
@@ -107,24 +106,24 @@ VS3D = (function(VS3D) {
 			if (spin===ANTISPIN) {
 				move = move.slice(2).concat(move.slice(0,2));
 			}
-			return realign(socket(options),move);
+			return move;
 		}
 	);
 
-	MoveFactory.recipe(
+	recipe(
 		"pendulum",
 		{
 			orient: DOWN,
 			hand: {r: 1}
 		},
-		function(options) {
+		options => {
 			let {beats, speed, hand, spin, orient, direction} = options;
 			let move = chain([
 				Move({
 					...options,
 					beats: beats/4,
 					hand: {...hand, a: orient, va: direction*speed},
-					head: {a: orient, a1: orient+QUARTER*direction, va1: 0},
+					head: {a: orient, a1: orient+spin*QUARTER*direction, va1: 0},
 				}),
 				Move({
 					...options,
@@ -136,7 +135,7 @@ VS3D = (function(VS3D) {
 					...options,
 					beats: beats/4,
 					hand: {...hand, va: direction*speed},
-					head: {a1: orient-QUARTER*direction, va1: 0}
+					head: {a1: orient-spin*QUARTER*direction, va1: 0}
 				}),
 				Move({
 					...options,
@@ -145,45 +144,43 @@ VS3D = (function(VS3D) {
 					head: {a1: orient, va: 0},
 				})
 			]);
-			// fails because the default socket does not match the default orientation
-			return realign(socket(options),move);
+			return move;
 		}
 	);
 
-	MoveFactory.recipe(
+	recipe(
 		"flower",
 		{
 			hand: {r: 1},
 			petals: 4
 		},
-		function(options) {
+		options => {
 			let {beats, mode, speed, hand, head, spin, orient, direction, petals} = options;
 			let v = (spin===INSPIN) ? (petals+1) : (petals-1);
 			// here's a tricky thing...we don't necessarily *want* a default mode.
 				// if you pass a mode, that makes it so this can't line up as it wants to
-			let segment = Move({
-				...options,
+			let segment = Move(merge(options,{
 				beats: beats/4,
-				hand: {...hand, va: direction*speed},
-				head: {head: {...head, a: mode}, va: v*spin*direction*speed}
-			});
+				hand: {...hand, a: orient, va: direction*speed},
+				head: {...head, a: orient+mode, va: v*spin*direction*speed}
+			}));
 			let move = chain([
 				segment,
 				segment,
 				segment,
 				segment
 			]);
-			return realign(socket(options),move);
+			return move;
 		}
 	);
 
-	MoveFactory.recipe(
+	recipe(
 		"isolation",
 		{
 			hand: {r: 0.5},
 			mode: BOX
 		},
-		function(options) {
+		options => {
 			let {beats, mode, speed, hand, head, spin, orient, direction} = options;
 			let segment = Move({
 				...options,
@@ -197,8 +194,7 @@ VS3D = (function(VS3D) {
 				segment,
 				segment
 			]);
-			// this...gets forceably aligned to the default socket, again
-			return realign(socket(options),move);
+			return move;
 		}
 	);
 

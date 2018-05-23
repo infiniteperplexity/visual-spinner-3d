@@ -70,8 +70,6 @@ VS3D = function() {
 	const BACKWARD = VS3D.BACKWARD = -1;
 	const NONE = VS3D.NONE = 0;
 
-	let MoveFactory = {};
-
 	/// immutability helper
 	function clone(obj) {
 	  let nobj = {...obj};
@@ -234,7 +232,7 @@ VS3D = function() {
 		//console.log(vector$cross(v2, v1));
 		// // this is the hackiest thing in the world...
 		// 	// ...there must be a better way to ensure a certain direction of measurement
-		if (vector$nearly(v1, vector$rotate(v2, a))) {
+		if (vector$nearly(vector$unitize(v1), vector$unitize(vector$rotate(v2, a)))) {
 			return a;
 		} else {
 			return -a;
@@ -337,7 +335,7 @@ VS3D = function() {
 		args.hand.r = args.hand.r || args.hand.radius || 0;
 		args.hand.a = args.hand.a || args.hand.angle|| 0;
 		args.hand.b = args.hand.b || args.hand.bearing || 0;
-		args.head.r = args.head.r || args.head.radius || 0;
+		args.head.r = args.head.r || args.head.radius || 1;
 		args.head.a = args.head.a || args.head.angle|| 0;
 		args.head.b = args.head.b || args.head.bearing || 0;
 		args.grip = args.grip || {a: 0, b: 0, c:0, t:0}
@@ -413,7 +411,7 @@ VS3D = function() {
 		} else {
 			return (move.beats || 1);
 		}
-	}
+	}	
 
 	function fits(prop, move) {
 		if (Array.isArray(move)) {
@@ -436,7 +434,6 @@ VS3D = function() {
 			pivot = {r: pivot.r, a: sphere$planify(pivot, plane), p: plane};
 			helper = {r: helper.r, a: sphere$planify(helper, plane), p: plane};
 			hand = {r: hand.r, a: sphere$planify(hand, plane), p: plane};
-			//console.log(hand);
 			head = {r: head.r, a: sphere$planify(head, plane), p: plane};
 			if (fits(prop, move)) {
 				return move;
@@ -447,7 +444,7 @@ VS3D = function() {
 	}
 	function node$sum(prop, n) {
 		let [xs, ys, zs] = [0, 0, 0];
-		for (let i=BODY; i<n; i++) {
+		for (let i=BODY; i<=n; i++) {
 			let {x, y, z} = sphere$vectorize(prop[NODES[i]]);
 			xs+=x;
 			ys+=y;
@@ -458,7 +455,7 @@ VS3D = function() {
 
 	function move$spherify(move) {
 		if (Array.isArray(move)) {
-			console.log("need to handle this");
+			console.log("need to handle spherify?");
 		}
 		let {p, body, pivot, helper, hand, head, grip, beats} = move;
 		p = p || WALL;
@@ -479,7 +476,7 @@ VS3D = function() {
 		};
 	}
 
-	// now figure out chaining, and *maybe* figure out named moves
+	// returns a prop aligned to the final frame of the move in question
 	function socket(move) {
 		if (Array.isArray(move)) {
 			return socket(move[0]);
@@ -488,9 +485,10 @@ VS3D = function() {
 		return prop$spin(move, move.beats*BEAT);
 	}
 
+	// returns a move aligned to the prop in question
 	function refit(prop, move) {
 		if (Array.isArray(move)) {
-			console.log("need to handle refit");
+			console.log("need to handle refit?");
 		}
 		let plane = move.p || WALL;
 		// !!!in a perfect world, this would have a preference for keeping defaults on body, pivot, or hinge
@@ -511,7 +509,15 @@ VS3D = function() {
 			p: plane
 		};
 		if (move.recipe) {
-			return MoveFactory.build[move.recipe](merge(aligned, move));
+			console.log("arguments:");
+			console.log(merge(aligned, move));
+			// should I also refit, or will it already be fit properly?
+			let built = build(move.recipe, merge(aligned, move));
+			console.log("initial form:");
+			console.log(built);
+			console.log("socket:");
+			console.log(socket(aligned));
+			return realign(socket(aligned), built);
 		}
 		return aligned;
 	}
@@ -520,8 +526,6 @@ VS3D = function() {
 		let oriented = move;
 		for (let i=0; i<move.length; i++) {
 			if (fits(prop, oriented)) {
-				console.log(prop.head);
-				console.log(oriented[0].head);
 				return oriented;
 			} else {
 				console.log("realigning");
@@ -534,6 +538,7 @@ VS3D = function() {
 		return move;
 	}
 	
+	// I think this works recursively because chain and fit call each other
 	function chain(prop, arr) {
 		if (Array.isArray(prop)) {
 			arr = prop;
@@ -735,6 +740,7 @@ VS3D = function() {
 		}
 	}
 	Player.prototype.play = function() {
+		this.stop();
 		this._interval = setInterval(()=>{
 			for (let i=0; i<this.props.length; i++) {
 				this.render(spin(this.props[i].prop, this.props[i].moves, this.tick));
@@ -754,27 +760,32 @@ VS3D = function() {
 	}
 
 
-	MoveFactory.build = {};
-	MoveFactory.defaults = {
-		plane: WALL,
-		orient: UP,
-		spin: INSPIN,
-		mode: DIAMOND,
-		beats: 4,
-		speed: 1,
-		direction: CLOCKWISE
-	}
-	MoveFactory.recipe = function(name, defs, f) {
-		MoveFactory.build[name] = (args) => {
-			// may need to decompose the individual nodes and spread them
-			//return f({...this.defaults, ...defs, ...args});a
-			return f(merge(merge(this.defaults, defs), args));
+	let MoveFactory = {
+		defaults: {
+			plane: WALL,
+			orient: UP,
+			spin: INSPIN,
+			mode: DIAMOND,
+			beats: 4,
+			speed: 1,
+			direction: CLOCKWISE
 		}
 	}
-	MoveFactory.variant = function(name, recipe, defs) {
-		MoveFactory.build[name] = (args)=>{
+	function build(recipe, args) {
+		return MoveFactory[recipe](args);
+	}
+
+	function recipe(name, defs, f) {
+		MoveFactory[name] = (args) => {
 			// may need to decompose the individual nodes and spread them
-			return MoveFactory.build[recipe](merge(defs, args));
+			//return f({...this.defaults, ...defs, ...args});a
+			return f(merge(merge(MoveFactory.defaults, defs), args));
+		}
+	}
+	function variant(name, recipe, defs) {
+		MoveFactory[name] = (args)=>{
+			// may need to decompose the individual nodes and spread them
+			return MoveFactory[recipe](merge(defs, args));
 		}
 	}
 
@@ -818,6 +829,9 @@ VS3D = function() {
 	VS3D.move$spherify = move$spherify;
 	VS3D.socket = socket;
 	VS3D.MoveFactory = MoveFactory;
+	VS3D.recipe = recipe;
+	VS3D.build = build;
+	VS3D.variant = variant;
 	VS3D.refit = refit;
 	VS3D.realign = realign;
 	VS3D.chain = chain;
