@@ -520,8 +520,11 @@ VS3D = function() {
 		let oriented = move;
 		for (let i=0; i<move.length; i++) {
 			if (fits(prop, oriented)) {
+				console.log(prop.head);
+				console.log(oriented[0].head);
 				return oriented;
 			} else {
+				console.log("realigning");
 				let head = oriented[0];
 				let tail = oriented.slice(1);
 				oriented = tail.concat(head);
@@ -574,7 +577,7 @@ VS3D = function() {
 		args = alias(args);
 		let {p, beats} = args;
 		let {x0: r, v0: vr, a: ar} = solve({x0: args.r, x1: args.r1, v0: args.vr, v1: args.vr1, a: args.ar, t: beats*BEAT});
-		let {x0: a, v0: va, a: aa} = solve({x0: args.a, x1: args.a1, v0: args.va, v1: args.va1, a: args.aa, t: beats*BEAT, c: args.c});
+		let {x0: a, v0: va, a: aa} = angle$solve({x0: args.a, x1: args.a1, v0: args.va, v1: args.va1, a: args.aa, t: beats*BEAT, c: args.c});
 		//return motion$rotate({r: parseInt(r), vr: parseInt(vr), ar: ar, a: a, va: va, aa: aa, p:p}, t);
 		return motion$rotate({r: r, vr: vr, ar: ar, a: a, va: va, aa: aa, p:p}, t);
 
@@ -639,7 +642,8 @@ VS3D = function() {
 		return nargs;
 	}
 
-	function solve(args) {
+	function solve(args, angular) {
+		angular = (angular===true) ? true : false;
 		let {x0, x1, v0, v1, a, t} = args;
 		// where do we set defaults?
 		let known = {};
@@ -648,9 +652,13 @@ VS3D = function() {
 				known[arg] = true;
 			}
 		}
+		if (angular) {
+			x0 = angle(x0);
+			x1 = angle(x1);
+		}
 		// solve for acceleration given starting and ending position
 		if (known.x0 && known.x1 && known.v0 && known.t) {
-			a = 2*((x0-x1)/(t*t)-v0/t);
+			a = 2*((x1-x0)/(t*t)-v0/t);
 			v1 = v0+a*t;
 		// solve for end position given acceleration
 		} else if (known.x0 && known.v0 && known.a && known.t) {
@@ -660,21 +668,27 @@ VS3D = function() {
 		} else if (known.x0 && known.v0 && known.v1 && known.t) {
 			a = (v1-v0)/t;
 			x1 = x0+v0*t+a*t*t/2;
+		// solve for beginning speed and acceleration given both positions and final speed
+		} else if (known.x0 && known.x1 && known.v1 && known.t) {
+			// console.log(x0);
+			// console.log(x1);
+			a = 2*(v1/t-(x1-x0)/(t*t));
+			v0 = v1-a*t;
 		// impute acceleration to zero
-		} else if (known.x0 && known.v0) {
+		} else if (known.x0 && known.v0 && !known.a && !known.v1 && !known.x1) {
 			a = 0;
 			v1 = 0;
 			x1 = x0+v0*t;
-		} else if (known.x0 && known.x1) {
+		} else if (known.x0 && known.x1 && !known.a && !known.v0 && !known.v1) {
 			a = 0;
 			v0 = (x1-x0)/t;
 			v1 = v0;
-		} else if (known.x0) {
+		} else if (known.x0 && !known.a && !known.v0 && !known.v1 && !known.x1) {
 			a = 0;
 			v1 = 0;
 			v0 = 0;
 			x1 = x0;
-		} else if (!(known.x0)) {
+		} else if (!known.x0 && !known.x1 && !known.v0 && !known.v1 && !known.a) {
 			x0 = 0;
 			x1 = 0;
 			v0 = 0;
@@ -688,38 +702,7 @@ VS3D = function() {
 	}
 
 	function angle$solve(args) {
-		let {x0, x1, v0, v1, a, t, c} = args;
-		// should this default to clockwise, or to the shortest path?
-		let known = {};
-		for (let arg in args) {
-			known[args] = true;
-		}
-		// solve for acceleration given starting and ending position
-			// default to shortest angle
-		if (known.x0 && known.x1 && known.v0 && known.t ) {
-			if (c===undefined) {
-				c = (Math.abs(x1-x0)*UNIT > Math.PI) ? -1 : 1;
-			}
-			// this isn't quite right
-			x1 - Math.sign(c) + 2*Math.PI/UNIT;
-			// adjust x0 and x1 based on units and default
-			a = 2*((x0-x1)/(t*t)-v0/t);
-			v1 = v0+a*t;
-		// solve for end position given acceleration
-			// gives period exactly
-		} else if (known.x0 && known.v0 && known.a && known.t) {
-			x1 = x0+v0*t+a*t*t/2;
-			v1 = v0+a*t;
-		// solve for end position and acceleration given final position
-			// gives period exactly
-		} else if (known.x0 && known.v0 && known.v1 && known.t) {
-			a = (v1-v0)/t;
-			x1 = x0+v0*t+a*t*t/2;
-		} else {
-			console.log(vals);
-			throw new Error("solving method unimplemented.");
-		}
-		return {x0: x0, x1: x1, v0: v0, v1: v1, a: a, t: t};
+		return solve(args, true);
 	}
 
 
@@ -774,7 +757,9 @@ VS3D = function() {
 	MoveFactory.build = {};
 	MoveFactory.defaults = {
 		plane: WALL,
-		orient: NORTH,
+		orient: UP,
+		spin: INSPIN,
+		mode: DIAMOND,
 		beats: 4,
 		speed: 1,
 		direction: CLOCKWISE
