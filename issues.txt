@@ -1,5 +1,14 @@
-- Make named moves.
 - Comborific.
 - Integrate it with React.
 - Get the grip stuff working right.
 - I should probably try to inject defaults in some smarter place.
+	- only beats inferred in "spin".
+	- many defaults injected in node$spin.
+	- "fit" branches off.
+		- many injected into fit.
+		- many injected into realign.
+	- alias and solver used in node$spin.
+	- zeroes injected in motion$rotate.
+	- Should use merge uniformly.
+	- Also create a Node constructor.
+- We've got rounding errors kicking my butt.

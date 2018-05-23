@@ -22,17 +22,16 @@ VS3D = function() {
 	const SPEED = VS3D.SPEED = 1;
 
 
-
 	const NORTH = VS3D.NORTH = 0;
-	const EAST = VS3D.EAST = 0.25*2*Math.PI*UNIT;
-	const SOUTH = VS3D.SOUTH = 0.50*2*Math.PI*UNIT;
-	const WEST = VS3D.WEST = 0.75*2*Math.PI*UNIT;
-	const NORTHEAST = VS3D.NORTHEAST = 0.125*2*Math.PI*UNIT;
-	const SOUTHEAST = VS3D.SOUTHEAST = 0.375*2*Math.PI*UNIT;
-	const SOUTHWEST = VS3D.SOUTHWEST = 0.625*2*Math.PI*UNIT;
-	const NORTHWEST = VS3D.NORTHWEST = 0.875*2*Math.PI*UNIT;
-	const NEAR = VS3D.NEAR = 0.25*2*Math.PI*UNIT;
-	const FAR = VS3D.FAR = 0.75*2*Math.PI*UNIT;
+	const EAST = VS3D.EAST = 0.25*2*Math.PI/UNIT;
+	const SOUTH = VS3D.SOUTH = 0.50*2*Math.PI/UNIT;
+	const WEST = VS3D.WEST = 0.75*2*Math.PI/UNIT;
+	const NORTHEAST = VS3D.NORTHEAST = 0.125*2*Math.PI/UNIT;
+	const SOUTHEAST = VS3D.SOUTHEAST = 0.375*2*Math.PI/UNIT;
+	const SOUTHWEST = VS3D.SOUTHWEST = 0.625*2*Math.PI/UNIT;
+	const NORTHWEST = VS3D.NORTHWEST = 0.875*2*Math.PI/UNIT;
+	const NEAR = VS3D.NEAR = 0.25*2*Math.PI/UNIT;
+	const FAR = VS3D.FAR = 0.75*2*Math.PI/UNIT;
 	const N = VS3D.N = NORTH;
 	const E = VS3D.E = EAST;
 	const S = VS3D.S = SOUTH;
@@ -55,7 +54,7 @@ VS3D = function() {
 	const CW = VS3D.CW = CLOCKWISE;
 	const COUNTER = VS3D.COUNTER = COUNTERCLOCKWISE;
 	const CCW = VS3D.CCW = COUNTERCLOCKWISE;
-	const QUARTER = VS3D.QUARTER = 0.25*2*Math.PI*UNIT;
+	const QUARTER = VS3D.QUARTER = 0.25*2*Math.PI/UNIT;
 	const HALF = VS3D.HALF = 2*QUARTER;
 	const SPLIT = VS3D.SPLIT = HALF;
 	const SAME = VS3D.SAME = 0;
@@ -82,6 +81,22 @@ VS3D = function() {
 	    }
 	  }
 	  return nobj;
+	}
+
+	function merge(obj1, obj2) {
+		let nobj = clone(obj1);
+		for (let prop in obj2) {
+			if (typeof(obj2[prop])==="object") {
+				if (typeof(nobj[prop])==="object") {
+					nobj[prop] = merge(nobj[prop], obj2[prop]);
+				} else if (nobj[prop]===undefined) {
+					nobj[prop] = clone(obj2[prop]);
+				}
+			} else if (obj2[prop]!==undefined) {
+				nobj[prop] = obj2[prop];
+			}
+		}
+		return nobj;
 	}
 
 	// *** scalar functions
@@ -206,10 +221,6 @@ VS3D = function() {
 		axis = axis || WALL;
 		let {x: vx, y: vy, z: vz} = vec;
 		let {x: ax, y: ay, z: az} = axis;
-		// adding this, trying to get it right...
-		// ay = -ay;
-		// az = -az;
-		// let d = vector$dot(vec, vector(ax, ay, az));
 		let d = vector$dot(vec, axis);
 		let x = vx-d*ax;
 		let y = vy-d*ay;
@@ -218,11 +229,17 @@ VS3D = function() {
 	}
 	// calculate the angle between two vectors
 	function vector$between(v1, v2) {
-		let {x: x1, y: y1, z: z1} = v1;
-		let {x: x2, y: y2, z: z2} = v2;
-		let c = vector$magnitude(vector$cross(v1, v2));
-		let d = vector$dot(v1, v2);
-		return Math.atan2(c, d)/UNIT;
+		let a = Math.acos(vector$dot(v1, v2)/(vector$magnitude(v1)*vector$magnitude(v2)))/UNIT;
+		//console.log(vector$cross(v1, v2));
+		//console.log(vector$cross(v2, v1));
+		// // this is the hackiest thing in the world...
+		// 	// ...there must be a better way to ensure a certain direction of measurement
+		if (vector$nearly(v1, vector$rotate(v2, a))) {
+			return a;
+		} else {
+			return -a;
+		}
+		return a;
 	}
 	// reference vector is arbitrarily defined
 	function plane$reference(vec) {
@@ -263,9 +280,11 @@ VS3D = function() {
 	// convert a spherical coordinate to an angle in a given plane
 	function sphere$planify(s, p) {
 		p = p || WALL;
+		if (sphere$zeroish(s)) {
+			return 0;
+		}
 		let v = vector$project(sphere$vectorize(s),p);
-		return vector$between(v,plane$reference(p));
-		// this should be returning an angle, though, right?
+		return vector$between(v,plane$reference(p));		
 	}
 	// vector, but aliased for clarity
 	function plane(x, y, z) {
@@ -332,6 +351,46 @@ VS3D = function() {
 		}
 	}
 
+	function Move(args) {
+		args = args || {};
+		let p = args.p || WALL;
+		let beats = args.beats || 4;
+		// set default values for node positions
+		args.body = args.body || {r: 0, a: 0, p: p};
+		args.pivot = args.pivot || {r: 0, a: 0, p: p};
+		args.helper = args.helper || {r: 0, a: 0, p: p};
+		args.hand = args.hand || {r: 0, a: 0, p: p};
+		// all zeroes except for head
+		args.head = args.head || {r: 1, a: 0, p: p};
+		// do I allow "radius", "angle", or "bearing"?
+		args.body.r = args.body.r || args.body.radius || 0;
+		args.body.a = args.body.a || args.body.angle|| 0;
+		args.body.p = args.body.p || args.body.p || p;
+		args.pivot.r = args.pivot.r || args.pivot.radius || 0;
+		args.pivot.a = args.pivot.a || args.pivot.angle|| 0;
+		args.pivot.p = args.pivot.p || args.pivot.p || p;
+		args.helper.r = args.helper.r || args.helper.radius || 0;
+		args.helper.a = args.helper.a || args.helper.angle|| 0;
+		args.helper.p = args.helper.p || args.helper.p || p;
+		args.hand.r = args.hand.r || args.hand.radius || 0;
+		args.hand.a = args.hand.a || args.hand.angle|| 0;
+		args.hand.p = args.hand.p || args.hand.p|| p;
+		args.head.r = args.head.r || args.head.radius || 1;
+		args.head.a = args.head.a || args.head.angle|| 0;
+		args.head.p = args.head.p || args.head.p || p;
+		args.grip = args.grip || {a: 0, b: 0, c:0, t:0, beats: beats, p: p}
+		return {
+			body: args.body,
+			pivot: args.pivot,
+			helper: args.helper,
+			hand: args.hand,
+			head: args.head,
+			grip: args.grip,
+			p: p,
+			beats: beats
+		}
+	}
+
 	// given that I'm making Player, should this still overload?
 	function spin(p, m, t) {
 		if (typeof(m)==="number") {
@@ -344,9 +403,9 @@ VS3D = function() {
 			let past = 0;
 			let i = 0;
 			while (past<t) {
-				let ticks = m[i].beats*BEAT || 1*BEAT;
+				let ticks = beats(m[i])*BEAT || 1*BEAT;
 				if (past+ticks>=t) {
-					return prop$spin(m[i], t-past);
+					return spin(m[i], t-past);
 				} else {
 					past+=ticks;
 					i=(i+1)%m.length;
@@ -354,6 +413,26 @@ VS3D = function() {
 			}
 		}
 		return prop$spin(m, t);
+	}
+
+	function beats(move) {
+		if (Array.isArray(move)) {
+			let b = 0;
+			for (let m of move) {
+				b+=(beats(m) || 1);
+			}
+			return b;
+		} else {
+			return (move.beats || 1);
+		}
+	}
+
+	function fits(prop, move) {
+		if (Array.isArray(move)) {
+			return fits(prop, move[0]);
+		}
+		return (	sphere$nearly(node$sum(prop, HAND),node$sum(move$spherify(move), HAND))
+					&& sphere$nearly(node$sum(prop, HEAD),node$sum(move$spherify(move), HEAD)));
 	}
 
 	function fit(prop, move) {
@@ -369,12 +448,12 @@ VS3D = function() {
 			pivot = {r: pivot.r, a: sphere$planify(pivot, plane), p: plane};
 			helper = {r: helper.r, a: sphere$planify(helper, plane), p: plane};
 			hand = {r: hand.r, a: sphere$planify(hand, plane), p: plane};
+			//console.log(hand);
 			head = {r: head.r, a: sphere$planify(head, plane), p: plane};
-			if (	sphere$nearly(node$sum(prop, HAND),node$sum(move$spherify(move), HAND))
-					&& sphere$nearly(node$sum(prop, HEAD),node$sum(move$spherify(move), HEAD))) {
+			if (fits(prop, move)) {
 				return move;
 			} else {
-				return realign(prop, move);
+				return refit(prop, move);
 			}
 		}
 	}
@@ -392,11 +471,11 @@ VS3D = function() {
 	function move$spherify(move) {
 		let {p, body, pivot, helper, hand, head, grip, beats} = move;
 		p = p || WALL;
-		body = (body) ? {r: body.r, ...angle$spherify(body.a, p)} : sphere(0,0,0);
-		pivot = (pivot) ? {r: pivot.r, ...angle$spherify(pivot.a, p)} : sphere(0,0,0);
-		helper = (helper) ? {r: helper.r, ...angle$spherify(helper.a, p)} : sphere(0,0,0);
-		hand = (hand) ? {r: hand.r, ...angle$spherify(hand.a, p)} : sphere(0,0,0);
-		head = (head) ? {r: head.r, ...angle$spherify(head.a, p)} : sphere(1,0,0);
+		body = (body) ? {...angle$spherify(body.a, p), r: body.r} : sphere(0,0,0);
+		pivot = (pivot) ? {...angle$spherify(pivot.a, p), r: pivot.r} : sphere(0,0,0);
+		helper = (helper) ? {...angle$spherify(helper.a, p), r: helper.r} : sphere(0,0,0);
+		hand = (hand) ? {...angle$spherify(hand.a, p), r: hand.r} : sphere(0,0,0);
+		head = (head) ? {...angle$spherify(head.a, p), r: head.r} : sphere(1,0,0);
 		return {
 			body: body,
 			pivot: pivot,
@@ -412,14 +491,10 @@ VS3D = function() {
 	// now figure out chaining, and *maybe* figure out named moves
 	function socket(move) {
 		move.beats = move.beats || 1;
-		return prop$spin(move, move.beats*BEAT-1);
+		return prop$spin(move, move.beats*BEAT);
 	}
 
-	function realign(prop, move) {
-		if (move.name) {
-			// or something like this
-			return MoveFactory[move.name].realign(prop);
-		}
+	function refit(prop, move) {
 		let plane = move.p || WALL;
 		// !!!in a perfect world, this would have a preference for keeping defaults on body, pivot, or hinge
 		let {body, pivot, helper, hand, head, grip} = prop;
@@ -428,20 +503,43 @@ VS3D = function() {
 		helper = {r: helper.r, a: sphere$planify(helper, plane), p: plane};
 		hand = {r: hand.r, a: sphere$planify(hand, plane), p: plane};
 		head = {r: head.r, a: sphere$planify(head, plane), p: plane};
-		return {
-			body: {...body, ...move.body},
-			pivot: {...pivot, ...move.pivot},
-			helper: {...helper, ...move.helper},
-			hand: {...hand, ...move.hand},
-			head: {...head, ...move.head},
-			grip: {...grip, ...move.grip},
+		let aligned = {
+			body: merge(move.body, body),
+			pivot: merge(move.pivot, pivot),
+			helper: merge(move.helper,helper),
+			hand: merge(move.hand, hand),
+			head: merge(move.head, head),
+			grip: merge(move.grip, grip),
 			beats: move.beats,
-			p: move.p
+			p: plane
 		};
+		if (move.recipe) {
+			return MoveFactory.build[move.recipe](merge(aligned, move));
+		}
+		return aligned;
 	}
 
+	function realign(prop, move) {
+		let oriented = move;
+		for (let i=0; i<move.length; i++) {
+			if (fits(prop, oriented)) {
+				return oriented;
+			} else {
+				let head = oriented[0];
+				let tail = oriented.slice(1);
+				oriented = tail.concat(head);
+			}
+		}
+		console.log("realignment failed");
+		return move;
+	}
+	
 	function chain(prop, arr) {
-		arr[0] = fit(prop,arr[0]);
+		if (Array.isArray(prop)) {
+			arr = prop;
+		} else {
+			arr[0] = fit(prop,arr[0]);
+		}
 		for (let i=1; i<arr.length; i++) {
 			arr[i] = fit(socket(arr[i-1]),arr[i]);
 		}
@@ -452,14 +550,13 @@ VS3D = function() {
 	function prop$spin(args, t) {
 		let p = args.p || WALL;
 		let beats = args.beats || 1;
-		// should I be passing plane here, and beats?
-		args.body = args.body || {r: 0, a: 0, b: 0};
-		args.pivot = args.pivot || {r: 0, a: 0, b: 0};
-		args.helper = args.helper || {r: 0, a: 0, b: 0};
-		args.hand = args.hand || {r: 0, a: 0, b: 0};
-		args.head = args.head || {r: 1, a: 0, b: 0};
+		// why are these spheres and not planar angles?
+		args.body = args.body || {r: 0, a: 0, p: p};
+		args.pivot = args.pivot || {r: 0, a: 0, p: p};
+		args.helper = args.helper || {r: 0, a: 0, p: p};
+		args.hand = args.hand || {r: 0, a: 0, p: p};
+		args.head = args.head || {r: 1, a: 0, p: p};
 		args.grip = args.grip || {a: 0, b: 0, c: 0, t: 0};
-		// see, I probably should be passing plane and beats here...
 		return {
 			body: node$spin({beats: beats, p: p, ...args.body}, t),
 			pivot: node$spin({beats: beats, p: p, ...args.pivot}, t),
@@ -680,25 +777,25 @@ VS3D = function() {
 	MoveFactory.build = {};
 	MoveFactory.defaults = {
 		plane: WALL,
-		entry: NORTH,
 		orient: NORTH,
 		beats: 4,
 		speed: 1,
 		direction: CLOCKWISE
 	}
 	MoveFactory.recipe = function(name, defs, f) {
-		MoveFactory.build[name] = function(args) {
+		MoveFactory.build[name] = (args) => {
 			// may need to decompose the individual nodes and spread them
-			return f({...args, ...defs, ...defaults})
+			//return f({...this.defaults, ...defs, ...args});a
+			return f(merge(merge(this.defaults, defs), args));
 		}
 	}
 	MoveFactory.variant = function(name, recipe, defs) {
-		MoveFactory.build[name] = function(args) {
+		MoveFactory.build[name] = (args)=>{
 			// may need to decompose the individual nodes and spread them
 			return MoveFactory.build[recipe]({...args, ...defs});
 		}
 	}
-	MoveFactory.realign = function(name, move) {
+	MoveFactory.refit = function(name, move) {
 		// here's our big, complicated logic from the old version
 		// ...
 		// ...
@@ -708,11 +805,13 @@ VS3D = function() {
 
 
 	VS3D.clone = clone;
+	VS3D.merge = merge;
 	VS3D.round = round;
 	VS3D.zeroish = zeroish;
 	VS3D.nearly = nearly;
 	VS3D.angle = angle;
 	VS3D.angle$nearly = angle$nearly;
+	VS3D.vector = vector;
 	VS3D.vector$nearly = vector$nearly;
 	VS3D.vector$zeroish = vector$zeroish;
 	VS3D.vector$unitize = vector$unitize;
@@ -735,12 +834,16 @@ VS3D = function() {
 	VS3D.angle$spherify = angle$spherify;
 	VS3D.angle$rotate = angle$rotate;
 	VS3D.Prop = Prop;
+	VS3D.Move = Move;
 	VS3D.spin = spin;
+	VS3D.beats = beats;
+	VS3D.fits = fits;
 	VS3D.fit = fit;
 	VS3D.node$sum = node$sum;
 	VS3D.move$spherify = move$spherify;
 	VS3D.socket = socket;
 	VS3D.MoveFactory = MoveFactory;
+	VS3D.refit = refit;
 	VS3D.realign = realign;
 	VS3D.chain = chain;
 	VS3D.prop$spin = prop$spin;

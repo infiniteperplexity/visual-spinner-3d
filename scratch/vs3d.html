@@ -12,8 +12,7 @@
 <script>
 	let renderer, player;
 	let prop = new VS3D.Prop({hand: {r: 1}});
-	// wait...why does this work like so?
-	let move = {hand: {r: 1, a: 0, va: 0, va1: 1}, head: {r: 1, va: 0, va1: 1}, beats: 4};
+	let move = {recipe: "ccap", orient: VS3D.DOWN};
 	function init() {
 		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
 		renderer.update(prop);
@@ -23,7 +22,6 @@
 			renderer.update(prop);
 		}
 	}
-
 </script>
 <body onload="init();">
 	<div id="display">
