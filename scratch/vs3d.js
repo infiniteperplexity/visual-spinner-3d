@@ -356,36 +356,21 @@ VS3D = function() {
 		let p = args.p || WALL;
 		let beats = args.beats || 4;
 		// set default values for node positions
-		args.body = args.body || {r: 0, a: 0, p: p};
-		args.pivot = args.pivot || {r: 0, a: 0, p: p};
-		args.helper = args.helper || {r: 0, a: 0, p: p};
-		args.hand = args.hand || {r: 0, a: 0, p: p};
-		// all zeroes except for head
-		args.head = args.head || {r: 1, a: 0, p: p};
-		// do I allow "radius", "angle", or "bearing"?
-		args.body.r = args.body.r || args.body.radius || 0;
-		args.body.a = args.body.a || args.body.angle|| 0;
-		args.body.p = args.body.p || args.body.p || p;
-		args.pivot.r = args.pivot.r || args.pivot.radius || 0;
-		args.pivot.a = args.pivot.a || args.pivot.angle|| 0;
-		args.pivot.p = args.pivot.p || args.pivot.p || p;
-		args.helper.r = args.helper.r || args.helper.radius || 0;
-		args.helper.a = args.helper.a || args.helper.angle|| 0;
-		args.helper.p = args.helper.p || args.helper.p || p;
-		args.hand.r = args.hand.r || args.hand.radius || 0;
-		args.hand.a = args.hand.a || args.hand.angle|| 0;
-		args.hand.p = args.hand.p || args.hand.p|| p;
-		args.head.r = args.head.r || args.head.radius || 1;
-		args.head.a = args.head.a || args.head.angle|| 0;
-		args.head.p = args.head.p || args.head.p || p;
-		args.grip = args.grip || {a: 0, b: 0, c:0, t:0, beats: beats, p: p}
+		let body = merge({r: 0, a: 0, p: p}, args.body);
+		let pivot = merge({r: 0, a: 0, p: p}, args.pivot);
+		let helper = merge({r: 0, a: 0, p: p}, args.helper);
+		let hand = merge({r: 0, a: 0, p: p}, args.hand);
+		//all zeroes except for head
+		let head = merge({r: 1, a: 0, p: p}, args.head);
+		//do I allow "radius", "angle", or "bearing"?
+		let grip = merge({a: 0, b: 0, c:0, t:0}, args.grip);
 		return {
-			body: args.body,
-			pivot: args.pivot,
-			helper: args.helper,
-			hand: args.hand,
-			head: args.head,
-			grip: args.grip,
+			body: body,
+			pivot: pivot,
+			helper: helper,
+			hand: hand,
+			head: head,
+			grip: grip,
 			p: p,
 			beats: beats
 		}
@@ -792,15 +777,8 @@ VS3D = function() {
 	MoveFactory.variant = function(name, recipe, defs) {
 		MoveFactory.build[name] = (args)=>{
 			// may need to decompose the individual nodes and spread them
-			return MoveFactory.build[recipe]({...args, ...defs});
+			return MoveFactory.build[recipe](merge(defs, args));
 		}
-	}
-	MoveFactory.refit = function(name, move) {
-		// here's our big, complicated logic from the old version
-		// ...
-		// ...
-		// ...
-		return move;
 	}
 
 

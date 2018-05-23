@@ -1,3 +1,7 @@
+* Get C-CAP fully working.
+- Add more moves.
+- Get the demo working.
+- Get multi-view working.
 - Comborific.
 - Integrate it with React.
 - Get the grip stuff working right.
@@ -10,5 +14,5 @@
 	- alias and solver used in node$spin.
 	- zeroes injected in motion$rotate.
 	- Should use merge uniformly.
-	- Also create a Node constructor.
-- We've got rounding errors kicking my butt.
+	- Also create a Node constructor?
+	- maybe "alias" should accept a variety of lookup tables

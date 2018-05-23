@@ -71,43 +71,44 @@ VS3D = (function(VS3D) {
 	let socket = VS3D.socket;
 	let realign = VS3D.realign;
 
-	
-
 	MoveFactory.recipe(
 		"ccap",
 		{
 			orient: NORTH,
-			phase: INSPIN,
+			spin: INSPIN,
 			hand: {r: 1}
 		},
 		function(options) {
-			let {beats, speed, hand, phase, orient, direction} = options;
+			let {beats, speed, hand, spin, orient, direction} = options;
 			let move = chain([
 				Move({
 					...options,
 					beats: beats/4,
-					hand: {...hand, a: orient, va: direction*speed},
-					head: {a: orient, va: speed},
+					hand: {...hand, a: orient, va: spin*direction*speed},
+					head: {a: orient, va: spin*direction*speed},
 				}),
 				Move({
 					...options,
 					beats: beats/4,
-					hand: {...hand, va: -direction*speed},
-					head: {va: 3*speed}
+					hand: {...hand, va: -spin*direction*speed},
+					head: {va: 3*spin*direction*speed}
 				}),
 				Move({
 					...options,
 					beats: beats/4,
-					hand: {...hand, va: -direction*speed},
-					head: {va: 3*speed}
+					hand: {...hand, va: -spin*direction*speed},
+					head: {va: 3*spin*direction*speed}
 				}),
 				Move({
 					...options,
 					beats: beats/4,
-					hand: {...hand, va: direction*speed},
-					head: {va: speed}
+					hand: {...hand, va: spin*direction*speed},
+					head: {va: spin*direction*speed}
 				})
 			]);
+			if (spin===ANTISPIN) {
+				move = move.slice(2).concat(move.slice(0,2));
+			}
 			return realign(socket(options),move);
 		}
 	);
