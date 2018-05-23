@@ -387,7 +387,7 @@ VS3D = function() {
 		if (Array.isArray(m)) {
 			let past = 0;
 			let i = 0;
-			while (past<t) {
+			while (past<=t) {
 				let ticks = beats(m[i])*BEAT || 1*BEAT;
 				if (past+ticks>=t) {
 					return spin(m[i], t-past);
@@ -396,6 +396,9 @@ VS3D = function() {
 					i=(i+1)%m.length;
 				}
 			}
+		}
+		if (Array.isArray(m)) {
+			console.log("shouldn't have gotten here");
 		}
 		return prop$spin(m, t);
 	}
@@ -454,6 +457,9 @@ VS3D = function() {
 	}
 
 	function move$spherify(move) {
+		if (Array.isArray(move)) {
+			console.log("need to handle this");
+		}
 		let {p, body, pivot, helper, hand, head, grip, beats} = move;
 		p = p || WALL;
 		body = (body) ? {...angle$spherify(body.a, p), r: body.r} : sphere(0,0,0);
@@ -475,11 +481,17 @@ VS3D = function() {
 
 	// now figure out chaining, and *maybe* figure out named moves
 	function socket(move) {
+		if (Array.isArray(move)) {
+			return socket(move[0]);
+		}
 		move.beats = move.beats || 1;
 		return prop$spin(move, move.beats*BEAT);
 	}
 
 	function refit(prop, move) {
+		if (Array.isArray(move)) {
+			console.log("need to handle refit");
+		}
 		let plane = move.p || WALL;
 		// !!!in a perfect world, this would have a preference for keeping defaults on body, pivot, or hinge
 		let {body, pivot, helper, hand, head, grip} = prop;
