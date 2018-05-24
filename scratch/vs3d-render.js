@@ -1,26 +1,6 @@
 VS3D = (function(VS3D) {
 
-	function poiShapes() {
-		let head= new THREE.Mesh(
-			new THREE.SphereGeometry(0.2,16,16),
-			new THREE.MeshLambertMaterial({color: "red"})
-		);
-		head.position.y = 1;
-		let tether = new THREE.Mesh(
-			new THREE.CylinderGeometry(0.025,0.025,1,4),
-			new THREE.MeshLambertMaterial({color: "white"})
-		);
-		tether.translateY(0.5);
-		let handle = new THREE.Mesh(
-			new THREE.SphereGeometry(0.075,8,8),
-			new THREE.MeshLambertMaterial({color: "red"})
-		);
-		let group = new THREE.Group();
-		group.add(head);
-		group.add(tether);
-		group.add(handle);
-		return group;
-	}
+
 
 	function ThreeRenderer(el) {
 		this.width = 500;
@@ -41,6 +21,8 @@ VS3D = (function(VS3D) {
 		grid.setColors(0x333333, 0x333333);
 		this.scene.add(grid);
 		this.scene.fog = new THREE.FogExp2( 0x000000, 0.0128 );
+		this.registry = [];
+		this.models = [];
 		// let animate = ()=>{
 		// 	requestAnimationFrame(animate);
 		// 	this.renderer.render(this.scene, this.camera);
@@ -50,6 +32,29 @@ VS3D = (function(VS3D) {
 		this.scene.add(this.shapes);
 		this.renderer.render(this.scene, this.camera);
 		this.tick = 0;
+	}
+
+	ThreeRenderer.prototype.render = function(wrappers) {
+		// clean up removed props
+		for (let i=0; i<this.registry.length; i++) {
+			let prop = this.registry[i];
+			if (!wrappers.includes(prop)) {
+				this.registry.splice(i,1);
+				this.models.splice(i,1);
+				i-=1;
+			}
+		}
+		// add new props
+		for (let prop of wrappers) {
+			if (!this.registry.includes(prop)) {
+				this.registry.push(prop);
+				this.models.push(this[prop.model](prop.color));
+			}
+		}
+		// update all prop locations
+		for (let prop of registry) {
+			// hold on one second...
+		}
 	}
 
 
@@ -90,6 +95,28 @@ VS3D = (function(VS3D) {
 		prop = VS3D.spin(prop, move, this.tick);
 		this.update(prop);
 		return prop;
+	}
+
+	ThreeRenderer.prototype.poi = function(color) {
+		let head= new THREE.Mesh(
+			new THREE.SphereGeometry(0.2,16,16),
+			new THREE.MeshLambertMaterial({color: color})
+		);
+		head.position.y = 1;
+		let tether = new THREE.Mesh(
+			new THREE.CylinderGeometry(0.025,0.025,1,4),
+			new THREE.MeshLambertMaterial({color: "white"})
+		);
+		tether.translateY(0.5);
+		let handle = new THREE.Mesh(
+			new THREE.SphereGeometry(0.075,8,8),
+			new THREE.MeshLambertMaterial({color: color})
+		);
+		let group = new THREE.Group();
+		group.add(head);
+		group.add(tether);
+		group.add(handle);
+		return group;
 	}
 
 	VS3D.ThreeRenderer = ThreeRenderer;
