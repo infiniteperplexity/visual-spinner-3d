@@ -713,7 +713,11 @@ VS3D = function() {
 
 
 	// should the props get wrappers? it seems that way...
-	function PropWrapper(prop) {
+	function PropWrapper(prop, args) {
+		args = args || {};
+		this.model = args.model || "poi";
+		this.color = args.color || "red";
+		this.fire = args.fire || false;
 		this.prop = prop;
 		this.moves = [];
 	}
@@ -726,34 +730,35 @@ VS3D = function() {
 		}
 	}
 	function Player(args) {
-		this.props = args.props.map((p)=>(new PropWrapper(p))) || [];
+		args = args || {};
+		this.props = [];
 		this.speed = args.speed || 10;
 		this.rate = args.rate || 1;
 		this.tick = 0;
 	}
+	Player.prototype.addProp = function(prop, args) {
+		this.props.push(new PropWrapper(prop, args));
+	}
 	// should the callback be able to take cosmetic properties?
-	Player.prototype.render = function(prop) {};
+	Player.prototype.render = function(wrappers, positions) {};
 	Player.prototype.goto = function(t) {
 		this.tick = t;
-		for (let i=0; i<this.props.length; i++) {
-			this.render(spin(this.props[i].prop, this.props[i].moves, this.tick));
+		let positions = [];
+		for (let prop of this.props) {
+			positions.push(spin(prop.prop, prop.moves, this.tick));
 		}
+		this.render(this.props, positions);
 	}
 	Player.prototype.play = function() {
 		this.stop();
 		this._interval = setInterval(()=>{
-			for (let i=0; i<this.props.length; i++) {
-				this.render(spin(this.props[i].prop, this.props[i].moves, this.tick));
-			}
-			this.tick+=this.rate;
+			this.goto(this.tick+this.rate);
 		}, this.speed);
 	}
 	Player.prototype.stop = function() {
 		clearInterval(this._interval);
 	}
-	Player.prototype.addProp = function(prop) {
-		this.props.push(new PlayerPropWrapper(prop));
-	}
+
 	Player.prototype.reset = function() {
 		this.stop();
 		this.goto(0);

@@ -1,7 +1,5 @@
 VS3D = (function(VS3D) {
 
-
-
 	function ThreeRenderer(el) {
 		this.width = 500;
 		this.height = 500;
@@ -23,59 +21,59 @@ VS3D = (function(VS3D) {
 		this.scene.fog = new THREE.FogExp2( 0x000000, 0.0128 );
 		this.registry = [];
 		this.models = [];
-		// let animate = ()=>{
-		// 	requestAnimationFrame(animate);
-		// 	this.renderer.render(this.scene, this.camera);
-		// }
-		// this.requestId = animate();
-		this.shapes = poiShapes();
-		this.scene.add(this.shapes);
-		this.renderer.render(this.scene, this.camera);
 		this.tick = 0;
+		this.stagger = -0.1;
 	}
 
-	ThreeRenderer.prototype.render = function(wrappers) {
+	ThreeRenderer.prototype.render = function(wrappers, positions) {
 		// clean up removed props
 		for (let i=0; i<this.registry.length; i++) {
 			let prop = this.registry[i];
 			if (!wrappers.includes(prop)) {
 				this.registry.splice(i,1);
+				let shapes = this.models[i];
+				this.scene.remove(shapes);
 				this.models.splice(i,1);
 				i-=1;
 			}
 		}
 		// add new props
+		// oof...we need to think about how to do this...'cuz right 
 		for (let prop of wrappers) {
 			if (!this.registry.includes(prop)) {
 				this.registry.push(prop);
-				this.models.push(this[prop.model](prop.color));
+				let shapes = this[prop.model](prop.color);
+				this.models.push(shapes);
+				this.scene.add(shapes);
 			}
 		}
 		// update all prop locations
-		for (let prop of registry) {
-			// hold on one second...
+		for (let i=0; i<this.registry.length; i++) {
+			let prop = this.registry[i];
+			this.update(this.models[i], positions[i], i);
 		}
+		this.renderer.render(this.scene, this.camera);
 	}
 
 
-	ThreeRenderer.prototype.update = function(prop) {
+	ThreeRenderer.prototype.update = function(shapes, prop, i) {
 		// rotate and translate according to "body", "pivot", "helper", and "hand"
-		this.shapes.position.x = 0;
-		this.shapes.position.y = 0;
-		this.shapes.position.z = 0;
-		this.shapes.rotation.x = 0;
-		this.shapes.rotation.y = 0;
-		this.shapes.rotation.z = 0;
+		shapes.position.x = 0;
+		shapes.position.y = 0;
+		shapes.position.z = this.stagger*i;
+		shapes.rotation.x = 0;
+		shapes.rotation.y = 0;
+		shapes.rotation.z = 0;
 		for (let i=VS3D.BODY; i<=VS3D.HAND; i++) {
 			let node = VS3D.NODES[i];
-			this.shapes.rotateY(-prop[node].b*VS3D.UNIT);
-			this.shapes.rotateZ(-prop[node].a*VS3D.UNIT);
-			this.shapes.translateOnAxis(VS3D.YAXIS,+prop[node].r);
-			this.shapes.rotateZ(+prop[node].a*VS3D.UNIT);
-			this.shapes.rotateY(+prop[node].b*VS3D.UNIT);
+			shapes.rotateY(-prop[node].b*VS3D.UNIT);
+			shapes.rotateZ(-prop[node].a*VS3D.UNIT);
+			shapes.translateOnAxis(VS3D.YAXIS,+prop[node].r);
+			shapes.rotateZ(+prop[node].a*VS3D.UNIT);
+			shapes.rotateY(+prop[node].b*VS3D.UNIT);
 		}
-		this.shapes.rotateY(-prop.head.b*VS3D.UNIT);
-		this.shapes.rotateZ(-prop.head.a*VS3D.UNIT);
+		shapes.rotateY(-prop.head.b*VS3D.UNIT);
+		shapes.rotateZ(-prop.head.a*VS3D.UNIT);
 		// leave HEAD.r out of this for now
 		// leave bend out of this for now
 		// leave grip out of this for now
@@ -83,7 +81,6 @@ VS3D = (function(VS3D) {
 		// choke
 		//shape.translate(0.5*myProp.prop.radius);
 		//this.shapes.translateOnAxis(YAXIS,-(prop.grip.c)*prop.head.r);
-		this.renderer.render(this.scene, this.camera);
 	}
 
 	ThreeRenderer.prototype.play = function(prop, move, intv) {
@@ -97,10 +94,18 @@ VS3D = (function(VS3D) {
 		return prop;
 	}
 
+	ThreeRenderer.prototype.colors = function(c) {
+		let colors = {
+			//blue: "royalblue"
+			blue: new THREE.Color(0x3333ff)
+		};
+		return (colors[c] || c);
+	}
+
 	ThreeRenderer.prototype.poi = function(color) {
 		let head= new THREE.Mesh(
 			new THREE.SphereGeometry(0.2,16,16),
-			new THREE.MeshLambertMaterial({color: color})
+			new THREE.MeshLambertMaterial({color: this.colors(color)})
 		);
 		head.position.y = 1;
 		let tether = new THREE.Mesh(
@@ -110,7 +115,7 @@ VS3D = (function(VS3D) {
 		tether.translateY(0.5);
 		let handle = new THREE.Mesh(
 			new THREE.SphereGeometry(0.075,8,8),
-			new THREE.MeshLambertMaterial({color: color})
+			new THREE.MeshLambertMaterial({color: this.colors(color)})
 		);
 		let group = new THREE.Group();
 		group.add(head);
