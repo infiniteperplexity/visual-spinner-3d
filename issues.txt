@@ -1,5 +1,7 @@
 * Get C-CAP fully working.
 - Add more moves.
+- Add linear movements.
+- Add non-WebGL fallback.
 - Get the demo working.
 - Get multi-view working.
 - Comborific.
@@ -16,5 +18,7 @@
 	- Should use merge uniformly.
 	- Also create a Node constructor?
 	- maybe "alias" should accept a variety of lookup tables
-
-- Ah yup.  We're running into the multiple solutions problem, I think.
+- add PolarGridHelper
+- finish nudge
+- moves in other planes not working right
+- figure out render order

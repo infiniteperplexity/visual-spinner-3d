@@ -3,6 +3,7 @@ VS3D = function() {
 	// useful constants
 	const SMALL = VS3D.SMALL = 0.001;
 	const TINY = VS3D.TINY = 0.0001;
+	const NUDGE = VS3D.NUDGE = 0.1;
 	const UNIT = VS3D.UNIT = 2*Math.PI/360;
 	const BODY = VS3D.BODY = 0;
 	const PIVOT = VS3D.PIVOT = 1;
@@ -317,7 +318,7 @@ VS3D = function() {
 		args.body = args.body || {r: 0, a: 0, b: 0};
 		args.pivot = args.pivot || {r: 0, a: 0, b: 0};
 		args.helper = args.helper || {r: 0, a: 0, b: 0};
-		args.hand = args.hand || {r: 0, a: 0, b: 0};
+		args.hand = args.hand || {r: 1, a: 0, b: 0};
 		// all zeroes except for head
 		args.head = args.head || {r: 1, a: 0, b: 0};
 
@@ -332,7 +333,7 @@ VS3D = function() {
 		args.helper.r = args.helper.r || args.helper.radius || 0;
 		args.helper.a = args.helper.a || args.helper.angle|| 0;
 		args.helper.b = args.helper.b || args.helper.bearing || 0;
-		args.hand.r = args.hand.r || args.hand.radius || 0;
+		args.hand.r = args.hand.r || args.hand.radius || 1;
 		args.hand.a = args.hand.a || args.hand.angle|| 0;
 		args.hand.b = args.hand.b || args.hand.bearing || 0;
 		args.head.r = args.head.r || args.head.radius || 1;
@@ -357,7 +358,7 @@ VS3D = function() {
 		let body = merge({r: 0, a: 0, p: p}, args.body);
 		let pivot = merge({r: 0, a: 0, p: p}, args.pivot);
 		let helper = merge({r: 0, a: 0, p: p}, args.helper);
-		let hand = merge({r: 0, a: 0, p: p}, args.hand);
+		let hand = merge({r: 1, a: 0, p: p}, args.hand);
 		//all zeroes except for head
 		let head = merge({r: 1, a: 0, p: p}, args.head);
 		//do I allow "radius", "angle", or "bearing"?
@@ -383,6 +384,9 @@ VS3D = function() {
 			m = fit(p, m);
 		}
 		if (Array.isArray(m)) {
+			if (m.length===0) {
+				return p;
+			}
 			let past = 0;
 			let i = 0;
 			while (past<=t) {
@@ -423,6 +427,9 @@ VS3D = function() {
 
 	function fit(prop, move) {
 		if (Array.isArray(move)) {
+			if (move.length===0) {
+				return [];
+			}
 			return chain(prop, move);
 		} else {
 			if (move.nofit) {
@@ -537,7 +544,12 @@ VS3D = function() {
 		console.log("realignment failed");
 		return move;
 	}
-	
+	function nudge(prop, axis) {
+		axis = axis || WALL;
+		let p = clone(prop);
+		let v = sphere$vectorize(p.home);
+		// finish this later
+	}
 	// I think this works recursively because chain and fit call each other
 	function chain(prop, arr) {
 		if (Array.isArray(prop)) {
@@ -559,7 +571,7 @@ VS3D = function() {
 		args.body = args.body || {r: 0, a: 0, p: p};
 		args.pivot = args.pivot || {r: 0, a: 0, p: p};
 		args.helper = args.helper || {r: 0, a: 0, p: p};
-		args.hand = args.hand || {r: 0, a: 0, p: p};
+		args.hand = args.hand || {r: 1, a: 0, p: p};
 		args.head = args.head || {r: 1, a: 0, p: p};
 		args.grip = args.grip || {a: 0, b: 0, c: 0, t: 0};
 		return {
@@ -764,6 +776,10 @@ VS3D = function() {
 		this.goto(0);
 	}
 
+	Player.prototype.update = function() {
+		this.goto(this.tick);
+	}
+
 
 	let MoveFactory = {
 		defaults: {
@@ -773,10 +789,16 @@ VS3D = function() {
 			mode: DIAMOND,
 			beats: 4,
 			speed: 1,
-			direction: CLOCKWISE
+			direction: CLOCKWISE,
+			hand: {r: 1},
+			head: {r: 1}
 		}
 	}
 	function build(recipe, args) {
+		if (typeof(recipe)==="object") {
+			args = recipe;
+			recipe = args.recipe;
+		}
 		return MoveFactory[recipe](args);
 	}
 

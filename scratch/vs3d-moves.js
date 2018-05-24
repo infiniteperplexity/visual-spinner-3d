@@ -1,6 +1,7 @@
 VS3D = (function(VS3D) {
 	const SMALL = VS3D.SMALL;
 	const TINY = VS3D.TINY;
+	const NUDGE = VS3D.NUDGE;
 	const UNIT = VS3D.UNIT;
 	const BODY = VS3D.BODY;
 	const PIVOT = VS3D.PIVOT;
@@ -72,9 +73,7 @@ VS3D = (function(VS3D) {
 
 	recipe(
 		"ccap",
-		{
-			hand: {r: 1}
-		},
+		{},
 		options => {
 			let {beats, speed, hand, spin, orient, direction} = options;
 			let move = chain([
@@ -113,11 +112,11 @@ VS3D = (function(VS3D) {
 	recipe(
 		"pendulum",
 		{
-			orient: DOWN,
-			hand: {r: 1}
+			orient: DOWN
 		},
 		options => {
 			let {beats, speed, hand, spin, orient, direction} = options;
+			console.log(options);
 			let move = chain([
 				Move({
 					...options,
@@ -144,6 +143,7 @@ VS3D = (function(VS3D) {
 					head: {a1: orient, va: 0},
 				})
 			]);
+			console.log(move);
 			return move;
 		}
 	);
@@ -151,7 +151,6 @@ VS3D = (function(VS3D) {
 	recipe(
 		"flower",
 		{
-			hand: {r: 1},
 			petals: 4
 		},
 		options => {
