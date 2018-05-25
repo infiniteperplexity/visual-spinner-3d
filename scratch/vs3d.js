@@ -228,17 +228,7 @@ VS3D = function() {
 	}
 	// calculate the angle between two vectors
 	function vector$between(v1, v2) {
-		let a = Math.acos(vector$dot(v1, v2)/(vector$magnitude(v1)*vector$magnitude(v2)))/UNIT;
-		//console.log(vector$cross(v1, v2));
-		//console.log(vector$cross(v2, v1));
-		// // this is the hackiest thing in the world...
-		// 	// ...there must be a better way to ensure a certain direction of measurement
-		if (vector$nearly(vector$unitize(v1), vector$unitize(vector$rotate(v2, a)))) {
-			return a;
-		} else {
-			return -a;
-		}
-		return a;
+		return Math.acos(vector$dot(v1, v2)/(vector$magnitude(v1)*vector$magnitude(v2)))/UNIT;
 	}
 	// reference vector is arbitrarily defined
 	function plane$reference(vec) {
@@ -283,8 +273,16 @@ VS3D = function() {
 			return 0;
 		}
 		let v = vector$project(sphere$vectorize(s),p);
-		return vector$between(v,plane$reference(p));		
+		let r = plane$reference(p);
+		let a = vector$between(v,r);
+		// really quite hacky, and might cause problems
+		if (vector$nearly(vector$unitize(v), vector$unitize(vector$rotate(r, a, p)))) {
+			return a;
+		} else {
+			return -a;
+		}
 	}
+	
 	// vector, but aliased for clarity
 	function plane(x, y, z) {
 		return vector(x, y, z);
@@ -518,8 +516,8 @@ VS3D = function() {
 		if (move.recipe) {
 			// console.log("arguments:");
 			// console.log(merge(aligned, move));
-			// should I also refit, or will it already be fit properly?
-			let built = build(move.recipe, merge(aligned, move));
+			// // should I also refit, or will it already be fit properly?
+			// let built = build(move.recipe, merge(aligned, move));
 			// console.log("initial form:");
 			// console.log(built);
 			// console.log("socket:");

@@ -116,7 +116,6 @@ VS3D = (function(VS3D) {
 		},
 		options => {
 			let {beats, speed, hand, spin, orient, direction} = options;
-			console.log(options);
 			let move = chain([
 				Move({
 					...options,
@@ -143,7 +142,6 @@ VS3D = (function(VS3D) {
 					head: {a1: orient, va: 0},
 				})
 			]);
-			console.log(move);
 			return move;
 		}
 	);
@@ -154,7 +152,7 @@ VS3D = (function(VS3D) {
 			petals: 4
 		},
 		options => {
-			let {beats, mode, speed, hand, head, spin, orient, direction, petals} = options;
+			let {beats, mode, speed, hand, head, spin, orient, direction, petals, p} = options;
 			let v = (spin===INSPIN) ? (petals+1) : (petals-1);
 			//mode is a "soft default"
 			let hangle = orient+mode;

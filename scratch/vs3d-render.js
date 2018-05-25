@@ -22,7 +22,6 @@ VS3D = (function(VS3D) {
 		//let grid = new THREE.GridHelper(10,1, 0xffffff, 0xffffff);
 		let grid = new THREE.GridHelper(10, 10, 0x333333, 0x333333); 
 		grid.material.transparent = true;
-		console.log(grid);
 		grid.rotateX(Math.PI/2);
 		//grid.translateOnAxis(VS3D.YAXIS, -5*VS3D.NUDGE);
 		this.scene.add(grid);

@@ -11,17 +11,17 @@
 <script src="vs3d-render.js"></script>
 <script>
 	let renderer, player;
-	let red = new VS3D.Prop({head: { a: -180}});
-	let blue = new VS3D.Prop({head: { a: -180}});
-	let move1 = {recipe: "pendulum"};
-	let move2 = {recipe: "pendulum"};
+	let red = new VS3D.Prop();
+	//let blue = new VS3D.Prop({hand: {p: VS3D.FLOOR}, head: {p: VS3D.FLOOR}});
+	let move1 = {recipe: "flower", petals: 0, p: VS3D.WHEEL};
+	//let move2 = {recipe: "flower", petals: 0, p: VS3D.FLOOR};
 	function init() {
 		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
 		player = new VS3D.Player();
 		player.addProp(red);
-		player.addProp(blue, {color: "blue"});
+		//player.addProp(blue, {color: "blue"});
 		player.props[0].addMove(move1);
-		player.props[1].addMove(move2);
+		//player.props[1].addMove(move2);
 		player.render = function(props, positions) {
 			renderer.render(props, positions);
 		}
