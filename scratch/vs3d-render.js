@@ -78,7 +78,7 @@ VS3D = (function(VS3D) {
 		shapes.rotation.x = 0;
 		shapes.rotation.y = 0;
 		shapes.rotation.z = 0;
-		for (let i=VS3D.BODY; i<=VS3D.HAND; i++) {
+		for (let i=VS3D.BODY; i<VS3D.HEAD; i++) {
 			let node = VS3D.NODES[i];
 			shapes.rotateY(-prop[node].b*VS3D.UNIT);
 			shapes.rotateZ(-prop[node].a*VS3D.UNIT);

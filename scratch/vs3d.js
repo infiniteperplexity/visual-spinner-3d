@@ -9,8 +9,9 @@ VS3D = function() {
 	const PIVOT = VS3D.PIVOT = 1;
 	const HELPER = VS3D.HELPER =2;
 	const HAND = VS3D.HAND = 3;
-	const HEAD = VS3D.HEAD = 4;
-	const NODES = VS3D.NODES = ["body","pivot","helper","hand","head"];
+	const GRIP = VS3D.GRIP = 4;
+	const HEAD = VS3D.HEAD = 5;
+	const NODES = VS3D.NODES = ["body","pivot","helper","hand","grip","head"];
 	const WALL = VS3D.WALL = plane(0,0,1);
 	const WHEEL = VS3D.WHEEL = plane(1,0,0);
 	const FLOOR = VS3D.FLOOR = plane(0,1,0);
@@ -321,6 +322,7 @@ VS3D = function() {
 		args.pivot = args.pivot || {r: 0, a: 0, b: 0};
 		args.helper = args.helper || {r: 0, a: 0, b: 0};
 		args.hand = args.hand || {r: 1, a: 0, b: 0};
+		args.grip = args.grip || {r: 0, a: 0, b: 0};
 		// all zeroes except for head
 		args.head = args.head || {r: 1, a: 0, b: 0};
 
@@ -338,17 +340,21 @@ VS3D = function() {
 		args.hand.r = args.hand.r || args.hand.radius || 1;
 		args.hand.a = args.hand.a || args.hand.angle|| 0;
 		args.hand.b = args.hand.b || args.hand.bearing || 0;
+		args.grip.r = args.grip.r || args.grip.radius || 0;
+		args.grip.a = args.grip.a || args.grip.angle|| 0;
+		args.grip.b = args.grip.b || args.grip.bearing || 0;
 		args.head.r = args.head.r || args.head.radius || 1;
 		args.head.a = args.head.a || args.head.angle|| 0;
 		args.head.b = args.head.b || args.head.bearing || 0;
-		args.grip = args.grip || {a: 0, b: 0, c:0, t:0}
+		args.things = args.things || {a: 0, b: 0, c:0, t:0}
 		return {
 			body: args.body,
 			pivot: args.pivot,
 			helper: args.helper,
 			hand: args.hand,
+			grip: args.grip,
 			head: args.head,
-			grip: args.grip
+			things: args.things
 		}
 	}
 
@@ -361,17 +367,18 @@ VS3D = function() {
 		let pivot = merge({r: 0, a: 0, p: p}, args.pivot);
 		let helper = merge({r: 0, a: 0, p: p}, args.helper);
 		let hand = merge({r: 1, a: 0, p: p}, args.hand);
-		//all zeroes except for head
+		let grip = merge({r: 0, a: 0, p: p}, args.grip);
 		let head = merge({r: 1, a: 0, p: p}, args.head);
 		//do I allow "radius", "angle", or "bearing"?
-		let grip = merge({a: 0, b: 0, c:0, t:0}, args.grip);
+		let things = merge({a: 0, b: 0, c:0, t:0}, args.things);
 		return {
 			body: body,
 			pivot: pivot,
 			helper: helper,
 			hand: hand,
-			head: head,
 			grip: grip,
+			head: head,
+			things: things,
 			p: p,
 			beats: beats
 		}
@@ -447,13 +454,6 @@ VS3D = function() {
 			if (move.nofit) {
 				return move;
 			}
-			let plane = move.p || WALL;
-			let {body, pivot, helper, hand, head, grip} = prop;
-			body = {r: body.r, a: sphere$planify(body, plane), p: plane};
-			pivot = {r: pivot.r, a: sphere$planify(pivot, plane), p: plane};
-			helper = {r: helper.r, a: sphere$planify(helper, plane), p: plane};
-			hand = {r: hand.r, a: sphere$planify(hand, plane), p: plane};
-			head = {r: head.r, a: sphere$planify(head, plane), p: plane};
 			if (fits(prop, move)) {
 				return move;
 			} else {
@@ -476,20 +476,23 @@ VS3D = function() {
 		if (Array.isArray(move)) {
 			console.log("need to handle spherify?");
 		}
-		let {p, body, pivot, helper, hand, head, grip, beats} = move;
+		let {p, body, pivot, helper, hand, head, grip, things, beats} = move;
 		p = p || WALL;
 		body = (body) ? {...angle$spherify(body.a, p), r: body.r} : sphere(0,0,0);
 		pivot = (pivot) ? {...angle$spherify(pivot.a, p), r: pivot.r} : sphere(0,0,0);
 		helper = (helper) ? {...angle$spherify(helper.a, p), r: helper.r} : sphere(0,0,0);
+		// !!!!!!!this should probably default to 1?
 		hand = (hand) ? {...angle$spherify(hand.a, p), r: hand.r} : sphere(0,0,0);
+		grip = (grip) ? {...angle$spherify(grip.a, p), r: grip.r} : sphere(0,0,0);
 		head = (head) ? {...angle$spherify(head.a, p), r: head.r} : sphere(1,0,0);
 		return {
 			body: body,
 			pivot: pivot,
 			helper: helper,
 			hand: hand,
-			head: head,
 			grip: grip,
+			head: head,
+			things: things,
 			p: p,
 			beats: beats
 		};
@@ -511,19 +514,21 @@ VS3D = function() {
 		}
 		let plane = move.p || WALL;
 		// !!!in a perfect world, this would have a preference for keeping defaults on body, pivot, or hinge
-		let {body, pivot, helper, hand, head, grip} = prop;
+		let {body, pivot, helper, hand, grip, head, things} = prop;
 		body = {r: body.r, a: sphere$planify(body, plane), p: plane};
 		pivot = {r: pivot.r, a: sphere$planify(pivot, plane), p: plane};
 		helper = {r: helper.r, a: sphere$planify(helper, plane), p: plane};
 		hand = {r: hand.r, a: sphere$planify(hand, plane), p: plane};
+		grip = {r: grip.r, a: sphere$planify(grip, plane), p: plane};
 		head = {r: head.r, a: sphere$planify(head, plane), p: plane};
 		let aligned = {
 			body: merge(move.body, body),
 			pivot: merge(move.pivot, pivot),
 			helper: merge(move.helper,helper),
 			hand: merge(move.hand, hand),
-			head: merge(move.head, head),
 			grip: merge(move.grip, grip),
+			head: merge(move.head, head),
+			things: merge(move.things, things),
 			beats: move.beats,
 			p: plane
 		};
@@ -588,15 +593,17 @@ VS3D = function() {
 		args.pivot = args.pivot || {r: 0, a: 0, p: p};
 		args.helper = args.helper || {r: 0, a: 0, p: p};
 		args.hand = args.hand || {r: 1, a: 0, p: p};
+		args.grip = args.grip || {r: 0, a: 0, p: p};
 		args.head = args.head || {r: 1, a: 0, p: p};
-		args.grip = args.grip || {a: 0, b: 0, c: 0, t: 0};
+		args.things = args.things || {a: 0, b: 0, c: 0, t: 0};
 		return {
 			body: node$spin({beats: beats, p: p, ...args.body}, t),
 			pivot: node$spin({beats: beats, p: p, ...args.pivot}, t),
 			helper: node$spin({beats: beats, p: p, ...args.helper}, t),
 			hand: node$spin({beats: beats, p: p, ...args.hand}, t),
+			grip: node$spin({beats: beats, p: p, ...args.grip}, t),
 			head: node$spin({beats: beats, p: p, ...args.head}, t),
-			grip: {beats: beats, p: p, a: 0, b: 0, c: 0, t: 0}
+			things: {beats: beats, p: p, a: 0, b: 0, c: 0, t: 0}
 		}
 	}
 
@@ -646,7 +653,7 @@ VS3D = function() {
 		return {...angle$spherify(a, p), r: r};
 	}
 
-	function motion$grip(args, t) {
+	function motion$things(args, t) {
 
 	}
 
@@ -927,7 +934,7 @@ VS3D = function() {
 	VS3D.node$spin = node$spin;
 	VS3D.motion$rotate = motion$rotate;
 	VS3D.motion$linear = motion$linear;
-	VS3D.motion$grip = motion$grip;
+	VS3D.motion$things = motion$things;
 	VS3D.alias = alias;
 	VS3D.solve = solve;
 	VS3D.angle$solve = angle$solve;
