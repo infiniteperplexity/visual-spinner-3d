@@ -14,7 +14,7 @@ VS3D = function() {
 	const NODES = VS3D.NODES = ["body","pivot","helper","hand","grip","head"];
 	const WALL = VS3D.WALL = plane(0,0,1);
 	const WHEEL = VS3D.WHEEL = plane(1,0,0);
-	const FLOOR = VS3D.FLOOR = plane(0,1,0);
+	const FLOOR = VS3D.FLOOR = plane(0,-1,0);
 	const XAXIS = VS3D.XAXIS = vector(1,0,0);
 	const YAXIS = VS3D.YAXIS = vector(0,1,0);
 	const ZAXIS = VS3D.ZAXIS = vector(0,0,1);
@@ -185,14 +185,15 @@ VS3D = function() {
 		return vector$unitize(v);
 	}
 	// rotate a vector around an axis
-	// doesn't 
 	function vector$rotate(vec, ang, axis) {
 		axis = axis || WALL;
 		let {x, y, z} = vec;
 		let {x: u, y: v, z: w} = axis;
 		// the y and z axes are flipped
-		v = -v;
-		w = -w;
+		//v = -v;
+		v = v;
+		//w = -w;
+		w = w;
 		let s = (u*x+v*y+w*z);
 		let t = (u*u+v*v+w*w);
 		let sq = Math.sqrt(t);
@@ -340,18 +341,23 @@ VS3D = function() {
 		args.hand.r = args.hand.r || args.hand.radius || 1;
 		args.hand.a = args.hand.a || args.hand.angle|| 0;
 		args.hand.b = args.hand.b || args.hand.bearing || 0;
+		args.twist = args.twist || 0;
+		// prop has no bend
 		args.grip.r = args.grip.r || args.grip.radius || 0;
 		args.grip.a = args.grip.a || args.grip.angle|| 0;
 		args.grip.b = args.grip.b || args.grip.bearing || 0;
 		args.head.r = args.head.r || args.head.radius || 1;
 		args.head.a = args.head.a || args.head.angle|| 0;
 		args.head.b = args.head.b || args.head.bearing || 0;
-		args.things = args.things || {a: 0, b: 0, c:0, t:0}
+		args.things = args.things || {a: 0, b: 0, c:0, t:0};
+		
 		return {
 			body: args.body,
 			pivot: args.pivot,
 			helper: args.helper,
 			hand: args.hand,
+			twist: args.twist,
+			// prop has no bend
 			grip: args.grip,
 			head: args.head,
 			things: args.things
@@ -367,6 +373,8 @@ VS3D = function() {
 		let pivot = merge({r: 0, a: 0, p: p}, args.pivot);
 		let helper = merge({r: 0, a: 0, p: p}, args.helper);
 		let hand = merge({r: 1, a: 0, p: p}, args.hand);
+		let twist = args.twist || 0;
+		let bend = args.bend || 0;
 		let grip = merge({r: 0, a: 0, p: p}, args.grip);
 		let head = merge({r: 1, a: 0, p: p}, args.head);
 		//do I allow "radius", "angle", or "bearing"?
@@ -376,6 +384,8 @@ VS3D = function() {
 			pivot: pivot,
 			helper: helper,
 			hand: hand,
+			twist: twist,
+			bend: bend,
 			grip: grip,
 			head: head,
 			things: things,
@@ -440,6 +450,8 @@ VS3D = function() {
 		// console.log(move.hand);
 		// console.log(prop.head);
 		// console.log(move.head);
+		// !!!!Temporary mod to disable fitting
+		//return true;
 		return (	sphere$nearly(node$sum(prop, HAND),node$sum(move$spherify(move), HAND))
 					&& sphere$nearly(node$sum(prop, HEAD),node$sum(move$spherify(move), HEAD)));
 	}
@@ -451,8 +463,12 @@ VS3D = function() {
 			}
 			return chain(prop, move);
 		} else {
-			if (move.nofit) {
-				return move;
+			// this isn't really where I want to check this
+			// if (move.nofit) {
+			// 	return move;
+			// }
+			if (move.recipe) {
+				return refit(prop, move);
 			}
 			if (fits(prop, move)) {
 				return move;
@@ -472,17 +488,23 @@ VS3D = function() {
 		return vector$spherify(vector(xs,ys,zs));
 	}
 
+	function prop$axis(prop) {
+		// so that I can later switch how this works if I misunderstood GRIP
+		return vector$unitize(sphere$vectorize(prop.head));
+	}
+
 	function move$spherify(move) {
 		if (Array.isArray(move)) {
 			console.log("need to handle spherify?");
 		}
-		let {p, body, pivot, helper, hand, head, grip, things, beats} = move;
+		let {p, body, pivot, helper, hand, head, grip, bend, twist, things, beats} = move;
 		p = p || WALL;
 		body = (body) ? {...angle$spherify(body.a, p), r: body.r} : sphere(0,0,0);
 		pivot = (pivot) ? {...angle$spherify(pivot.a, p), r: pivot.r} : sphere(0,0,0);
 		helper = (helper) ? {...angle$spherify(helper.a, p), r: helper.r} : sphere(0,0,0);
-		// !!!!!!!this should probably default to 1?
-		hand = (hand) ? {...angle$spherify(hand.a, p), r: hand.r} : sphere(0,0,0);
+		hand = (hand) ? {...angle$spherify(hand.a, p), r: hand.r} : sphere(1,0,0);
+		// !!!!!bend may incorporate somehow...
+		twist = twist || 0;
 		grip = (grip) ? {...angle$spherify(grip.a, p), r: grip.r} : sphere(0,0,0);
 		head = (head) ? {...angle$spherify(head.a, p), r: head.r} : sphere(1,0,0);
 		return {
@@ -490,6 +512,7 @@ VS3D = function() {
 			pivot: pivot,
 			helper: helper,
 			hand: hand,
+			twist: twist,
 			grip: grip,
 			head: head,
 			things: things,
@@ -514,11 +537,14 @@ VS3D = function() {
 		}
 		let plane = move.p || WALL;
 		// !!!in a perfect world, this would have a preference for keeping defaults on body, pivot, or hinge
-		let {body, pivot, helper, hand, grip, head, things} = prop;
+		let {body, pivot, helper, hand, twist, bend, grip, head, things} = prop;
 		body = {r: body.r, a: sphere$planify(body, plane), p: plane};
 		pivot = {r: pivot.r, a: sphere$planify(pivot, plane), p: plane};
 		helper = {r: helper.r, a: sphere$planify(helper, plane), p: plane};
 		hand = {r: hand.r, a: sphere$planify(hand, plane), p: plane};
+		// I'm not sure this is correct
+		twist = twist || 0;
+		bend = bend || 0;
 		grip = {r: grip.r, a: sphere$planify(grip, plane), p: plane};
 		head = {r: head.r, a: sphere$planify(head, plane), p: plane};
 		let aligned = {
@@ -526,6 +552,9 @@ VS3D = function() {
 			pivot: merge(move.pivot, pivot),
 			helper: merge(move.helper,helper),
 			hand: merge(move.hand, hand),
+			// I'm not sure this is correct
+			twist: (twist || move.twist),
+			bend: (bend || move.bend),
 			grip: merge(move.grip, grip),
 			head: merge(move.head, head),
 			things: merge(move.things, things),
@@ -541,7 +570,14 @@ VS3D = function() {
 			// console.log(clone(built));
 			// console.log("socket:");
 			// console.log(socket(aligned));
+			if (move.nofit) {
+				return built;
+			}
 			return realign(socket(aligned), built);
+		}
+		// !!!!! causes problems for movefactory
+		if (move.nofit) {
+			return move;
 		}
 		return aligned;
 	}
@@ -593,16 +629,39 @@ VS3D = function() {
 		args.pivot = args.pivot || {r: 0, a: 0, p: p};
 		args.helper = args.helper || {r: 0, a: 0, p: p};
 		args.hand = args.hand || {r: 1, a: 0, p: p};
+		args.twist = args.twist || 0;
+		args.bend = args.bend || 0;
 		args.grip = args.grip || {r: 0, a: 0, p: p};
 		args.head = args.head || {r: 1, a: 0, p: p};
 		args.things = args.things || {a: 0, b: 0, c: 0, t: 0};
+
+		// console.log("head start");
+		// console.log(clone(args.head));
+		
+		
+		let body = node$spin({beats: beats, p: p, ...args.body}, t);
+		let pivot = node$spin({beats: beats, p: p, ...args.pivot}, t);
+		let helper = node$spin({beats: beats, p: p, ...args.helper}, t);
+		let hand = node$spin({beats: beats, p: p, ...args.hand}, t);
+		let twist = 0;
+		let bend = args.bend;
+		let grip = node$spin({beats: beats, p: p, ...args.grip}, t);
+		let head = node$spin({beats: beats, p: p, ...args.head}, t);
+		// okay...so here we need to take at least the HEAD node...
+		// ...and rotate it by BEND around the cross product of its own axis and the plane
+		let vhead = sphere$vectorize(head);
+		let axis = vector$unitize(sphere$vectorize(head));
+		let tangent = vector$cross(axis,p);
+		head = vector$spherify(vector$rotate(vhead,bend,tangent));
 		return {
-			body: node$spin({beats: beats, p: p, ...args.body}, t),
-			pivot: node$spin({beats: beats, p: p, ...args.pivot}, t),
-			helper: node$spin({beats: beats, p: p, ...args.helper}, t),
-			hand: node$spin({beats: beats, p: p, ...args.hand}, t),
-			grip: node$spin({beats: beats, p: p, ...args.grip}, t),
-			head: node$spin({beats: beats, p: p, ...args.head}, t),
+			body: body,
+			pivot: pivot,
+			helper: helper,
+			hand: hand,
+			// fix this somehow
+			twist: twist,
+			grip: grip,
+			head: head,
 			things: {beats: beats, p: p, a: 0, b: 0, c: 0, t: 0}
 		}
 	}
@@ -921,6 +980,7 @@ VS3D = function() {
 	VS3D.fits = fits;
 	VS3D.fit = fit;
 	VS3D.node$sum = node$sum;
+	VS3D.prop$axis = prop$axis;
 	VS3D.move$spherify = move$spherify;
 	VS3D.socket = socket;
 	VS3D.MoveFactory = MoveFactory;

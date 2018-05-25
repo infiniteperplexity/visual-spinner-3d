@@ -19,4 +19,5 @@ Apps:
 - Integrate it with React.
 
 
-
+Bugs:
+- spinmorepoi demo doesn't convert starting positions in WHEEL or FLOOR plane correctly.

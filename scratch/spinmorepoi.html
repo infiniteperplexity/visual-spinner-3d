@@ -171,22 +171,23 @@
 				}
 			}
 			let start = prop.prop;
+			// !!!!!this is a problem with WHEEL and FLOOR planes...
 			start.hand.a = angle;
 			start.head.a = angle;
 			if (recipe==="extension") {
-				move = build({recipe: "flower", orient: angle, petals: 0, direction: dir, p: p});
+				move = {recipe: "flower", orient: angle, petals: 0, direction: dir, p: p};
 			} else if (recipe==="inspin1") {
-				move = build({recipe: "flower", orient: angle, petals: 1, direction: dir, p: p});
+				move = {recipe: "flower", orient: angle, petals: 1, direction: dir, p: p};
 			} else if (recipe==="inspin2") {
-				move = build({recipe: "flower", orient: angle, petals: 2, direction: dir, p: p});
+				move = {recipe: "flower", orient: angle, petals: 2, direction: dir, p: p};
 			} else if (recipe==="inspin4") {
-				move = build({recipe: "flower", orient: angle, petals: 4, direction: dir, p: p});
+				move = {recipe: "flower", orient: angle, petals: 4, direction: dir, p: p};
 			} else if (recipe==="antispin2") {
-				move = build({recipe: "flower", orient: angle, petals: 2, spin: -1, direction: dir, p: p});
+				move = {recipe: "flower", orient: angle, petals: 2, spin: -1, direction: dir, p: p};
 			} else if (recipe==="antispin3") {
-				move = build({recipe: "flower", orient: angle, petals: 3, spin: -1, direction: dir, p: p});
+				move = {recipe: "flower", orient: angle, petals: 3, spin: -1, direction: dir, p: p};
 			} else if (recipe==="antispin4") {
-				move = build({recipe: "flower", orient: angle, petals: 4, spin: -1, direction: dir, p: p});
+				move = {recipe: "flower", orient: angle, petals: 4, spin: -1, direction: dir, p: p};
 			} else if (recipe==="pendulum") {
 				if ([VS3D.UP,VS3D.DOWN].includes(angle)) {
 					start.head.a = VS3D.DOWN;

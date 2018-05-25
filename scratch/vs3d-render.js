@@ -86,15 +86,13 @@ VS3D = (function(VS3D) {
 			shapes.rotateZ(+prop[node].a*VS3D.UNIT);
 			shapes.rotateY(+prop[node].b*VS3D.UNIT);
 		}
+		// BEND should be handled elsewhere
+		let axis = VS3D.prop$axis(prop);
+		// handle TWIST (possibly this should go before GRIP?)
+		shapes.rotateOnAxis(axis,prop.twist*VS3D.UNIT);
 		shapes.rotateY(-prop.head.b*VS3D.UNIT);
 		shapes.rotateZ(-prop.head.a*VS3D.UNIT);
-		// leave HEAD.r out of this for now
-		// leave bend out of this for now
-		// leave grip out of this for now
-		// leave twist out of this for now
-		// choke
-		//shape.translate(0.5*myProp.prop.radius);
-		//this.shapes.translateOnAxis(YAXIS,-(prop.grip.c)*prop.head.r);
+		// leave HEAD.R out of this for now
 	}
 
 	
