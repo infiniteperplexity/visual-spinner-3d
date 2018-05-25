@@ -70,6 +70,7 @@ VS3D = (function(VS3D) {
 	let Move = VS3D.Move;
 	let chain = VS3D.chain;
 	let merge = VS3D.merge;
+	let clone = VS3D.clone;
 
 	recipe(
 		"ccap",
@@ -157,8 +158,8 @@ VS3D = (function(VS3D) {
 			let v = (spin===INSPIN) ? (petals+1) : (petals-1);
 			//mode is a "soft default"
 			let hangle = orient+mode;
-			if (head.a!==undefined) {
-				hangle = hand.a;
+			if (head.a!==undefined && hand.a!==undefined) {
+				hangle = orient + head.a - hand.a;
 			}
 			let segment = Move(merge(options,{
 				beats: beats/4,

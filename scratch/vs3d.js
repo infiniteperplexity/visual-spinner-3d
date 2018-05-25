@@ -240,8 +240,10 @@ VS3D = function() {
 		if (x===0 && y===0) {
 			return vector(0,1,0);
 		}
-		// otherwise, return the intersection of this and the WALL plane in the first or second quadrant
-		return vector$unitize(vector(y,x,0));
+		// otherwise, return the intersection of this and the WHEEL plane in the third? or fourth? quadrant
+		return vector$unitize(vector(0,x,-y));
+		// I used to use the intersection with the WALL plane in the first or second but I think the new way is better
+		//return vector$unitize(vector(y,x,0));
 	}
 
  	// compose a spherical coordinate from a scalar and two angles
@@ -421,6 +423,16 @@ VS3D = function() {
 		if (Array.isArray(move)) {
 			return fits(prop, move[0]);
 		}
+		// console.log("node sums");
+		// console.log(node$sum(prop, HAND));
+		// console.log(node$sum(move$spherify(move), HAND));
+		// console.log(node$sum(prop, HEAD));
+		// console.log(node$sum(move$spherify(move), HEAD));
+		// console.log("positions");
+		// console.log(prop.hand);
+		// console.log(move.hand);
+		// console.log(prop.head);
+		// console.log(move.head);
 		return (	sphere$nearly(node$sum(prop, HAND),node$sum(move$spherify(move), HAND))
 					&& sphere$nearly(node$sum(prop, HEAD),node$sum(move$spherify(move), HEAD)));
 	}
@@ -521,7 +533,7 @@ VS3D = function() {
 			// // should I also refit, or will it already be fit properly?
 			let built = build(move.recipe, merge(aligned, move));
 			// console.log("initial form:");
-			// console.log(built);
+			// console.log(clone(built));
 			// console.log("socket:");
 			// console.log(socket(aligned));
 			return realign(socket(aligned), built);
@@ -542,6 +554,10 @@ VS3D = function() {
 			}
 		}
 		console.log("realignment failed");
+		alert("realignment failed");
+		console.log(prop);
+		console.log(move);
+		throw new Error("realignment failed");
 		return move;
 	}
 	function nudge(prop, axis) {
@@ -592,7 +608,11 @@ VS3D = function() {
 		// we could do it in the solver...
 	function node$spin(args, t) {
 		args = alias(args);
-		let {p, beats} = args;
+		let {p, beats, m} = args;
+		if (m==="linear") {
+			let {a0: a, r0: r, la: la, vl0: vl, al: al} = linear$solve({a0: args.a, r0: args.r, la: args.la, vl0: args.vl, vl1: args.vl1, al: args.al, t: beats*BEAT})
+			return motion$linear({a: a, r: r, la: la, vl: vl, al: al});
+		}
 		let {x0: r, v0: vr, a: ar} = solve({x0: args.r, x1: args.r1, v0: args.vr, v1: args.vr1, a: args.ar, t: beats*BEAT});
 		let {x0: a, v0: va, a: aa} = angle$solve({x0: args.a, x1: args.a1, v0: args.va, v1: args.va1, a: args.aa, t: beats*BEAT, c: args.c});
 		//return motion$rotate({r: parseInt(r), vr: parseInt(vr), ar: ar, a: a, va: va, aa: aa, p:p}, t);
@@ -608,26 +628,27 @@ VS3D = function() {
 		let r = args.r + args.vr*t + args.ar*t*t/2;
 		let a = args.a + args.va*t*SPEED + args.aa*t*t*SPEED*SPEED/2;
 		let p = args.p;
-		if (vector$nearly(p, FLOOR) && args.va===1) {
-			console.log(args);
-			console.log(angle$spherify(a, p));
-		}
 		return {...angle$spherify(a, p), r: r};
 	}
 
-	function motion$slide(args, t) {
-
+	function motion$linear(args, t) {
+		for (let e of ["r","a","la","vl","al"]) {
+			args[e] = args[e] || 0;
+		}
+		args.p = args.p || WALL;
+		let {x: x0, y: y0} = sphere$vectorize(sphere(r,a,0));
+		let dx = Math.cos(la*UNIT);
+		let dy = Math.sin(la*UNIT);
+		let x1 = x0 + args.vl*dx*t + args.al*dx*t*t/2;
+		let y1 = x0 + args.vl*dy*t + args.al*dy*t*t/2;
+		let {r, a} = vector$spherify(vector(x1,y1,0));
+		let p = args.p;
+		return {...angle$spherify(a, p), r: r};
 	}
 
 	function motion$grip(args, t) {
 
 	}
-
-	function motion$type(args) {
-		// placeholder logic
-		return motion$rotate;
-	}
-
 
 	function alias(args) {
 		let aliases = {
@@ -645,9 +666,11 @@ VS3D = function() {
 			units: "c",
 			cycles: "c",
 			loops: "c",
-			petals: "c"
+			petals: "c",
+			motion: "m",
+			vl0: "vl"
 		}
-		let vals = ["r","r1","a","a1","va","vr","va1","vr1","c","p","beats"];
+		let vals = ["r","r1","a","a1","va","vr","va1","vr1","c","p","m","beats","vl","al","la"];
 		let nargs = {};
 		for (let val of vals) {
 			if (nargs[val]===undefined) {
@@ -659,6 +682,9 @@ VS3D = function() {
 			if (args[val]===undefined && args[alias]!==undefined) {
 				nargs[val] = args[alias];
 			}
+		}
+		if (nargs.vl!==undefined || nargs.al!==undefined || nargs.la!==undefined) {
+			nargs.m = "linear";
 		}
 		return nargs;
 	}
@@ -717,6 +743,7 @@ VS3D = function() {
 			a = 0;
 		} else {
 			console.log(args);
+			alert("solving method unimplemented");
 			throw new Error("solving method unimplemented.");
 		}
 		return {x0: x0, x1: x1, v0: v0, v1: v1, a: a, t: t};
@@ -726,6 +753,36 @@ VS3D = function() {
 		return solve(args, true);
 	}
 
+	function linear$solve(args) {
+		let {a0, a1, r0, r1, vl0, vl1, al0, al, t} = args;
+		// where do we set defaults?
+		let known = {};
+		for (let arg in args) {
+			if (args[arg]!==undefined) {
+				known[arg] = true;
+			}
+		}
+		// solve for acceleration given angle and starting / ending position
+		if (known.a0 && known.r0 && known.la && known.vl0 && known.t) {
+
+		// solve for final position and speed given angle, start, speed, and acceleration
+		} else if (known.a0 && known.r0 && known.la && knwon.v0 && known.a && known.t) {
+
+		// solve for start speed, angle, and acceleration given final speed and start / end position
+		} else if (known.a0 && known.r0 && known.a1 && known.r1 && known.vl0 && known.t) {
+
+		} else if (known.a0 && known.r0 && known.a1 && known.r1 && known.vl0 && known.t) {
+
+		// the common one...assume constant speed from start to finish
+		} else if (known.a0 && known.r0 && known.a1 && known.r1 && known.t && !known.vl0 && !known.vl1 && !known.al) {
+		
+		} else {
+			console.log(args);
+			alert("solving method unimplemented");
+			throw new Error("solving method unimplemented.");
+		}
+		return {a0: a0, a1: a1, r0: r0, r1: r1, la: la, vl0: vl0, vl1: vl1, al: al, t: t};
+	}
 
 
 	// should the props get wrappers? it seems that way...
@@ -869,9 +926,8 @@ VS3D = function() {
 	VS3D.prop$spin = prop$spin;
 	VS3D.node$spin = node$spin;
 	VS3D.motion$rotate = motion$rotate;
-	VS3D.motion$slide = motion$slide;
+	VS3D.motion$linear = motion$linear;
 	VS3D.motion$grip = motion$grip;
-	VS3D.motion$type = motion$type;
 	VS3D.alias = alias;
 	VS3D.solve = solve;
 	VS3D.angle$solve = angle$solve;

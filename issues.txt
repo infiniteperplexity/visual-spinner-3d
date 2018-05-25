@@ -1,24 +1,22 @@
-* Get C-CAP fully working.
-- Add more moves.
+Engine:
 - Add linear movements.
+- Get the grip stuff working right.
+- Make solver deal with loops.
+- Finish "nudge".
+- Are defaults injected in the right places?
+
+Moves:
+- Add more moves.
+
+Render:
 - Add non-WebGL fallback.
+- figure out render order
+
+Apps:
 - Get the demo working.
 - Get multi-view working.
 - Comborific.
 - Integrate it with React.
-- Get the grip stuff working right.
-- I should probably try to inject defaults in some smarter place.
-	- only beats inferred in "spin".
-	- many defaults injected in node$spin.
-	- "fit" branches off.
-		- many injected into fit.
-		- many injected into realign.
-	- alias and solver used in node$spin.
-	- zeroes injected in motion$rotate.
-	- Should use merge uniformly.
-	- Also create a Node constructor?
-	- maybe "alias" should accept a variety of lookup tables
-- add PolarGridHelper
-- finish nudge
-- moves in other planes not working right
-- figure out render order
+
+
+
