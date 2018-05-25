@@ -117,7 +117,7 @@ VS3D = function() {
     	while (a<0) {
     		a+=(2*Math.PI/UNIT);
     	}
-    	while (a>(2*Math.PI/UNIT)) {
+    	while (a>=(2*Math.PI/UNIT)) {
     		a-=(2*Math.PI/UNIT);
     	}
     	return a;
@@ -167,7 +167,9 @@ VS3D = function() {
 		let a = Math.acos(y/r)/UNIT;
 		let b = Math.atan2(z,x)/UNIT;
 		if (Math.abs(b)>90) {
-			b = Math.sign(b)*(180-b);
+			// tentative...
+			// b = Math.sign(b)*(180-b);
+			b = b - 180;
 			a = angle(0-a);
 		}
 		a = angle(a);
@@ -517,7 +519,7 @@ VS3D = function() {
 			// console.log("arguments:");
 			// console.log(merge(aligned, move));
 			// // should I also refit, or will it already be fit properly?
-			// let built = build(move.recipe, merge(aligned, move));
+			let built = build(move.recipe, merge(aligned, move));
 			// console.log("initial form:");
 			// console.log(built);
 			// console.log("socket:");
@@ -606,6 +608,10 @@ VS3D = function() {
 		let r = args.r + args.vr*t + args.ar*t*t/2;
 		let a = args.a + args.va*t*SPEED + args.aa*t*t*SPEED*SPEED/2;
 		let p = args.p;
+		if (vector$nearly(p, FLOOR) && args.va===1) {
+			console.log(args);
+			console.log(angle$spherify(a, p));
+		}
 		return {...angle$spherify(a, p), r: r};
 	}
 

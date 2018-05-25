@@ -116,6 +116,7 @@ VS3D = (function(VS3D) {
 		},
 		options => {
 			let {beats, speed, hand, spin, orient, direction} = options;
+			// floor plane pendulums don't work right...is that okay?
 			let move = chain([
 				Move({
 					...options,

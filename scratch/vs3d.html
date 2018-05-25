@@ -11,9 +11,10 @@
 <script src="vs3d-render.js"></script>
 <script>
 	let renderer, player;
-	let red = new VS3D.Prop();
+	let red = new VS3D.Prop({hand: {a: 90, b: 150}, head: {a: 90, b: 150}});
 	//let blue = new VS3D.Prop({hand: {p: VS3D.FLOOR}, head: {p: VS3D.FLOOR}});
-	let move1 = {recipe: "flower", petals: 0, p: VS3D.WHEEL};
+	// let move1 = {recipe: "flower", petals: 0, p: VS3D.FLOOR};
+	let move1 = VS3D.Move({hand: {va: 1}, head: {va: 1}, p: VS3D.FLOOR});
 	//let move2 = {recipe: "flower", petals: 0, p: VS3D.FLOOR};
 	function init() {
 		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
@@ -27,6 +28,8 @@
 		}
 		player.reset();
 	}
+
+	//VS3D.socket(player.props[0].moves[0])
 </script>
 <body onload="init();">
 	<div id="display">

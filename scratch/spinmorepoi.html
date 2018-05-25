@@ -157,6 +157,19 @@
 			let dir = VS3D[direction];
 			let angle = VS3D[align];
 			let p = VS3D[plane];
+			if (p===VS3D.FLOOR) {
+				if (angle===VS3D.UP) {
+					angle = VS3D.NEAR;
+				} else if (angle===VS3D.DOWN) {
+					angle = VS3D.FAR;
+				}
+			} else if (p===VS3D.WHEEL) {
+				if (angle===VS3D.RIGHT) {
+					angle = VS3D.NEAR;
+				} else if (angle===VS3D.LEFT) {
+					angle = VS3D.FAR;
+				}
+			}
 			let start = prop.prop;
 			start.hand.a = angle;
 			start.head.a = angle;
@@ -204,7 +217,7 @@
 			<select id="plane1"></select>
 			<select id="plane2"></select>
 			<select id="plane3"></select>
-			<p>aligned:</p>
+			<p>Align:</p>
 			<select id="align0"></select>
 			<select id="align1"></select>
 			<select id="align2"></select>
