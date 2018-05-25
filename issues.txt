@@ -9,8 +9,10 @@ Moves:
 - Add more moves.
 
 Render:
+- There is a flicker-to-zero in TWIST at a=0 that seems proportional in size to the x-component of the planar axis.
+	- So, really bad in WHEEL plane.
 - Add non-WebGL fallback.
-- figure out render order
+- figure out render order.
 
 Apps:
 - Get the demo working.
@@ -21,3 +23,4 @@ Apps:
 
 Bugs:
 - spinmorepoi demo doesn't convert starting positions in WHEEL or FLOOR plane correctly.
+- an error when selecting floor plane triquetras might be caused by that

@@ -18,12 +18,12 @@
 	//let move1 = VS3D.Move({recipe: "pendulum", p: VS3D.FLOOR});
 	//let move1 = {recipe: "flower", p: VS3D.FLOOR, petals: 0, nofit: true};
 	//let move1 = VS3D.Move({hand: {a: 90, va: 1}, head: {a: 90, va: 1}, p: VS3D.FLOOR, nofit: true});
-	let move1 = VS3D.Move({hand: {va: 1}, head: {va: 1}, p: VS3D.WHEEL, bend: 30, nofit: true});
+	let move1 = VS3D.Move({hand: {va: 1}, head: {va: 1}, p: VS3D.WALL, twist: 0});
 	//let move2 = {recipe: "flower", petals: 0, p: VS3D.FLOOR};
 	function init() {
 		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
 		player = new VS3D.Player();
-		player.addProp(red);
+		player.addProp(red,{model: "fan"});
 		//player.addProp(blue, {color: "blue"});
 		player.props[0].addMove(move1);
 		//player.props[1].addMove(move2);

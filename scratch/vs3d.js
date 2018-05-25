@@ -12,7 +12,7 @@ VS3D = function() {
 	const GRIP = VS3D.GRIP = 4;
 	const HEAD = VS3D.HEAD = 5;
 	const NODES = VS3D.NODES = ["body","pivot","helper","hand","grip","head"];
-	const WALL = VS3D.WALL = plane(0,0,1);
+	const WALL = VS3D.WALL = plane(0,0,-1);
 	const WHEEL = VS3D.WHEEL = plane(1,0,0);
 	const FLOOR = VS3D.FLOOR = plane(0,-1,0);
 	const XAXIS = VS3D.XAXIS = vector(1,0,0);
@@ -633,20 +633,20 @@ VS3D = function() {
 		args.bend = args.bend || 0;
 		args.grip = args.grip || {r: 0, a: 0, p: p};
 		args.head = args.head || {r: 1, a: 0, p: p};
-		args.things = args.things || {a: 0, b: 0, c: 0, t: 0};
-
-		// console.log("head start");
-		// console.log(clone(args.head));
-		
-		
+		args.things = args.things || {a: 0, b: 0, c: 0, t: 0};		
 		let body = node$spin({beats: beats, p: p, ...args.body}, t);
 		let pivot = node$spin({beats: beats, p: p, ...args.pivot}, t);
 		let helper = node$spin({beats: beats, p: p, ...args.helper}, t);
 		let hand = node$spin({beats: beats, p: p, ...args.hand}, t);
-		let twist = 0;
+		let twist = args.twist;
 		let bend = args.bend;
 		let grip = node$spin({beats: beats, p: p, ...args.grip}, t);
 		let head = node$spin({beats: beats, p: p, ...args.head}, t);
+		if (vector$nearly(p,WHEEL) && angle$nearly(head.a,0)) {
+			// avoids an annoying round-to-zero cusp that renders TWIST wrong in the WHEEL plane
+			head.a = VS3D.SMALL;
+			head.b = 90;
+		}
 		// okay...so here we need to take at least the HEAD node...
 		// ...and rotate it by BEND around the cross product of its own axis and the plane
 		let vhead = sphere$vectorize(head);
