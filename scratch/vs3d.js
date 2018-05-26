@@ -230,6 +230,16 @@ VS3D = function() {
 		let z = vz-d*az;
 		return vector(x,y,z);
 	}
+	function vector$tinify(vec) {
+		let {x, y, z} = vec;
+		x = x || TINY;
+		y = y || TINY;
+		z = z || TINY;
+		return vector(x,y,z);
+	}
+	function sphere$tinify(s) {
+		return sphere(s.r || TINY, s.a ,s.b);
+	}
 	// calculate the angle between two vectors
 	function vector$between(v1, v2) {
 		return Math.acos(vector$dot(v1, v2)/(vector$magnitude(v1)*vector$magnitude(v2)))/UNIT;
@@ -389,11 +399,12 @@ VS3D = function() {
 	}
 
 	// given that I'm making Player, should this still overload?
-	function spin(p, m, t) {
+	function spin(p, m, t, nofit) {
 		if (typeof(m)==="number") {
+			nofit = t;
 			t = m;
 			m = p;
-		} else {
+		} else if (!nofit) {
 			m = fit(p, m);
 		}
 		if (Array.isArray(m)) {
@@ -405,7 +416,7 @@ VS3D = function() {
 			while (past<=t) {
 				let ticks = beats(m[i])*BEAT || 1*BEAT;
 				if (past+ticks>=t) {
-					return spin(m[i], t-past);
+					return spin(m[i], t-past, nofit);
 				} else {
 					past+=ticks;
 					i=(i+1)%m.length;
@@ -446,8 +457,9 @@ VS3D = function() {
 		// console.log(move.head);
 		// !!!!Temporary mod to disable fitting
 		//return true;
-		return (	sphere$nearly(node$sum(prop, HAND),node$sum(move$spherify(move), HAND))
-					&& sphere$nearly(node$sum(prop, HEAD),node$sum(move$spherify(move), HEAD)));
+		let m = spin(prop, move, 0, "nofit");
+		return (	sphere$nearly(node$sum(prop, HAND),node$sum(m), HAND))
+					&& sphere$nearly(node$sum(prop, HEAD),node$sum(m, HEAD));
 	}
 
 	function fit(prop, move) {
@@ -638,12 +650,16 @@ VS3D = function() {
 			head.a = VS3D.SMALL;
 			head.b = angle$spherify(QUARTER,p).b;
 		}
+
 		// okay...so here we need to take at least the HEAD node...
 		// ...and rotate it by BEND around the cross product of its own axis and the plane
 		let vhead = sphere$vectorize(head);
 		let axis = vector$unitize(sphere$vectorize(head));
 		let tangent = vector$cross(axis,p);
 		head = vector$spherify(vector$rotate(vhead,bend,tangent));
+		//rotating grip by bend messing things up for some reason
+		//grip = vector$spherify(vector$rotate(grip,bend,tangent));
+		// do it to grip as well
 		return {
 			body: body,
 			pivot: pivot,
@@ -944,6 +960,7 @@ VS3D = function() {
 	VS3D.vector = vector;
 	VS3D.vector$nearly = vector$nearly;
 	VS3D.vector$zeroish = vector$zeroish;
+	VS3D.vector$tinify = vector$tinify;
 	VS3D.vector$unitize = vector$unitize;
 	VS3D.vector$magnitude = vector$magnitude;
 	VS3D.vector$spherify = vector$spherify;
@@ -957,6 +974,7 @@ VS3D = function() {
 	VS3D.sphere$vectorize = sphere$vectorize;
 	VS3D.sphere$nearly = sphere$nearly;
 	VS3D.sphere$zeroish = sphere$zeroish;
+	VS3D.sphere$tinify = sphere$tinify;
 	VS3D.sphere$planify = sphere$planify;
 	VS3D.plane = plane;
 	VS3D.plane$reference = plane$reference;
@@ -971,7 +989,6 @@ VS3D = function() {
 	VS3D.fit = fit;
 	VS3D.node$sum = node$sum;
 	VS3D.prop$axis = prop$axis;
-	VS3D.move$spherify = move$spherify;
 	VS3D.socket = socket;
 	VS3D.MoveFactory = MoveFactory;
 	VS3D.recipe = recipe;

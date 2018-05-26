@@ -1,4 +1,6 @@
 Engine:
+- I think I un-added vb and vt...
+- Fitting and orientation still doesn't always work as expected.
 - Add linear movements.
 - Get the grip stuff working right.
 - Make solver deal with loops.
