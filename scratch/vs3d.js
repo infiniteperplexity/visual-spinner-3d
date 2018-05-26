@@ -349,8 +349,6 @@ VS3D = function() {
 		args.head.r = args.head.r || args.head.radius || 1;
 		args.head.a = args.head.a || args.head.angle|| 0;
 		args.head.b = args.head.b || args.head.bearing || 0;
-		args.things = args.things || {a: 0, b: 0, c:0, t:0};
-		
 		return {
 			body: args.body,
 			pivot: args.pivot,
@@ -359,8 +357,7 @@ VS3D = function() {
 			twist: args.twist,
 			// prop has no bend
 			grip: args.grip,
-			head: args.head,
-			things: args.things
+			head: args.head
 		}
 	}
 
@@ -377,8 +374,6 @@ VS3D = function() {
 		let bend = args.bend || 0;
 		let grip = merge({r: 0, a: 0, p: p}, args.grip);
 		let head = merge({r: 1, a: 0, p: p}, args.head);
-		//do I allow "radius", "angle", or "bearing"?
-		let things = merge({a: 0, b: 0, c:0, t:0}, args.things);
 		return {
 			body: body,
 			pivot: pivot,
@@ -388,7 +383,6 @@ VS3D = function() {
 			bend: bend,
 			grip: grip,
 			head: head,
-			things: things,
 			p: p,
 			beats: beats
 		}
@@ -497,7 +491,7 @@ VS3D = function() {
 		if (Array.isArray(move)) {
 			console.log("need to handle spherify?");
 		}
-		let {p, body, pivot, helper, hand, head, grip, bend, twist, things, beats} = move;
+		let {p, body, pivot, helper, hand, head, grip, bend, twist, beats} = move;
 		p = p || WALL;
 		body = (body) ? {...angle$spherify(body.a, p), r: body.r} : sphere(0,0,0);
 		pivot = (pivot) ? {...angle$spherify(pivot.a, p), r: pivot.r} : sphere(0,0,0);
@@ -515,7 +509,6 @@ VS3D = function() {
 			twist: twist,
 			grip: grip,
 			head: head,
-			things: things,
 			p: p,
 			beats: beats
 		};
@@ -537,7 +530,7 @@ VS3D = function() {
 		}
 		let plane = move.p || WALL;
 		// !!!in a perfect world, this would have a preference for keeping defaults on body, pivot, or hinge
-		let {body, pivot, helper, hand, twist, bend, grip, head, things} = prop;
+		let {body, pivot, helper, hand, twist, bend, grip, head} = prop;
 		body = {r: body.r, a: sphere$planify(body, plane), p: plane};
 		pivot = {r: pivot.r, a: sphere$planify(pivot, plane), p: plane};
 		helper = {r: helper.r, a: sphere$planify(helper, plane), p: plane};
@@ -557,7 +550,6 @@ VS3D = function() {
 			bend: (bend || move.bend),
 			grip: merge(move.grip, grip),
 			head: merge(move.head, head),
-			things: merge(move.things, things),
 			beats: move.beats,
 			p: plane
 		};
@@ -632,8 +624,7 @@ VS3D = function() {
 		args.twist = args.twist || 0;
 		args.bend = args.bend || 0;
 		args.grip = args.grip || {r: 0, a: 0, p: p};
-		args.head = args.head || {r: 1, a: 0, p: p};
-		args.things = args.things || {a: 0, b: 0, c: 0, t: 0};		
+		args.head = args.head || {r: 1, a: 0, p: p};	
 		let body = node$spin({beats: beats, p: p, ...args.body}, t);
 		let pivot = node$spin({beats: beats, p: p, ...args.pivot}, t);
 		let helper = node$spin({beats: beats, p: p, ...args.helper}, t);
@@ -642,10 +633,10 @@ VS3D = function() {
 		let bend = args.bend;
 		let grip = node$spin({beats: beats, p: p, ...args.grip}, t);
 		let head = node$spin({beats: beats, p: p, ...args.head}, t);
-		if (vector$nearly(p,WHEEL) && angle$nearly(head.a,0)) {
+		if (angle$nearly(head.a,0)) {
 			// avoids an annoying round-to-zero cusp that renders TWIST wrong in the WHEEL plane
 			head.a = VS3D.SMALL;
-			head.b = 90;
+			head.b = angle$spherify(QUARTER,p).b;
 		}
 		// okay...so here we need to take at least the HEAD node...
 		// ...and rotate it by BEND around the cross product of its own axis and the plane
@@ -661,8 +652,7 @@ VS3D = function() {
 			// fix this somehow
 			twist: twist,
 			grip: grip,
-			head: head,
-			things: {beats: beats, p: p, a: 0, b: 0, c: 0, t: 0}
+			head: head
 		}
 	}
 
@@ -712,7 +702,7 @@ VS3D = function() {
 		return {...angle$spherify(a, p), r: r};
 	}
 
-	function motion$things(args, t) {
+	function motion$grip(args, t) {
 
 	}
 
@@ -994,7 +984,7 @@ VS3D = function() {
 	VS3D.node$spin = node$spin;
 	VS3D.motion$rotate = motion$rotate;
 	VS3D.motion$linear = motion$linear;
-	VS3D.motion$things = motion$things;
+	VS3D.motion$grip = motion$grip;
 	VS3D.alias = alias;
 	VS3D.solve = solve;
 	VS3D.angle$solve = angle$solve;

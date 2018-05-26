@@ -78,6 +78,8 @@ VS3D = (function(VS3D) {
 		shapes.rotation.x = 0;
 		shapes.rotation.y = 0;
 		shapes.rotation.z = 0;
+		let axis = VS3D.prop$axis(prop);
+		
 		for (let i=VS3D.BODY; i<VS3D.HEAD; i++) {
 			let node = VS3D.NODES[i];
 			shapes.rotateY(-prop[node].b*VS3D.UNIT);
@@ -87,11 +89,12 @@ VS3D = (function(VS3D) {
 			shapes.rotateY(+prop[node].b*VS3D.UNIT);
 		}
 		// BEND should be handled elsewhere
-		let axis = VS3D.prop$axis(prop);
+		
 		// handle TWIST (possibly this should go before GRIP?)
-		shapes.rotateOnAxis(axis,prop.twist*VS3D.UNIT);	
 		shapes.rotateY(-prop.head.b*VS3D.UNIT);
 		shapes.rotateZ(-prop.head.a*VS3D.UNIT);
+		shapes.rotateOnAxis(axis,prop.twist*VS3D.UNIT);	
+		//shapes.rotateY(+prop.head.b*VS3D.UNIT);
 		// leave HEAD.R out of this for now
 	}
 
