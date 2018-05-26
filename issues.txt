@@ -1,5 +1,5 @@
 Engine:
-- I think I un-added vb and vt...
+- Rearrange "bend" so you can have a parameter called "bend"
 - Fitting and orientation still doesn't always work as expected.
 - Add linear movements.
 - Get the grip stuff working right.

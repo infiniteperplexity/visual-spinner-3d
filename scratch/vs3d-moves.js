@@ -65,6 +65,9 @@ VS3D = (function(VS3D) {
 	const ANTISPIN = VS3D.ANTISPIN;
 	const BACKWARD = VS3D.BACKWARD;
 	const NONE = VS3D.NONE;
+	const ISOBEND = VS3D.ISOBEND;
+	const PROBEND = VS3D.PROBEND;
+	const ANTIBEND = VS3D.ANTIBEND;
 
 	let recipe = VS3D.recipe;
 	let Move = VS3D.Move;
@@ -197,6 +200,36 @@ VS3D = (function(VS3D) {
 				hand: {...hand, a: orient, va: direction*speed},
 				head: {head: {...head, a: hangle}, va: spin*direction*speed}
 			});
+			let move = chain([
+				segment,
+				segment,
+				segment,
+				segment
+			]);
+			return move;
+		}
+	);
+
+	recipe(
+		"toroid",
+		{
+			// this is...an issue
+			bent: ISOBEND,
+			harmonics: 4
+		},
+		options => {
+			let {beats, mode, speed, hand, head, bent, harmonics, orient, direction, p} = options;
+			//mode is a "soft default"
+			let hangle = orient+mode;
+			if (head.a!==undefined && hand.a!==undefined) {
+				hangle = orient + head.a - hand.a;
+			}
+			let segment = Move(merge(options,{
+				beats: beats/4,
+				vb: harmonics,
+				hand: {...hand, a: orient, va: direction*speed},
+				head: {...head, a: hangle, va: bent*direction*speed}
+			}));
 			let move = chain([
 				segment,
 				segment,

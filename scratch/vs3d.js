@@ -72,6 +72,10 @@ VS3D = function() {
 	const BACKWARD = VS3D.BACKWARD = -1;
 	const NONE = VS3D.NONE = 0;
 
+	const PROBEND = VS3D.PROBEND = 3;
+	const ISOBEND = VS3D.ISOBEND = 1;
+	const ANTIBEND = VS3D.ANTIBEND = -1;
+
 	/// immutability helper
 	function clone(obj) {
 	  let nobj = {...obj};
@@ -382,6 +386,8 @@ VS3D = function() {
 		let hand = merge({r: 1, a: 0, p: p}, args.hand);
 		let twist = args.twist || 0;
 		let bend = args.bend || 0;
+		let vb = args.vb || 0;
+		let vt = args.vt || 0;
 		let grip = merge({r: 0, a: 0, p: p}, args.grip);
 		let head = merge({r: 1, a: 0, p: p}, args.head);
 		return {
@@ -391,6 +397,8 @@ VS3D = function() {
 			hand: hand,
 			twist: twist,
 			bend: bend,
+			vt: vt,
+			vb: vb,
 			grip: grip,
 			head: head,
 			p: p,
@@ -499,33 +507,6 @@ VS3D = function() {
 		return vector$unitize(sphere$vectorize(prop.head));
 	}
 
-	function move$spherify(move) {
-		if (Array.isArray(move)) {
-			console.log("need to handle spherify?");
-		}
-		let {p, body, pivot, helper, hand, head, grip, bend, twist, beats} = move;
-		p = p || WALL;
-		body = (body) ? {...angle$spherify(body.a, p), r: body.r} : sphere(0,0,0);
-		pivot = (pivot) ? {...angle$spherify(pivot.a, p), r: pivot.r} : sphere(0,0,0);
-		helper = (helper) ? {...angle$spherify(helper.a, p), r: helper.r} : sphere(0,0,0);
-		hand = (hand) ? {...angle$spherify(hand.a, p), r: hand.r} : sphere(1,0,0);
-		// !!!!!bend may incorporate somehow...
-		twist = twist || 0;
-		grip = (grip) ? {...angle$spherify(grip.a, p), r: grip.r} : sphere(0,0,0);
-		head = (head) ? {...angle$spherify(head.a, p), r: head.r} : sphere(1,0,0);
-		return {
-			body: body,
-			pivot: pivot,
-			helper: helper,
-			hand: hand,
-			twist: twist,
-			grip: grip,
-			head: head,
-			p: p,
-			beats: beats
-		};
-	}
-
 	// returns a prop aligned to the final frame of the move in question
 	function socket(move) {
 		if (Array.isArray(move)) {
@@ -547,9 +528,10 @@ VS3D = function() {
 		pivot = {r: pivot.r, a: sphere$planify(pivot, plane), p: plane};
 		helper = {r: helper.r, a: sphere$planify(helper, plane), p: plane};
 		hand = {r: hand.r, a: sphere$planify(hand, plane), p: plane};
-		// I'm not sure this is correct
+		// at least for how we currently handle TWIST
 		twist = twist || 0;
-		bend = bend || 0;
+		// so...ooh boy...better hope you never have a BENDED prop at the beginning of a move :(
+		// !!!!!!I think what I actually need to do is BEND the move's head and grip here
 		grip = {r: grip.r, a: sphere$planify(grip, plane), p: plane};
 		head = {r: head.r, a: sphere$planify(head, plane), p: plane};
 		let aligned = {
@@ -558,8 +540,10 @@ VS3D = function() {
 			helper: merge(move.helper,helper),
 			hand: merge(move.hand, hand),
 			// I'm not sure this is correct
-			twist: (twist || move.twist),
-			bend: (bend || move.bend),
+			twist: twist,
+			bend: move.bend,
+			vt: move.vt,
+			vb: move.vb,
 			grip: merge(move.grip, grip),
 			head: merge(move.head, head),
 			beats: move.beats,
@@ -635,14 +619,16 @@ VS3D = function() {
 		args.hand = args.hand || {r: 1, a: 0, p: p};
 		args.twist = args.twist || 0;
 		args.bend = args.bend || 0;
+		args.vt = args.vt || 0;
+		args.vb = args.vb || 0;
 		args.grip = args.grip || {r: 0, a: 0, p: p};
 		args.head = args.head || {r: 1, a: 0, p: p};	
 		let body = node$spin({beats: beats, p: p, ...args.body}, t);
 		let pivot = node$spin({beats: beats, p: p, ...args.pivot}, t);
 		let helper = node$spin({beats: beats, p: p, ...args.helper}, t);
 		let hand = node$spin({beats: beats, p: p, ...args.hand}, t);
-		let twist = args.twist;
-		let bend = args.bend;
+		let twist = args.twist + args.vt*t*SPEED;
+		let bend = args.bend + args.vb*t*SPEED;
 		let grip = node$spin({beats: beats, p: p, ...args.grip}, t);
 		let head = node$spin({beats: beats, p: p, ...args.head}, t);
 		if (angle$nearly(head.a,0)) {
