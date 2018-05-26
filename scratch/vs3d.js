@@ -15,6 +15,8 @@ VS3D = function() {
 	const WALL = VS3D.WALL = plane(0,0,-1);
 	const WHEEL = VS3D.WHEEL = plane(1,0,0);
 	const FLOOR = VS3D.FLOOR = plane(0,-1,0);
+	//!!! I forget why I didn't do it this way
+	//const FLOOR = VS3D.FLOOR = plane(0,1,0);
 	const XAXIS = VS3D.XAXIS = vector(1,0,0);
 	const YAXIS = VS3D.YAXIS = vector(0,1,0);
 	const ZAXIS = VS3D.ZAXIS = vector(0,0,1);
@@ -257,6 +259,7 @@ VS3D = function() {
 			return vector(0,1,0);
 		}
 		// otherwise, return the intersection of this and the WHEEL plane in the third? or fourth? quadrant
+		return vector$unitize(vector(0,x,y));
 		return vector$unitize(vector(0,x,-y));
 		// I used to use the intersection with the WALL plane in the first or second but I think the new way is better
 		//return vector$unitize(vector(y,x,0));
@@ -383,9 +386,10 @@ VS3D = function() {
 		let body = merge({r: 0, a: 0, p: p}, args.body);
 		let pivot = merge({r: 0, a: 0, p: p}, args.pivot);
 		let helper = merge({r: 0, a: 0, p: p}, args.helper);
+		// should this default to speed 1?
 		let hand = merge({r: 1, a: 0, p: p}, args.hand);
 		let twist = args.twist || 0;
-		let bend = args.bend || 0;
+		let bent = args.bent || 0;
 		let vb = args.vb || 0;
 		let vt = args.vt || 0;
 		let grip = merge({r: 0, a: 0, p: p}, args.grip);
@@ -396,7 +400,7 @@ VS3D = function() {
 			helper: helper,
 			hand: hand,
 			twist: twist,
-			bend: bend,
+			bent: bent,
 			vt: vt,
 			vb: vb,
 			grip: grip,
@@ -404,6 +408,48 @@ VS3D = function() {
 			p: p,
 			beats: beats
 		}
+	}
+
+	function prop$set(prop, args) {
+		if (args===undefined) {
+			args = prop;
+			prop = new Prop();
+		}
+		let p = args.p || WALL;
+		args.body = args.body || {};
+		args.pivot = args.pivot || {};
+		args.helper = args.helper || {};
+		args.hand = args.hand || {};
+		args.grip = args.grip || {};
+		args.head = args.head || {};
+		let body = {r: prop.body.r, a: sphere$planify(prop.body), p: p};
+		let pivot = {r: prop.pivot.r, a: sphere$planify(prop.pivot), p: p};
+		let helper = {r: prop.helper.r, a: sphere$planify(prop.helper), p: p};
+		let hand = {r: prop.hand.r, a: sphere$planify(prop.hand), p: p};
+		let grip = {r: prop.grip.r, a: sphere$planify(prop.grip), p: p};
+		let head = {va: 0, vr: 0, r: prop.head.r, a: sphere$planify(prop.head), p: p};
+		body = merge(body, args.body);
+		pivot = merge(pivot, args.pivot);
+		helper = merge(helper, args.helper);
+		hand = merge(hand, args.hand);
+		grip = merge(grip, args.grip);
+		head = merge(head, args.head);
+		let twist = (args.twist!==undefined) ? args.twist : prop.twist;
+		let bent = args.bent || 0;
+		let prp = {
+			body: body,
+			pivot: pivot,
+			helper: helper,
+			hand: hand,
+			grip: grip,
+			head: head,
+			p: p,
+			vt: 0,
+			vb: 0,
+			twist: twist,
+			bent: bent
+		};
+		return spin(prop,prp,0,true);
 	}
 
 	// given that I'm making Player, should this still overload?
@@ -541,7 +587,7 @@ VS3D = function() {
 			hand: merge(move.hand, hand),
 			// I'm not sure this is correct
 			twist: twist,
-			bend: move.bend,
+			bent: move.bent,
 			vt: move.vt,
 			vb: move.vb,
 			grip: merge(move.grip, grip),
@@ -550,14 +596,18 @@ VS3D = function() {
 			p: plane
 		};
 		if (move.recipe) {
-			// console.log("arguments:");
-			// console.log(merge(aligned, move));
+
+			
 			// // should I also refit, or will it already be fit properly?
 			let built = build(move.recipe, merge(aligned, move));
-			// console.log("initial form:");
-			// console.log(clone(built));
-			// console.log("socket:");
-			// console.log(socket(aligned));
+			// if (move.recipe==="pendulum") {
+			// 	console.log("arguments:");
+			// 	console.log(merge(aligned, move));
+			// 	console.log("initial form:");
+			// 	console.log(clone(built));
+			// 	console.log("socket:");
+			// 	console.log(socket(aligned));
+			// }
 			if (move.nofit) {
 				return built;
 			}
@@ -618,7 +668,7 @@ VS3D = function() {
 		args.helper = args.helper || {r: 0, a: 0, p: p};
 		args.hand = args.hand || {r: 1, a: 0, p: p};
 		args.twist = args.twist || 0;
-		args.bend = args.bend || 0;
+		args.bent = args.bent || 0;
 		args.vt = args.vt || 0;
 		args.vb = args.vb || 0;
 		args.grip = args.grip || {r: 0, a: 0, p: p};
@@ -628,7 +678,7 @@ VS3D = function() {
 		let helper = node$spin({beats: beats, p: p, ...args.helper}, t);
 		let hand = node$spin({beats: beats, p: p, ...args.hand}, t);
 		let twist = args.twist + args.vt*t*SPEED;
-		let bend = args.bend + args.vb*t*SPEED;
+		let bent = args.bent + args.vb*t*SPEED;
 		let grip = node$spin({beats: beats, p: p, ...args.grip}, t);
 		let head = node$spin({beats: beats, p: p, ...args.head}, t);
 		if (angle$nearly(head.a,0)) {
@@ -642,9 +692,9 @@ VS3D = function() {
 		let vhead = sphere$vectorize(head);
 		let axis = vector$unitize(sphere$vectorize(head));
 		let tangent = vector$cross(axis,p);
-		head = vector$spherify(vector$rotate(vhead,bend,tangent));
-		//rotating grip by bend messing things up for some reason
-		//grip = vector$spherify(vector$rotate(grip,bend,tangent));
+		head = vector$spherify(vector$rotate(vhead,bent,tangent));
+		//rotating grip by bent messing things up for some reason
+		//grip = vector$spherify(vector$rotate(grip,bent,tangent));
 		// do it to grip as well
 		return {
 			body: body,
@@ -853,11 +903,21 @@ VS3D = function() {
 		this.moves = [];
 	}
 	PropWrapper.prototype.addMove = function(move) {
+
 		// check to see if it's an array?
-		if (this.moves.length===0) {
-			this.moves.push(fit(this.prop, move));
-		} else {
-			this.moves.push(fit(socket(this.moves[this.moves.length-1]), move));
+		try {
+			if (this.moves.length===0) {
+				this.moves.push(fit(this.prop, move));
+			} else {
+				this.moves.push(fit(socket(this.moves[this.moves.length-1]), move));
+			}
+		} catch (e) {
+			console.log("Error in player.addMove");
+			console.log("Prop:");
+			console.log(this);
+			console.log("Move:");
+			console.log(move);
+			throw e;
 		}
 	}
 	function Player(args) {
@@ -876,7 +936,13 @@ VS3D = function() {
 		this.tick = t;
 		let positions = [];
 		for (let prop of this.props) {
-			positions.push(spin(prop.prop, prop.moves, this.tick));
+			try {
+				positions.push(spin(prop.prop, prop.moves, this.tick));
+			} catch (e) {
+				console.log("Error in player.goto");
+				console.log(prop);
+				throw(e);
+			}
 		}
 		this.render(this.props, positions);
 	}
@@ -974,6 +1040,7 @@ VS3D = function() {
 	VS3D.fits = fits;
 	VS3D.fit = fit;
 	VS3D.node$sum = node$sum;
+	VS3D.prop$set = prop$set;
 	VS3D.prop$axis = prop$axis;
 	VS3D.socket = socket;
 	VS3D.MoveFactory = MoveFactory;

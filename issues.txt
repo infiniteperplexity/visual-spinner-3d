@@ -1,5 +1,6 @@
 Engine:
-- Rearrange "bend" so you can have a parameter called "bend"
+- ...floor plane up pendulums still fail
+- Chaining toroids resets the bend at each cusp...using shims for now
 - Fitting and orientation still doesn't always work as expected.
 - Add linear movements.
 - Get the grip stuff working right.
@@ -25,4 +26,4 @@ Apps:
 
 Bugs:
 - spinmorepoi demo doesn't convert starting positions in WHEEL or FLOOR plane correctly.
-- an error when selecting floor plane triquetras might be caused by that
+- an error when selecting floor plane triquetras (and toroids?) might be caused by that

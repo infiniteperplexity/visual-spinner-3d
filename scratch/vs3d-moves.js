@@ -119,32 +119,33 @@ VS3D = (function(VS3D) {
 			orient: DOWN
 		},
 		options => {
-			let {beats, speed, hand, spin, orient, direction} = options;
+			let {beats, speed, hand, head, spin, orient, direction} = options;
 			// floor plane pendulums don't work right...is that okay?
 			let move = chain([
 				Move({
 					...options,
 					beats: beats/4,
 					hand: {...hand, a: orient, va: direction*speed},
-					head: {a: orient, a1: orient+spin*QUARTER*direction, va1: 0},
+					head: {...head, a: orient, a1: orient+spin*QUARTER*direction, va1: 0},
 				}),
 				Move({
 					...options,
 					beats: beats/4,
 					hand: {...hand, va: direction*speed},
-					head: {va: 0, a1: orient}
+					head: {...head, va: 0, a1: orient}
 				}),
 				Move({
 					...options,
 					beats: beats/4,
 					hand: {...hand, va: direction*speed},
-					head: {a1: orient-spin*QUARTER*direction, va1: 0}
+					// I don;t know why putting "a: orient" fixes things...
+					head: {...head, a: orient, a1: orient-spin*QUARTER*direction, va1: 0}
 				}),
 				Move({
 					...options,
 					beats: beats/4,
 					hand: {...hand, va: direction*speed},
-					head: {a1: orient, va: 0},
+					head: {...head, a1: orient, va: 0},
 				})
 			]);
 			return move;
@@ -213,12 +214,12 @@ VS3D = (function(VS3D) {
 	recipe(
 		"toroid",
 		{
-			// this is...an issue
-			bent: ISOBEND,
+			bend: ISOBEND,
+			pitch: FORWARD,
 			harmonics: 4
 		},
 		options => {
-			let {beats, mode, speed, hand, head, bent, harmonics, orient, direction, p} = options;
+			let {beats, mode, speed, hand, head, bend, harmonics, orient, direction, pitch, p} = options;
 			//mode is a "soft default"
 			let hangle = orient+mode;
 			if (head.a!==undefined && hand.a!==undefined) {
@@ -226,9 +227,9 @@ VS3D = (function(VS3D) {
 			}
 			let segment = Move(merge(options,{
 				beats: beats/4,
-				vb: harmonics,
+				vb: -pitch*harmonics,
 				hand: {...hand, a: orient, va: direction*speed},
-				head: {...head, a: hangle, va: bent*direction*speed}
+				head: {...head, a: hangle, va: bend*direction*speed}
 			}));
 			let move = chain([
 				segment,
@@ -237,6 +238,31 @@ VS3D = (function(VS3D) {
 				segment
 			]);
 			return move;
+		}
+	);
+
+	// A placeholder until I fix chaining for bent moves
+	recipe(
+		"shim_toroid",
+		{
+			bend: ISOBEND,
+			pitch: FORWARD,
+			harmonics: 4
+		},
+		options => {
+			let {beats, mode, speed, hand, head, bend, harmonics, orient, pitch, direction, p} = options;
+			//mode is a "soft default"
+			let hangle = orient+mode;
+			if (head.a!==undefined && hand.a!==undefined) {
+				hangle = orient + head.a - hand.a;
+			}
+			let segment = Move(merge(options,{
+				beats: beats,
+				vb: -pitch*harmonics,
+				hand: {...hand, a: orient, va: direction*speed},
+				head: {...head, a: hangle, va: bend*direction*speed}
+			}));
+			return [segment];
 		}
 	);
 

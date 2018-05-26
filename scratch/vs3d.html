@@ -12,20 +12,14 @@
 <script>
 	let renderer, player;
 	let red = new VS3D.Prop();
-	//let red = new VS3D.Prop({hand: {a: 180}, head: {a: 180}});
-	//let blue = new VS3D.Prop({hand: {p: VS3D.FLOOR}, head: {p: VS3D.FLOOR}});
-	// let move1 = {recipe: "flower", petals: 0, p: VS3D.FLOOR};
-	//let move1 = VS3D.Move({recipe: "pendulum", p: VS3D.FLOOR});
-	//let move1 = {recipe: "flower", p: VS3D.FLOOR, petals: 0, nofit: true};
-	//let move1 = VS3D.Move({hand: {a: 90, va: 1}, head: {a: 90, va: 1}, vb: 4, p: VS3D.WALL, nofit: true});
-	let move1 = {recipe: "toroid", bent: VS3D.ANTIBEND, harmonics: 2};
-	//let move2 = {recipe: "flower", petals: 0, p: VS3D.FLOOR};
+	red = VS3D.prop$set({hand: {a: 180}, head: {a: 180}});
+	let move = {recipe: "pendulum"};
 	function init() {
 		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
 		player = new VS3D.Player();
 		player.addProp(red,{model: "poi"});
 		//player.addProp(blue, {color: "blue"});
-		player.props[0].addMove(move1);
+		player.props[0].addMove(move);
 		//player.props[1].addMove(move2);
 		player.render = function(props, positions) {
 			renderer.render(props, positions);
