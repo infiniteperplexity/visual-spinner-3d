@@ -902,24 +902,7 @@ VS3D = function() {
 		this.prop = prop;
 		this.moves = [];
 	}
-	PropWrapper.prototype.addMove = function(move) {
-
-		// check to see if it's an array?
-		try {
-			if (this.moves.length===0) {
-				this.moves.push(fit(this.prop, move));
-			} else {
-				this.moves.push(fit(socket(this.moves[this.moves.length-1]), move));
-			}
-		} catch (e) {
-			console.log("Error in player.addMove");
-			console.log("Prop:");
-			console.log(this);
-			console.log("Move:");
-			console.log(move);
-			throw e;
-		}
-	}
+	
 	function Player(args) {
 		args = args || {};
 		this.props = [];

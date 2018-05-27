@@ -19,7 +19,7 @@
 		player = new VS3D.Player();
 		player.addProp(red,{model: "poi"});
 		//player.addProp(blue, {color: "blue"});
-		player.props[0].addMove(move);
+		player.props[0].moves.push(move);
 		//player.props[1].addMove(move2);
 		player.render = function(props, positions) {
 			renderer.render(props, positions);

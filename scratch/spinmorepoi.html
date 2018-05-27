@@ -232,13 +232,7 @@
 				move = {recipe: "pendulum", direction: dir, p: p};
 			}
 			prop.prop = start;
-			prop.moves.pop();
-			try {
-				prop.addMove(move);
-			} catch (e) {
-				console.log("Problem when adding a new Move");
-				alert(model +", "+ plane +", "+ align +", "+ direction +", "+recipe);
-			}
+			prop.moves[0] = move;
 		}
 		player.update();
 	}
