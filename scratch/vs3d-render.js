@@ -1,11 +1,22 @@
 VS3D = (function(VS3D) {
 
+
+	function webglAvailable() {
+		try {
+			let canvas = document.createElement('canvas');
+			return !!( window.WebGLRenderingContext && (
+				canvas.getContext( 'webgl' ) ||
+				canvas.getContext( 'experimental-webgl' ) )
+			);
+		} catch (e) {
+			return false;
+		}
+	}
+
 	function ThreeRenderer(el,width,height) {
 		this.width = width || 400;
 		this.height = height || 400;
-		//this.renderer = Detector.webgl? new THREE.WebGLRenderer(): new THREE.CanvasRenderer()
-		this.renderer = new THREE.WebGLRenderer(); //{antialias: true}
-		//this.renderer.sortObjects = false;
+		this.renderer = new THREE.WebGLRenderer(); // antialias = true
 		this.renderer.setSize(this.width,this.height);
 		el.appendChild(this.renderer.domElement);
 		this.scene = new THREE.Scene();
@@ -39,18 +50,19 @@ VS3D = (function(VS3D) {
 	}
 
 	ThreeRenderer.prototype.render = function(wrappers, positions) {
+		let removes = [];
 		for (let i=0; i<this.registry.length; i++) {
 			let prop = this.registry[i];
 			// clean up removed props
 			if (!wrappers.includes(prop)) {
 				console.log("removing prop shapes");
-				this.registry.splice(i,1);
 				let shapes = this.models[i];
 				this.scene.remove(shapes);
-				this.models.splice(i,1);
-				i-=1;
+				removes.push(i);
 			}
 		}
+		this.models = this.models.filter((_,i)=>!removes.includes(i));
+		this.registry = this.registry.filter((_,i)=>!removes.includes(i));
 		// add new props
 		// oof...we need to think about how to do this...'cuz right 
 		for (let prop of wrappers) {
