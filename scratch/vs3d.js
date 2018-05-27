@@ -576,6 +576,9 @@ VS3D = function() {
 		hand = {r: hand.r, a: sphere$planify(hand, plane), p: plane};
 		// at least for how we currently handle TWIST
 		twist = twist || 0;
+		bent = move.bent || 0;
+		vt = move.vt || 0;
+		vb = move.vb || 0;
 		// so...ooh boy...better hope you never have a BENDED prop at the beginning of a move :(
 		// !!!!!!I think what I actually need to do is BEND the move's head and grip here
 		grip = {r: grip.r, a: sphere$planify(grip, plane), p: plane};
@@ -585,11 +588,11 @@ VS3D = function() {
 			pivot: merge(move.pivot, pivot),
 			helper: merge(move.helper,helper),
 			hand: merge(move.hand, hand),
-			// I'm not sure this is correct
 			twist: twist,
-			bent: move.bent,
-			vt: move.vt,
-			vb: move.vb,
+			vt: vt,
+			vb: vb,
+			// !!!!this is probably wrong...
+			//bent: move.bent,
 			grip: merge(move.grip, grip),
 			head: merge(move.head, head),
 			beats: move.beats,
@@ -597,9 +600,20 @@ VS3D = function() {
 		};
 		if (move.recipe) {
 
+			// how did this logic all disappear?
+			let subset = {
+				body: aligned.body,
+				pivot: aligned.pivot,
+				hand: {r: aligned.hand.r},
+				grip: aligned.grip,
+				head: {r: aligned.head.r},
+				twist: aligned.twist,
+
+				p: aligned.p
+			};
 			
 			// // should I also refit, or will it already be fit properly?
-			let built = build(move.recipe, merge(aligned, move));
+			let built = build(move.recipe, merge(subset, move));
 			// if (move.recipe==="pendulum") {
 			// 	console.log("arguments:");
 			// 	console.log(merge(aligned, move));

@@ -63,10 +63,16 @@ function spin(p, m, t, nofit) {
 			p: plane
 		};
 		if (move.recipe) {
-
-			
-			// // should I also refit, or will it already be fit properly?
-			let built = build(move.recipe, merge(aligned, move));
+			// these are the only arguments that should get passed
+			let subset = {
+				body: aligned.body,
+				pivot: aligned.pivot,
+				grip: aligned.grip,
+				twist: aligned.twist,
+				p: aligned.p
+			};
+			// should I also refit, or will it already be fit properly?
+			let built = build(move.recipe, merge(subset, move));
 			// if (move.recipe==="pendulum") {
 			// 	console.log("arguments:");
 			// 	console.log(merge(aligned, move));

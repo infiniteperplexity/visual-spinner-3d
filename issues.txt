@@ -1,10 +1,9 @@
 Engine:
-- ...floor plane up pendulums still fail
 - Chaining toroids resets the bend at each cusp...using shims for now
-- Fitting and orientation still doesn't always work as expected.
+- Not totally sure whether alignment always works correctly.
 - Add linear movements.
 - Get the grip stuff working right.
-- Make solver deal with loops.
+- Make solver deal with loops...I just add the 1.5 variant for pendulums, which is a good test case.
 - Finish "nudge".
 - Are defaults injected in the right places?
 
@@ -12,18 +11,17 @@ Moves:
 - Add more moves.
 
 Render:
-- There is a flicker-to-zero in TWIST at a=0 that seems proportional in size to the x-component of the planar axis.
-	- So, really bad in WHEEL plane.
+- Weird flicker when TWIST is not zero.
 - Add non-WebGL fallback.
 - figure out render order.
 
 Apps:
-- Get the demo working.
+- Add more moves to demo.
+- Make orientation menus actually work.
 - Get multi-view working.
 - Comborific.
 - Integrate it with React.
 
 
 Bugs:
-- spinmorepoi demo doesn't convert starting positions in WHEEL or FLOOR plane correctly.
-- an error when selecting floor plane triquetras (and toroids?) might be caused by that
+- prop$set does weird things to the hand node when you only pass a head node...worked around it for now

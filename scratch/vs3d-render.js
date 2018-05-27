@@ -18,14 +18,15 @@ VS3D = (function(VS3D) {
 		light.position.set(0,0,100);
 		this.scene.add(light);
 		light = new THREE.PointLight(0xffffff);
+		let gcolor = 0x202020;
 		//let grid = new THREE.GridHelper(10,1, 0x333333, 0x333333);
 		//let grid = new THREE.GridHelper(10,1, 0xffffff, 0xffffff);
-		let grid = new THREE.GridHelper(10, 10, 0x333333, 0x333333); 
+		let grid = new THREE.GridHelper(10, 10, gcolor, gcolor); 
 		grid.material.transparent = true;
 		grid.rotateX(Math.PI/2);
 		//grid.translateOnAxis(VS3D.YAXIS, -5*VS3D.NUDGE);
 		this.scene.add(grid);
-		let polar = new THREE.PolarGridHelper(10, 8, 20, 64, 0x333333, 0x333333);
+		let polar = new THREE.PolarGridHelper(10, 8, 20, 64, gcolor, gcolor);
 		polar.material.transparent = true;
 		// polar.setColors(0x333333, 0x333333);
 		polar.rotateX(Math.PI/2);

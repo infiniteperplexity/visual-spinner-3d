@@ -36,6 +36,7 @@
 		model: ["poi","poi","poi","poi"],
 		plane: ["WALL","WALL","WALL","WALL"],
 		align: ["UP","UP","UP","UP"],
+		orient: ["UP","UP","UP","UP"],
 		direction: ["CW","CW","CCW","CCW"],
 		move: ["extension","antispin3","extension","antispin3"]
 	};
@@ -54,6 +55,12 @@
 			{txt: "Floor", value: "FLOOR"}
 		],
 		aligns: [
+			{txt: "Up", value: "UP"},
+			{txt: "Right", value: "RIGHT"},
+			{txt: "Down", value: "DOWN"},
+			{txt: "Left", value: "LEFT"}
+		],
+		orients: [
 			{txt: "Up", value: "UP"},
 			{txt: "Right", value: "RIGHT"},
 			{txt: "Down", value: "DOWN"},
@@ -86,10 +93,16 @@
 	};
 
 	function init() {
+		//hideDebugger();
 		setupPlayer();
 		setupMenus();
 		setMoves();
 		play();
+
+	}
+
+	function hideDebugger() {
+		document.getElementById("debugger").style.display = "none";
 	}
 
 	function play() {
@@ -148,9 +161,9 @@
 				// menu is the array
 				let r = Math.floor(Math.random()*menu.length);
 				node.value = menu[r].value;
-				if (name==="move") {
-					node.value = "pendulum";
-				}
+				// if (name==="move") {
+				// 	node.value = "pendulum";
+				// }
 			}
 		}
 		setMoves();
@@ -183,7 +196,6 @@
 			let angle = VS3D[align];
 			let p = VS3D[plane];
 			let start = VS3D.prop$set({hand: {a: angle}, head: {a: angle}, p:p});
-			// okay!  The problem here is that I'm doin' it wrong!;
 			if (recipe==="extension") {
 				move = {recipe: "flower", orient: angle, petals: 0, direction: dir, p: p};
 			} else if (recipe==="inspin1") {
@@ -224,12 +236,10 @@
 				move = {recipe: "shim_toroid", orient: angle, bend: 3, harmonics: -4, direction: dir, p: p};
 			} else if (recipe==="pendulum") {
 				if (align==="UP") {
-					start = VS3D.prop$set(start, {head: {a: VS3D.DOWN}, p: p});
-				} else if (align==="DOWN") {
-					// what the shit is going on here?
-					//start = VS3D.prop$set(start, {hand: {a: VS3D.DOWN}, p: p});
+					//!!!! It should not be necessary to pass the hand argument...bug in prop$set
+					start = VS3D.prop$set(start, {hand: {a: VS3D.UP}, head: {a: VS3D.DOWN}, p: p});
 				}
-				move = {recipe: "pendulum", direction: dir, p: p};
+				move = {recipe: "shim_pendulum", direction: dir, p: p};
 			}
 			prop.prop = start;
 			prop.moves[0] = move;
@@ -255,11 +265,16 @@
 			<select id="plane1"></select>
 			<select id="plane2"></select>
 			<select id="plane3"></select>
-			<p>Align:</p>
+			<p>Entry:</p>
 			<select id="align0"></select>
 			<select id="align1"></select>
 			<select id="align2"></select>
 			<select id="align3"></select>
+			<p>Orient:</p>
+			<select id="orient0"></select>
+			<select id="orient1"></select>
+			<select id="orient2"></select>
+			<select id="orient3"></select>
 			<p>Spin:</p>
 			<select id="direction0"></select>
 			<select id="direction1"></select>
@@ -280,7 +295,7 @@
 	<div>
 		<p>https://github.com/infiniteperplexity/visual-spinner-3d</p>
 		<p>infinite DOT perplexity AT gmail DOT com</p>
-		<button onclick="shuffleMenus();">debug</button>
+		<button id="debugger" onclick="shuffleMenus();">debug</button>
 	</div>
 </div>
 </body>

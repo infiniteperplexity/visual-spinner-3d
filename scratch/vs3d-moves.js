@@ -113,13 +113,57 @@ VS3D = (function(VS3D) {
 		}
 	);
 
+	// currently kind of broken/
 	recipe(
 		"pendulum",
+		{
+			orient: DOWN,
+			onepointfive: false,
+			hybrid: false,
+		},
+		options => {
+			let {beats, speed, hand, head, spin, orient, direction, onepointfive, hybrid} = options;
+			// floor plane pendulums don't work right...is that okay?
+			let topangle = onepointfive ? orient+SPLIT : orient;
+			let sidespeed = hybrid ? 0 : 1;
+			let move = chain([
+				Move({
+					...options,
+					beats: beats/4,
+					hand: {...hand, a: orient, a1: orient+spin*QUARTER*direction, va1: direction*speed*sidespeed},
+					head: {...head, a: orient, a1: orient+spin*QUARTER*direction, va1: 0},
+				}),
+				Move({
+					//...options,
+					beats: beats/4,
+					hand: {va: direction*speed*sidespeed, a1: orient+SPLIT},
+					head: {va: 0, a1: topangle}
+				}),
+				Move({
+					//...options,
+					beats: beats/4,
+					hand: {va1: direction*speed*sidespeed, a1: orient-spin*QUARTER*direction},
+					head: {a1: orient-spin*QUARTER*direction, va1: 0}
+				}),
+				Move({
+					//...options,
+					beats: beats/4,
+					hand: {va: direction*speed*sidespeed},
+					head: {a1: orient, va: 0},
+				})
+			]);
+			return move;
+		}
+	);
+
+	// so I don't break things while working on variants
+	recipe(
+		"shim_pendulum",
 		{
 			orient: DOWN
 		},
 		options => {
-			let {beats, speed, hand, head, spin, orient, direction} = options;
+			let {beats, speed, hand, head, spin, orient, direction, onepointfive, hybrid} = options;
 			// floor plane pendulums don't work right...is that okay?
 			let move = chain([
 				Move({
@@ -138,8 +182,7 @@ VS3D = (function(VS3D) {
 					...options,
 					beats: beats/4,
 					hand: {...hand, va: direction*speed},
-					// I don;t know why putting "a: orient" fixes things...
-					head: {...head, a: orient, a1: orient-spin*QUARTER*direction, va1: 0}
+					head: {...head, a1: orient-spin*QUARTER*direction, va1: 0}
 				}),
 				Move({
 					...options,
