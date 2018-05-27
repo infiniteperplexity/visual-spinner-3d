@@ -902,6 +902,14 @@ VS3D = function() {
 		this.prop = prop;
 		this.moves = [];
 	}
+
+	PropWrapper.prototype.spin = function(t) {
+		if (this.moves.length===0) {
+			return this.prop;
+		}
+		let move = fit(this.prop, this.moves);
+		return spin(move, t);
+	}
 	
 	function Player(args) {
 		args = args || {};
@@ -920,7 +928,8 @@ VS3D = function() {
 		let positions = [];
 		for (let prop of this.props) {
 			try {
-				positions.push(spin(prop.prop, prop.moves, this.tick));
+				positions.push(prop.spin(this.tick));
+				//positions.push(spin(prop.prop, prop.moves, this.tick));
 			} catch (e) {
 				console.log("Error in player.goto");
 				console.log(prop);
