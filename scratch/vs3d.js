@@ -802,19 +802,13 @@ VS3D = function() {
 		return nargs;
 	}
 
-	function solve(args, angular) {
-		angular = (angular===true) ? true : false;
+	function solve(args) {
 		let {x0, x1, v0, v1, a, t} = args;
-		// where do we set defaults?
 		let known = {};
 		for (let arg in args) {
 			if (args[arg]!==undefined) {
 				known[arg] = true;
 			}
-		}
-		if (angular) {
-			x0 = angle(x0);
-			x1 = angle(x1);
 		}
 		// solve for acceleration given starting and ending position
 		if (known.x0 && known.x1 && known.v0 && known.t) {
@@ -863,8 +857,22 @@ VS3D = function() {
 	}
 
 	function angle$solve(args) {
-		return solve(args, true);
+		// oh wait...there *is* another way here...
+		// we could always not treat them as angles.
+		// wow...that actually sound like a good idea.
+		// there's a downside...you can't go from UP to LEFT counterclockwise; instead, you need to do UP to -RIGHT.
+		// this *only* applies to solving, so it's not a big problem.
+		// I think what we need to test is whether non-normalized angles get normalized by some intermediate step
+		// 'cuz that would be a problem. They shouldn't, though.  Because it's *only* the a1 argument that this even applies to.
+		let mods = clone(args);
+		// if (mods.a0!==undefined) {
+		// 	mods.a0 = angle(a0);
+		// }
+		return solve(mods);
 	}
+// - If a<b, CW, leave as is, CCW subtract 360 from b.  If a>b, CCW leave it be, CW subtract 360 from a.
+// - Which means...add 360 to the smaller one, if sign of difference doesn't match sign of speed.
+// - After that, add (n-1)*360 to (new) bigger one.
 
 
 
@@ -885,7 +893,12 @@ VS3D = function() {
 			known.x0 = true;
 			known.y0 = true;
 		}
-		if (known.r1 && known.a1) {
+		if (known.a1) {
+			if (known.r1 || known.r0) {
+				r1 = known.r1 ? r1 : r0;
+			} else {
+				throw new Error("unable to impute final radius");
+			}
 			x1 = r1*Math.cos(a1*UNIT);
 			y1 = r1*Math.sin(a1*UNIT);
 			known.x1 = true;

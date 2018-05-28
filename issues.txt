@@ -29,12 +29,6 @@ Bugs:
 
 Today's notes:
 - Allow optional planes per node.
-- Some moves don't have fixed starting positions; e.g. flowers.  So pass hand.a and head.a?
-- Bent should use hand axis, which will need to be at least TINY.
-- Linear angles aren't set up right, mostly insofar as there's a problem with pseudo-polar coordinates.
+- !!!Some moves don't have fixed starting positions; e.g. flowers.  So pass hand.a and head.a?
 - TWIST should radiate from UP to DOWN, so the WHEEL and WALL planes are usually correct but FLOOR needs rotating.
 - Bent is from grip, TWIST might be as well.
-- Okay...one last decision to make, as to how the loop/units/harmonics argument works.
-- If a<b, CW, leave as is, CCW subtract 360 from b.  If a>b, CCW leave it be, CW subtract 360 from a.
-- Which means...add 360 to the smaller one, if sign of difference doesn't match sign of speed.
-- After that, add (n-1)*360 to (new) bigger one.
