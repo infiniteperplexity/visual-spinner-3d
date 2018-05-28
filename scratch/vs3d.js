@@ -737,7 +737,7 @@ VS3D = function() {
 		args = alias(args);
 		let {p, beats, m} = args;
 		if (m==="linear") {
-			let {a0: a, r0: r, la: la, vl0: vl, al: al} = linear$solve({a0: args.a, r0: args.r, la: args.la, vl0: args.vl, vl1: args.vl1, al: args.al, t: beats*BEAT})
+			let {a0: a, r0: r, la: la, vl0: vl, al: al} = linear$solve({a0: args.a, r0: args.r, la: args.la, vl0: args.vl, vl1: args.vl1, al: args.al, p: p, t: beats*BEAT})
 			return motion$linear({a: a, r: r, la: la, vl: vl, al: al});
 		}
 		let {x0: r, v0: vr, a: ar} = solve({x0: args.r, x1: args.r1, v0: args.vr, v1: args.vr1, a: args.ar, t: beats*BEAT});
@@ -881,33 +881,62 @@ VS3D = function() {
 	}
 
 	function linear$solve(args) {
-		let {a0, a1, r0, r1, vl0, vl1, al0, al, t} = args;
-		// where do we set defaults?
+		// maybe we don't need plane?
+		let {a0, a1, r0, r1, la, vl0, vl1, al0, al, p, t} = args;
 		let known = {};
 		for (let arg in args) {
 			if (args[arg]!==undefined) {
 				known[arg] = true;
 			}
 		}
-		// solve for acceleration given angle and starting / ending position
-		if (known.a0 && known.r0 && known.la && known.vl0 && known.t) {
-
-		// solve for final position and speed given angle, start, speed, and acceleration
-		} else if (known.a0 && known.r0 && known.la && knwon.v0 && known.a && known.t) {
-
-		// solve for start speed, angle, and acceleration given final speed and start / end position
-		} else if (known.a0 && known.r0 && known.a1 && known.r1 && known.vl0 && known.t) {
-
-		} else if (known.a0 && known.r0 && known.a1 && known.r1 && known.vl0 && known.t) {
-
-		// the common one...assume constant speed from start to finish
-		} else if (known.a0 && known.r0 && known.a1 && known.r1 && known.t && !known.vl0 && !known.vl1 && !known.al) {
-		
-		} else {
-			console.log(args);
-			alert("solving method unimplemented");
-			throw new Error("solving method unimplemented.");
+		// first, convert to cartesian coordinates
+		let x0, x1, y0, y1, d;
+		if (known.r0 && known.a0) {
+			x0 = r0*Math.cos(a0*UNIT);
+			y0 = r0*Math.sin(a0*UNIT);
+			known.x0 = true;
+			known.y0 = true;
 		}
+		if (known.r1 && known.a1) {
+			x1 = r1*Math.cos(a1*UNIT);
+			y1 = r1*Math.sin(a1*UNIT);
+			known.x1 = true;
+			known.y1 = true;
+		}
+		// next, get the angle if we don't have it
+		if (!known.la) {
+			if (known.x0 && known.x1) {
+				la = Math.atan2((y1-y0)/(x1-x0))/UNIT;
+			} else {
+				throw new Error("can't solve for angle of linear motion");
+			}
+		}
+		// solve for distance if we can
+		if (known.x0 && known.x1) {
+			d = Math.sqrt((x1-x0)**2 + (y1-y0)**2);
+		}
+		// then pass arguments to scalar solver
+		let solved = solve({x0: 0, x1: d, v0: vl0, v1: vl1, a: al, t: t});
+		let d1 = solved.x1;
+		vl0 = solved.v0;
+		vl1 = solved.v1;
+		al = solved.al;
+		// solve for start and end position if necessary
+		let xa = Math.cos(la*UNIT);
+		let ya = Math.sin(la*UNIT);
+		if (known.x0 && !known.x1) {
+			x1 = x0+xa*d1;
+			y1 = y0+ya*d1;
+		} else if (known.x1 && !known.x0) {
+			x0 = x1-xa*d1;
+			y0 = y1-ya*d1;
+		}
+		// finally convert back to polar
+		r0 = Math.sqrt(x0*x0+y0*y0);
+		a0 = Math.atan2(y0/x0)/UNIT;
+		r1 = Math.sqrt(x1*x1+y1*y1);
+		a1 = Math.atan2(y1/x1)/UNIT;
+		// now all moments should be guaranteed
 		return {a0: a0, a1: a1, r0: r0, r1: r1, la: la, vl0: vl0, vl1: vl1, al: al, t: t};
 	}
 
