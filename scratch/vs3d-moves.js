@@ -309,5 +309,46 @@ VS3D = (function(VS3D) {
 		}
 	);
 
+
+	recipe(
+		"snake",
+		{
+			petals: 0
+		},
+		options => {
+			let {beats, mode, speed, hand, head, spin, orient, direction, petals, p} = options;
+			let hangle = orient+mode;
+			let move = [
+				{	
+					...options,
+					hand: {...hand, a: orient, a1: TINY, a1: orient},
+					head: {...head, a: orient, v: direction*spin*speed}
+				},
+				{	
+					...options,
+					hand: {...hand, a: orient, a1: TINY, a1: orient},
+					head: {...head, a: orient, v: direction*spin*speed}
+				},
+				{	
+					...options,
+					hand: {...hand, a: orient, a1: TINY, a1: orient},
+					head: {...head, a: -orient, v: direction*spin*speed}
+				},
+				{	
+					...options,
+					hand: {a: orient, a1: TINY, a1: orient},
+					head: {a: -orient, v: direction*spin*speed}
+				}
+			];
+			// let move = chain([
+			// 	segment,
+			// 	segment,
+			// 	segment,
+			// 	segment
+			// ]);
+			return move;
+		}
+	);
+
 	return VS3D;
 })(VS3D);

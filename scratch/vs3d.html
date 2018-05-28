@@ -11,10 +11,9 @@
 <script src="vs3d-render.js"></script>
 <script>
 	let renderer, player;
-	let red = new VS3D.Prop({hand: {a: VS3D.RIGHT}, head: {a: VS3D.RIGHT}});
-	console.log(red);
+	let red = new VS3D.Prop({hand: {a: VS3D.UP}, head: {a: VS3D.UP}});
 	// red = VS3D.prop$set({hand: {a: VS3D.UP}, head: {a: VS3D.DOWN}, p: VS3D.FLOOR});
-	let move = {hand: {a: VS3D.RIGHT, r: 1, la: VS3D.LEFT, vl: 2}, head: {r:1, a: VS3D.RIGHT, va: 1}};
+	let move = {hand: {a: VS3D.UP, r: 1, la: VS3D.DOWN, vl: 4, al: -4}, head: {r:1, a: VS3D.UP, va: 1}};
 	function init() {
 		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
 		player = new VS3D.Player();

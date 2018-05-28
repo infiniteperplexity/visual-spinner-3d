@@ -737,7 +737,7 @@ VS3D = function() {
 		args = alias(args);
 		let {p, beats, m} = args;
 		if (m==="linear" || args.la!==undefined || args.vl!==undefined || args.vl1!==undefined || args.al!==undefined) {
-			let {a0: a, r0: r, la: la, vl0: vl, al: al} = linear$solve({a0: args.a, r0: args.r, la: args.la, vl0: args.vl, vl1: args.vl1, al: args.al, p: p, t: beats})
+			let {a0: a, r0: r, la: la, vl0: vl, al: al} = linear$solve({a0: args.a, r0: args.r, a1: args.a1, r1: args.r1, la: args.la, vl0: args.vl, vl1: args.vl1, al: args.al, p: p, t: beats})
 			return motion$linear({a: a, r: r, la: la, vl: vl, al: al, p: p}, t);
 		}
 		let {x0: r, v0: vr, a: ar} = solve({x0: args.r, x1: args.r1, v0: args.vr, v1: args.vr1, a: args.ar, t: beats*BEAT});
@@ -868,10 +868,9 @@ VS3D = function() {
 
 
 
-	
+	// also seemed to pass unit tests
 	function linear$solve(args) {
-		// maybe we don't need plane?
-		let {a0, a1, r0, r1, la, vl0, vl1, al0, al, p, t} = args;
+		let {a0, a1, r0, r1, la, vl0, vl1, al0, al, t} = args;
 		let known = {};
 		for (let arg in args) {
 			if (args[arg]!==undefined) {
@@ -881,29 +880,21 @@ VS3D = function() {
 		// first, convert to cartesian coordinates
 		let x0, x1, y0, y1, d;
 		if (known.r0 && known.a0) {
-			// pseudo-polar..don't use the normal operations
-			// !!!
-			// x0 = r0*Math.cos(a0*UNIT);
-			// y0 = r0*Math.sin(a0*UNIT);
-			y0 = r0*Math.cos(a0*UNIT);
-			x0 = r0*Math.sin(a0*UNIT);
+			x0 = r0*Math.cos(a0*UNIT);
+			y0 = r0*Math.sin(a0*UNIT);
 			known.x0 = true;
 			known.y0 = true;
 		}
 		if (known.r1 && known.a1) {
-			// pseudo-polar...don't use the normal operations
-			// !!!
-			// x1 = r1*Math.cos(a1*UNIT);
-			// y1 = r1*Math.sin(a1*UNIT);
-			y1 = r1*Math.cos(a1*UNIT);
-			x1 = r1*Math.sin(a1*UNIT);
+			x1 = r1*Math.cos(a1*UNIT);
+			y1 = r1*Math.sin(a1*UNIT);
 			known.x1 = true;
 			known.y1 = true;
 		}
 		// next, get the angle if we don't have it
 		if (!known.la) {
 			if (known.x0 && known.x1) {
-				la = Math.atan2((y1-y0)/(x1-x0))/UNIT;
+				la = Math.atan2(y1-y0,x1-x0)/UNIT;
 			} else {
 				throw new Error("can't solve for angle of linear motion");
 			}
@@ -912,21 +903,15 @@ VS3D = function() {
 		if (known.x0 && known.x1) {
 			d = Math.sqrt((x1-x0)**2 + (y1-y0)**2);
 		}
-		// console.log({x0: 0, x1: d, v0: vl0, v1: vl1, a: al, t: t});
-		// console.log({x0: 0, x1: d, v0: vl0, v1: vl1, a: al, t: t});
 		// then pass arguments to scalar solver
 		let solved = solve({x0: 0, x1: d, v0: vl0, v1: vl1, a: al, t: t});
-		// x1 is in the wrong units
-		// console.log("solved to this");
-		// console.log(solved);
 		let d1 = solved.x1;
 		vl0 = solved.v0;
 		vl1 = solved.v1;
-		al = solved.al;
+		al = solved.a;
 		// solve for start and end position if necessary
-		// pseudo-polar...don't use normal things
 		let xa = Math.cos(la*UNIT);
-		let ya = Math.sin(la*UNIT);
+		let ya = Math.sin(la*UNIT);	
 		if (known.x0 && !known.x1) {
 			x1 = x0+xa*d1;
 			y1 = y0+ya*d1;
@@ -937,36 +922,12 @@ VS3D = function() {
 		// finally convert back to polar
 		r0 = Math.sqrt(x0*x0+y0*y0);
 		r1 = Math.sqrt(x1*x1+y1*y1);
-		// a0 = Math.atan2(y0/x0)/UNIT;
-		// a1 = Math.atan2(y1/x1)/UNIT;
-		a0 = Math.atan2(x0/y0)/UNIT;
-		a1 = Math.atan2(x1/y1)/UNIT;
+		a0 = Math.atan2(y0,x0)/UNIT;
+		a1 = Math.atan2(y1,x1)/UNIT;
 		// now all moments should be guaranteed
 		return {a0: a0, a1: a1, r0: r0, r1: r1, la: la, vl0: vl0/BEAT, vl1: vl1/BEAT, al: al/(BEAT*BEAT), t: t};
 	}
-
-	console.log("unit tests for linear$solve");
-	// console.log("unit tests for motion$linear");
-	// function test(args, {r, a, p}) {
-	// 	console.log("CASE");
-	// 	console.log("arguments r: "+args.r+", a: "+args.a+", vl: "+args.vl+", la: "+args.la);
-	// 	let rets = motion$linear(args,90);
-	// 	console.log("returned r: "+rets.r+", a: "+rets.a+", p:"+rets.p);
-	// 	console.log("desired r: "+r+", a: "+a+", p: "+p);
-	// }
-	// test({r: 1, a: 0, vl: 2, la: 180},{r: 1, a: 180});
-	// test({r: 1, a: 270, vl: 2, la: 90},{r: 1, a: 90});
-	// test({r: 1, a: 180, vl: 2, la: 0},{r: 1, a: 0});
-	// test({r: 1, a: 90, vl: 2, la: -90},{r: 1, a: 270});
-	// test({r: 1, a: 0, vl: 2, la: 180, p: WHEEL},{r: 1, a: 180});
-	// test({r: 1, a: 270, vl: 2, la: 90, p: WHEEL},{r: 1, a: 90});
-	// test({r: 1, a: 180, vl: 2, la: 0, p: WHEEL},{r: 1, a: 0});
-	// test({r: 1, a: 90, vl: 2, la: -90, p: WHEEL},{r: 1, a: 270});
-	// test({r: 1, a: 0, vl: 2, la: 180, p: WHEEL},{r: 1, a: 180});
-	// test({r: 1, a: 270, vl: 2, la: 90, p: FLOOR},{r: 1, a: 90});
-	// test({r: 1, a: 180, vl: 2, la: 0, p: FLOOR},{r: 1, a: 0});
-	// test({r: 1, a: 90, vl: 2, la: -90, p: FLOOR},{r: 1, a: 270});
-
+	
 	// seems to pass unit tests
 	function motion$linear(args, t) {
 		for (let e of ["r","a","la","vl","al"]) {
@@ -975,8 +936,8 @@ VS3D = function() {
 		let {x: x0, y: y0} = sphere$vectorize(sphere(args.r,args.a,0));
 		let dx = Math.sin(args.la*UNIT);
 		let dy = Math.cos(args.la*UNIT);
-		let x1 = x0 + args.vl*dx*t/BEAT + args.al*dx*t*t/(2*BEAT*BEAT);
-		let y1 = y0 + args.vl*dy*t/BEAT + args.al*dy*t*t/(2*BEAT*BEAT);
+		let x1 = x0 + args.vl*dx*t + args.al*dx*t*t/2;
+		let y1 = y0 + args.vl*dy*t + args.al*dy*t*t/2;
 		let {r, a} = vector$spherify(vector(x1,y1,0));
 		let p = args.p;
 		return {...angle$spherify(a, p), r: r};
