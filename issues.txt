@@ -30,14 +30,8 @@ Bugs:
 Today's notes:
 - Allow optional planes per node.
 - Some moves don't have fixed starting positions; e.g. flowers.  So pass hand.a and head.a?
-- Linear does the following:
-	- a0, r0, a1, r1, la, vl0, vl1, al, t
-	- d = sqrt dx**2 + dy**2
-	- la = atan2 dy/dx
-	- then pass xs and ys to normal solver.
-	- finally, re-spherify.
-	- will always be in fixed plane
 - Bent should use hand axis, which will need to be at least TINY.
+- Linear angles aren't set up right, mostly insofar as there's a problem with pseudo-polar coordinates.
 - TWIST should radiate from UP to DOWN, so the WHEEL and WALL planes are usually correct but FLOOR needs rotating.
 - Bent is from grip, TWIST might be as well.
 - Okay...one last decision to make, as to how the loop/units/harmonics argument works.

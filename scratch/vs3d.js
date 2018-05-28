@@ -736,9 +736,9 @@ VS3D = function() {
 	function node$spin(args, t) {
 		args = alias(args);
 		let {p, beats, m} = args;
-		if (m==="linear") {
-			let {a0: a, r0: r, la: la, vl0: vl, al: al} = linear$solve({a0: args.a, r0: args.r, la: args.la, vl0: args.vl, vl1: args.vl1, al: args.al, p: p, t: beats*BEAT})
-			return motion$linear({a: a, r: r, la: la, vl: vl, al: al});
+		if (m==="linear" || args.la!==undefined || args.vl!==undefined || args.vl1!==undefined || args.al!==undefined) {
+			let {a0: a, r0: r, la: la, vl0: vl, al: al} = linear$solve({a0: args.a, r0: args.r, la: args.la, vl0: args.vl, vl1: args.vl1, al: args.al, p: p, t: beats})
+			return motion$linear({a: a, r: r, la: la, vl: vl, al: al, p: p}, t);
 		}
 		let {x0: r, v0: vr, a: ar} = solve({x0: args.r, x1: args.r1, v0: args.vr, v1: args.vr1, a: args.ar, t: beats*BEAT});
 		let {x0: a, v0: va, a: aa} = angle$solve({x0: args.a, x1: args.a1, v0: args.va, v1: args.va1, a: args.aa, t: beats*BEAT, c: args.c});
@@ -759,15 +759,24 @@ VS3D = function() {
 	}
 
 	function motion$linear(args, t) {
+		console.log("peeking at linear motion");
 		for (let e of ["r","a","la","vl","al"]) {
 			args[e] = args[e] || 0;
 		}
 		args.p = args.p || WALL;
-		let {x: x0, y: y0} = sphere$vectorize(sphere(r,a,0));
-		let dx = Math.cos(la*UNIT);
-		let dy = Math.sin(la*UNIT);
+		console.log(args, t);
+		let {x: x0, y: y0} = sphere$vectorize(sphere(args.r,args.a,0));
+		console.log("scalar components");
+		// This is weird because of the non-standard reference angle...these aren't real polar coordinates
+		let dx = Math.sin(args.la*UNIT);
+		let dy = Math.cos(args.la*UNIT);
+		console.log(dx, dy);
 		let x1 = x0 + args.vl*dx*t + args.al*dx*t*t/2;
-		let y1 = x0 + args.vl*dy*t + args.al*dy*t*t/2;
+		let y1 = y0 + args.vl*dy*t + args.al*dy*t*t/2;
+		console.log("starting and ending positions");
+		console.log(x0, y0);
+		console.log(x1, y1);
+		// ah...this is totally wrong...not real polar coordinates
 		let {r, a} = vector$spherify(vector(x1,y1,0));
 		let p = args.p;
 		return {...angle$spherify(a, p), r: r};
@@ -851,7 +860,7 @@ VS3D = function() {
 		// impute acceleration to zero
 		} else if (known.x0 && known.v0 && !known.a && !known.v1 && !known.x1) {
 			a = 0;
-			v1 = 0;
+			v1 = v0;
 			x1 = x0+v0*t;
 		} else if (known.x0 && known.x1 && !known.a && !known.v0 && !known.v1) {
 			a = 0;
@@ -915,8 +924,13 @@ VS3D = function() {
 		if (known.x0 && known.x1) {
 			d = Math.sqrt((x1-x0)**2 + (y1-y0)**2);
 		}
+		console.log({x0: 0, x1: d, v0: vl0, v1: vl1, a: al, t: t});
+		console.log({x0: 0, x1: d, v0: vl0, v1: vl1, a: al, t: t});
 		// then pass arguments to scalar solver
 		let solved = solve({x0: 0, x1: d, v0: vl0, v1: vl1, a: al, t: t});
+		// x1 is in the wrong units
+		console.log("solved to this");
+		console.log(solved);
 		let d1 = solved.x1;
 		vl0 = solved.v0;
 		vl1 = solved.v1;
@@ -937,7 +951,7 @@ VS3D = function() {
 		r1 = Math.sqrt(x1*x1+y1*y1);
 		a1 = Math.atan2(y1/x1)/UNIT;
 		// now all moments should be guaranteed
-		return {a0: a0, a1: a1, r0: r0, r1: r1, la: la, vl0: vl0, vl1: vl1, al: al, t: t};
+		return {a0: a0, a1: a1, r0: r0, r1: r1, la: la, vl0: vl0/BEAT, vl1: vl1/BEAT, al: al/(BEAT*BEAT), t: t};
 	}
 
 
