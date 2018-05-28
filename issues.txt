@@ -23,12 +23,13 @@ Apps:
 
 
 Bugs:
+- I'm relying on hideous shims for bent and plane$reference.
 - prop$set does weird things to the hand node when you only pass a head node...worked around it for now
 
 
 Today's notes:
 - Allow optional planes per node.
-- Some moves don't have fix starting positions; e.g. flowers.  So pass hand.a and head.a?
+- Some moves don't have fixed starting positions; e.g. flowers.  So pass hand.a and head.a?
 - Linear does the following:
 	- a0, r0, a1, r1, la, vl0, vl1, al, t
 	- d = sqrt dx**2 + dy**2
@@ -41,4 +42,5 @@ Today's notes:
 - Bent is from grip, TWIST might be as well.
 - Okay...one last decision to make, as to how the loop/units/harmonics argument works.
 - If a<b, CW, leave as is, CCW subtract 360 from b.  If a>b, CCW leave it be, CW subtract 360 from a.
-- Which means...subtract 360 from the bigger one, if sign of difference doesn't match sign of speed.
+- Which means...add 360 to the smaller one, if sign of difference doesn't match sign of speed.
+- After that, add (n-1)*360 to (new) bigger one.

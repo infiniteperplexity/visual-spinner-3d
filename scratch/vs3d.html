@@ -11,10 +11,10 @@
 <script src="vs3d-render.js"></script>
 <script>
 	let renderer, player;
-	let red = new VS3D.Prop({hand: {a: VS3D.DOWN}, head: {a: VS3D.DOWN}});
+	let red = new VS3D.Prop();
 	console.log(red);
 	// red = VS3D.prop$set({hand: {a: VS3D.UP}, head: {a: VS3D.DOWN}, p: VS3D.FLOOR});
-	let move = {recipe: "shim_pendulum", onepointfive: false, hybrid: false};
+	let move = {recipe: "shim_toroid", bend: -1, harmonics: 2, nofit: true};
 	function init() {
 		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
 		player = new VS3D.Player();
@@ -27,7 +27,7 @@
 		}
 		player.reset();
 		//player.goto(89);
-		player.play();
+		//player.play();
 	}
 
 	//VS3D.socket(player.props[0].moves[0])

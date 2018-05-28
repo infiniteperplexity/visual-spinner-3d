@@ -251,20 +251,22 @@ VS3D = function() {
 		return Math.acos(vector$dot(v1, v2)/(vector$magnitude(v1)*vector$magnitude(v2)))/UNIT;
 	}
 	// reference vector is arbitrarily defined
+	// !!! This is a shim for the real plane$reference, which isn't working yet
 	function plane$reference(vec) {
 		// this has been tested only for the main three planes
 		let {x,y,z} = vec;
 		// if this is WALL or the zero vector, use the +y axis
 		if (x===0 && y===0) {
+		//if (y===0 && z===0) {
 			return vector(0,1,0);
 		}
+		//return vector$unitize(vector$project(vector(x,-y,-z)),WHEEL);
 		// otherwise, return the intersection of this and the WHEEL plane in the third? or fourth? quadrant
-		return vector$unitize(vector(0,x,y));
+		//return vector$unitize(vector(0,Math.sqrt(x*x+z*z),y));
 		return vector$unitize(vector(0,x,-y));
 		// I used to use the intersection with the WALL plane in the first or second but I think the new way is better
 		//return vector$unitize(vector(y,x,0));
 	}
-
  	// compose a spherical coordinate from a scalar and two angles
 	function sphere(r,a,b) {
 		return {r: r, a: angle(a), b: angle(b)};
@@ -499,21 +501,22 @@ VS3D = function() {
 		if (Array.isArray(move)) {
 			return fits(prop, move[0]);
 		}
-		// console.log("node sums");
-		// console.log(node$sum(prop, HAND));
-		// console.log(node$sum(move$spherify(move), HAND));
-		// console.log(node$sum(prop, HEAD));
-		// console.log(node$sum(move$spherify(move), HEAD));
-		// console.log("positions");
-		// console.log(prop.hand);
-		// console.log(move.hand);
-		// console.log(prop.head);
-		// console.log(move.head);
+
+/*		console.log("positions");
+		console.log(prop.hand);
+		console.log(move.hand);
+		console.log(prop.head);
+		console.log(move.head);*/
 		// !!!!Temporary mod to disable fitting
 		//return true;
 		let m = spin(prop, move, 0, "nofit");
-		return (	sphere$nearly(node$sum(prop, HAND),node$sum(m), HAND))
-					&& sphere$nearly(node$sum(prop, HEAD),node$sum(m, HEAD));
+		// console.log("node sums");
+		// console.log(node$sum(prop, HAND));
+		// console.log(node$sum(m, HAND));
+		// console.log(node$sum(prop, HEAD));
+		// console.log(node$sum(m, HEAD));
+		return (	sphere$nearly(node$sum(prop, HAND),node$sum(m), HAND), SMALL)
+					&& sphere$nearly(node$sum(prop, HEAD),node$sum(m, HEAD), SMALL);
 	}
 
 	function fit(prop, move) {
@@ -691,8 +694,13 @@ VS3D = function() {
 		let pivot = node$spin({beats: beats, p: p, ...args.pivot}, t);
 		let helper = node$spin({beats: beats, p: p, ...args.helper}, t);
 		let hand = node$spin({beats: beats, p: p, ...args.hand}, t);
+		
 		let twist = args.twist + args.vt*t*SPEED;
 		let bent = args.bent + args.vb*t*SPEED;
+		// let axis = vector$unitize(sphere$vectorize(hand));
+		// let tangent = vector$cross(axis,p);
+		// let bend = vector$rotate(p,bent,tangent);
+		// args.head.p = bend;
 		let grip = node$spin({beats: beats, p: p, ...args.grip}, t);
 		let head = node$spin({beats: beats, p: p, ...args.head}, t);
 		if (angle$nearly(head.a,0)) {
@@ -700,16 +708,13 @@ VS3D = function() {
 			head.a = VS3D.SMALL;
 			head.b = angle$spherify(QUARTER,p).b;
 		}
-
 		// okay...so here we need to take at least the HEAD node...
-		// ...and rotate it by BEND around the cross product of its own axis and the plane
-		let vhead = sphere$vectorize(head);
+		// ...and rotate it by BENT around the cross product of the HAND axis and the plane
+		// This is a shim for the real system, which I haven't gotten to work yet
 		let axis = vector$unitize(sphere$vectorize(head));
 		let tangent = vector$cross(axis,p);
-		head = vector$spherify(vector$rotate(vhead,bent,tangent));
-		//rotating grip by bent messing things up for some reason
-		//grip = vector$spherify(vector$rotate(grip,bent,tangent));
-		// do it to grip as well
+		head = vector$spherify(vector$rotate(sphere$vectorize(head),bent,tangent));
+		// grip = vector$spherify(vector$rotate(sphere$vectorize(grip),bent,tangent));
 		return {
 			body: body,
 			pivot: pivot,
