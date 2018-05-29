@@ -385,17 +385,17 @@ VS3D = function() {
 		let p = args.p || WALL;
 		let beats = args.beats || 4;
 		// set default values for node positions
-		let body = merge({r: 0, a: 0, p: p}, args.body);
-		let pivot = merge({r: 0, a: 0, p: p}, args.pivot);
-		let helper = merge({r: 0, a: 0, p: p}, args.helper);
+		let body = merge({r: 0, a: 0}, args.body);
+		let pivot = merge({r: 0, a: 0}, args.pivot);
+		let helper = merge({r: 0, a: 0}, args.helper);
 		// should this default to speed 1?
-		let hand = merge({r: 1, a: 0, p: p}, args.hand);
+		let hand = merge({r: 1, a: 0}, args.hand);
 		let twist = args.twist || 0;
 		let bent = args.bent || 0;
 		let vb = args.vb || 0;
 		let vt = args.vt || 0;
-		let grip = merge({r: 0, a: 0, p: p}, args.grip);
-		let head = merge({r: 1, a: 0, p: p}, args.head);
+		let grip = merge({r: 0, a: 0}, args.grip);
+		let head = merge({r: 1, a: 0}, args.head);
 		return {
 			body: body,
 			pivot: pivot,
@@ -521,7 +521,6 @@ VS3D = function() {
 			pivot: pivot,
 			helper: helper,
 			hand: hand,
-			// fix this somehow
 			twist: twist,
 			grip: grip,
 			head: head
@@ -584,7 +583,6 @@ VS3D = function() {
 				// !!!!!!I think what I actually need to do is BEND the move's head and grip here
 				grip = {r: grip.r, a: sphere$planify(grip, plane)};
 				head = {r: head.r, a: sphere$planify(head, plane)};
-				// okay...fit shouldn't be sticking these planes in here, right?
 				let aligned = {
 					body: merge(move.body, body),
 					pivot: merge(move.pivot, pivot),
@@ -664,12 +662,11 @@ VS3D = function() {
 			// so...fit isn't actually what we want
 			let prev = arr[i-1];
 			let prop = socket(prev);
-			let planed = {...arr[i], p: prev.p};
+			let planed = Move({...arr[i], p: prev.p});
+			// this is not working right with the solver in some cases
+			// okay, I know what happens here.  I could probably do this in a different way...
+			// what happens is that if you provide no arguments *at all*, it can't fit
 			let move = fit(prop, planed);
-			// but now, propagate even more stuff
-			// there's a problem in that these moves are not solved yet...right?  Oh wait...actually they are...oh.  right.
-			// is there a decent way to solve for the stuff we want to solve for?  ergh.  yup, that's a problem.
-			// maybe make a "moments" function that gets all those things as needed?
 			let moments = {};
 			for (let node of NODES) {
 				if (move.m==="linear" || move.la!==undefined || move.vl!==undefined || move.vl1!==undefined || move.al!==undefined) {
@@ -680,12 +677,6 @@ VS3D = function() {
 					moments[node] = {va: va, vr: vr};
 				}
 			}
-			vt = prev.vt;
-			vb = prev.vb;
-			// if (prev.p.z!==-1) {
-			// 	console.log(moments.body);
-			// 	console.log(move.body);
-			// }
 			let extended = {
 				body: merge(moments.body, move.body),
 				pivot: merge(moments.pivot, move.pivot),
@@ -693,13 +684,14 @@ VS3D = function() {
 				hand: merge(moments.hand, move.hand),
 				grip: merge(moments.grip, move.grip),
 				head: merge(moments.head, move.head),
-				vt: (move.vt!==undefined) ? move.vt : vt,
-				vb: (move.vb!==undefined) ? move.vb : vb,
-				p: prev.p
+				vt: (move.vt!==undefined) ? move.vt : prev.vt,
+				vb: (move.vb!==undefined) ? move.vb : prev.vb,
+				p: prev.p,
+				beats: (move.beats!==undefined) ? move.beats : prev.beats
 			};
 			arr[i] = extended;
 		}
-
+		// should it wrap around to the beginning automatically?
 		return arr;
 	}
 
@@ -832,13 +824,13 @@ VS3D = function() {
 	}
 
 	function solve_angle(args) {
-		// temporary(?) fix
-		if (args.a0) {
-			args.a0 = angle(args.a0);
-		}
-		if (args.a1) {
-			args.a1 = angle(args.a1);
-		}
+		// !!!decision point
+		// if (args.a0) {
+		// 	args.a0 = angle(args.a0);
+		// }
+		// if (args.a1) {
+		// 	args.a1 = angle(args.a1);
+		// }
 		// currently does nothing different, but could if I change my mind
 		return solve(args);
 	}

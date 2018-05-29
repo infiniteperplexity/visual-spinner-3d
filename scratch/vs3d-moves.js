@@ -165,32 +165,16 @@ VS3D = (function(VS3D) {
 		options => {
 			let {beats, speed, hand, head, spin, orient, direction, onepointfive, hybrid} = options;
 			// floor plane pendulums don't work right...is that okay?
+			let segment = Move(merge(options, {
+				beats: beats/4,
+				hand: {...hand, a: orient, va: direction*speed},
+				head: {...head, a: orient, a1: orient+spin*QUARTER*direction, va1: 0}
+			}));
 			let move = extend([
-				Move({
-					...options,
-					beats: beats/4,
-					hand: {...hand, a: orient, va: direction*speed},
-					head: {...head, a: orient, a1: orient+spin*QUARTER*direction, va1: 0},
-				}),
-				Move({
-					...options,
-					beats: beats/4,
-					hand: {...hand, va: direction*speed},
-					// well...this seems to work...do I like it better this way?
-					head: {...head, va: 0, a1: orient-360}
-				}),
-				Move({
-					...options,
-					beats: beats/4,
-					hand: {...hand, va: direction*speed},
-					head: {...head, a1: orient-spin*QUARTER*direction, va1: 0}
-				}),
-				Move({
-					...options,
-					beats: beats/4,
-					hand: {...hand, va: direction*speed},
-					head: {...head, a1: orient, va: 0},
-				})
+				segment,
+				{head: {a1: orient-360}},
+				{head: {a1: orient-spin*QUARTER*direction, va1: 0}},
+				{head: {a1: orient}}
 			]);
 			return move;
 		}
