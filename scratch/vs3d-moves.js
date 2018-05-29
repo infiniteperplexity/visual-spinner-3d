@@ -176,7 +176,8 @@ VS3D = (function(VS3D) {
 					...options,
 					beats: beats/4,
 					hand: {...hand, va: direction*speed},
-					head: {...head, va: 0, a1: orient}
+					// well...this seems to work...do I like it better this way?
+					head: {...head, va: 0, a1: orient-360}
 				}),
 				Move({
 					...options,

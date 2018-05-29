@@ -524,13 +524,19 @@ VS3D = function() {
 			if (move.length===0) {
 				return [];
 			}
-			return chain(prop, move);
+			let fitted = [];
+			fitted[0] = fit(prop, move[0]);
+			for (let i=1; i<move.length; i++) {
+				fitted[i] = fit(socket(fitted[i-1]), fitted[i]);
+			}
+			return fitted;
 		} else {
 			// this isn't really where I want to check this
 			// if (move.nofit) {
 			// 	return move;
 			// }
 			if (move.recipe) {
+				// this should be a realign thing...
 				return refit(prop, move);
 			}
 			if (fits(prop, move)) {
@@ -540,6 +546,7 @@ VS3D = function() {
 			}
 		}
 	}
+
 	function node$sum(prop, n) {
 		let [xs, ys, zs] = [0, 0, 0];
 		for (let i=BODY; i<=n; i++) {
@@ -603,7 +610,6 @@ VS3D = function() {
 		};
 		if (move.recipe) {
 
-			// how did this logic all disappear?
 			let subset = {
 				body: aligned.body,
 				pivot: aligned.pivot,
@@ -663,18 +669,17 @@ VS3D = function() {
 		// finish this later
 	}
 	// I think this works recursively because chain and fit call each other
-	function chain(prop, arr) {
-		if (Array.isArray(prop)) {
-			arr = prop;
-		} else {
-			arr[0] = fit(prop,arr[0]);
-		}
-		for (let i=1; i<arr.length; i++) {
-			arr[i] = fit(socket(arr[i-1]),arr[i]);
-		}
-		return arr;
-	}
+	function extend(move, ...moves) {
+		let tail = move;
+		for (let i=0; i<moves.length; i++) {
+			// basically copy everything?
+			// all a's, yes, all r's, yes, go from 1s to 0s, accs get dropped, v1s and then vs get kept
 
+			moves[i] = refit(moves[i],tail);
+			tail = moves[i];
+		}
+		return [move, ...moves];
+	}
 
 	function prop$spin(args, t) {
 		let p = args.p || WALL;
@@ -1105,7 +1110,8 @@ VS3D = function() {
 	VS3D.variant = variant;
 	VS3D.refit = refit;
 	VS3D.realign = realign;
-	VS3D.chain = chain;
+	VS3D.extend = extend;
+	VS3D.chain = extend;
 	VS3D.prop$spin = prop$spin;
 	VS3D.node$spin = node$spin;
 	VS3D.motion$rotate = motion$rotate;
