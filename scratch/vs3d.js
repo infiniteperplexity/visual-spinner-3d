@@ -458,6 +458,10 @@ VS3D = function() {
 
 	// takes a move and a time, returns a prop
 	function spin(move, t) {
+		if (move.recipe) {
+			console.log("getting here is usually a bad thing");
+			return spin(build(move, new Prop()),t);
+		}
 		if (Array.isArray(move)) {
 			if (move.length===0) {
 				return new Prop();
@@ -540,20 +544,7 @@ VS3D = function() {
 		if (Array.isArray(move)) {
 			return fits(prop, move[0]);
 		}
-
-/*		console.log("positions");
-		console.log(prop.hand);
-		console.log(move.hand);
-		console.log(prop.head);
-		console.log(move.head);*/
-		// !!!!Temporary mod to disable fitting
-		//return true;
 		let m = spin(move, 0);
-		// console.log("node sums");
-		// console.log(sum_nodes(prop, HAND));
-		// console.log(sum_nodes(m, HAND));
-		// console.log(sum_nodes(prop, HEAD));
-		// console.log(sum_nodes(m, HEAD));
 		return (	sphere$nearly(sum_nodes(prop, HAND),sum_nodes(m), HAND), SMALL)
 					&& sphere$nearly(sum_nodes(prop, HEAD),sum_nodes(m, HEAD), SMALL);
 	}
@@ -570,18 +561,36 @@ VS3D = function() {
 			}
 			return fitted;
 		} else {
-			// this isn't really where I want to check this
-			// if (move.nofit) {
-			// 	return move;
-			// }
 			if (move.recipe) {
-				// this should be a realign thing...
-				return refit(prop, move);
+				return realign(prop,build(move,prop));
 			}
 			if (fits(prop, move)) {
 				return move;
 			} else {
-				return refit(prop, move);
+				let plane = move.p || WALL;
+				// !!!in a perfect world, this would have a preference for keeping defaults on body, pivot, or hinge
+				let {body, pivot, helper, hand, twist, bend, grip, head} = prop;
+				body = {r: body.r, a: sphere$planify(body, plane), p: plane};
+				pivot = {r: pivot.r, a: sphere$planify(pivot, plane), p: plane};
+				helper = {r: helper.r, a: sphere$planify(helper, plane), p: plane};
+				hand = {r: hand.r, a: sphere$planify(hand, plane), p: plane};
+				// at least for how we currently handle TWIST
+				twist = twist || 0;
+				// so...ooh boy...better hope you never have a BENDED prop at the beginning of a move :(
+				// !!!!!!I think what I actually need to do is BEND the move's head and grip here
+				grip = {r: grip.r, a: sphere$planify(grip, plane), p: plane};
+				head = {r: head.r, a: sphere$planify(head, plane), p: plane};
+				let aligned = {
+					body: merge(move.body, body),
+					pivot: merge(move.pivot, pivot),
+					helper: merge(move.helper,helper),
+					hand: merge(move.hand, hand),
+					twist: twist,
+					grip: merge(move.grip, grip),
+					head: merge(move.head, head),
+					p: plane
+				};
+				return aligned;
 			}
 		}
 	}
@@ -611,77 +620,6 @@ VS3D = function() {
 		return spin(move, move.beats*BEAT);
 	}
 
-	// returns a move aligned to the prop in question
-	function refit(prop, move) {
-		if (Array.isArray(move)) {
-			console.log("need to handle refit?");
-		}
-		let plane = move.p || WALL;
-		// !!!in a perfect world, this would have a preference for keeping defaults on body, pivot, or hinge
-		let {body, pivot, helper, hand, twist, bend, grip, head} = prop;
-		body = {r: body.r, a: sphere$planify(body, plane), p: plane};
-		pivot = {r: pivot.r, a: sphere$planify(pivot, plane), p: plane};
-		helper = {r: helper.r, a: sphere$planify(helper, plane), p: plane};
-		hand = {r: hand.r, a: sphere$planify(hand, plane), p: plane};
-		// at least for how we currently handle TWIST
-		twist = twist || 0;
-		bent = move.bent || 0;
-		vt = move.vt || 0;
-		vb = move.vb || 0;
-		// so...ooh boy...better hope you never have a BENDED prop at the beginning of a move :(
-		// !!!!!!I think what I actually need to do is BEND the move's head and grip here
-		grip = {r: grip.r, a: sphere$planify(grip, plane), p: plane};
-		head = {r: head.r, a: sphere$planify(head, plane), p: plane};
-		let aligned = {
-			body: merge(move.body, body),
-			pivot: merge(move.pivot, pivot),
-			helper: merge(move.helper,helper),
-			hand: merge(move.hand, hand),
-			twist: twist,
-			vt: vt,
-			vb: vb,
-			// !!!!this is probably wrong...
-			//bent: move.bent,
-			grip: merge(move.grip, grip),
-			head: merge(move.head, head),
-			beats: move.beats,
-			p: plane
-		};
-		if (move.recipe) {
-
-			let subset = {
-				body: aligned.body,
-				pivot: aligned.pivot,
-				hand: {r: aligned.hand.r},
-				grip: aligned.grip,
-				head: {r: aligned.head.r},
-				twist: aligned.twist,
-
-				p: aligned.p
-			};
-			
-			// // should I also refit, or will it already be fit properly?
-			let built = build(move.recipe, merge(subset, move));
-			// if (move.recipe==="pendulum") {
-			// 	console.log("arguments:");
-			// 	console.log(merge(aligned, move));
-			// 	console.log("initial form:");
-			// 	console.log(clone(built));
-			// 	console.log("socket:");
-			// 	console.log(socket(aligned));
-			// }
-			if (move.nofit) {
-				return built;
-			}
-			return realign(socket(aligned), built);
-		}
-		// !!!!! causes problems for movefactory
-		if (move.nofit) {
-			return move;
-		}
-		return aligned;
-	}
-
 	function realign(prop, move) {
 		let oriented = move;
 		for (let i=0; i<move.length; i++) {
@@ -707,48 +645,75 @@ VS3D = function() {
 		let v = sphere$vectorize(p.home);
 		// finish this later
 	}
-	// I think this works recursively because chain and fit call each other
-	function extend(move, ...moves) {
-		let tail = move;
-		for (let i=0; i<moves.length; i++) {
-			// basically copy everything?
-			// all a's, yes, all r's, yes, go from 1s to 0s, accs get dropped, v1s and then vs get kept
 
-			moves[i] = refit(moves[i],tail);
-			tail = moves[i];
-		}
-		return [move, ...moves];
-	}
-
-	function chain(prop, arr) {
-		if (Array.isArray(prop)) {
-			arr = prop;
-		} else {
-			arr[0] = fit(prop,arr[0]);
-		}
+	function chain(arr) {
 		for (let i=1; i<arr.length; i++) {
 			arr[i] = fit(socket(arr[i-1]),arr[i]);
 		}
 		return arr;
 	}
 
-	// okay...so, the challenge with the solver...
-		// we need to put defaults in there somewhere
-		// we're currently doing it in spin_angular
-		// but we need to do it before, right?
-		// we could do it in the solver...
+
+	function extend(arr) {
+		for (let i=1; i<arr.length; i++) {
+			// so...fit isn't actually what we want
+			let prev = arr[i-1];
+			let prop = socket(prev);
+			let move = fit(prop, arr[i]);
+			// but now, propagate even more stuff
+			// there's a problem in that these moves are not solved yet...right?  Oh wait...actually they are...oh.  right.
+			// is there a decent way to solve for the stuff we want to solve for?  ergh.  yup, that's a problem.
+			// maybe make a "moments" function that gets all those things as needed?
+			let moments = {};
+			for (let node of NODES) {
+				if (move.m==="linear" || move.la!==undefined || move.vl!==undefined || move.vl1!==undefined || move.al!==undefined) {
+					let {vl1: vl} = moments_linear({...prev[node], beats: prev.beats});
+					moments[node] = {vl: vl};
+				} else {
+					let {va1: va, vr1: vr} =  moments_angular({...prev[node], beats: prev.beats});
+					moments[node] = {va: va, vr: vr};
+				}
+			}
+			vt = prev.vt;
+			vb = prev.vb;
+			let extended = {
+				body: merge(moments.body, move.body),
+				pivot: merge(moments.pivot, move.pivot),
+				helper: merge(moments.helper, move.helper),
+				hand: merge(moments.hand, move.hand),
+				grip: merge(moments.grip, move.grip),
+				head: merge(moments.head, move.head),
+				vt: (move.vt!==undefined) ? move.vt : vt,
+				vb: (move.vb!==undefined) ? move.vb : vb,
+				p: move.p
+			};
+			arr[i] = extended;
+		}
+		return arr;
+	}
+
 	function spin_node(args, t) {
 		args = alias(args);
 		let {p, beats, m} = args;
 		if (m==="linear" || args.la!==undefined || args.vl!==undefined || args.vl1!==undefined || args.al!==undefined) {
-			let {a0: a, r0: r, la: la, vl0: vl, al: al} = solve_linear({a0: args.a, r0: args.r, a1: args.a1, r1: args.r1, la: args.la, vl0: args.vl, vl1: args.vl1, al: args.al, p: p, t: beats})
-			return spin_linear({a: a, r: r, la: la, vl: vl, al: al, p: p}, t);
+			let moments = moments_linear(args);
+			return spin_linear({...moments, p: p}, t);
 		}
-		let {x0: r, v0: vr, a: ar} = solve({x0: args.r, x1: args.r1, v0: args.vr, v1: args.vr1, a: args.ar, t: beats*BEAT});
-		let {x0: a, v0: va, a: aa} = solve_angle({x0: args.a, x1: args.a1, v0: args.va, v1: args.va1, a: args.aa, t: beats*BEAT, c: args.c});
-		//return spin_angular({r: parseInt(r), vr: parseInt(vr), ar: ar, a: a, va: va, aa: aa, p:p}, t);
-		return spin_angular({r: r, vr: vr, ar: ar, a: a, va: va, aa: aa, p:p}, t);
+		let moments = moments_angular(args);
+		return spin_angular({...moments, p: p}, t);
+	}
 
+	function moments_linear(args) {
+		args = alias(args);
+		let {a0: a, r0: r, la: la, vl0: vl, al: al, a1: a1, r1: r1, vl1: vl1} = solve_linear({a0: args.a, r0: args.r, a1: args.a1, r1: args.r1, la: args.la, vl0: args.vl, vl1: args.vl1, al: args.al, t: args.beats})
+		return {a: a, r: r, la: la, vl: vl, al: al, a1: a1, r1: r1, vl1: vl1};
+	}
+
+	function moments_angular(args) {
+		args = alias(args);
+		let {x0: r, v0: vr, a: ar, x1: r1, v1: vr1} = solve({x0: args.r, x1: args.r1, v0: args.vr, v1: args.vr1, a: args.ar, t: args.beats*BEAT});
+		let {x0: a, v0: va, a: aa, x1: a1, v1: va1} = solve_angle({x0: args.a, x1: args.a1, v0: args.va, v1: args.va1, a: args.aa, t: args.beats*BEAT});
+		return {r: r, vr: vr, ar: ar, a: a, va: va, aa: aa, r1: r1, vr1: vr1, a1: a1, va1: va1};
 	}
 
 	function spin_angular(args, t) {
@@ -782,7 +747,7 @@ VS3D = function() {
 			motion: "m",
 			vl0: "vl"
 		}
-		let vals = ["r","r1","a","a1","va","vr","va1","vr1","c","p","m","beats","vl","al","la"];
+		let vals = ["r","r1","a","a1","va","vr","va1","vr1","c","p","m","beats","vl","al","la","t"];
 		let nargs = {};
 		for (let val of vals) {
 			if (nargs[val]===undefined) {
@@ -856,6 +821,13 @@ VS3D = function() {
 	}
 
 	function solve_angle(args) {
+		// temporary(?) fix
+		if (args.a0) {
+			args.a0 = angle(args.a0);
+		}
+		if (args.a1) {
+			args.a1 = angle(args.a1);
+		}
 		// currently does nothing different, but could if I change my mind
 		return solve(args);
 	}
@@ -1020,24 +992,40 @@ VS3D = function() {
 			head: {r: 1}
 		}
 	}
-	function build(recipe, args) {
-		if (typeof(recipe)==="object") {
-			args = recipe;
-			recipe = args.recipe;
+
+	function build(recipe, prop) {
+		prop = prop || new Prop();
+		// if the move has a plane, we keep that; otherwise, we use the wall plane.
+		let plane = recipe.p || WALL;
+		let {body, pivot, helper, hand, twist, grip, head} = prop;
+		body = {r: body.r, a: sphere$planify(body, plane), p: plane};
+		pivot = {r: pivot.r, a: sphere$planify(pivot, plane), p: plane};
+		helper = {r: helper.r, a: sphere$planify(helper, plane), p: plane};
+		hand = {r: hand.r, a: sphere$planify(hand, plane), p: plane};
+		// at least for how we currently handle TWIST
+		bent = recipe.bent || 0;
+		// bent will almost always be zero, but later we can try to handle this
+		grip = {r: grip.r, a: sphere$planify(grip, plane), p: plane};
+		head = {r: head.r, a: sphere$planify(head, plane), p: plane};
+		let aligned = {
+			body: body,
+			pivot: pivot,
+			helper: helper,
+			hand: hand,
+			grip: grip,
+			head: head
 		}
-		return MoveFactory[recipe](args);
+		let args = merge(aligned, recipe);
+		return MoveFactory[args.recipe](args);
 	}
 
 	function recipe(name, defs, f) {
 		MoveFactory[name] = (args) => {
-			// may need to decompose the individual nodes and spread them
-			//return f({...this.defaults, ...defs, ...args});a
 			return f(merge(merge(MoveFactory.defaults, defs), args));
 		}
 	}
 	function variant(name, recipe, defs) {
 		MoveFactory[name] = (args)=>{
-			// may need to decompose the individual nodes and spread them
 			return MoveFactory[recipe](merge(defs, args));
 		}
 	}
@@ -1088,7 +1076,7 @@ VS3D = function() {
 	VS3D.recipe = recipe;
 	VS3D.build = build;
 	VS3D.variant = variant;
-	VS3D.refit = refit;
+	// VS3D.refit = refit;
 	VS3D.realign = realign;
 	VS3D.extend = extend;
 	VS3D.chain = chain;

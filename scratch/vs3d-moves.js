@@ -71,7 +71,7 @@ VS3D = (function(VS3D) {
 
 	let recipe = VS3D.recipe;
 	let Move = VS3D.Move;
-	let chain = VS3D.chain;
+	let extend = VS3D.extend;
 	let merge = VS3D.merge;
 	let clone = VS3D.clone;
 
@@ -80,7 +80,7 @@ VS3D = (function(VS3D) {
 		{},
 		options => {
 			let {beats, speed, hand, spin, orient, direction} = options;
-			let move = chain([
+			let move = extend([
 				Move({
 					...options,
 					beats: beats/4,
@@ -126,7 +126,7 @@ VS3D = (function(VS3D) {
 			// floor plane pendulums don't work right...is that okay?
 			let topangle = onepointfive ? orient+SPLIT : orient;
 			let sidespeed = hybrid ? 0 : 1;
-			let move = chain([
+			let move = extend([
 				Move({
 					...options,
 					beats: beats/4,
@@ -165,7 +165,7 @@ VS3D = (function(VS3D) {
 		options => {
 			let {beats, speed, hand, head, spin, orient, direction, onepointfive, hybrid} = options;
 			// floor plane pendulums don't work right...is that okay?
-			let move = chain([
+			let move = extend([
 				Move({
 					...options,
 					beats: beats/4,
@@ -214,7 +214,7 @@ VS3D = (function(VS3D) {
 				hand: {...hand, a: orient, va: direction*speed},
 				head: {...head, a: hangle, va: v*spin*direction*speed}
 			}));
-			let move = chain([
+			let move = extend([
 				segment,
 				segment,
 				segment,
@@ -245,7 +245,7 @@ VS3D = (function(VS3D) {
 				hand: {...hand, a: orient, va: direction*speed},
 				head: {head: {...head, a: hangle}, va: spin*direction*speed}
 			});
-			let move = chain([
+			let move = extend([
 				segment,
 				segment,
 				segment,
@@ -275,7 +275,7 @@ VS3D = (function(VS3D) {
 				hand: {...hand, a: orient, va: direction*speed},
 				head: {...head, a: hangle, va: bend*direction*speed}
 			}));
-			let move = chain([
+			let move = extend([
 				segment,
 				segment,
 				segment,
@@ -285,7 +285,7 @@ VS3D = (function(VS3D) {
 		}
 	);
 
-	// A placeholder until I fix chaining for bent moves
+	// A placeholder until I fix extending for bent moves
 	recipe(
 		"shim_toroid",
 		{
@@ -341,7 +341,7 @@ VS3D = (function(VS3D) {
 					head: {a: -orient, v: direction*spin*speed}
 				}
 			];
-			// let move = chain([
+			// let move = extend([
 			// 	segment,
 			// 	segment,
 			// 	segment,
