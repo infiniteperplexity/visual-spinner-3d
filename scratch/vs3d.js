@@ -412,7 +412,8 @@ VS3D = function() {
 		}
 	}
 
-	function prop$set(prop, args) {
+	// I still don't like overloading, but...
+	function snapto(prop, args) {
 		if (args===undefined) {
 			args = prop;
 			prop = new Prop();
@@ -451,38 +452,76 @@ VS3D = function() {
 			twist: twist,
 			bent: bent
 		};
-		return spin(prop,prp,0,true);
+		let fitted = fit(prop, prp);
+		return spin(prp,0);
 	}
 
-	// given that I'm making Player, should this still overload?
-	function spin(p, m, t, nofit) {
-		if (typeof(m)==="number") {
-			nofit = t;
-			t = m;
-			m = p;
-		} else if (!nofit) {
-			m = fit(p, m);
-		}
-		if (Array.isArray(m)) {
-			if (m.length===0) {
-				return p;
+	// takes a move and a time, returns a prop
+	function spin(move, t) {
+		if (Array.isArray(move)) {
+			if (move.length===0) {
+				return new Prop();
 			}
 			let past = 0;
 			let i = 0;
 			while (past<=t) {
-				let ticks = beats(m[i])*BEAT || 1*BEAT;
+				let ticks = beats(move[i])*BEAT || 1*BEAT;
 				if (past+ticks>=t) {
-					return spin(m[i], t-past, nofit);
+					return spin(move[i], t-past);
 				} else {
 					past+=ticks;
-					i=(i+1)%m.length;
+					i=(i+1)%move.length;
 				}
 			}
 		}
-		if (Array.isArray(m)) {
-			console.log("shouldn't have gotten here");
+		let p = move.p || WALL;
+		let b = move.beats || 1;
+		// why are these spheres and not planar angles?
+		move.body = move.body || {r: 0, a: 0, p: p};
+		move.pivot = move.pivot || {r: 0, a: 0, p: p};
+		move.helper = move.helper || {r: 0, a: 0, p: p};
+		move.hand = move.hand || {r: 1, a: 0, p: p};
+		move.twist = move.twist || 0;
+		move.bent = move.bent || 0;
+		move.vt = move.vt || 0;
+		move.vb = move.vb || 0;
+		move.grip = move.grip || {r: 0, a: 0, p: p};
+		move.head = move.head || {r: 1, a: 0, p: p};	
+		let body = spin_node({beats: b, p: p, ...move.body}, t);
+		let pivot = spin_node({beats: b, p: p, ...move.pivot}, t);
+		let helper = spin_node({beats: b, p: p, ...move.helper}, t);
+		let hand = spin_node({beats: b, p: p, ...move.hand}, t);
+		
+		let twist = move.twist + move.vt*t*SPEED;
+		let bent = move.bent + move.vb*t*SPEED;
+		// let axis = vector$unitize(sphere$vectorize(hand));
+		// let tangent = vector$cross(axis,p);
+		// let bend = vector$rotate(p,bent,tangent);
+		// move.head.p = bend;
+		let grip = spin_node({beats: b, p: p, ...move.grip}, t);
+		let head = spin_node({beats: b, p: p, ...move.head}, t);
+		if (angle$nearly(head.a,0)) {
+			// avoids an annoying round-to-zero cusp that renders TWIST wrong in the WHEEL plane
+			head.a = VS3D.SMALL;
+			head.b = angle$spherify(QUARTER,p).b;
 		}
-		return prop$spin(m, t);
+		// okay...so here we need to take at least the HEAD node...
+		// ...and rotate it by BENT around the cross product of the HAND axis and the plane
+		// This is a shim for the real system, which I haven't gotten to work yet
+		let axis = vector$unitize(sphere$vectorize(head));
+		let tangent = vector$cross(axis,p);
+		head = vector$spherify(vector$rotate(sphere$vectorize(head),bent,tangent));
+		// grip = vector$spherify(vector$rotate(sphere$vectorize(grip),bent,tangent));
+		return {
+			body: body,
+			pivot: pivot,
+			helper: helper,
+			hand: hand,
+			// fix this somehow
+			twist: twist,
+			grip: grip,
+			head: head
+		}
 	}
 
 	function beats(move) {
@@ -509,14 +548,14 @@ VS3D = function() {
 		console.log(move.head);*/
 		// !!!!Temporary mod to disable fitting
 		//return true;
-		let m = spin(prop, move, 0, "nofit");
+		let m = spin(move, 0);
 		// console.log("node sums");
-		// console.log(node$sum(prop, HAND));
-		// console.log(node$sum(m, HAND));
-		// console.log(node$sum(prop, HEAD));
-		// console.log(node$sum(m, HEAD));
-		return (	sphere$nearly(node$sum(prop, HAND),node$sum(m), HAND), SMALL)
-					&& sphere$nearly(node$sum(prop, HEAD),node$sum(m, HEAD), SMALL);
+		// console.log(sum_nodes(prop, HAND));
+		// console.log(sum_nodes(m, HAND));
+		// console.log(sum_nodes(prop, HEAD));
+		// console.log(sum_nodes(m, HEAD));
+		return (	sphere$nearly(sum_nodes(prop, HAND),sum_nodes(m), HAND), SMALL)
+					&& sphere$nearly(sum_nodes(prop, HEAD),sum_nodes(m, HEAD), SMALL);
 	}
 
 	function fit(prop, move) {
@@ -547,7 +586,7 @@ VS3D = function() {
 		}
 	}
 
-	function node$sum(prop, n) {
+	function sum_nodes(prop, n) {
 		let [xs, ys, zs] = [0, 0, 0];
 		for (let i=BODY; i<=n; i++) {
 			let {x, y, z} = sphere$vectorize(prop[NODES[i]]);
@@ -558,7 +597,7 @@ VS3D = function() {
 		return vector$spherify(vector(xs,ys,zs));
 	}
 
-	function prop$axis(prop) {
+	function axis(prop) {
 		// so that I can later switch how this works if I misunderstood GRIP
 		return vector$unitize(sphere$vectorize(prop.head));
 	}
@@ -569,7 +608,7 @@ VS3D = function() {
 			return socket(move[0]);
 		}
 		move.beats = move.beats || 1;
-		return prop$spin(move, move.beats*BEAT);
+		return spin(move, move.beats*BEAT);
 	}
 
 	// returns a move aligned to the prop in question
@@ -681,78 +720,38 @@ VS3D = function() {
 		return [move, ...moves];
 	}
 
-	function prop$spin(args, t) {
-		let p = args.p || WALL;
-		let beats = args.beats || 1;
-		// why are these spheres and not planar angles?
-		args.body = args.body || {r: 0, a: 0, p: p};
-		args.pivot = args.pivot || {r: 0, a: 0, p: p};
-		args.helper = args.helper || {r: 0, a: 0, p: p};
-		args.hand = args.hand || {r: 1, a: 0, p: p};
-		args.twist = args.twist || 0;
-		args.bent = args.bent || 0;
-		args.vt = args.vt || 0;
-		args.vb = args.vb || 0;
-		args.grip = args.grip || {r: 0, a: 0, p: p};
-		args.head = args.head || {r: 1, a: 0, p: p};	
-		let body = node$spin({beats: beats, p: p, ...args.body}, t);
-		let pivot = node$spin({beats: beats, p: p, ...args.pivot}, t);
-		let helper = node$spin({beats: beats, p: p, ...args.helper}, t);
-		let hand = node$spin({beats: beats, p: p, ...args.hand}, t);
-		
-		let twist = args.twist + args.vt*t*SPEED;
-		let bent = args.bent + args.vb*t*SPEED;
-		// let axis = vector$unitize(sphere$vectorize(hand));
-		// let tangent = vector$cross(axis,p);
-		// let bend = vector$rotate(p,bent,tangent);
-		// args.head.p = bend;
-		let grip = node$spin({beats: beats, p: p, ...args.grip}, t);
-		let head = node$spin({beats: beats, p: p, ...args.head}, t);
-		if (angle$nearly(head.a,0)) {
-			// avoids an annoying round-to-zero cusp that renders TWIST wrong in the WHEEL plane
-			head.a = VS3D.SMALL;
-			head.b = angle$spherify(QUARTER,p).b;
+	function chain(prop, arr) {
+		if (Array.isArray(prop)) {
+			arr = prop;
+		} else {
+			arr[0] = fit(prop,arr[0]);
 		}
-		// okay...so here we need to take at least the HEAD node...
-		// ...and rotate it by BENT around the cross product of the HAND axis and the plane
-		// This is a shim for the real system, which I haven't gotten to work yet
-		let axis = vector$unitize(sphere$vectorize(head));
-		let tangent = vector$cross(axis,p);
-		head = vector$spherify(vector$rotate(sphere$vectorize(head),bent,tangent));
-		// grip = vector$spherify(vector$rotate(sphere$vectorize(grip),bent,tangent));
-		return {
-			body: body,
-			pivot: pivot,
-			helper: helper,
-			hand: hand,
-			// fix this somehow
-			twist: twist,
-			grip: grip,
-			head: head
+		for (let i=1; i<arr.length; i++) {
+			arr[i] = fit(socket(arr[i-1]),arr[i]);
 		}
+		return arr;
 	}
-
 
 	// okay...so, the challenge with the solver...
 		// we need to put defaults in there somewhere
-		// we're currently doing it in motion$rotate
+		// we're currently doing it in spin_angular
 		// but we need to do it before, right?
 		// we could do it in the solver...
-	function node$spin(args, t) {
+	function spin_node(args, t) {
 		args = alias(args);
 		let {p, beats, m} = args;
 		if (m==="linear" || args.la!==undefined || args.vl!==undefined || args.vl1!==undefined || args.al!==undefined) {
-			let {a0: a, r0: r, la: la, vl0: vl, al: al} = linear$solve({a0: args.a, r0: args.r, a1: args.a1, r1: args.r1, la: args.la, vl0: args.vl, vl1: args.vl1, al: args.al, p: p, t: beats})
-			return motion$linear({a: a, r: r, la: la, vl: vl, al: al, p: p}, t);
+			let {a0: a, r0: r, la: la, vl0: vl, al: al} = solve_linear({a0: args.a, r0: args.r, a1: args.a1, r1: args.r1, la: args.la, vl0: args.vl, vl1: args.vl1, al: args.al, p: p, t: beats})
+			return spin_linear({a: a, r: r, la: la, vl: vl, al: al, p: p}, t);
 		}
 		let {x0: r, v0: vr, a: ar} = solve({x0: args.r, x1: args.r1, v0: args.vr, v1: args.vr1, a: args.ar, t: beats*BEAT});
-		let {x0: a, v0: va, a: aa} = angle$solve({x0: args.a, x1: args.a1, v0: args.va, v1: args.va1, a: args.aa, t: beats*BEAT, c: args.c});
-		//return motion$rotate({r: parseInt(r), vr: parseInt(vr), ar: ar, a: a, va: va, aa: aa, p:p}, t);
-		return motion$rotate({r: r, vr: vr, ar: ar, a: a, va: va, aa: aa, p:p}, t);
+		let {x0: a, v0: va, a: aa} = solve_angle({x0: args.a, x1: args.a1, v0: args.va, v1: args.va1, a: args.aa, t: beats*BEAT, c: args.c});
+		//return spin_angular({r: parseInt(r), vr: parseInt(vr), ar: ar, a: a, va: va, aa: aa, p:p}, t);
+		return spin_angular({r: r, vr: vr, ar: ar, a: a, va: va, aa: aa, p:p}, t);
 
 	}
 
-	function motion$rotate(args, t) {
+	function spin_angular(args, t) {
 		for (let e of ["r","a","vr","va","ar","aa"]) {
 			args[e] = args[e] || 0;
 		}
@@ -761,11 +760,6 @@ VS3D = function() {
 		let a = args.a + args.va*t*SPEED + args.aa*t*t*SPEED*SPEED/2;
 		let p = args.p;
 		return {...angle$spherify(a, p), r: r};
-	}
-
-
-	function motion$grip(args, t) {
-
 	}
 
 	function alias(args) {
@@ -861,28 +855,14 @@ VS3D = function() {
 		return {x0: x0, x1: x1, v0: v0, v1: v1, a: a, t: t};
 	}
 
-	function angle$solve(args) {
-		// oh wait...there *is* another way here...
-		// we could always not treat them as angles.
-		// wow...that actually sound like a good idea.
-		// there's a downside...you can't go from UP to LEFT counterclockwise; instead, you need to do UP to -RIGHT.
-		// this *only* applies to solving, so it's not a big problem.
-		// I think what we need to test is whether non-normalized angles get normalized by some intermediate step
-		// 'cuz that would be a problem. They shouldn't, though.  Because it's *only* the a1 argument that this even applies to.
-		let mods = clone(args);
-		// if (mods.a0!==undefined) {
-		// 	mods.a0 = angle(a0);
-		// }
-		return solve(mods);
+	function solve_angle(args) {
+		// currently does nothing different, but could if I change my mind
+		return solve(args);
 	}
-// - If a<b, CW, leave as is, CCW subtract 360 from b.  If a>b, CCW leave it be, CW subtract 360 from a.
-// - Which means...add 360 to the smaller one, if sign of difference doesn't match sign of speed.
-// - After that, add (n-1)*360 to (new) bigger one.
-
 
 
 	// also seemed to pass unit tests
-	function linear$solve(args) {
+	function solve_linear(args) {
 		let {a0, a1, r0, r1, la, vl0, vl1, al0, al, t} = args;
 		let known = {};
 		for (let arg in args) {
@@ -947,7 +927,7 @@ VS3D = function() {
 	}
 	
 	// seems to pass unit tests
-	function motion$linear(args, t) {
+	function spin_linear(args, t) {
 		for (let e of ["r","a","la","vl","al"]) {
 			args[e] = args[e] || 0;
 		}
@@ -1100,9 +1080,9 @@ VS3D = function() {
 	VS3D.beats = beats;
 	VS3D.fits = fits;
 	VS3D.fit = fit;
-	VS3D.node$sum = node$sum;
-	VS3D.prop$set = prop$set;
-	VS3D.prop$axis = prop$axis;
+	VS3D.sum_nodes = sum_nodes;
+	VS3D.snapto = snapto;
+	VS3D.axis = axis;
 	VS3D.socket = socket;
 	VS3D.MoveFactory = MoveFactory;
 	VS3D.recipe = recipe;
@@ -1111,15 +1091,13 @@ VS3D = function() {
 	VS3D.refit = refit;
 	VS3D.realign = realign;
 	VS3D.extend = extend;
-	VS3D.chain = extend;
-	VS3D.prop$spin = prop$spin;
-	VS3D.node$spin = node$spin;
-	VS3D.motion$rotate = motion$rotate;
-	VS3D.motion$linear = motion$linear;
-	VS3D.motion$grip = motion$grip;
+	VS3D.chain = chain;
+	VS3D.spin_node = spin_node;
+	VS3D.spin_angular = spin_angular;
+	VS3D.spin_linear = spin_linear;
 	VS3D.alias = alias;
 	VS3D.solve = solve;
-	VS3D.angle$solve = angle$solve;
+	VS3D.solve_angle = solve_angle;
 	VS3D.PropWrapper = PropWrapper;
 	VS3D.Player = Player;
 	return VS3D;

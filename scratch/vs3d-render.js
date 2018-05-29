@@ -91,7 +91,7 @@ VS3D = (function(VS3D) {
 		shapes.rotation.x = 0;
 		shapes.rotation.y = 0;
 		shapes.rotation.z = 0;
-		let axis = VS3D.prop$axis(prop);
+		let axis = VS3D.axis(prop);
 		
 		for (let i=VS3D.BODY; i<VS3D.HEAD; i++) {
 			let node = VS3D.NODES[i];

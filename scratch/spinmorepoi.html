@@ -195,7 +195,7 @@
 			let dir = VS3D[direction];
 			let angle = VS3D[align];
 			let p = VS3D[plane];
-			let start = VS3D.prop$set({hand: {a: angle}, head: {a: angle}, p:p});
+			let start = VS3D.snapto({hand: {a: angle}, head: {a: angle}, p:p});
 			if (recipe==="extension") {
 				move = {recipe: "flower", orient: angle, petals: 0, direction: dir, p: p};
 			} else if (recipe==="inspin1") {
@@ -236,8 +236,8 @@
 				move = {recipe: "shim_toroid", orient: angle, bend: 3, harmonics: -4, direction: dir, p: p};
 			} else if (recipe==="pendulum") {
 				if (align==="UP") {
-					//!!!! It should not be necessary to pass the hand argument...bug in prop$set
-					start = VS3D.prop$set(start, {hand: {a: VS3D.UP}, head: {a: VS3D.DOWN}, p: p});
+					//!!!! It should not be necessary to pass the hand argument...bug in snapto
+					start = VS3D.snapto(start, {hand: {a: VS3D.UP}, head: {a: VS3D.DOWN}, p: p});
 				}
 				move = {recipe: "shim_pendulum", direction: dir, p: p};
 			}
