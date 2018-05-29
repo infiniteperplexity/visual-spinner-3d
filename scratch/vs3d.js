@@ -557,29 +557,34 @@ VS3D = function() {
 			let fitted = [];
 			fitted[0] = fit(prop, move[0]);
 			for (let i=1; i<move.length; i++) {
+				// !!! Should we consider propagating planes at this point?
 				fitted[i] = fit(socket(fitted[i-1]), fitted[i]);
 			}
 			return fitted;
 		} else {
 			if (move.recipe) {
-				return realign(prop,build(move,prop));
+				let built = build(move, prop);
+				let aligned = realign(prop, built);
+				return aligned;
 			}
 			if (fits(prop, move)) {
 				return move;
 			} else {
+				// !!!this actually has a pretty high chance of messing up, for any 3d move...
 				let plane = move.p || WALL;
 				// !!!in a perfect world, this would have a preference for keeping defaults on body, pivot, or hinge
 				let {body, pivot, helper, hand, twist, bend, grip, head} = prop;
-				body = {r: body.r, a: sphere$planify(body, plane), p: plane};
-				pivot = {r: pivot.r, a: sphere$planify(pivot, plane), p: plane};
-				helper = {r: helper.r, a: sphere$planify(helper, plane), p: plane};
-				hand = {r: hand.r, a: sphere$planify(hand, plane), p: plane};
+				body = {r: body.r, a: sphere$planify(body, plane)};
+				pivot = {r: pivot.r, a: sphere$planify(pivot, plane)};
+				helper = {r: helper.r, a: sphere$planify(helper, plane)};
+				hand = {r: hand.r, a: sphere$planify(hand, plane)};
 				// at least for how we currently handle TWIST
 				twist = twist || 0;
 				// so...ooh boy...better hope you never have a BENDED prop at the beginning of a move :(
 				// !!!!!!I think what I actually need to do is BEND the move's head and grip here
-				grip = {r: grip.r, a: sphere$planify(grip, plane), p: plane};
-				head = {r: head.r, a: sphere$planify(head, plane), p: plane};
+				grip = {r: grip.r, a: sphere$planify(grip, plane)};
+				head = {r: head.r, a: sphere$planify(head, plane)};
+				// okay...fit shouldn't be sticking these planes in here, right?
 				let aligned = {
 					body: merge(move.body, body),
 					pivot: merge(move.pivot, pivot),
@@ -659,7 +664,8 @@ VS3D = function() {
 			// so...fit isn't actually what we want
 			let prev = arr[i-1];
 			let prop = socket(prev);
-			let move = fit(prop, arr[i]);
+			let planed = {...arr[i], p: prev.p};
+			let move = fit(prop, planed);
 			// but now, propagate even more stuff
 			// there's a problem in that these moves are not solved yet...right?  Oh wait...actually they are...oh.  right.
 			// is there a decent way to solve for the stuff we want to solve for?  ergh.  yup, that's a problem.
@@ -676,6 +682,10 @@ VS3D = function() {
 			}
 			vt = prev.vt;
 			vb = prev.vb;
+			// if (prev.p.z!==-1) {
+			// 	console.log(moments.body);
+			// 	console.log(move.body);
+			// }
 			let extended = {
 				body: merge(moments.body, move.body),
 				pivot: merge(moments.pivot, move.pivot),
@@ -685,10 +695,11 @@ VS3D = function() {
 				head: merge(moments.head, move.head),
 				vt: (move.vt!==undefined) ? move.vt : vt,
 				vb: (move.vb!==undefined) ? move.vb : vb,
-				p: move.p
+				p: prev.p
 			};
 			arr[i] = extended;
 		}
+
 		return arr;
 	}
 
@@ -1013,7 +1024,7 @@ VS3D = function() {
 			helper: helper,
 			hand: hand,
 			grip: grip,
-			head: head
+			head: head,
 		}
 		let args = merge(aligned, recipe);
 		return MoveFactory[args.recipe](args);
