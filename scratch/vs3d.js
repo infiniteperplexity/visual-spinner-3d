@@ -687,7 +687,7 @@ VS3D = function() {
 				vt: (move.vt!==undefined) ? move.vt : prev.vt,
 				vb: (move.vb!==undefined) ? move.vb : prev.vb,
 				p: prev.p,
-				beats: (move.beats!==undefined) ? move.beats : prev.beats
+				beats: (arr[i].beats!==undefined) ? arr[i].beats : prev.beats
 			};
 			arr[i] = extended;
 		}
@@ -715,7 +715,7 @@ VS3D = function() {
 	function moments_angular(args) {
 		args = alias(args);
 		let {x0: r, v0: vr, a: ar, x1: r1, v1: vr1} = solve({x0: args.r, x1: args.r1, v0: args.vr, v1: args.vr1, a: args.ar, t: args.beats*BEAT});
-		let {x0: a, v0: va, a: aa, x1: a1, v1: va1} = solve_angle({x0: args.a, x1: args.a1, v0: args.va, v1: args.va1, a: args.aa, t: args.beats*BEAT});
+		let {x0: a, v0: va, a: aa, x1: a1, v1: va1} = solve_angle({x0: args.a, x1: args.a1, v0: args.va, v1: args.va1, a: args.aa, spin: args.spin, t: args.beats*BEAT});
 		return {r: r, vr: vr, ar: ar, a: a, va: va, aa: aa, r1: r1, vr1: vr1, a1: a1, va1: va1};
 	}
 
@@ -743,14 +743,10 @@ VS3D = function() {
 			speed: "va",
 			speed0: "va",
 			speed1: "va1",
-			units: "c",
-			cycles: "c",
-			loops: "c",
-			petals: "c",
 			motion: "m",
 			vl0: "vl"
 		}
-		let vals = ["r","r1","a","a1","va","vr","va1","vr1","c","p","m","beats","vl","al","la","t"];
+		let vals = ["r","r1","a","a1","va","vr","va1","vr1","c","p","m","beats","vl","al","la","t","spin"];
 		let nargs = {};
 		for (let val of vals) {
 			if (nargs[val]===undefined) {
@@ -823,16 +819,71 @@ VS3D = function() {
 		return {x0: x0, x1: x1, v0: v0, v1: v1, a: a, t: t};
 	}
 
+
+
+
+
 	function solve_angle(args) {
-		// !!!decision point
-		// if (args.a0) {
-		// 	args.a0 = angle(args.a0);
-		// }
-		// if (args.a1) {
-		// 	args.a1 = angle(args.a1);
-		// }
-		// currently does nothing different, but could if I change my mind
-		return solve(args);
+		let {x0, x1, v0, v1, a, t, spin} = args;
+		let known = {};
+		for (let arg in args) {
+			if (args[arg]!==undefined) {
+				known[arg] = true;
+			}
+		}
+		if (known.x0) {
+			x0 = angle(x0);
+			args.x0 = angle(args.x0);
+		}
+		if (known.x1) {
+			x1 = angle(x1);
+			args.x1 = angle(args.x1);
+		}
+		if (known.x0 && known.x1) {
+			if (!known.spin) {
+				// try to guess a good default
+				if (x1===x0) {
+					// tough one...
+					spin = 0;
+				} else if (x1>x0) {
+					if ((x1-x0)*UNIT<=Math.PI) {
+						spin = +1;
+					} else {
+						spin = -1;
+					}
+				} else {
+					if ((x1-x0)*UNIT<=Math.PI) {
+						spin = -1;
+					} else {
+						spin = +1;
+					}
+				}
+				args.spin = spin;
+				known.spin = true;	
+			}
+			// de-normalize final position based on spin argument
+			if (x1>=x0) {
+				// if (x1===90 && x0===0) {
+				// 	console.log(x1+">"+x0);
+				// 	console.log(spin);
+				// 	console.log(x1+(2*Math.PI/UNIT)*(spin+0));
+				// }
+				//console.log(x1+">="+x0);
+				x1+= (2*Math.PI/UNIT)*(spin+0);
+			} else if (x0>x1) {
+				// if (x1===0 && x0===270) {
+				// 	console.log(x1+"<"+x0);
+				// 	console.log(spin);
+				// }
+				x1+= (2*Math.PI/UNIT)*(spin+1);
+				//console.log("x1="+x1);
+			}
+			args.x1 = x1;
+		}
+		let solved = solve(args);
+		solved.x1 = angle(solved.x1);
+		solved.x0 = angle(solved.x0);
+		return solved;
 	}
 
 

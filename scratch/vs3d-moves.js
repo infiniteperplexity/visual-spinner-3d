@@ -160,7 +160,10 @@ VS3D = (function(VS3D) {
 	recipe(
 		"shim_pendulum",
 		{
-			orient: DOWN
+			orient: DOWN,
+			onepointfive: true,
+			hybrid: false
+			// hybrid makes sense only for the bottom half, right?
 		},
 		options => {
 			let {beats, speed, hand, head, spin, orient, direction, onepointfive, hybrid} = options;
@@ -170,15 +173,41 @@ VS3D = (function(VS3D) {
 				hand: {...hand, a: orient, va: direction*speed},
 				head: {...head, a: orient, a1: orient+spin*QUARTER*direction, va1: 0}
 			}));
+			let topangle = (onepointfive) ? orient+SPLIT : orient;
 			let move = extend([
 				segment,
-				{head: {a1: orient-360}},
-				{head: {a1: orient-spin*QUARTER*direction, va1: 0}},
+				{head: {a1: topangle, spin: -direction}},
+				{head: {a1: orient-spin*QUARTER*direction, spin: -direction, va1: 0}},
 				{head: {a1: orient}}
 			]);
+			console.log(direction);
+			console.log(move);
 			return move;
 		}
 	);
+
+	// recipe(
+	// 	"shim_pendulum",
+	// 	{
+	// 		orient: DOWN
+	// 	},
+	// 	options => {
+	// 		let {beats, speed, hand, head, spin, orient, direction, onepointfive, hybrid} = options;
+	// 		// floor plane pendulums don't work right...is that okay?
+	// 		let segment = Move(merge(options, {
+	// 			beats: beats/4,
+	// 			hand: {...hand, a: orient, va: direction*speed},
+	// 			head: {...head, a: orient, a1: orient+spin*QUARTER*direction, va1: 0}
+	// 		}));
+	// 		let move = extend([
+	// 			segment,
+	// 			{head: {a1: orient}},
+	// 			{head: {a1: orient-spin*QUARTER*direction, va1: 0}},
+	// 			{head: {a1: orient}}
+	// 		]);
+	// 		return move;
+	// 	}
+	// );
 
 	recipe(
 		"flower",

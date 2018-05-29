@@ -35,10 +35,10 @@
 	let defaults = {
 		model: ["poi","poi","poi","poi"],
 		plane: ["WALL","WALL","WALL","WALL"],
-		align: ["UP","UP","UP","UP"],
+		align: ["DOWN","DOWN","UP","UP"],
 		orient: ["UP","UP","UP","UP"],
-		direction: ["CCW","CW","CCW","CCW"],
-		move: ["pendulum","isobend4","isobend4","isobend4"]
+		direction: ["CW","CCW","CCW","CCW"],
+		move: ["pendulum","pendulum","isobend4","isobend4"]
 	};
 
 	let menus = {
@@ -97,7 +97,7 @@
 		setupPlayer();
 		setupMenus();
 		setMoves();
-		//play();
+		play();
 
 	}
 
@@ -106,7 +106,7 @@
 	}
 
 	function play() {
-		player.play();
+		//player.play();
 	}
 
 	function setupPlayer() {
