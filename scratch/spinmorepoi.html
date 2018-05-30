@@ -33,16 +33,12 @@
 	let renderer, player, red, blue, green, yellow;
 
 	let defaults = {
-		// model: ["poi","poi","poi","poi"],
-		model: ["fan","fan","poi","poi"],
-		// plane: ["WALL","WALL","WALL","WALL"],
-		// align: ["UP","UP","UP","UP"],
-		plane: ["WHEEL","WALL","WALL","WALL"],
-		align: ["UP","DOWN","RIGHT","RIGHT"],
+		model: ["poi","poi","poi","poi"],
+		plane: ["WALL","WALL","WALL","WALL"],
+		align: ["UP","UP","UP","UP"],
 		orient: ["UP","UP","UP","UP"],
 		direction: ["CW","CW","CCW","CCW"],
-		move: ["extension","probend4","extension","extension"]
-		// move: ["extension","antispin3","extension","antispin3"]
+		move: ["extension","antispin3","extension","antispin3"]
 	};
 
 	let menus = {
@@ -203,6 +199,9 @@
 			let dir = VS3D[direction];
 			let angle = VS3D[align];
 			let p = VS3D[plane];
+			// if (plane==="WALL") {
+			// 	p = VS3D.WAXWH;
+			// }
 			let start = VS3D.snapto({hand: {a: angle}, head: {a: angle}, p: p});
 			if (recipe==="extension") {
 				move = {recipe: "flower", orient: angle, petals: 0, direction: dir, p: p};

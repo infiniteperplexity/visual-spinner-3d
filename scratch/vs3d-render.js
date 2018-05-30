@@ -1,5 +1,8 @@
 VS3D = (function(VS3D) {
 
+	const THREEX = {x: 1, y: 0, z: 0};
+	const THREEY = {x: 0, y: 1, z: 0};
+	const THREEZ = {x: 0, y: 0, z: -1};
 
 	function webglAvailable() {
 		try {
@@ -102,7 +105,7 @@ VS3D = (function(VS3D) {
 			let node = VS3D.NODES[i];
 			shapes.rotateY(-prop[node].b*VS3D.UNIT);
 			shapes.rotateZ(-prop[node].a*VS3D.UNIT);
-			shapes.translateOnAxis(VS3D.YAXIS,+prop[node].r);
+			shapes.translateOnAxis(THREEY,+prop[node].r);
 			shapes.rotateZ(+prop[node].a*VS3D.UNIT);
 			shapes.rotateY(+prop[node].b*VS3D.UNIT);
 		}
@@ -191,7 +194,7 @@ VS3D = (function(VS3D) {
 			new THREE.MeshLambertMaterial({color: this.colors("gray")})
 		);
 		//rotateX?
-		handle.translateOnAxis(VS3D.YAXIS,-0.8);
+		handle.translateOnAxis(THREEY,-0.8);
 		let group = new THREE.Group();
 		group.add(ring);
 		group.add(handle);
@@ -214,7 +217,7 @@ VS3D = (function(VS3D) {
 				new THREE.MeshLambertMaterial({color: this.colors(color)})
 			);
 			tine.rotateZ(-angle+i*angle);
-			tine.translateOnAxis(VS3D.YAXIS,0.6);
+			tine.translateOnAxis(THREEY,0.6);
 		 	group.add(tine);
 		}
 		return group;

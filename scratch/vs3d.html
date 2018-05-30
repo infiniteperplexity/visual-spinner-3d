@@ -14,9 +14,10 @@
 	let red = new VS3D.Prop();
 	//let p = VS3D.WHEEL; 
 	//let p = VS3D.WALL;
+	let p = VS3D.WHXFL;
 	//let p = {x: 0.707, y: 0, z: -0.707};
 	//let p = {x: 0.707, y: 0, z: 0.707};
-	let p = {x: 0, y: -VS3D.DIAG, z: -VS3D.DIAG};
+	//let p = {x: 0, y: -VS3D.DIAG, z: -VS3D.DIAG};
 	let move = {hand: {r: 1, a: 0, va: 1}, head: {r: 1, a: 0, va: 1}, beats: 4, p: p};
 	function init() {
 		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
@@ -28,9 +29,9 @@
 		player.render = function(props, positions) {
 			renderer.render(props, positions);
 		}
-		player.reset();
+		//player.reset();
 		//player.goto(89);
-		player.play();
+		//player.play();
 	}
 
 	//VS3D.socket(player.props[0].moves[0])

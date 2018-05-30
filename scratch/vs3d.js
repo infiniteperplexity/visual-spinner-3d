@@ -16,11 +16,9 @@ VS3D = function() {
 	const WALL = VS3D.WALL = plane(0,0,-1);
 	const WHEEL = VS3D.WHEEL = plane(1,0,0);
 	const FLOOR = VS3D.FLOOR = plane(0,-1,0);
-	//!!! I forget why I didn't do it this way
-	//const FLOOR = VS3D.FLOOR = plane(0,1,0);
 	const XAXIS = VS3D.XAXIS = vector(1,0,0);
 	const YAXIS = VS3D.YAXIS = vector(0,1,0);
-	const ZAXIS = VS3D.ZAXIS = vector(0,0,1);
+	const ZAXIS = VS3D.ZAXIS = vector(0,0,-1);
 	const MEASURE = VS3D.MEASURE = 4;
 	const TICKS = VS3D.TICKS = 360;
 	const BEAT = VS3D.BEAT = TICKS/MEASURE;
@@ -79,6 +77,23 @@ VS3D = function() {
 	const ISOBEND = VS3D.ISOBEND = 1;
 	const ANTIBEND = VS3D.ANTIBEND = -1;
 
+	// diagonal planes, mostly for testing
+	function almost(n) {
+		return Math.sqrt(1-n**2);
+	}
+	const WAXWH = VS3D.WAXWH = plane(WHEEL.x*DIAG,0,WALL.z*DIAG);
+	const WAXwh = VS3D.WAXwh = plane(WHEEL.x*NUDGE,0,WALL.z*almost(NUDGE));
+	const waXWH = VS3D.waXWH = plane(WHEEL.x*almost(NUDGE),0,WALL.z*NUDGE);;
+	const WAXFL = VS3D.WAXFL = plane(0,FLOOR.y*DIAG,WALL.z*DIAG);
+	const WAXfl = VS3D.WAXfl = plane(0,FLOOR.y*NUDGE,WALL.z*almost(NUDGE));
+	const waXFL = VS3D.waXFL = plane(0,FLOOR.y*almost(NUDGE),WALL.z*NUDGE);
+	const WHXFL = VS3D.WHXFL = plane(WHEEL.x*DIAG,FLOOR.y*DIAG,0);
+	const WHXfl = VS3D.WHXfl = plane(WHEEL.x*almost(NUDGE),-NUDGE,0);
+	const whXFL = VS3D.whXFL = plane(WHEEL.x*NUDGE,FLOOR.y*almost(NUDGE),0);
+	const WAWHFL = VS3D.WAWHFL = plane(WHEEL.x*Math.sqrt(1/3),FLOOR.y*Math.sqrt(1/3),WALL.z*Math.sqrt(1/3));
+
+
+
 	/// immutability helper
 	function clone(obj) {
 	  let nobj = {...obj};
@@ -130,6 +145,10 @@ VS3D = function() {
     	}
     	return a;
 	}
+	// cleanse rounding errors for acos or asin
+	function arcbounds(n) {
+		return Math.min(Math.max(n,-1),+1);
+	}
 	// nearly, but for angles
 	function angle$nearly(a1, a2, delta) {
 		a1 = angle(a1);
@@ -172,12 +191,12 @@ VS3D = function() {
 	function vector$spherify(vec) {
 		let {x, y, z} = vec;
 		let r = Math.sqrt(x*x+y*y+z*z) || TINY;
-		let a = Math.acos(y/r)/UNIT;
+		let a = Math.acos(arcbounds(y/r))/UNIT;
 		let b = Math.atan2(z,x)/UNIT;
-		if (Math.abs(b)>90) {
+		if (Math.abs(b)>(0.5*Math.PI/UNIT)) {
 			// tentative...
 			// b = Math.sign(b)*(180-b);
-			b = b - 180;
+			b = b - Math.PI/UNIT;
 			a = angle(0-a);
 		}
 		a = angle(a);
@@ -196,11 +215,7 @@ VS3D = function() {
 		axis = axis || WALL;
 		let {x, y, z} = vec;
 		let {x: u, y: v, z: w} = axis;
-		// the y and z axes are flipped
-		//v = -v;
-		v = v;
-		//w = -w;
-		w = w;
+		//I don't think we need to flip any signs
 		let s = (u*x+v*y+w*z);
 		let t = (u*u+v*v+w*w);
 		let sq = Math.sqrt(t);
@@ -226,6 +241,7 @@ VS3D = function() {
 		let {x: x2, y: y2, z: z2} = v2;
 		return x1*x2+y1*y2+z1*z2;
 	}
+
 	// project a vector onto the plane defined by an axis
 	function vector$project(vec, axis) {
 		axis = axis || WALL;
@@ -249,56 +265,39 @@ VS3D = function() {
 	}
 	// calculate the angle between two vectors
 	function vector$between(v1, v2) {
-		return Math.acos(vector$dot(v1, v2)/(vector$magnitude(v1)*vector$magnitude(v2)))/UNIT;
+		let dot = vector$dot(v1, v2);
+		let mag = vector$magnitude(v1)*vector$magnitude(v2);
+		return Math.acos(arcbounds(dot/mag))/UNIT;
 	}
 	// reference vector is arbitrarily defined
+	// function plane$reference(vec) {
+	// 	// this has now passed every frickin' unit test!
+	// 	let {x,y,z} = vec;
+	// 	if (y===0) {
+	// 		return YAXIS;
+	// 	}
+	// 	return vector$unitize(vector(0,Math.sqrt(x*x+z*z),-y));
+	// }
+
 	function plane$reference(vec) {
 		// this has now passed every frickin' unit test!
 		let {x,y,z} = vec;
+		// includes ZERO, WALL, WHEEL, and WAXWH
 		if (y===0) {
 			return YAXIS;
+		// includes WHXFL
+		} else if (z===0) {
+			return ZAXIS;
 		}
-		return vector$unitize(vector(0,Math.sqrt(x*x+z*z),-Math.abs(y)));
+		// for all others, look for its two intersections with the wheel plane
+		let cross = vector$unitize(vector$cross(vec, WHEEL));
+		// force positive z
+		if (cross.z<0) {
+			cross.z = -cross.z;
+			cross.y = -cross.y;
+		}
+		return cross;
 	}
-
-	// function other(n) {
-	// 	return Math.sqrt(1-n**2);
-	// }
-
-	// function test(vec,ref,name) {
-	// 	console.log("CASE "+name);
-	// 	console.log("input: "+vec.x+" "+vec.y+" "+vec.z);
-	// 	let out = plane$reference(vec)
-	// 	console.log("output: "+out.x+" "+out.y+" "+out.z);
-	// 	console.log("target: "+ref.x+" "+ref.y+" "+ref.z);
-	// 	if (vector$nearly(out, ref)) {
-	// 		console.log("PASSED");
-	// 	} else {
-	// 		console.log("FAILED");
-	// 	}
-	// }
-
-	// let v = vector;
-	// let o = other;
-	// let d = DIAG;
-	// let e = 0.1;
-	// let ee = other(e);
-	// const WALL = VS3D.WALL = plane(0,0,-1);
-	// const WHEEL = VS3D.WHEEL = plane(1,0,0);
-	// const FLOOR = VS3D.FLOOR = plane(0,-1,0);
-	// test(v(0,0,0),YAXIS,"ZERO");
-	// test(WALL,YAXIS,"WALL");
-	// test(WHEEL,YAXIS,"WHEEL");
-	// test(FLOOR,ZAXIS,"FLOOR");
-	// test(v(d,0,-d),YAXIS,"WALL x WHEEL");
-	// test(v(e,0,-ee),YAXIS,"WALL x wheel");
-	// test(v(ee,0,-e),YAXIS,"wall x WHEEL");
-	// test(v(0,-d,-d),v(0,d,d),"WALL x FLOOR");
-	// test(v(0,-e,-ee),v(0,ee,e),"WALL x floor");
-	// test(v(0,-ee,-e),v(0,e,ee),"wall x FLOOR");
-	// test(v(d,-d,0),v(0,d,d),"WHEEL x FLOOR");
-	// test(v(ee,-e,0),v(0,ee,e),"WHEEL x floor");
-	// test(v(e,-ee,0),v(0,e,ee),"wheel x FLOOR");
 
  	// compose a spherical coordinate from a scalar and two angles
 	function sphere(r,a,b) {
@@ -307,11 +306,14 @@ VS3D = function() {
 	// convert a spherical coordinate into a vector
 	function sphere$vectorize(s) {
 		let {r, a, b} = s;
+		// r = r || TINY; // should we trap zero here?
+		// a = a || TINY;
 		let x = r*Math.sin(UNIT*a)*Math.cos(UNIT*b);
 		let z = r*Math.sin(UNIT*a)*Math.sin(UNIT*b);
 		let y = r*Math.cos(UNIT*a);
 		return {x: x, y: y, z: z};
 	}
+
 
 	// nearly, but for spherical coordinates
 	function sphere$nearly(s1,s2,delta) {
@@ -324,10 +326,10 @@ VS3D = function() {
 		let s2 = sphere(0,0,0);
 		return sphere$nearly(s,s2,delta);
 	}
-	// convert a spherical coordinate to an angle in a given plane
+	//convert a spherical coordinate to an angle in a given plane
 	function sphere$planify(s, p) {
 		p = p || WALL;
-		if (sphere$zeroish(s)) {
+		if (sphere$zeroish(s,SMALL)) {
 			return 0;
 		}
 		let v = vector$project(sphere$vectorize(s),p);
@@ -335,12 +337,47 @@ VS3D = function() {
 		let a = vector$between(v,r);
 		// really quite hacky, and might cause problems
 		if (vector$nearly(vector$unitize(v), vector$unitize(vector$rotate(r, a, p)))) {
-			return a;
+			return angle(a);
 		} else {
-			return -a;
+			return angle(-a);
+		}
+	}
+
+	function test(s, p, a, name) {
+		console.log("CASE "+name);
+		console.log("input: "+s.a+" "+s.b+" | "+p.x+" "+p.y+" "+p.z);
+		let an = sphere$planify(s,p);
+		console.log("output: "+an);
+		console.log("target: "+a);
+		if (angle$nearly(a,an)) {
+			console.log("@@@PASSED@@@");
+		} else if (angle$nearly(-a,an)) {
+			console.log("&&&FLIPPED&&&");
+		} else {
+			console.log("+++FAILED+++");
 		}
 	}
 	
+	// let s = sphere;
+	// let p = plane;
+	// test(s(1,0,0),WAXWH,0,"WAXWH");
+	// test(s(1,45,45),WAXWH,45,"WAXWH");
+	// test(s(1,135,45),WAXWH,135,"WAXWH");
+	// test(s(1,225,45),WAXWH,225,"WAXWH");
+	// test(s(1,315,45),WAXWH,315,"WAXWH");
+
+	// RIGHT in the floor plane is also RIGHT in the WALL plane
+	// test(s(1,45,-90),WAXFL,0,"WAXFL");
+	// test(s(1,9,-90),WAXfl,0,"WAXfl");
+	// test(s(1,81,-90),waXFL,0,"waXFL");
+	// test(s(1,90,0),WAXFL,90,"WAXFL");
+	// test(s(1,135,45),WAXFL,135,"WAXFL");
+	// test(s(1,225,45),WAXFL,225,"WAXFL");
+	// test(s(1,315,45),WAXFL,315,"WAXFL");
+
+
+
+
 	// vector, but aliased for clarity
 	function plane(x, y, z) {
 		return vector(x, y, z);
@@ -353,7 +390,7 @@ VS3D = function() {
 	}
 	function angle$spherify(ang, p) {
 		// spherifying an angle to exactly zero tends to cause rounding issues
-		if (angle$nearly(ang,0)) {
+		if (angle$nearly(ang,0,SMALL)) {
 			ang = SMALL;
 		}
 		return vector$spherify(angle$vectorize(ang, p));
@@ -361,7 +398,7 @@ VS3D = function() {
 	function angle$rotate(s, ang, p) {
 		p = p || WALL;
 		let {r, a, b} = s;
-		if (angle$zeroish(ang)) {
+		if (angle$zeroish(ang, SMALL)) {
 			return sphere(r, a, b);
 		}
 		r = r || TINY;
