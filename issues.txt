@@ -19,7 +19,7 @@ Apps:
 Bugs:
 - I'm relying on hideous shims for bent and plane$reference.
 - Some diagonals flat-out don't work...let alone twists and bends not working.  Maybe deal with those first?
-
+- There's still a bug where choosing no prop display on yellow and green can make red and blue spin the wrong moves.
 
 Today's notes:
 - Allow optional planes per node.

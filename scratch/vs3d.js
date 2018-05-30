@@ -252,22 +252,54 @@ VS3D = function() {
 		return Math.acos(vector$dot(v1, v2)/(vector$magnitude(v1)*vector$magnitude(v2)))/UNIT;
 	}
 	// reference vector is arbitrarily defined
-	// !!! This is a shim for the real plane$reference, which isn't working yet
 	function plane$reference(vec) {
-		// this has been tested only for the main three planes
+		// this has now passed every frickin' unit test!
 		let {x,y,z} = vec;
-		// if this is WALL or the zero vector, use the +y axis
-		if (x===0 && y===0) {
-		//if (y===0 && z===0) {
-			return vector(0,1,0);
+		if (y===0) {
+			return YAXIS;
 		}
-		//return vector$unitize(vector$project(vector(x,-y,-z)),WHEEL);
-		// otherwise, return the intersection of this and the WHEEL plane in the third? or fourth? quadrant
-		//return vector$unitize(vector(0,Math.sqrt(x*x+z*z),y));
-		return vector$unitize(vector(0,x,-y));
-		// I used to use the intersection with the WALL plane in the first or second but I think the new way is better
-		//return vector$unitize(vector(y,x,0));
+		return vector$unitize(vector(0,Math.sqrt(x*x+z*z),-y));
 	}
+
+	// function other(n) {
+	// 	return Math.sqrt(1-n**2);
+	// }
+
+	// function test(vec,ref,name) {
+	// 	console.log("CASE "+name);
+	// 	console.log("input: "+vec.x+" "+vec.y+" "+vec.z);
+	// 	let out = plane$reference(vec)
+	// 	console.log("output: "+out.x+" "+out.y+" "+out.z);
+	// 	console.log("target: "+ref.x+" "+ref.y+" "+ref.z);
+	// 	if (vector$nearly(out, ref)) {
+	// 		console.log("PASSED");
+	// 	} else {
+	// 		console.log("FAILED");
+	// 	}
+	// }
+
+	// let v = vector;
+	// let o = other;
+	// let d = DIAG;
+	// let e = 0.1;
+	// let ee = other(e);
+	// const WALL = VS3D.WALL = plane(0,0,-1);
+	// const WHEEL = VS3D.WHEEL = plane(1,0,0);
+	// const FLOOR = VS3D.FLOOR = plane(0,-1,0);
+	// test(v(0,0,0),YAXIS,"ZERO");
+	// test(WALL,YAXIS,"WALL");
+	// test(WHEEL,YAXIS,"WHEEL");
+	// test(FLOOR,ZAXIS,"FLOOR");
+	// test(v(d,0,-d),YAXIS,"WALL x WHEEL");
+	// test(v(e,0,-ee),YAXIS,"WALL x wheel");
+	// test(v(ee,0,-e),YAXIS,"wall x WHEEL");
+	// test(v(0,-d,-d),v(0,d,d),"WALL x FLOOR");
+	// test(v(0,-e,-ee),v(0,ee,e),"WALL x floor");
+	// test(v(0,-ee,-e),v(0,e,ee),"wall x FLOOR");
+	// test(v(d,-d,0),v(0,d,d),"WHEEL x FLOOR");
+	// test(v(ee,-e,0),v(0,ee,e),"WHEEL x floor");
+	// test(v(e,-ee,0),v(0,e,ee),"wheel x FLOOR");
+
  	// compose a spherical coordinate from a scalar and two angles
 	function sphere(r,a,b) {
 		return {r: r, a: angle(a), b: angle(b)};
@@ -320,6 +352,10 @@ VS3D = function() {
 		return v;
 	}
 	function angle$spherify(ang, p) {
+		// spherifying an angle to exactly zero tends to cause rounding issues
+		if (angle$nearly(ang,0)) {
+			ang = SMALL;
+		}
 		return vector$spherify(angle$vectorize(ang, p));
 	}
 	function angle$rotate(s, ang, p) {
@@ -503,11 +539,6 @@ VS3D = function() {
 		// move.head.p = bend;
 		let grip = spin_node({beats: b, p: p, ...move.grip}, t);
 		let head = spin_node({beats: b, p: p, ...move.head}, t);
-		if (angle$nearly(head.a,0)) {
-			// avoids an annoying round-to-zero cusp that renders TWIST wrong in the WHEEL plane
-			head.a = VS3D.SMALL;
-			head.b = angle$spherify(QUARTER,p).b;
-		}
 		// okay...so here we need to take at least the HEAD node...
 		// ...and rotate it by BENT around the cross product of the HAND axis and the plane
 		// This is a shim for the real system, which I haven't gotten to work yet

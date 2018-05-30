@@ -31,10 +31,8 @@ VS3D = (function(VS3D) {
 		light = new THREE.PointLight(0xffffff);
 		let gcolor = 0x303030;
 		let grid = new THREE.GridHelper(10, 10, gcolor, gcolor);
-		console.log(grid); 
 		grid.material.tranparent = true;
 		grid.material.opacity = 0.2;
-		console.log(grid);
 		grid.rotateX(Math.PI/2);
 		this.scene.add(grid);
 		let polar = new THREE.PolarGridHelper(10, 8, 20, 64, gcolor, gcolor);
