@@ -53,9 +53,8 @@ VS3D = (function(VS3D) {
 		let removes = [];
 		for (let i=0; i<this.registry.length; i++) {
 			let prop = this.registry[i];
-			// clean up removed props
+			// clean up removed props or altered
 			if (!wrappers.includes(prop)) {
-				console.log("removing prop shapes");
 				let shapes = this.models[i];
 				shapes.renderOrder = i;
 				this.scene.remove(shapes);
@@ -65,7 +64,6 @@ VS3D = (function(VS3D) {
 		this.models = this.models.filter((_,i)=>!removes.includes(i));
 		this.registry = this.registry.filter((_,i)=>!removes.includes(i));
 		// add new props
-		// oof...we need to think about how to do this...'cuz right 
 		for (let prop of wrappers) {
 			if (!this.registry.includes(prop)) {
 				this.registry.push(prop);
@@ -74,18 +72,10 @@ VS3D = (function(VS3D) {
 				this.scene.add(shapes);
 			}
 		}
-		// what about properties that have changed?
 		// update all prop locations
-		for (let i=0; i<this.registry.length; i++) {
-			//let prop = this.registry[i];
-			//let shapes = this.models[i];
-			//for (let child of shapes.children) {
-				//child.renderOrder = i;
-				//child.material.depthTest = false;
-			//}
-			//this.models[i].depthTest = false;
-			//console.log(this.models[i]);
-			this.update(this.models[i], positions[i], i);
+		for (let i=0; i<wrappers.length; i++) {
+			let idx = this.registry.indexOf(wrappers[i]);
+			this.update(this.models[idx], positions[i], i);
 		}
 		this.renderer.render(this.scene, this.camera);
 	}
@@ -112,9 +102,10 @@ VS3D = (function(VS3D) {
 		// BEND should be handled elsewhere
 		
 		// handle TWIST (possibly this should go before GRIP?)
+		shapes.rotateOnAxis(axis,prop.twist*VS3D.UNIT);
 		shapes.rotateY(-prop.head.b*VS3D.UNIT);
 		shapes.rotateZ(-prop.head.a*VS3D.UNIT);
-		shapes.rotateOnAxis(axis,prop.twist*VS3D.UNIT);	
+		
 		//shapes.rotateY(+prop.head.b*VS3D.UNIT);
 		// leave HEAD.R out of this for now
 	}

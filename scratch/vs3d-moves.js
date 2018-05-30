@@ -177,12 +177,7 @@ VS3D = (function(VS3D) {
 				hand: {...hand, a: orient, va: direction*speed},
 				head: {head: {...head, a: hangle}, va: spin*direction*speed}
 			});
-			let move = extend([
-				segment,
-				segment,
-				segment,
-				segment
-			]);
+			let move = extend([segment,{},{},{}])
 			return move;
 		}
 	);
@@ -207,12 +202,7 @@ VS3D = (function(VS3D) {
 				hand: {...hand, a: orient, va: direction*speed},
 				head: {...head, a: hangle, va: bend*direction*speed}
 			}));
-			let move = extend([
-				segment,
-				segment,
-				segment,
-				segment
-			]);
+			let move = extend([segment,{},{},{}]);
 			return move;
 		}
 	);

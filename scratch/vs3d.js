@@ -92,7 +92,7 @@ VS3D = function() {
 	const whXFL = VS3D.whXFL = plane(WHEEL.x*NUDGE,FLOOR.y*almost(NUDGE),0);
 	const WAWHFL = VS3D.WAWHFL = plane(WHEEL.x*Math.sqrt(1/3),FLOOR.y*Math.sqrt(1/3),WALL.z*Math.sqrt(1/3));
 
-
+	let debug = {};
 
 	/// immutability helper
 	function clone(obj) {
@@ -194,8 +194,6 @@ VS3D = function() {
 		let a = Math.acos(arcbounds(y/r))/UNIT;
 		let b = Math.atan2(z,x)/UNIT;
 		if (Math.abs(b)>(0.5*Math.PI/UNIT)) {
-			// tentative...
-			// b = Math.sign(b)*(180-b);
 			b = b - Math.PI/UNIT;
 			a = angle(0-a);
 		}
@@ -269,16 +267,8 @@ VS3D = function() {
 		let mag = vector$magnitude(v1)*vector$magnitude(v2);
 		return Math.acos(arcbounds(dot/mag))/UNIT;
 	}
-	// reference vector is arbitrarily defined
-	// function plane$reference(vec) {
-	// 	// this has now passed every frickin' unit test!
-	// 	let {x,y,z} = vec;
-	// 	if (y===0) {
-	// 		return YAXIS;
-	// 	}
-	// 	return vector$unitize(vector(0,Math.sqrt(x*x+z*z),-y));
-	// }
 
+	// reference vector is arbitrarily defined
 	function plane$reference(vec) {
 		// this has now passed every frickin' unit test!
 		let {x,y,z} = vec;
@@ -290,6 +280,7 @@ VS3D = function() {
 			return ZAXIS;
 		}
 		// for all others, look for its two intersections with the wheel plane
+		// includes WAXWL and WAWHFL
 		let cross = vector$unitize(vector$cross(vec, WHEEL));
 		// force positive z
 		if (cross.z<0) {
@@ -342,41 +333,6 @@ VS3D = function() {
 			return angle(-a);
 		}
 	}
-
-	function test(s, p, a, name) {
-		console.log("CASE "+name);
-		console.log("input: "+s.a+" "+s.b+" | "+p.x+" "+p.y+" "+p.z);
-		let an = sphere$planify(s,p);
-		console.log("output: "+an);
-		console.log("target: "+a);
-		if (angle$nearly(a,an)) {
-			console.log("@@@PASSED@@@");
-		} else if (angle$nearly(-a,an)) {
-			console.log("&&&FLIPPED&&&");
-		} else {
-			console.log("+++FAILED+++");
-		}
-	}
-	
-	// let s = sphere;
-	// let p = plane;
-	// test(s(1,0,0),WAXWH,0,"WAXWH");
-	// test(s(1,45,45),WAXWH,45,"WAXWH");
-	// test(s(1,135,45),WAXWH,135,"WAXWH");
-	// test(s(1,225,45),WAXWH,225,"WAXWH");
-	// test(s(1,315,45),WAXWH,315,"WAXWH");
-
-	// RIGHT in the floor plane is also RIGHT in the WALL plane
-	// test(s(1,45,-90),WAXFL,0,"WAXFL");
-	// test(s(1,9,-90),WAXfl,0,"WAXfl");
-	// test(s(1,81,-90),waXFL,0,"waXFL");
-	// test(s(1,90,0),WAXFL,90,"WAXFL");
-	// test(s(1,135,45),WAXFL,135,"WAXFL");
-	// test(s(1,225,45),WAXFL,225,"WAXFL");
-	// test(s(1,315,45),WAXFL,315,"WAXFL");
-
-
-
 
 	// vector, but aliased for clarity
 	function plane(x, y, z) {
@@ -509,7 +465,9 @@ VS3D = function() {
 		hand = merge(hand, args.hand);
 		grip = merge(grip, args.grip);
 		head = merge(head, args.head);
+		// !!!! Might want to consider plane to decide default
 		let twist = (args.twist!==undefined) ? args.twist : prop.twist;
+		// twist = 0+90*p.z;
 		let bent = args.bent || 0;
 		let prp = {
 			body: body,
@@ -581,8 +539,27 @@ VS3D = function() {
 		// This is a shim for the real system, which I haven't gotten to work yet
 		let axis = vector$unitize(sphere$vectorize(head));
 		let tangent = vector$cross(axis,p);
+		// if (bent!==0) {
+		// 	console.log("axis, tangent");
+		// 	console.log(axis);
+		// 	console.log(tangent);
+		// }
 		head = vector$spherify(vector$rotate(sphere$vectorize(head),bent,tangent));
-		// grip = vector$spherify(vector$rotate(sphere$vectorize(grip),bent,tangent));
+		grip = vector$spherify(vector$rotate(sphere$vectorize(grip),bent,tangent));
+
+		// This is a cosmetic hack
+		// I don't know the real solution
+		// In WHXFL, 45 looks right across most of the back, and -45 looks right across most of the front
+		// The switchover is quite abrupt
+		// anything that involved both angle and bearing would have to be extremely complex
+		// what about the head axis?
+		// in wall, the x and y components change and z stays the same
+		// in wheel, the z and y components change and x stays the same
+		// in floor, the x and z components change and y stays the same
+		axis = vector$unitize(sphere$vectorize(head));
+		if (p.y===-1) {
+			twist+=90;
+		}
 		return {
 			body: body,
 			pivot: pivot,
@@ -1210,5 +1187,6 @@ VS3D = function() {
 	VS3D.solve_angle = solve_angle;
 	VS3D.PropWrapper = PropWrapper;
 	VS3D.Player = Player;
+	VS3D.debug = debug;
 	return VS3D;
 }();
