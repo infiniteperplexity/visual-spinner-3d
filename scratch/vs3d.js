@@ -841,9 +841,22 @@ VS3D = function() {
 		}
 		if (known.x0 && known.x1) {
 			if (!known.spin) {
-				// try to guess a good default
-				if (x1===x0) {
-					// tough one...
+				// try like heck to pick a good default
+				let trend = 0;
+				if (known.v0) {
+					trend+=Math.sign(v0);
+				}
+				if (known.v1) {
+					trend+=Math.sign(v1);
+				}
+				if (known.a) {
+					trend+=Math.sign(a);
+				}
+				if (trend>0) {
+					spin = +1;
+				} else if (trend<0) {
+					spin = -1;
+				} else if (x1===x0) {
 					spin = 0;
 				} else if (x1>x0) {
 					if ((x1-x0)*UNIT<=Math.PI) {
@@ -862,21 +875,12 @@ VS3D = function() {
 				known.spin = true;	
 			}
 			// de-normalize final position based on spin argument
-			if (x1>=x0) {
-				// if (x1===90 && x0===0) {
-				// 	console.log(x1+">"+x0);
-				// 	console.log(spin);
-				// 	console.log(x1+(2*Math.PI/UNIT)*(spin+0));
-				// }
-				//console.log(x1+">="+x0);
-				x1+= (2*Math.PI/UNIT)*(spin+0);
-			} else if (x0>x1) {
-				// if (x1===0 && x0===270) {
-				// 	console.log(x1+"<"+x0);
-				// 	console.log(spin);
-				// }
-				x1+= (2*Math.PI/UNIT)*(spin+1);
-				//console.log("x1="+x1);
+			if (x1>x0 && spin>0) {
+				x1+=(2*Math.PI/UNIT)*(spin-1);
+			} else if (x0>x1 && spin<0) {
+				x1+=(2*Math.PI/UNIT)*(spin+1);
+			} else {
+				x1+=(2*Math.PI/UNIT)*spin;
 			}
 			args.x1 = x1;
 		}

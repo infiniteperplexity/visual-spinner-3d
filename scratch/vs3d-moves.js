@@ -112,58 +112,14 @@ VS3D = (function(VS3D) {
 			return move;
 		}
 	);
-
-	// currently kind of broken/
+	// so I don't break things while working on variants
 	recipe(
 		"pendulum",
 		{
 			orient: DOWN,
 			onepointfive: false,
-			hybrid: false,
-		},
-		options => {
-			let {beats, speed, hand, head, spin, orient, direction, onepointfive, hybrid} = options;
-			// floor plane pendulums don't work right...is that okay?
-			let topangle = onepointfive ? orient+SPLIT : orient;
-			let sidespeed = hybrid ? 0 : 1;
-			let move = extend([
-				Move({
-					...options,
-					beats: beats/4,
-					hand: {...hand, a: orient, a1: orient+spin*QUARTER*direction, va1: direction*speed*sidespeed},
-					head: {...head, a: orient, a1: orient+spin*QUARTER*direction, va1: 0},
-				}),
-				Move({
-					//...options,
-					beats: beats/4,
-					hand: {va: direction*speed*sidespeed, a1: orient+SPLIT},
-					head: {va: 0, a1: topangle}
-				}),
-				Move({
-					//...options,
-					beats: beats/4,
-					hand: {va1: direction*speed*sidespeed, a1: orient-spin*QUARTER*direction},
-					head: {a1: orient-spin*QUARTER*direction, va1: 0}
-				}),
-				Move({
-					//...options,
-					beats: beats/4,
-					hand: {va: direction*speed*sidespeed},
-					head: {a1: orient, va: 0},
-				})
-			]);
-			return move;
-		}
-	);
-
-	// so I don't break things while working on variants
-	recipe(
-		"shim_pendulum",
-		{
-			orient: DOWN,
-			onepointfive: true,
+			// hybrid does nothing for now...makes sense only for bottom half
 			hybrid: false
-			// hybrid makes sense only for the bottom half, right?
 		},
 		options => {
 			let {beats, speed, hand, head, spin, orient, direction, onepointfive, hybrid} = options;
@@ -171,17 +127,15 @@ VS3D = (function(VS3D) {
 			let segment = Move(merge(options, {
 				beats: beats/4,
 				hand: {...hand, a: orient, va: direction*speed},
-				head: {...head, a: orient, a1: orient+spin*QUARTER*direction, va1: 0}
+				head: {...head, a: orient, a1: orient+QUARTER*direction, va1: 0}
 			}));
 			let topangle = (onepointfive) ? orient+SPLIT : orient;
 			let move = extend([
 				segment,
 				{head: {a1: topangle, spin: -direction}},
-				{head: {a1: orient-spin*QUARTER*direction, spin: -direction, va1: 0}},
+				{head: {a1: orient-QUARTER*direction, va1: 0}},
 				{head: {a1: orient}}
 			]);
-			console.log(direction);
-			console.log(move);
 			return move;
 		}
 	);

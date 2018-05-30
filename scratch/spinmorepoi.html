@@ -35,10 +35,10 @@
 	let defaults = {
 		model: ["poi","poi","poi","poi"],
 		plane: ["WALL","WALL","WALL","WALL"],
-		align: ["DOWN","DOWN","UP","UP"],
+		align: ["UP","UP","UP","UP"],
 		orient: ["UP","UP","UP","UP"],
-		direction: ["CW","CCW","CCW","CCW"],
-		move: ["pendulum","pendulum","isobend4","isobend4"]
+		direction: ["CW","CW","CCW","CCW"],
+		move: ["extension","antispin3","extension","antispin3"]
 	};
 
 	let menus = {
@@ -81,6 +81,7 @@
 			{txt: "Four-Petal Anti-Spin Flower", value: "antispin4"},
 			{txt: "Three-Petal Anti-Spin Flower", value: "antispin4"},
 			{txt: "Pendulum", value: "pendulum"},
+			{txt: "1.5", value: "1.5"},
 			// 1.5
 			{txt: "Iso-Bend Toroid", value: "isobend4"},
 			{txt: "Anti-Bend Toroid", value: "antibend4"},
@@ -106,7 +107,7 @@
 	}
 
 	function play() {
-		//player.play();
+		player.play();
 	}
 
 	function setupPlayer() {
@@ -238,7 +239,9 @@
 					//!!!! It should not be necessary to pass the hand argument...bug in snapto
 					start = VS3D.snapto(start, {hand: {a: VS3D.UP}, head: {a: VS3D.DOWN}, p: p});
 				}
-				move = {recipe: "shim_pendulum", direction: dir, p: p};
+				move = {recipe: "pendulum", direction: dir, p: p};
+			} else if (recipe==="1.5") {
+				move = {recipe: "pendulum", onepointfive: true, direction: dir, p: p};
 			}
 			prop.prop = start;
 			prop.moves[0] = move;
