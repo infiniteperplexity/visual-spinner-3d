@@ -1,8 +1,6 @@
 Engine:
 - Chaining toroids resets the bend at each cusp...using shims for now
-- Not totally sure whether alignment always works correctly.
 - Get the grip stuff working right.
-- Make solver deal with loops...I just add the 1.5 variant for pendulums, which is a good test case.
 - Finish "nudge".
 - Are defaults injected in the right places?
 - snapto is still overloaded; I'll try to factor that out eventually.
@@ -25,11 +23,9 @@ Apps:
 Bugs:
 - I'm relying on hideous shims for bent and plane$reference.
 - prop$set does weird things to the hand node when you only pass a head node...worked around it for now
-- counterclockwise pendulums look wrong due to my change in solving angles.
 
 
 Today's notes:
 - Allow optional planes per node.
-- !!!Some moves don't have fixed starting positions; e.g. flowers.  So pass hand.a and head.a?
 - TWIST should radiate from UP to DOWN, so the WHEEL and WALL planes are usually correct but FLOOR needs rotating.
 - Bent is from grip, TWIST might be as well.
