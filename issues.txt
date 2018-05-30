@@ -7,7 +7,6 @@ Engine:
 
 Render:
 - Weird flicker when TWIST is not zero.
-- figure out render order.
 
 Apps:
 - (! only once bend and toroids are fixed) Make orientation menus actually work.
@@ -24,3 +23,5 @@ Today's notes:
 - Allow optional planes per node.
 - TWIST should radiate from UP to DOWN, so the WHEEL and WALL planes are usually correct but FLOOR needs rotating.
 - Bent is from grip, TWIST might be as well.
+
+Next step?  A bunch of this stuff is all linked together.

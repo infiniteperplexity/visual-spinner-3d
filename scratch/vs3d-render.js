@@ -29,19 +29,17 @@ VS3D = (function(VS3D) {
 		light.position.set(0,0,100);
 		this.scene.add(light);
 		light = new THREE.PointLight(0xffffff);
-		let gcolor = 0x202020;
-		//let grid = new THREE.GridHelper(10,1, 0x333333, 0x333333);
-		//let grid = new THREE.GridHelper(10,1, 0xffffff, 0xffffff);
+		let gcolor = 0x303030;
 		let grid = new THREE.GridHelper(10, 10, gcolor, gcolor); 
-		grid.material.transparent = true;
+		grid.material.depthTest = false;
+		grid.renderOrder = -10;
+		console.log(grid);
 		grid.rotateX(Math.PI/2);
-		//grid.translateOnAxis(VS3D.YAXIS, -5*VS3D.NUDGE);
 		this.scene.add(grid);
 		let polar = new THREE.PolarGridHelper(10, 8, 20, 64, gcolor, gcolor);
-		polar.material.transparent = true;
-		// polar.setColors(0x333333, 0x333333);
+		polar.material.depthTest = false;
+		polar.renderOrder = -10;
 		polar.rotateX(Math.PI/2);
-		//polar.translateOnAxis(VS3D.YAXIS, -0.1);
 		this.scene.add(polar);
 		this.scene.fog = new THREE.FogExp2( 0x000000, 0.0128 );
 		this.registry = [];
@@ -57,6 +55,7 @@ VS3D = (function(VS3D) {
 			if (!wrappers.includes(prop)) {
 				console.log("removing prop shapes");
 				let shapes = this.models[i];
+				shapes.renderOrder = i;
 				this.scene.remove(shapes);
 				removes.push(i);
 			}
@@ -77,6 +76,13 @@ VS3D = (function(VS3D) {
 		// update all prop locations
 		for (let i=0; i<this.registry.length; i++) {
 			let prop = this.registry[i];
+			let shapes = this.models[i];
+			for (let child of shapes.children) {
+				//child.renderOrder = i;
+				//child.material.depthTest = false;
+			}
+			//this.models[i].depthTest = false;
+			//console.log(this.models[i]);
 			this.update(this.models[i], positions[i], i);
 		}
 		this.renderer.render(this.scene, this.camera);
@@ -128,7 +134,7 @@ VS3D = (function(VS3D) {
 			new THREE.SphereGeometry(0.2,16,16),
 			new THREE.MeshLambertMaterial({color: this.colors(color)})
 		);
-		
+		head.material.depthTest = false;
 		head.position.y = 1;
 		let tether = new THREE.Mesh(
 			new THREE.CylinderGeometry(0.025,0.025,1,4),
@@ -139,6 +145,9 @@ VS3D = (function(VS3D) {
 			new THREE.SphereGeometry(0.075,8,8),
 			new THREE.MeshLambertMaterial({color: this.colors(color)})
 		);
+		handle.material.depthTest = false; 		
+		tether.renderOrder = -1;
+		tether.material.depthTest = false;
 		let group = new THREE.Group();
 		group.add(head);
 		group.add(tether);
