@@ -258,7 +258,7 @@ VS3D = function() {
 		if (y===0) {
 			return YAXIS;
 		}
-		return vector$unitize(vector(0,Math.sqrt(x*x+z*z),-y));
+		return vector$unitize(vector(0,Math.sqrt(x*x+z*z),-Math.abs(y)));
 	}
 
 	// function other(n) {
