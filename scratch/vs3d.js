@@ -412,12 +412,10 @@ VS3D = function() {
 		}
 	}
 
-	// I still don't like overloading, but...
-	function snapto(prop, args) {
-		if (args===undefined) {
-			args = prop;
-			prop = new Prop();
-		}
+	// take a move and an optional prop, and return the first position
+	// !!!another way to parameterize would be snapto(fit(prop, args));
+	function snapto(args, prop) {
+		prop = prop || new Prop();
 		let p = args.p || WALL;
 		args.body = args.body || {};
 		args.pivot = args.pivot || {};
@@ -425,12 +423,12 @@ VS3D = function() {
 		args.hand = args.hand || {};
 		args.grip = args.grip || {};
 		args.head = args.head || {};
-		let body = {r: prop.body.r, a: sphere$planify(prop.body), p: p};
-		let pivot = {r: prop.pivot.r, a: sphere$planify(prop.pivot), p: p};
-		let helper = {r: prop.helper.r, a: sphere$planify(prop.helper), p: p};
-		let hand = {r: prop.hand.r, a: sphere$planify(prop.hand), p: p};
-		let grip = {r: prop.grip.r, a: sphere$planify(prop.grip), p: p};
-		let head = {va: 0, vr: 0, r: prop.head.r, a: sphere$planify(prop.head), p: p};
+		let body = {r: prop.body.r, a: sphere$planify(prop.body, p), p: p};
+		let pivot = {r: prop.pivot.r, a: sphere$planify(prop.pivot, p), p: p};
+		let helper = {r: prop.helper.r, a: sphere$planify(prop.helper, p), p: p};
+		let hand = {r: prop.hand.r, a: sphere$planify(prop.hand, p), p: p};
+		let grip = {r: prop.grip.r, a: sphere$planify(prop.grip, p), p: p};
+		let head = {va: 0, vr: 0, r: prop.head.r, a: sphere$planify(prop.head, p), p: p};
 		body = merge(body, args.body);
 		pivot = merge(pivot, args.pivot);
 		helper = merge(helper, args.helper);
@@ -629,7 +627,7 @@ VS3D = function() {
 			if (fits(prop, oriented)) {
 				return oriented;
 			} else {
-				console.log("realigning");
+				//console.log("realigning");
 				let head = oriented[0];
 				let tail = oriented.slice(1);
 				oriented = tail.concat(head);
@@ -659,13 +657,9 @@ VS3D = function() {
 
 	function extend(arr) {
 		for (let i=1; i<arr.length; i++) {
-			// so...fit isn't actually what we want
 			let prev = arr[i-1];
 			let prop = socket(prev);
 			let planed = Move({...arr[i], p: prev.p});
-			// this is not working right with the solver in some cases
-			// okay, I know what happens here.  I could probably do this in a different way...
-			// what happens is that if you provide no arguments *at all*, it can't fit
 			let move = fit(prop, planed);
 			let moments = {};
 			for (let node of NODES) {
@@ -677,6 +671,7 @@ VS3D = function() {
 					moments[node] = {va: va, vr: vr};
 				}
 			}
+			// at this point we *could* snag the starting positions off the head of the prop for the last move...
 			let extended = {
 				body: merge(moments.body, move.body),
 				pivot: merge(moments.pivot, move.pivot),

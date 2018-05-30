@@ -3,18 +3,14 @@ Engine:
 - Get the grip stuff working right.
 - Finish "nudge".
 - Are defaults injected in the right places?
-- snapto is still overloaded; I'll try to factor that out eventually.
-
-Moves:
-- Add more moves.
+- Should extend() wrap around?
 
 Render:
 - Weird flicker when TWIST is not zero.
 - figure out render order.
 
 Apps:
-- Add more moves to demo.
-- Make orientation menus actually work.
+- (! only once bend and toroids are fixed) Make orientation menus actually work.
 - Get multi-view working.
 - Comborific.
 - Integrate it with React.
@@ -22,7 +18,6 @@ Apps:
 
 Bugs:
 - I'm relying on hideous shims for bent and plane$reference.
-- prop$set does weird things to the hand node when you only pass a head node...worked around it for now
 
 
 Today's notes:

@@ -80,31 +80,23 @@ VS3D = (function(VS3D) {
 		{},
 		options => {
 			let {beats, speed, hand, spin, orient, direction} = options;
+			let segment = Move({
+				...options,
+				beats: beats/4,
+				hand: {...hand, a: orient, va: spin*direction*speed},
+				head: {a: orient, va: spin*direction*speed},
+			}); 
 			let move = extend([
-				Move({
-					...options,
-					beats: beats/4,
-					hand: {...hand, a: orient, va: spin*direction*speed},
-					head: {a: orient, va: spin*direction*speed},
-				}),
-				Move({
-					...options,
-					beats: beats/4,
-					hand: {...hand, va: -spin*direction*speed},
+				segment,
+				{	
+					hand: {va: -spin*direction*speed},
 					head: {va: 3*spin*direction*speed}
-				}),
-				Move({
-					...options,
-					beats: beats/4,
-					hand: {...hand, va: -spin*direction*speed},
-					head: {va: 3*spin*direction*speed}
-				}),
-				Move({
-					...options,
-					beats: beats/4,
-					hand: {...hand, va: spin*direction*speed},
+				},
+				{},
+				{
+					hand: {va: spin*direction*speed},
 					head: {va: spin*direction*speed}
-				})
+				}
 			]);
 			if (spin===ANTISPIN) {
 				move = move.slice(2).concat(move.slice(0,2));
@@ -140,29 +132,6 @@ VS3D = (function(VS3D) {
 		}
 	);
 
-	// recipe(
-	// 	"shim_pendulum",
-	// 	{
-	// 		orient: DOWN
-	// 	},
-	// 	options => {
-	// 		let {beats, speed, hand, head, spin, orient, direction, onepointfive, hybrid} = options;
-	// 		// floor plane pendulums don't work right...is that okay?
-	// 		let segment = Move(merge(options, {
-	// 			beats: beats/4,
-	// 			hand: {...hand, a: orient, va: direction*speed},
-	// 			head: {...head, a: orient, a1: orient+spin*QUARTER*direction, va1: 0}
-	// 		}));
-	// 		let move = extend([
-	// 			segment,
-	// 			{head: {a1: orient}},
-	// 			{head: {a1: orient-spin*QUARTER*direction, va1: 0}},
-	// 			{head: {a1: orient}}
-	// 		]);
-	// 		return move;
-	// 	}
-	// );
-
 	recipe(
 		"flower",
 		{
@@ -171,7 +140,8 @@ VS3D = (function(VS3D) {
 		options => {
 			let {beats, mode, speed, hand, head, spin, orient, direction, petals, p} = options;
 			let v = (spin===INSPIN) ? (petals+1) : (petals-1);
-			//mode is a "soft default"
+			// mode is a "soft default"
+			// should it be more aggressive?
 			let hangle = orient+mode;
 			if (head.a!==undefined && hand.a!==undefined) {
 				hangle = orient + head.a - hand.a;
