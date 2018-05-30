@@ -11,9 +11,14 @@
 <script src="vs3d-render.js"></script>
 <script>
 	let renderer, player;
-	let red = new VS3D.Prop({hand: {a: VS3D.UP}, head: {a: VS3D.UP}});
-	// red = VS3D.prop$set({hand: {a: VS3D.UP}, head: {a: VS3D.DOWN}, p: VS3D.FLOOR});
-	let move = {hand: {a: VS3D.UP, r: 1, a1: VS3D.RIGHT, motion: "linear"}, head: {r:1, a: VS3D.UP, va: 1}};
+	let red = new VS3D.Prop();
+	//let p = VS3D.WHEEL; 
+	//let p = VS3D.WALL;
+	// let p = {x: 0.707, y: 0, z: -0.707};
+	//let p = {x: 0.707, y: 0, z: 0.707};
+	let p = {x: 0, y: -VS3D.DIAG, z: -VS3D.DIAG};
+	console.log(VS3D.plane$reference(p));
+	let move = {hand: {r: 1, a: 0, va: 1}, head: {r: 1, a: 0, va: 1}, beats: 4, p: p};
 	function init() {
 		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
 		player = new VS3D.Player();
@@ -26,7 +31,7 @@
 		}
 		player.reset();
 		//player.goto(89);
-		//player.play();
+		player.play();
 	}
 
 	//VS3D.socket(player.props[0].moves[0])

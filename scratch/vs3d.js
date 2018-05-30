@@ -4,6 +4,7 @@ VS3D = function() {
 	const SMALL = VS3D.SMALL = 0.001;
 	const TINY = VS3D.TINY = 0.0001;
 	const NUDGE = VS3D.NUDGE = 0.1;
+	const DIAG = VS3D.DIAG = Math.sqrt(2)/2;
 	const UNIT = VS3D.UNIT = 2*Math.PI/360;
 	const BODY = VS3D.BODY = 0;
 	const PIVOT = VS3D.PIVOT = 1;

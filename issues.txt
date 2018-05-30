@@ -4,6 +4,7 @@ Engine:
 - Finish "nudge".
 - Are defaults injected in the right places?
 - Should extend() wrap around?
+- Add parsing and stringifying.
 
 Render:
 - Weird flicker when TWIST is not zero.
@@ -17,11 +18,34 @@ Apps:
 
 Bugs:
 - I'm relying on hideous shims for bent and plane$reference.
+- Some diagonals flat-out don't work...let alone twists and bends not working.  Maybe deal with those first?
 
 
 Today's notes:
 - Allow optional planes per node.
 - TWIST should radiate from UP to DOWN, so the WHEEL and WALL planes are usually correct but FLOOR needs rotating.
+- ...so, I have a pretty coherent notion of how twist ought to work.  It's assuming there's longitude lines, and 0 twist goes along those.  Longitude lines are...angles along a single bearing.  So...you want to always normalize the angle to 0-180, and have it completely independent of bearing.  Now, to avoid cusps, you always gotta avoid going through 0, 0, but that should be totally doable in terms of angle$spherify rounding.
+- How do I know whether TWIST comes after GRIP or not?  So, if you grab the poi in the middle and then bend it 90, you want to twist the poi around its own axis, not the hand axis.  So...I guess that means twist is based on GRIP axis?  We'll save that for later. 
 - Bent is from grip, TWIST might be as well.
+- Okay.  So...bend.  There's the hacky, current way, and the true way.
+- One approach to the true way seems almost impossible.
+- The hacky approach is that you always use...well...what the prop's axis was at the beginning of the move?  In other words...hold on one second...wait is it just...the reference angle of the plane?  I don't think it is.  No.  Currently, rotation is around the *resulting* hand radius.
+- Now, the correct way, I'm pretty sure, is that you rotate the head's *plane of rotation* around the resulting hand axis.  But that only works if your reference angles are all totally solid.  Is there some other way to achieve this same effect?  Well...for one thing, you don't have to do that in order.  You can rotate the prop first, and then do the hand.  Oh...but that doesn't really work, right?  Because although the radius is relative to the angle, the angle is not.
+
+Hmmmm...so what I was already doing was basically...oh wait...can you rotate the head around the axis, and then rotate it...around the original head axis?
 
 Next step?  A bunch of this stuff is all linked together.
+
+A radical idea:
+- Make it so props use the same data structure as moves.
+	- Have to rewrite a ton of stuff.
+	- Fewer conversions needed.
+	- Positions are non-unique.
+	- Prop can have twist and bend natively.
+
+So...in terms of this render order stuff...
+	- It seems like you basically have to *totally* shut off render order in order for it to work.
+		- And there's no tricky nesting, because you have to do it on materials, not objects.
+	- If you really wanted to, you could dynamically check center points of individual shapes.
+	- So...really want you want to do is "nudge."
+	- And make the grid transparent?

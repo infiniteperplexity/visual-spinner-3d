@@ -30,15 +30,16 @@ VS3D = (function(VS3D) {
 		this.scene.add(light);
 		light = new THREE.PointLight(0xffffff);
 		let gcolor = 0x303030;
-		let grid = new THREE.GridHelper(10, 10, gcolor, gcolor); 
-		grid.material.depthTest = false;
-		grid.renderOrder = -10;
+		let grid = new THREE.GridHelper(10, 10, gcolor, gcolor);
+		console.log(grid); 
+		grid.material.tranparent = true;
+		grid.material.opacity = 0.2;
 		console.log(grid);
 		grid.rotateX(Math.PI/2);
 		this.scene.add(grid);
 		let polar = new THREE.PolarGridHelper(10, 8, 20, 64, gcolor, gcolor);
-		polar.material.depthTest = false;
-		polar.renderOrder = -10;
+		polar.material.tranparent = true;
+		polar.material.opacity = 0.2;
 		polar.rotateX(Math.PI/2);
 		this.scene.add(polar);
 		this.scene.fog = new THREE.FogExp2( 0x000000, 0.0128 );
@@ -75,12 +76,12 @@ VS3D = (function(VS3D) {
 		// what about properties that have changed?
 		// update all prop locations
 		for (let i=0; i<this.registry.length; i++) {
-			let prop = this.registry[i];
-			let shapes = this.models[i];
-			for (let child of shapes.children) {
+			//let prop = this.registry[i];
+			//let shapes = this.models[i];
+			//for (let child of shapes.children) {
 				//child.renderOrder = i;
 				//child.material.depthTest = false;
-			}
+			//}
 			//this.models[i].depthTest = false;
 			//console.log(this.models[i]);
 			this.update(this.models[i], positions[i], i);
@@ -134,7 +135,7 @@ VS3D = (function(VS3D) {
 			new THREE.SphereGeometry(0.2,16,16),
 			new THREE.MeshLambertMaterial({color: this.colors(color)})
 		);
-		head.material.depthTest = false;
+		//head.material.depthTest = false;
 		head.position.y = 1;
 		let tether = new THREE.Mesh(
 			new THREE.CylinderGeometry(0.025,0.025,1,4),
@@ -145,9 +146,9 @@ VS3D = (function(VS3D) {
 			new THREE.SphereGeometry(0.075,8,8),
 			new THREE.MeshLambertMaterial({color: this.colors(color)})
 		);
-		handle.material.depthTest = false; 		
-		tether.renderOrder = -1;
-		tether.material.depthTest = false;
+		//handle.material.depthTest = false; 		
+		//tether.renderOrder = -1;
+		//tether.material.depthTest = false;
 		let group = new THREE.Group();
 		group.add(head);
 		group.add(tether);
