@@ -224,6 +224,7 @@ VS3D = function() {
 		let c = (w*s*(1-cs)+t*z*cs+sq*(u*y-v*x)*sn)/t;
 		return vector(a,b,c);
 	}
+
 	// cross product of two vectors
 	function vector$cross(v1, v2) {
 		let {x: x1, y: y1, z: z1} = v1;
@@ -510,7 +511,6 @@ VS3D = function() {
 		}
 		let p = move.p || WALL;
 		let b = move.beats || 1;
-		// why are these spheres and not planar angles?
 		move.body = move.body || {r: 0, a: 0, p: p};
 		move.pivot = move.pivot || {r: 0, a: 0, p: p};
 		move.helper = move.helper || {r: 0, a: 0, p: p};
@@ -525,38 +525,16 @@ VS3D = function() {
 		let pivot = spin_node({beats: b, p: p, ...move.pivot}, t);
 		let helper = spin_node({beats: b, p: p, ...move.helper}, t);
 		let hand = spin_node({beats: b, p: p, ...move.hand}, t);
-		
-		let twist = move.twist + move.vt*t*SPEED;
-		let bent = move.bent + move.vb*t*SPEED;
-		// let axis = vector$unitize(sphere$vectorize(hand));
-		// let tangent = vector$cross(axis,p);
-		// let bend = vector$rotate(p,bent,tangent);
-		// move.head.p = bend;
 		let grip = spin_node({beats: b, p: p, ...move.grip}, t);
 		let head = spin_node({beats: b, p: p, ...move.head}, t);
-		// okay...so here we need to take at least the HEAD node...
-		// ...and rotate it by BENT around the cross product of the HAND axis and the plane
-		// This is a shim for the real system, which I haven't gotten to work yet
 		let axis = vector$unitize(sphere$vectorize(head));
 		let tangent = vector$cross(axis,p);
-		// if (bent!==0) {
-		// 	console.log("axis, tangent");
-		// 	console.log(axis);
-		// 	console.log(tangent);
-		// }
-		head = vector$spherify(vector$rotate(sphere$vectorize(head),bent,tangent));
-		grip = vector$spherify(vector$rotate(sphere$vectorize(grip),bent,tangent));
-
-		// This is a cosmetic hack
-		// I don't know the real solution
-		// In WHXFL, 45 looks right across most of the back, and -45 looks right across most of the front
-		// The switchover is quite abrupt
-		// anything that involved both angle and bearing would have to be extremely complex
-		// what about the head axis?
-		// in wall, the x and y components change and z stays the same
-		// in wheel, the z and y components change and x stays the same
-		// in floor, the x and z components change and y stays the same
-		axis = vector$unitize(sphere$vectorize(head));
+		let twist = move.twist + move.vt*t*SPEED;
+		let bent = move.bent + move.vb*t*SPEED;
+		headv = sphere$vectorize(head); 
+		// do the same with GRIP?
+		head = vector$spherify(vector$rotate(headv,bent,tangent));
+		// hacky solution
 		if (p.y===-1) {
 			twist+=90;
 		}
@@ -623,8 +601,7 @@ VS3D = function() {
 				hand = {r: hand.r, a: sphere$planify(hand, plane)};
 				// at least for how we currently handle TWIST
 				twist = twist || 0;
-				// so...ooh boy...better hope you never have a BENDED prop at the beginning of a move :(
-				// !!!!!!I think what I actually need to do is BEND the move's head and grip here
+				// fit() should ignore BENT
 				grip = {r: grip.r, a: sphere$planify(grip, plane)};
 				head = {r: head.r, a: sphere$planify(head, plane)};
 				let aligned = {
@@ -633,6 +610,8 @@ VS3D = function() {
 					helper: merge(move.helper,helper),
 					hand: merge(move.hand, hand),
 					twist: twist,
+					vt: move.vt,
+					vb: move.vb,
 					grip: merge(move.grip, grip),
 					head: merge(move.head, head),
 					p: plane
@@ -705,16 +684,17 @@ VS3D = function() {
 		for (let i=1; i<arr.length; i++) {
 			let prev = arr[i-1];
 			let prop = socket(prev);
-			let planed = Move({...arr[i], p: prev.p});
+			let args = arr[i];
+			let planed = Move({...args, p: prev.p});
 			for (let node of NODES) {
 				if (prev[node].m==="linear" || prev[node].la!==undefined || prev[node].vl!==undefined || prev[node].vl1!==undefined || prev[node].al!==undefined) {
 					planed[node].m = "linear";
 				}	
-			}		
-			let move = fit(prop, planed);
+			}
+			let fitted = fit(prop, planed);
 			let moments = {};
 			for (let node of NODES) {
-				if (move[node].m==="linear" || move[node].la!==undefined || move[node].vl!==undefined || move[node].vl1!==undefined || move[node].al!==undefined) {
+				if (fitted[node].m==="linear" || fitted[node].la!==undefined || fitted[node].vl!==undefined || fitted[node].vl1!==undefined || fitted[node].al!==undefined) {
 					let {vl1: vl, la: la} = moments_linear({...prev[node], beats: prev.beats});
 					// !!! we probably need a better way of doing this...
 					vl*=90;
@@ -724,18 +704,26 @@ VS3D = function() {
 					moments[node] = {va: va, vr: vr};
 				}
 			}
-			// at this point we *could* snag the starting positions off the head of the prop for the last move...
+			let bent = 0;
+			if (prev.bent) {
+				bent += prev.bent;
+			}
+			if (prev.vb) {
+				bent += prev.vb*prev.beats*BEAT;
+			}
+			bent = angle(bent);
 			let extended = {
-				body: merge(moments.body, move.body),
-				pivot: merge(moments.pivot, move.pivot),
-				helper: merge(moments.helper, move.helper),
-				hand: merge(moments.hand, move.hand),
-				grip: merge(moments.grip, move.grip),
-				head: merge(moments.head, move.head),
-				vt: (move.vt!==undefined) ? move.vt : prev.vt,
-				vb: (move.vb!==undefined) ? move.vb : prev.vb,
+				body: merge(moments.body, fitted.body),
+				pivot: merge(moments.pivot, fitted.pivot),
+				helper: merge(moments.helper, fitted.helper),
+				hand: merge(moments.hand, fitted.hand),
+				grip: merge(moments.grip, fitted.grip),
+				head: merge(moments.head, fitted.head),
+				vt: (args.vt!==undefined) ? args.vt : prev.vt,
+				vb: (args.vb!==undefined) ? args.vb : prev.vb,
+				bent: (args.bent!==undefined) ? args.bent : bent,
 				p: prev.p,
-				beats: (arr[i].beats!==undefined) ? arr[i].beats : prev.beats
+				beats: (args.beats!==undefined) ? args.beats : prev.beats
 			};
 			arr[i] = extended;
 		}
@@ -835,8 +823,6 @@ VS3D = function() {
 			x1 = x0+v0*t+a*t*t/2;
 		// solve for beginning speed and acceleration given both positions and final speed
 		} else if (known.x0 && known.x1 && known.v1 && known.t) {
-			// console.log(x0);
-			// console.log(x1);
 			a = 2*(v1/t-(x1-x0)/(t*t));
 			v0 = v1-a*t;
 		// impute acceleration to zero
@@ -866,10 +852,6 @@ VS3D = function() {
 		}
 		return {x0: x0, x1: x1, v0: v0, v1: v1, a: a, t: t};
 	}
-
-
-
-
 
 	function solve_angle(args) {
 		let {x0, x1, v0, v1, a, t, spin} = args;
@@ -1072,6 +1054,7 @@ VS3D = function() {
 			}
 		}
 		this.render(this.props, positions);
+		return positions;
 	}
 	Player.prototype.play = function() {
 		this.stop();

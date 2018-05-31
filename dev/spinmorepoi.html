@@ -75,7 +75,6 @@
 			{txt: "Counter", value: "CCW"}
 		],
 		moves: [
-			// {txt: "Static Spin", value: "static"},
 			{txt: "Extension", value: "extension"},
 			{txt: "Point Isolation", value: "pointiso"},
 			{txt: "One-Petal In-Spin Flower", value: "inspin1"},
@@ -100,8 +99,7 @@
 			{txt: "Pro-Bend Toroid", value: "probend2"},
 			{txt: "Iso-Bend Toroid (Backward)", value: "isobend-4"},
 			{txt: "Anti-Bend Toroid (Backward)", value: "antibend-4"},
-			{txt: "Pro-Bend Toroid (Backward)", value: "probend-2"}				// ,
-			// {txt: "1.5", value: "1.5"}		
+			{txt: "Pro-Bend Toroid (Backward)", value: "probend-2"}
 		]
 	};
 
@@ -255,29 +253,29 @@
 			} else if (recipe==="liso") {
 				move = {recipe: "snake", orient: angle, harmonics: 3, ovalness: 0.5, direction: dir, p: p};
 			} else if (recipe==="isobend2") {
-				move = {recipe: "shim_toroid", orient: angle, bend: 1, harmonics: 2, direction: dir, p: p};
+				move = {recipe: "toroid", orient: angle, bend: 1, harmonics: 2, direction: dir, p: p};
 			} else if (recipe==="isobend4") {
-				move = {recipe: "shim_toroid", orient: angle, bend: 1, harmonics: 4, direction: dir, p: p};
+				move = {recipe: "toroid", orient: angle, bend: 1, harmonics: 4, direction: dir, p: p};
 			} else if (recipe==="antibend2") {
-				move = {recipe: "shim_toroid", orient: angle, bend: -1, harmonics: 2, direction: dir, p: p};
+				move = {recipe: "toroid", orient: angle, bend: -1, harmonics: 2, direction: dir, p: p};
 			} else if (recipe==="antibend4") {
-				move = {recipe: "shim_toroid", orient: angle, bend: -1, harmonics: 4, direction: dir, p: p};
+				move = {recipe: "toroid", orient: angle, bend: -1, harmonics: 4, direction: dir, p: p};
 			} else if (recipe==="probend2") {
-				move = {recipe: "shim_toroid", orient: angle, bend: 3, harmonics: 2, direction: dir, p: p};
+				move = {recipe: "toroid", orient: angle, bend: 3, harmonics: 2, direction: dir, p: p};
 			} else if (recipe==="probend4") {
-				move = {recipe: "shim_toroid", orient: angle, bend: 3, harmonics: 4, direction: dir, p: p};
+				move = {recipe: "toroid", orient: angle, bend: 3, harmonics: 4, direction: dir, p: p};
 			} else if (recipe==="isobend-2") {
-				move = {recipe: "shim_toroid", orient: angle, bend: 1, harmonics: -2, direction: dir, p: p};
+				move = {recipe: "toroid", orient: angle, bend: 1, harmonics: -2, direction: dir, p: p};
 			} else if (recipe==="isobend-4") {
-				move = {recipe: "shim_toroid", orient: angle, bend: 1, harmonics: -4, direction: dir, p: p};
+				move = {recipe: "toroid", orient: angle, bend: 1, harmonics: -4, direction: dir, p: p};
 			} else if (recipe==="antibend-2") {
-				move = {recipe: "shim_toroid", orient: angle, bend: -1, harmonics: -2, direction: dir, p: p};
+				move = {recipe: "toroid", orient: angle, bend: -1, harmonics: -2, direction: dir, p: p};
 			} else if (recipe==="antibend-4") {
-				move = {recipe: "shim_toroid", orient: angle, bend: -1, harmonics: -4, direction: dir, p: p};
+				move = {recipe: "toroid", orient: angle, bend: -1, harmonics: -4, direction: dir, p: p};
 			} else if (recipe==="probend-2") {
-				move = {recipe: "shim_toroid", orient: angle, bend: 3, harmonics: -2, direction: dir, p: p};
+				move = {recipe: "toroid", orient: angle, bend: 3, harmonics: -2, direction: dir, p: p};
 			} else if (recipe==="probend-4") {
-				move = {recipe: "shim_toroid", orient: angle, bend: 3, harmonics: -4, direction: dir, p: p};
+				move = {recipe: "toroid", orient: angle, bend: 3, harmonics: -4, direction: dir, p: p};
 			} else if (recipe==="pendulum") {
 				if (align==="UP") {
 					start = VS3D.snapto({head: {a: VS3D.DOWN}, p: p}, start);

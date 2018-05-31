@@ -1,5 +1,4 @@
 Engine:
-- Chaining toroids resets the bend any time a cusp doesn't match bend=0...using shims for some
 - Get the grip stuff working right.
 - Finish "nudge".
 - Are defaults injected in the right places?
@@ -8,24 +7,19 @@ Engine:
 
 Render:
 - Weird flicker only for toroids.
+- So...really want you want to do is "nudge."
 
 Apps:
-- (! only once bend and toroids are fixed) Make orientation menus actually work.
+- Make orientation menus actually work.
 - Get multi-view working.
 - Comborific.
 - Integrate it with React.
 
 
-Bugs:
-- I'm relying on a hideous shim for bent...I think...
-
 Today's notes:
 - Allow optional planes per node.
 - Default TWIST should be based on axis of motion
 - How do I know whether TWIST comes after GRIP or not?  So, if you grab the poi in the middle and then bend it 90, you want to twist the poi around its own axis, not the hand axis.  So...I guess that means twist is based on GRIP axis?  We'll save that for later. 
-- Bent is from grip, TWIST might be as well.
-- How does BENT even work, dude?
-
 
 A radical idea:
 - Make it so props use the same data structure as moves.
@@ -34,4 +28,6 @@ A radical idea:
 	- Positions are non-unique.
 	- Prop can have twist and bend natively.
 
-	- So...really want you want to do is "nudge."
+
+
+Okay...so 90% of stuff is working now...but we get weird stuff for DOWN-oriented CCW antibend4.
