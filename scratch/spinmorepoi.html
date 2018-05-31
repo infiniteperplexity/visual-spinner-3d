@@ -40,7 +40,7 @@
 		align: ["UP","UP","UP","UP"],
 		orient: ["UP","UP","UP","UP"],
 		direction: ["CW","CW","CCW","CCW"],
-		move: ["lext","antispin3","extension","antispin3"]
+		move: ["extension","antispin3","extension","antispin3"]
 	};
 
 	let menus = {
@@ -87,6 +87,9 @@
 			{txt: "Four-Petal Anti-Spin Flower (Box)", value: "antispin4b"},
 			{txt: "C-CAP (Inspin First)", value: "capin"},
 			{txt: "C-CAP (Antispin First)", value: "capanti"},
+			{txt: "Isolation", value: "iso"},
+			{txt: "Half Extension", value: "hext"},
+			{txt: "Cat Eye", value: "cateye"},
 			{txt: "Linear Extension", value: "lext"},
 			{txt: "Linear Isolation", value: "liso"},
 			{txt: "Pendulum", value: "pendulum"},
@@ -164,6 +167,9 @@
 		for (let i=0; i<4; i++) {
 			let prop = [red, blue, green, yellow][i];
 			for (let title in menus) {
+				// if (title==="models") {
+				// 	continue;
+				// }
 				let menu = menus[title];
 				let name = title.slice(0,title.length-1);
 				let node = document.getElementById(name+i);
@@ -234,10 +240,19 @@
 				move = {recipe: "ccap", orient: angle, direction: dir, p: p};
 			} else if (recipe==="capanti") {
 				move = {recipe: "ccap", spin: -1, orient: angle, direction: dir, p: p};
+			} else if (recipe==="iso") {
+				start = VS3D.snapto({hand: {r: 0.5}, head: {a: angle+VS3D.SPLIT}, p: p}, start);
+				move = {recipe: "isolation", orient: angle, direction: dir, p: p};
+			} else if (recipe==="cateye") {
+				start = VS3D.snapto({hand: {r: 0.5}, head: {a: angle+VS3D.SPLIT}, p: p}, start);
+				move = {recipe: "isolation", direction: dir, orient: angle, spin: -1, p: p};
+			} else if (recipe==="hext") {
+				start = VS3D.snapto({hand: {r: 0.5}, orient: angle, p: p}, start);
+				move = {recipe: "isolation", direction: dir, p: p};
 			} else if (recipe==="lext") {
 				move = {recipe: "snake", orient: angle, direction: dir, p: p};
 			} else if (recipe==="liso") {
-				move = {recipe: "snake", orient: angle, harmonics: 3, direction: dir, p: p};
+				move = {recipe: "snake", orient: angle, harmonics: 3, ovalness: 0.5, direction: dir, p: p};
 			} else if (recipe==="isobend2") {
 				move = {recipe: "shim_toroid", orient: angle, bend: 1, harmonics: 2, direction: dir, p: p};
 			} else if (recipe==="isobend4") {

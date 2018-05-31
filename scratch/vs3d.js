@@ -706,13 +706,17 @@ VS3D = function() {
 			let prev = arr[i-1];
 			let prop = socket(prev);
 			let planed = Move({...arr[i], p: prev.p});
-			// could guess at linearity here???
+			for (let node of NODES) {
+				if (prev[node].m==="linear" || prev[node].la!==undefined || prev[node].vl!==undefined || prev[node].vl1!==undefined || prev[node].al!==undefined) {
+					planed[node].m = "linear";
+				}	
+			}		
 			let move = fit(prop, planed);
 			let moments = {};
 			for (let node of NODES) {
 				if (move[node].m==="linear" || move[node].la!==undefined || move[node].vl!==undefined || move[node].vl1!==undefined || move[node].al!==undefined) {
 					let {vl1: vl, la: la} = moments_linear({...prev[node], beats: prev.beats});
-					// we need a better way of doing this...
+					// !!! we probably need a better way of doing this...
 					vl*=90;
 					moments[node] = {vl: vl, la: la};
 				} else {

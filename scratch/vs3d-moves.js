@@ -141,7 +141,7 @@ VS3D = (function(VS3D) {
 			let {beats, mode, speed, hand, head, spin, orient, direction, petals, p} = options;
 			let v = (spin===INSPIN) ? (petals+1) : (petals-1);
 			// mode is a "soft default"
-			// should it be more aggressive?
+			// should it be more aggressive? when explicitly specified, anyway??
 			let hangle = orient+mode;
 			if (head.a!==undefined && hand.a!==undefined) {
 				hangle = orient + head.a - hand.a;
@@ -171,12 +171,11 @@ VS3D = (function(VS3D) {
 				// mode is not a very intuitive parameter for cateyes
 				hangle = -hangle;
 			}
-			let segment = Move({
-				...options,
+			let segment = Move(merge(options,{
 				beats: beats/4,
 				hand: {...hand, a: orient, va: direction*speed},
-				head: {head: {...head, a: hangle}, va: spin*direction*speed}
-			});
+				head: {...head, a: hangle, va: spin*direction*speed}
+			}));
 			let move = extend([segment,{},{},{}])
 			return move;
 		}
@@ -235,28 +234,26 @@ VS3D = (function(VS3D) {
 	recipe(
 		"snake",
 		{
-			harmonics: 1
+			harmonics: 3,
+			ovalness: 0	
 		},
 		options => {
-			let {beats, mode, speed, hand, head, harmonics, orient, direction, p} = options;
+			let {beats, mode, speed, hand, head, harmonics, orient, direction, ovalness, p} = options;
 			let hangle = orient+mode;
 			let segment = Move(merge(options,{
 				beats: beats/4,
-				hand: {a: orient, r: hand.r, vl: 0, r1: 0},
+				hand: {a: orient, r: hand.r, vl: 0, a1: orient+QUARTER*direction, r1: ovalness},
 				head: {...head, a: hangle, va: speed*direction*harmonics}
 			}));
 			let move = extend([
 				segment,
-				{hand: {r1: -hand.r,  vl1: 0}},
-				// I'm not sure why filling in "motion: linear" doesn't solve quite right
-				{hand: {r1: 0, vl: 0}},
-				{hand: {r1: hand.r, vl1: 0}}
+				{hand: {r1: hand.r,  a1: orient+SPLIT, vl1: 0}},
+				{hand: {r1: ovalness, a1: orient-QUARTER}},
+				{hand: {r1: hand.r, vl1: 0, a1: orient}}
 			]);
-			// move.map(e=>console.log(e.hand));
 			return move;
 		}
 	);
-
 
 	return VS3D;
 })(VS3D);
