@@ -203,9 +203,10 @@ VS3D = (function(VS3D) {
 		let group = new THREE.Group();
 		group.add(ring);
 		for (var i=0; i<tines; i++) {
-			tine = new THREE.Mesh(
+			let c = (i===0) ? "gray" : this.colors(color);
+				tine = new THREE.Mesh(
 				new THREE.CylinderGeometry(0.05,0.05,0.8,8),
-				new THREE.MeshLambertMaterial({color: this.colors(color)})
+				new THREE.MeshLambertMaterial({color: this.colors(c)})
 			);
 			tine.rotateZ(-angle+i*angle);
 			tine.translateOnAxis(THREEY,0.6);

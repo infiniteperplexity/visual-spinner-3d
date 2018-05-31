@@ -11,15 +11,15 @@
 <script src="vs3d-render.js"></script>
 <script>
 	let renderer, player;
-	let red = new VS3D.Prop({hand: {a: VS3D.DOWN}, head: {a: VS3D.DOWN}});
-	// let move = {recipe: "toroid", harmonics: 2};
-	let move = {recipe: "toroid", orient: VS3D.DOWN, bend: -1, direction: -1, harmonics: 4};
+	let p = VS3D.WHXFL;
+	let red = VS3D.snapto({hand: {a: 315}, head: {a: 315}, p: p, twist: 54});
+	//let move = {recipe: "flower", petals: 0, p: VS3D.WHXFL};
 	function init() {
 		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
 		player = new VS3D.Player();
-		player.addProp(red,{model: "poi"});
+		player.addProp(red,{model: "fan"});
 		//player.addProp(blue, {color: "blue"});
-		player.props[0].moves.push(move);
+		//player.props[0].moves.push(move);
 		//player.props[1].addMove(move2);
 		player.render = function(props, positions) {
 			renderer.render(props, positions);
@@ -27,6 +27,11 @@
 		player.reset();
 		//player.goto(89);
 		//player.play();
+	}
+	function goto() {
+		let angle = 0;
+		let twist = 0;
+		// okay...I'm having a little trouble with something that should be simple...show this prop in this position with this twist.
 	}
 
 	//VS3D.socket(player.props[0].moves[0])
