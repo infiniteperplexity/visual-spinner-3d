@@ -232,46 +232,30 @@ VS3D = (function(VS3D) {
 		}
 	);
 
-
 	recipe(
 		"snake",
 		{
-			petals: 0
+			harmonics: 1
 		},
 		options => {
-			let {beats, mode, speed, hand, head, spin, orient, direction, petals, p} = options;
+			let {beats, mode, speed, hand, head, harmonics, orient, direction, p} = options;
 			let hangle = orient+mode;
-			let move = [
-				{	
-					...options,
-					hand: {...hand, a: orient, a1: TINY, a1: orient},
-					head: {...head, a: orient, v: direction*spin*speed}
-				},
-				{	
-					...options,
-					hand: {...hand, a: orient, a1: TINY, a1: orient},
-					head: {...head, a: orient, v: direction*spin*speed}
-				},
-				{	
-					...options,
-					hand: {...hand, a: orient, a1: TINY, a1: orient},
-					head: {...head, a: -orient, v: direction*spin*speed}
-				},
-				{	
-					...options,
-					hand: {a: orient, a1: TINY, a1: orient},
-					head: {a: -orient, v: direction*spin*speed}
-				}
-			];
-			// let move = extend([
-			// 	segment,
-			// 	segment,
-			// 	segment,
-			// 	segment
-			// ]);
+			let segment = Move(merge(options,{
+				beats: beats/4,
+				hand: {a: orient, r: hand.r, la: orient+SPLIT, a1: orient, r1: 0},
+				head: {...head, a: hangle, va: speed*direction*harmonics}
+			}));
+			let move = extend([
+				segment,
+				{hand: {a1: orient+SPLIT, r1: hand.r, la: orient+SPLIT}},
+				{hand: {a1: orient+SPLIT, r1: 0, la: orient}},
+				{hand: {a1: orient, r1: hand.r, la: orient}}
+			]);
+			console.log(move);
 			return move;
 		}
 	);
+
 
 	return VS3D;
 })(VS3D);

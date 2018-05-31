@@ -87,6 +87,7 @@
 			{txt: "Four-Petal Anti-Spin Flower (Box)", value: "antispin4b"},
 			{txt: "C-CAP (Inspin First)", value: "capin"},
 			{txt: "C-CAP (Antispin First)", value: "capanti"},
+			{txt: "Linear Isolation", value: "liso"},
 			{txt: "Pendulum", value: "pendulum"},
 			{txt: "1.5", value: "1.5"},
 			{txt: "Iso-Bend Toroid", value: "isobend4"},
@@ -104,7 +105,7 @@
 		setupPlayer();
 		setupMenus();
 		setMoves();
-		play();
+		//play();
 
 	}
 
@@ -232,6 +233,8 @@
 				move = {recipe: "ccap", orient: angle, direction: dir, p: p};
 			} else if (recipe==="capanti") {
 				move = {recipe: "ccap", spin: -1, orient: angle, direction: dir, p: p};
+			} else if (recipe==="liso") {
+				move = {recipe: "snake", orient: angle, direction: dir, p: p};
 			} else if (recipe==="isobend2") {
 				move = {recipe: "shim_toroid", orient: angle, bend: 1, harmonics: 2, direction: dir, p: p};
 			} else if (recipe==="isobend4") {

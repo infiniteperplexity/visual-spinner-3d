@@ -709,9 +709,10 @@ VS3D = function() {
 			let move = fit(prop, planed);
 			let moments = {};
 			for (let node of NODES) {
-				if (move.m==="linear" || move.la!==undefined || move.vl!==undefined || move.vl1!==undefined || move.al!==undefined) {
-					let {vl1: vl} = moments_linear({...prev[node], beats: prev.beats});
-					moments[node] = {vl: vl};
+				if (move[node].m==="linear" || move[node].la!==undefined || move[node].vl!==undefined || move[node].vl1!==undefined || move[node].al!==undefined) {
+					let {vl1: vl, la: la} = moments_linear({...prev[node], beats: prev.beats});
+					console.log(vl, la);
+					moments[node] = {vl: vl, la: la};
 				} else {
 					let {va1: va, vr1: vr} =  moments_angular({...prev[node], beats: prev.beats});
 					moments[node] = {va: va, vr: vr};
