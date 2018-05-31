@@ -711,7 +711,8 @@ VS3D = function() {
 			for (let node of NODES) {
 				if (move[node].m==="linear" || move[node].la!==undefined || move[node].vl!==undefined || move[node].vl1!==undefined || move[node].al!==undefined) {
 					let {vl1: vl, la: la} = moments_linear({...prev[node], beats: prev.beats});
-					console.log(vl, la);
+					// we need a better way of doing this...
+					vl*=90;
 					moments[node] = {vl: vl, la: la};
 				} else {
 					let {va1: va, vr1: vr} =  moments_angular({...prev[node], beats: prev.beats});
@@ -942,7 +943,22 @@ VS3D = function() {
 				known[arg] = true;
 			}
 		}
-		// first, convert to cartesian coordinates
+		// first, guess unspecified position parameters
+		if (known.r0 && !known.a0 && known.a1) {
+			a0 = a1;
+			known.a0 = true;
+		} else if (known.a0 && !known.r0 && known.r1) {
+			r0 = r1;
+			known.r0 = true;
+		}
+		if (known.r1 && !known.a1 && known.a0) {
+			a1 = a0;
+			known.a1 = true;
+		} else if (known.a1 && !known.r1 && known.r0) {
+			r1 = r0;
+			knwon.r1 = true;
+		}
+		// next, convert to cartesian coordinates
 		let x0, x1, y0, y1, d;
 		if (known.r0 && known.a0) {
 			x0 = r0*Math.cos(a0*UNIT);
@@ -950,12 +966,7 @@ VS3D = function() {
 			known.x0 = true;
 			known.y0 = true;
 		}
-		if (known.a1) {
-			if (known.r1 || known.r0) {
-				r1 = known.r1 ? r1 : r0;
-			} else {
-				throw new Error("unable to impute final radius");
-			}
+		if (known.r1 && known.a1) {
 			x1 = r1*Math.cos(a1*UNIT);
 			y1 = r1*Math.sin(a1*UNIT);
 			known.x1 = true;

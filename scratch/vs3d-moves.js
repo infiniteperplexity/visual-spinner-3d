@@ -242,16 +242,19 @@ VS3D = (function(VS3D) {
 			let hangle = orient+mode;
 			let segment = Move(merge(options,{
 				beats: beats/4,
-				hand: {a: orient, r: hand.r, la: orient+SPLIT, a1: orient, r1: 0},
+				hand: {a: orient, r: hand.r, vl: 0, la: orient+SPLIT, r1: 0},
 				head: {...head, a: hangle, va: speed*direction*harmonics}
 			}));
 			let move = extend([
 				segment,
-				{hand: {a1: orient+SPLIT, r1: hand.r, la: orient+SPLIT}},
-				{hand: {a1: orient+SPLIT, r1: 0, la: orient}},
-				{hand: {a1: orient, r1: hand.r, la: orient}}
+				// {hand: {r1: -hand.r, la: orient+SPLIT}},
+				// {hand: {r1: 0, la: orient}},
+				// {hand: {r1: hand.r, la: orient}}
+				{hand: {r1: -hand.r, la: orient+SPLIT}},
+				{hand: {r1: 0, la: orient}},
+				{hand: {r1: hand.r, la: orient}}
 			]);
-			console.log(move);
+			// move.map(e=>console.log(e.hand));
 			return move;
 		}
 	);
