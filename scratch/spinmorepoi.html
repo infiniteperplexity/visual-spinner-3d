@@ -167,9 +167,9 @@
 		for (let i=0; i<4; i++) {
 			let prop = [red, blue, green, yellow][i];
 			for (let title in menus) {
-				// if (title==="models") {
-				// 	continue;
-				// }
+				if (title==="models") {
+					continue;
+				}
 				let menu = menus[title];
 				let name = title.slice(0,title.length-1);
 				let node = document.getElementById(name+i);
@@ -256,27 +256,27 @@
 			} else if (recipe==="isobend2") {
 				move = {recipe: "shim_toroid", orient: angle, bend: 1, harmonics: 2, direction: dir, p: p};
 			} else if (recipe==="isobend4") {
-				move = {recipe: "toroid", orient: angle, bend: 1, harmonics: 4, direction: dir, p: p};
+				move = {recipe: "shim_toroid", orient: angle, bend: 1, harmonics: 4, direction: dir, p: p};
 			} else if (recipe==="antibend2") {
 				move = {recipe: "shim_toroid", orient: angle, bend: -1, harmonics: 2, direction: dir, p: p};
 			} else if (recipe==="antibend4") {
-				move = {recipe: "toroid", orient: angle, bend: -1, harmonics: 4, direction: dir, p: p};
+				move = {recipe: "shim_toroid", orient: angle, bend: -1, harmonics: 4, direction: dir, p: p};
 			} else if (recipe==="probend2") {
 				move = {recipe: "shim_toroid", orient: angle, bend: 3, harmonics: 2, direction: dir, p: p};
 			} else if (recipe==="probend4") {
-				move = {recipe: "toroid", orient: angle, bend: 3, harmonics: 4, direction: dir, p: p};
+				move = {recipe: "shim_toroid", orient: angle, bend: 3, harmonics: 4, direction: dir, p: p};
 			} else if (recipe==="isobend-2") {
 				move = {recipe: "shim_toroid", orient: angle, bend: 1, harmonics: -2, direction: dir, p: p};
 			} else if (recipe==="isobend-4") {
-				move = {recipe: "toroid", orient: angle, bend: 1, harmonics: -4, direction: dir, p: p};
+				move = {recipe: "shim_toroid", orient: angle, bend: 1, harmonics: -4, direction: dir, p: p};
 			} else if (recipe==="antibend-2") {
 				move = {recipe: "shim_toroid", orient: angle, bend: -1, harmonics: -2, direction: dir, p: p};
 			} else if (recipe==="antibend-4") {
-				move = {recipe: "toroid", orient: angle, bend: -1, harmonics: -4, direction: dir, p: p};
+				move = {recipe: "shim_toroid", orient: angle, bend: -1, harmonics: -4, direction: dir, p: p};
 			} else if (recipe==="probend-2") {
 				move = {recipe: "shim_toroid", orient: angle, bend: 3, harmonics: -2, direction: dir, p: p};
 			} else if (recipe==="probend-4") {
-				move = {recipe: "toroid", orient: angle, bend: 3, harmonics: -4, direction: dir, p: p};
+				move = {recipe: "shim_toroid", orient: angle, bend: 3, harmonics: -4, direction: dir, p: p};
 			} else if (recipe==="pendulum") {
 				if (align==="UP") {
 					start = VS3D.snapto({head: {a: VS3D.DOWN}, p: p}, start);

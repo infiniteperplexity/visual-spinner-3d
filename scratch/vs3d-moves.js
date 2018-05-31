@@ -80,12 +80,11 @@ VS3D = (function(VS3D) {
 		{},
 		options => {
 			let {beats, speed, hand, spin, orient, direction} = options;
-			let segment = Move({
-				...options,
+			let segment = Move(merge(options,{
 				beats: beats/4,
-				hand: {...hand, a: orient, va: spin*direction*speed},
+				hand: {a: orient, va: spin*direction*speed},
 				head: {a: orient, va: spin*direction*speed},
-			}); 
+			})); 
 			let move = extend([
 				segment,
 				{	
@@ -118,8 +117,8 @@ VS3D = (function(VS3D) {
 			// floor plane pendulums don't work right...is that okay?
 			let segment = Move(merge(options, {
 				beats: beats/4,
-				hand: {...hand, a: orient, va: direction*speed},
-				head: {...head, a: orient, a1: orient+QUARTER*direction, va1: 0}
+				hand: {a: orient, va: direction*speed},
+				head: {a: orient, a1: orient+QUARTER*direction, va1: 0}
 			}));
 			let topangle = (onepointfive) ? orient+SPLIT : orient;
 			let move = extend([
@@ -148,8 +147,8 @@ VS3D = (function(VS3D) {
 			}
 			let segment = Move(merge(options,{
 				beats: beats/4,
-				hand: {...hand, a: orient, va: direction*speed},
-				head: {...head, a: hangle, va: v*spin*direction*speed}
+				hand: {a: orient, va: direction*speed},
+				head: {a: hangle, va: v*spin*direction*speed}
 			}));
 			let move = extend([segment,{},{},{}]);
 			return move;
@@ -173,8 +172,8 @@ VS3D = (function(VS3D) {
 			}
 			let segment = Move(merge(options,{
 				beats: beats/4,
-				hand: {...hand, a: orient, va: direction*speed},
-				head: {...head, a: hangle, va: spin*direction*speed}
+				hand: {a: orient, va: direction*speed},
+				head: {a: hangle, va: spin*direction*speed}
 			}));
 			let move = extend([segment,{},{},{}])
 			return move;
@@ -198,8 +197,8 @@ VS3D = (function(VS3D) {
 			let segment = Move(merge(options,{
 				beats: beats/4,
 				vb: -pitch*harmonics,
-				hand: {...hand, a: orient, va: direction*speed},
-				head: {...head, a: hangle, va: bend*direction*speed}
+				hand: {a: orient, va: direction*speed},
+				head: {a: hangle, va: bend*direction*speed}
 			}));
 			let move = extend([segment,{},{},{}]);
 			return move;
@@ -224,8 +223,8 @@ VS3D = (function(VS3D) {
 			let segment = Move(merge(options,{
 				beats: beats,
 				vb: -pitch*harmonics,
-				hand: {...hand, a: orient, va: direction*speed},
-				head: {...head, a: hangle, va: bend*direction*speed}
+				hand: {a: orient, va: direction*speed},
+				head: {a: hangle, va: bend*direction*speed}
 			}));
 			return [segment];
 		}
@@ -234,7 +233,7 @@ VS3D = (function(VS3D) {
 	recipe(
 		"snake",
 		{
-			harmonics: 3,
+			harmonics: 1,
 			ovalness: 0	
 		},
 		options => {
@@ -243,7 +242,7 @@ VS3D = (function(VS3D) {
 			let segment = Move(merge(options,{
 				beats: beats/4,
 				hand: {a: orient, r: hand.r, vl: 0, a1: orient+QUARTER*direction, r1: ovalness},
-				head: {...head, a: hangle, va: speed*direction*harmonics}
+				head: {a: hangle, va: speed*direction*harmonics}
 			}));
 			let move = extend([
 				segment,
