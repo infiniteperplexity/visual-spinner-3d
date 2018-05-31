@@ -1,0 +1,14 @@
+WHXFL:
+0: 225 :      bearing 90, angle 90.\par
+45: 234~
+90: 270
+135: 306~
+180: 315
+225: 126~
+270: 90
+315: 54~
+
+So that's interesting...we've got differences of 36 and then 9 between the diagonals and the cardinals on one side.
+But then this big huge gap after the z-flip.
+
+Ohhhhkay.  So, 359 in the WHXFL plane looks exactly wrong with 225, even though 0 looks exactly right.  359 looks exactly right with 45.

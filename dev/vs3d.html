@@ -12,7 +12,8 @@
 <script>
 	let renderer, player;
 	let p = VS3D.WHXFL;
-	let red = VS3D.snapto({hand: {a: 315}, head: {a: 315}, p: p, twist: 54});
+	//let red = VS3D.snapto({hand: {a: 0}, head: {a: 0}, p: p, twist: 225});
+	let red = VS3D.snapto({hand: {a: 359}, head: {a: 359}, p: p, twist: 45});
 	//let move = {recipe: "flower", petals: 0, p: VS3D.WHXFL};
 	function init() {
 		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
