@@ -242,17 +242,15 @@ VS3D = (function(VS3D) {
 			let hangle = orient+mode;
 			let segment = Move(merge(options,{
 				beats: beats/4,
-				hand: {a: orient, r: hand.r, vl: 0, la: orient+SPLIT, r1: 0},
+				hand: {a: orient, r: hand.r, vl: 0, r1: 0},
 				head: {...head, a: hangle, va: speed*direction*harmonics}
 			}));
 			let move = extend([
 				segment,
-				// {hand: {r1: -hand.r, la: orient+SPLIT}},
-				// {hand: {r1: 0, la: orient}},
-				// {hand: {r1: hand.r, la: orient}}
-				{hand: {r1: -hand.r, la: orient+SPLIT}},
-				{hand: {r1: 0, la: orient}},
-				{hand: {r1: hand.r, la: orient}}
+				{hand: {r1: -hand.r,  vl1: 0}},
+				// I'm not sure why filling in "motion: linear" doesn't solve quite right
+				{hand: {r1: 0, vl: 0}},
+				{hand: {r1: hand.r, vl1: 0}}
 			]);
 			// move.map(e=>console.log(e.hand));
 			return move;

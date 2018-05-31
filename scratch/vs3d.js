@@ -706,6 +706,7 @@ VS3D = function() {
 			let prev = arr[i-1];
 			let prop = socket(prev);
 			let planed = Move({...arr[i], p: prev.p});
+			// could guess at linearity here???
 			let move = fit(prop, planed);
 			let moments = {};
 			for (let node of NODES) {
@@ -973,12 +974,10 @@ VS3D = function() {
 			known.y1 = true;
 		}
 		// next, get the angle if we don't have it
-		if (!known.la) {
-			if (known.x0 && known.x1) {
-				la = Math.atan2(y1-y0,x1-x0)/UNIT;
-			} else {
-				throw new Error("can't solve for angle of linear motion");
-			}
+		if (known.x0 && known.x1) {
+			la = Math.atan2(y1-y0,x1-x0)/UNIT;
+		} else if (!known.la) {
+			throw new Error("can't solve for angle of linear motion");
 		}
 		// solve for distance if we can
 		if (known.x0 && known.x1) {
