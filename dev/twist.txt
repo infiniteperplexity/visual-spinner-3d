@@ -37,6 +37,21 @@ whXFL:
 315: 85
 359: 80
 
+WAXfl
+
+0: 90
+45: 20
+90:	0
+135: 20
+180: 90
+
+181: 275
+225: 5
+270: 0
+315: 5
+359: 275
+
+
 Floor toggles at 181 as well.
 WHEEL and WALL don't toggle at 181.
 FLOOR is actually -90 in the front half...and yes, _FLOOR reverses that.
