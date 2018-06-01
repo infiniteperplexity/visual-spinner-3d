@@ -4,11 +4,18 @@ WHXFL:
 90: 270
 135: 306~
 180: 315
+
+181: 134~
 225: 126~
 270: 90
 315: 54~
+359: 45~
+
+
 
 So that's interesting...we've got differences of 36 and then 9 between the diagonals and the cardinals on one side.
 But then this big huge gap after the z-flip.
 
 Ohhhhkay.  So, 359 in the WHXFL plane looks exactly wrong with 225, even though 0 looks exactly right.  359 looks exactly right with 45.
+
+So it seems like maybe we flip over over 180?  Yeah...above 180, or below 0, we subtract 180

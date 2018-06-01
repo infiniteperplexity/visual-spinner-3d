@@ -15,7 +15,7 @@
 	//let red = VS3D.snapto({hand: {a: 0}, head: {a: 0}, p: p, twist: 225});
 	let red = VS3D.snapto({hand: {a: 359}, head: {a: 359}, p: p, twist: 45});
 	//let move = {recipe: "flower", petals: 0, p: VS3D.WHXFL};
-	function init() {
+	function init() {	
 		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
 		player = new VS3D.Player();
 		player.addProp(red,{model: "fan"});
