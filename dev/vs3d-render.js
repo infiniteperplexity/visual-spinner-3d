@@ -24,7 +24,6 @@ VS3D = (function(VS3D) {
 		el.appendChild(this.renderer.domElement);
 		this.scene = new THREE.Scene();
 		this.camera = new THREE.PerspectiveCamera(45, this.width/this.height, 0.1, 1000);
-		//this.camera.position.set(0,0,8);
 		this.camera.position.set(0,0,8);
 		this.scene.add(this.camera);
 		this.renderer.setClearColor(0x000000,1.0);
@@ -75,17 +74,17 @@ VS3D = (function(VS3D) {
 		// update all prop locations
 		for (let i=0; i<wrappers.length; i++) {
 			let idx = this.registry.indexOf(wrappers[i]);
-			this.update(this.models[idx], positions[i], i);
+			this.update(this.models[idx], positions[i], wrappers[i].nudged);
 		}
 		this.renderer.render(this.scene, this.camera);
 	}
 
 
-	ThreeRenderer.prototype.update = function(shapes, prop, i) {
-		// rotate and translate according to "body", "pivot", "helper", and "hand"
+	ThreeRenderer.prototype.update = function(shapes, prop, nudged) {
+		nudged = nudged || 0;
 		shapes.position.x = 0;
 		shapes.position.y = 0;
-		shapes.position.z = 0;
+		shapes.position.z = nudged;
 		shapes.rotation.x = 0;
 		shapes.rotation.y = 0;
 		shapes.rotation.z = 0;

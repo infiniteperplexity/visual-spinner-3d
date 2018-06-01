@@ -63,3 +63,12 @@ But then this big huge gap after the z-flip.
 Ohhhhkay.  So, 359 in the WHXFL plane looks exactly wrong with 225, even though 0 looks exactly right.  359 looks exactly right with 45.
 
 So it seems like maybe we flip over over 180?  Yeah...above 180, or below 0, we subtract 180
+
+
+Okay, let's look at the wheel/floor plane graphs.  So, the really obvious thing is you add 180 if the result is below 180.  So let's counteract that.
+
+Alright.  So what I'm thinking is that WALL and WHEEL and everything in between are special cases.  The general case between WHEEL and FLOOR seems to be that there's a really big peak up near the WHEEL plane and a straight line down at the FLOOR plane.  It may be a sine wave?  With amplitude maybe...the z-ness of the plane?
+
+There's a 90-degree span between FLOOR and WHEEL at 180.  It ranges from 270 to 360.  And when the plane is halfway between, the peak is halfway between.  Ranges from 45 to -45.  So...square the z component and multiply by 45, that's the amplitude.
+
+Okay this is looking a lot like the negative cosine.  So...270-cos(angle)*90*zsquared

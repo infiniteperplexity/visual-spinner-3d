@@ -301,8 +301,7 @@ VS3D = function() {
 	// convert a spherical coordinate into a vector
 	function sphere$vectorize(s) {
 		let {r, a, b} = s;
-		// r = r || TINY; // should we trap zero here?
-		// a = a || TINY;
+		r = r || TINY;
 		let x = r*Math.sin(UNIT*a)*Math.cos(UNIT*b);
 		let z = r*Math.sin(UNIT*a)*Math.sin(UNIT*b);
 		let y = r*Math.cos(UNIT*a);
@@ -351,7 +350,8 @@ VS3D = function() {
 	function angle$spherify(ang, p) {
 		// spherifying an angle to exactly zero tends to cause rounding issues
 		if (angle$nearly(ang,0,SMALL)) {
-			ang = SMALL;
+			ang = TINY;
+			//ang = SMALL;
 		}
 		return vector$spherify(angle$vectorize(ang, p));
 	}
@@ -450,6 +450,12 @@ VS3D = function() {
 	// !!!another way to parameterize would be snapto(fit(prop, args));
 	function snapto(args, prop) {
 		prop = prop || new Prop();
+		if (Array.isArray(args)) {
+			if (args.length===0) {
+				return prop;
+			}
+			return snapto(args[0],prop);
+		}
 		let p = args.p || WALL;
 		args.body = args.body || {};
 		args.pivot = args.pivot || {};
@@ -537,9 +543,22 @@ VS3D = function() {
 		headv = sphere$vectorize(head); 
 		// do the same with GRIP?
 		head = vector$spherify(vector$rotate(headv,bent,tangent));
-		// hacky solution
-		// if (p.y===-1) {
-		// 	twist+=90;
+		// handle default TWIST
+		let angle = sphere$planify(head,p);
+		// WHEEL, WALL, and WAXWH are sui generis special cases, I think
+		if (p.y===0) {
+			twist+=0;
+		// FLOOR is a special case of the general case
+		} else if (Math.abs(p.y)===1) {
+			twist+=(p.y*90);
+			if (angle>180) {
+				twist-=180;
+			}
+		}
+		// have not yet solved the general case
+		// twist = 270-Math.cos(angle*UNIT)*90*(1-p.y**2) + ((angle>180) ? 180 : 0);
+		// if (angle>180) {
+		// 	twist+=180;
 		// }
 		return {
 			body: body,
@@ -573,6 +592,27 @@ VS3D = function() {
 					&& sphere$nearly(sum_nodes(prop, HEAD),sum_nodes(m, HEAD), SMALL);
 	}
 
+	// generalized
+	function realign(move, fitter) {
+		let oriented = move;
+		for (let i=0; i<move.length; i++) {
+			if (fitter(oriented[0])) {
+				return oriented;
+			} else {
+				console.log("realigning");
+				let head = oriented[0];
+				let tail = oriented.slice(1);
+				oriented = tail.concat(head);
+			}
+		}
+		console.log("realignment failed");
+		alert("realignment failed");
+		console.log(move);
+		throw new Error("realignment failed");
+		return move;
+	}
+
+
 	function fit(prop, move) {
 		if (Array.isArray(move)) {
 			if (move.length===0) {
@@ -588,10 +628,13 @@ VS3D = function() {
 		} else {
 			if (move.recipe) {
 				let built = build(move, prop);
-				let aligned = realign(prop, built);
+				if (move.nofit) {
+					return built;
+				}
+				let aligned = realign(built, (s)=>fits(prop,s))
 				return aligned;
 			}
-			if (fits(prop, move)) {
+			if (move.nofit || fits(prop, move)) {
 				return move;
 			} else {
 				// !!!this actually has a pretty high chance of messing up, for any 3d move...
@@ -649,30 +692,15 @@ VS3D = function() {
 		return spin(move, move.beats*BEAT);
 	}
 
-	function realign(prop, move) {
-		let oriented = move;
-		for (let i=0; i<move.length; i++) {
-			if (fits(prop, oriented)) {
-				return oriented;
-			} else {
-				//console.log("realigning");
-				let head = oriented[0];
-				let tail = oriented.slice(1);
-				oriented = tail.concat(head);
-			}
-		}
-		console.log("realignment failed");
-		alert("realignment failed");
-		console.log(prop);
-		console.log(move);
-		throw new Error("realignment failed");
-		return move;
-	}
-	function nudge(prop, axis) {
+
+	function nudge(prop, axis, n) {
+		n = n || NUDGE;
 		axis = axis || WALL;
 		let p = clone(prop);
-		let v = sphere$vectorize(p.home);
-		// finish this later
+		let v = sphere$vectorize(p[NODES[BODY]]);
+		let v1 = vector(v.x+n*axis.x, v.y+n*axis.y, v.z+n*axis.z);
+		p.body = vector$spherify(v1);
+		return p;
 	}
 
 	function chain(arr) {
@@ -1019,6 +1047,7 @@ VS3D = function() {
 		this.model = args.model || "poi";
 		this.color = args.color || "red";
 		this.fire = args.fire || false;
+		this.nudged = args.nudged || 0;
 		this.prop = prop;
 		this.moves = [];
 	}
@@ -1030,7 +1059,21 @@ VS3D = function() {
 		let move = fit(this.prop, this.moves);
 		return spin(move, t);
 	}
-	
+	for (let node of NODES) {
+		let nname = node[0].toUpperCase()+node.slice(1);
+		PropWrapper.prototype["set"+nname+"Angle"] = function(a,p) {
+			p = p || WALL;
+			let arg = {};
+			arg[node] = {a: a};
+			this.prop = snapto(arg,this.prop)
+		}
+		PropWrapper.prototype["set"+nname+"Radius"] = function(r) {
+			let arg = {};
+			arg[node] = {r: r};
+			this.prop = snapto(arg,this.prop)
+		}
+	}
+
 	function Player(args) {
 		args = args || {};
 		this.props = [];
@@ -1039,7 +1082,10 @@ VS3D = function() {
 		this.tick = 0;
 	}
 	Player.prototype.addProp = function(prop, args) {
-		this.props.push(new PropWrapper(prop, args));
+		prop = prop || new Prop();
+		let wrapper = new PropWrapper(prop, args);
+		this.props.push(wrapper);
+		return wrapper;
 	}
 	// should the callback be able to take cosmetic properties?
 	Player.prototype.render = function(wrappers, positions) {};
@@ -1084,7 +1130,6 @@ VS3D = function() {
 			plane: WALL,
 			orient: UP,
 			spin: INSPIN,
-			mode: DIAMOND,
 			beats: 4,
 			speed: 1,
 			direction: CLOCKWISE,
@@ -1130,6 +1175,32 @@ VS3D = function() {
 		}
 	}
 
+	function stringify(thing) {
+		return JSON.stringify(thing, function(key, value) {
+			console.log(key,value);
+			if (["a","b","bent","twist","a1","la"].includes(key)) {
+				return Math.round(value);
+			} else if (["x","y","z"].includes(key)) {
+				return round(value,0.001);
+			} else if (["r","r1"].includes(key)) {
+				return round(value,0.01);
+			} else if (["va","va1","vr","vr1","aa","ar","vl","vl2","al"].includes(key)) {
+				return round(value,0.0001);
+			} else {
+				return value;
+			}
+		},2);
+	}
+
+	function parse(thing) {
+		return JSON.parse(thing, function(key, value) {
+			if (["r","r1"].includes(key)) {
+				return (value || SMALL);
+			} else {
+				return value;
+			}
+		});
+	}
 
 	VS3D.clone = clone;
 	VS3D.merge = merge;
@@ -1170,13 +1241,13 @@ VS3D = function() {
 	VS3D.fit = fit;
 	VS3D.sum_nodes = sum_nodes;
 	VS3D.snapto = snapto;
+	VS3D.nudge = nudge;
 	VS3D.axis = axis;
 	VS3D.socket = socket;
 	VS3D.MoveFactory = MoveFactory;
 	VS3D.recipe = recipe;
 	VS3D.build = build;
 	VS3D.variant = variant;
-	// VS3D.refit = refit;
 	VS3D.realign = realign;
 	VS3D.extend = extend;
 	VS3D.chain = chain;
@@ -1188,6 +1259,8 @@ VS3D = function() {
 	VS3D.solve_angle = solve_angle;
 	VS3D.PropWrapper = PropWrapper;
 	VS3D.Player = Player;
+	VS3D.stringify = stringify;
+	VS3D.parse = parse;
 	VS3D.debug = debug;
 	return VS3D;
 }();

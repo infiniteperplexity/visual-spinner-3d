@@ -11,19 +11,17 @@
 <script src="vs3d-render.js"></script>
 <script>
 	let renderer, player;
-	let p = VS3D.WAXfl;
-	let a = 181;
-	let t = 275;
-	//let red = VS3D.snapto({hand: {a: 0}, head: {a: 0}, p: p, twist: 225});
-	let red = VS3D.snapto({hand: {a: a}, head: {a: a}, p: p, twist: t});
-	console.log(red.head);
-	//let move = {recipe: "flower", petals: 0, p: VS3D.WHXFL};
+	let red = new VS3D.Prop();
+	//red = VS3D.nudge(red);
+	let move = VS3D.Move({hand: {a: 0, va: 1}, head: {a: 0, va: 1}});
 	function init() {	
 		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
 		player = new VS3D.Player();
-		player.addProp(red,{model: "fan"});
+		player.addProp(red,{model: "poi"});
+		player.props[0].setHandAngle(180);
+		player.props[0].setHeadAngle(180);
 		//player.addProp(blue, {color: "blue"});
-		//player.props[0].moves.push(move);
+		player.props[0].moves.push(move);
 		//player.props[1].addMove(move2);
 		player.render = function(props, positions) {
 			renderer.render(props, positions);
@@ -37,6 +35,12 @@
 		let twist = 0;
 		// okay...I'm having a little trouble with something that should be simple...show this prop in this position with this twist.
 	}
+
+	let u = VS3D.UNIT;
+
+	// console.log(Math.cos(0)**2);
+	// console.log(Math.cos(90*u)**2);
+	// console.log(Math.cos(180*u)**2);
 
 	//VS3D.socket(player.props[0].moves[0])
 </script>

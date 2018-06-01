@@ -1,13 +1,8 @@
 Engine:
-- Get the grip stuff working right.
-- Finish "nudge".
+- Figure out TWIST
+- Allow optional planes per node.
 - Are defaults injected in the right places?
 - Should extend() wrap around?
-- Add parsing and stringifying.
-
-Render:
-- Weird flicker only for toroids.
-- So...really want you want to do is "nudge."
 
 Apps:
 - Make orientation menus actually work.
@@ -15,19 +10,21 @@ Apps:
 - Comborific.
 - Integrate it with React.
 
-
-Today's notes:
-- Allow optional planes per node.
-- Default TWIST should be based on axis of motion
-- How do I know whether TWIST comes after GRIP or not?  So, if you grab the poi in the middle and then bend it 90, you want to twist the poi around its own axis, not the hand axis.  So...I guess that means twist is based on GRIP axis?  We'll save that for later. 
-
-A radical idea:
+Ideas:
 - Make it so props use the same data structure as moves.
 	- Have to rewrite a ton of stuff.
 	- Fewer conversions needed.
 	- Positions are non-unique.
 	- Prop can have twist and bend natively.
+	- Against this, we have this general idea that...like...props are for reading, moves are for writing?  Certainly it gets harder when you don't treat it that way.
 
 
 
-Okay...so 90% of stuff is working now...but we get weird stuff for DOWN-oriented CCW antibend4.
+// so this guy right here...takes a prop that is oriented a certain way, and a recipe, and returns a
+prop that has been adjusted such that it fits given a weird criteria; default is hand angles being equal.
+VS3D.conform(new VS3D.Prop(),{orient: 180, mode: VS3D.DIAMOND, recipe: "flower", petals: 1});
+
+// that there's a strange beast.  it gets *a* job done, for sure.  is there another way to achieve that thing?
+
+// well, first off we can try to get "nofit" back in there.  that fixes part of the thing.
+// the other thing is handling entry.  so...for that, the most straightforward way is to pass an "entry" argument I guess.  you still need that "revolve" method though...cycle(move,(s=>nearly(hand.r,entry))
