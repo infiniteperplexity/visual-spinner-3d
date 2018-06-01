@@ -114,7 +114,7 @@
 	}
 
 	function play() {
-		//player.play();
+		player.play();
 	}
 
 	function setupPlayer() {
@@ -268,10 +268,7 @@
 			} else if (recipe==="probend-4") {
 				move = {recipe: "toroid", orient: orient, bend: 3, harmonics: -4, direction: dir, p: p};
 			} else if (recipe==="pendulum") {
-				if (VS3D.angle$nearly(angle, orient-VS3D.SPLIT)) {
-					prop.setHeadAngle(orient, p);
-				}
-				move = {recipe: "pendulum", orient: orient, direction: dir, p: p};
+				move = {recipe: "pendulum", orient: orient, direction: dir, p: p, nofit: true, entry: angle};
 			} else if (recipe==="1.5") {
 				move = {recipe: "pendulum", orient: orient, onepointfive: true, direction: dir, p: p};
 			};

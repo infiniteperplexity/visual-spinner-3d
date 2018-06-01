@@ -902,16 +902,15 @@ VS3D = function() {
 		}
 		if (known.x0 && known.x1) {
 			if (!known.spin) {
-				// try like heck to pick a good default
 				let trend = 0;
 				if (known.v0) {
-					trend+=Math.sign(v0);
+					trend+=(zeroish(v0) ? 0 : Math.sign(v0));
 				}
 				if (known.v1) {
-					trend+=Math.sign(v1);
+					trend+=(zeroish(v1) ? 0 : Math.sign(v1));
 				}
 				if (known.a) {
-					trend+=Math.sign(a);
+					trend+=(zeroish(a) ? 0 : Math.sign(a));
 				}
 				if (trend>0) {
 					spin = +1;
@@ -925,8 +924,11 @@ VS3D = function() {
 					} else {
 						spin = -1;
 					}
-				} else {
-					if ((x1-x0)*UNIT<=Math.PI) {
+				} else if (x1<x0) {
+					if (angle$nearly(x1,0)&&angle$nearly(x0,270)) {
+							console.log("heya there");
+						}
+					if ((x0-x1)*UNIT<=Math.PI) {
 						spin = -1;
 					} else {
 						spin = +1;

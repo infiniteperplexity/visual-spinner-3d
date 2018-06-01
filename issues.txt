@@ -4,6 +4,9 @@ Engine:
 - Are defaults injected in the right places?
 - Should extend() wrap around?
 
+Bugs:
+- Solver should prefer to spin the shorter route.
+
 Apps:
 - Make orientation menus actually work.
 - Get multi-view working.
