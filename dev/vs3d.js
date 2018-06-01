@@ -77,6 +77,9 @@ VS3D = function() {
 	const ISOBEND = VS3D.ISOBEND = 1;
 	const ANTIBEND = VS3D.ANTIBEND = -1;
 
+	const _WALL = VS3D._WALL = plane(0,0,1);
+	const _WHEEL = VS3D._WHEEL = plane(-1,0,0);
+	const _FLOOR = VS3D._FLOOR = plane(0,1,0);
 	// diagonal planes, mostly for testing
 	function almost(n) {
 		return Math.sqrt(1-n**2);
@@ -535,9 +538,9 @@ VS3D = function() {
 		// do the same with GRIP?
 		head = vector$spherify(vector$rotate(headv,bent,tangent));
 		// hacky solution
-		if (p.y===-1) {
-			twist+=90;
-		}
+		// if (p.y===-1) {
+		// 	twist+=90;
+		// }
 		return {
 			body: body,
 			pivot: pivot,
@@ -697,7 +700,7 @@ VS3D = function() {
 				if (fitted[node].m==="linear" || fitted[node].la!==undefined || fitted[node].vl!==undefined || fitted[node].vl1!==undefined || fitted[node].al!==undefined) {
 					let {vl1: vl, la: la} = moments_linear({...prev[node], beats: prev.beats});
 					// !!! we probably need a better way of doing this...
-					vl*=90;
+					vl*=BEAT;
 					moments[node] = {vl: vl, la: la};
 				} else {
 					let {va1: va, vr1: vr} =  moments_angular({...prev[node], beats: prev.beats});

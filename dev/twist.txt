@@ -1,17 +1,44 @@
 WHXFL:
-0: 225 :      bearing 90, angle 90.\par
-45: 234~
+0: 225		90, 90
+45: 234~	60, 305
+90: 270		45, 0
+135: 306~	60, 55
+180: 315	90, 90
+
+181: 134~	269, 271
+225: 126~	240, 305
+270: 90		225, 0		
+315: 54~ 	240, 55
+359: 45~	269 89
+
+WHXfl:
+0: 190~
+45: 190~
 90: 270
-135: 306~
-180: 315
+135: 350~
+180: 350~
+181: 170~
+225: 170~	
+270: 90~
+315: 10~
+359: 10~
 
-181: 134~
-225: 126~
+whXFL:
+0: 260
+45: 265
+90:	270
+135: 275
+180: 275
+181: 95
+225: 95
 270: 90
-315: 54~
-359: 45~
+315: 85
+359: 80
 
-
+Floor toggles at 181 as well.
+WHEEL and WALL don't toggle at 181.
+FLOOR is actually -90 in the front half...and yes, _FLOOR reverses that.
+Likewise, _WALL and _WHEEL flip their things.
 
 So that's interesting...we've got differences of 36 and then 9 between the diagonals and the cardinals on one side.
 But then this big huge gap after the z-flip.

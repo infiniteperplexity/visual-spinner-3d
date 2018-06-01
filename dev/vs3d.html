@@ -11,9 +11,12 @@
 <script src="vs3d-render.js"></script>
 <script>
 	let renderer, player;
-	let p = VS3D.WHXFL;
+	let p = VS3D.WHXfl;
+	let a = 225;
+	let t = 165;
 	//let red = VS3D.snapto({hand: {a: 0}, head: {a: 0}, p: p, twist: 225});
-	let red = VS3D.snapto({hand: {a: 359}, head: {a: 359}, p: p, twist: 45});
+	let red = VS3D.snapto({hand: {a: a}, head: {a: a}, p: p, twist: t});
+	console.log(red.head);
 	//let move = {recipe: "flower", petals: 0, p: VS3D.WHXFL};
 	function init() {	
 		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
