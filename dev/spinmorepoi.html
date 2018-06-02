@@ -39,7 +39,7 @@
 		align: ["UP","UP","UP","UP"],
 		orient: ["UP","UP","UP","UP"],
 		direction: ["CW","CW","CCW","CCW"],
-		move: ["extension","antispin3","extension","antispin3"]
+		move: ["probend2","antispin3","extension","antispin3"]
 	};
 
 	let menus = {
@@ -118,7 +118,7 @@
 	}
 
 	function play() {
-		player.play();
+		//player.play();
 	}
 
 	function setupPlayer() {
@@ -255,8 +255,8 @@
 			} else if (recipe==="antibend4b") {
 				move = {recipe: "toroid", mode: BOX, bend: -1, harmonics: 4};
 			} else if (recipe==="probend2") {
-				move = {recipe: "toroid", bend: 3, harmonics: 2};
-			} else if (recipe==="shim_probend4") {
+				move = {recipe: "toroid", bend: -1, harmonics: 2};
+			} else if (recipe==="probend4") {
 				move = {recipe: "toroid", bend: 3, harmonics: 4};
 			} else if (recipe==="isobend-2") {
 				move = {recipe: "toroid", bend: 1, harmonics: -2};
@@ -279,8 +279,8 @@
 			} else if (recipe==="1.5") {
 				move = {recipe: "pendulum", onepointfive: true};
 			};
-			move.nofit = true;
-			move.entry = angle;
+			//move.nofit = true;
+			//move.entry = angle;
 			move.orient = orient;
 			move.p = p;
 			move.direction = dir;

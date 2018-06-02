@@ -540,6 +540,9 @@ VS3D = function() {
 		let tangent = vector$cross(axis,p);
 		let twist = move.twist + move.vt*t*SPEED;
 		let bent = move.bent + move.vb*t*SPEED;
+		if (move.vb===-2) {
+			console.log("testing");
+		}
 		headv = sphere$vectorize(head); 
 		// do the same with GRIP?
 		head = vector$spherify(vector$rotate(headv,bent,tangent));
