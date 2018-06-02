@@ -925,9 +925,6 @@ VS3D = function() {
 						spin = -1;
 					}
 				} else if (x1<x0) {
-					if (angle$nearly(x1,0)&&angle$nearly(x0,270)) {
-							console.log("heya there");
-						}
 					if ((x0-x1)*UNIT<=Math.PI) {
 						spin = -1;
 					} else {

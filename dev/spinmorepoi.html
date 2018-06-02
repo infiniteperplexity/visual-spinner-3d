@@ -32,9 +32,7 @@
 <script src="vs3d-render.js"></script>
 <script>
 	let debug = VS3D.debug;
-
 	let renderer, player;
-
 	let defaults = {
 		model: ["poi","poi","poi","poi"],
 		plane: ["WALL","WALL","WALL","WALL"],
@@ -64,11 +62,10 @@
 			{txt: "Left", value: "LEFT"}
 		],
 		orients: [
-			// {txt: "Up", value: "UP"},
-			// {txt: "Right", value: "RIGHT"},
-			// {txt: "Down", value: "DOWN"},
-			// {txt: "Left", value: "LEFT"}
-			{txt: "(placeholder)", value: "UP"}
+			{txt: "Up", value: "UP"},
+			{txt: "Right", value: "RIGHT"},
+			{txt: "Down", value: "DOWN"},
+			{txt: "Left", value: "LEFT"}
 		],
 		directions: [
 			{txt: "Clockwise", value: "CW"},
@@ -99,7 +96,11 @@
 			{txt: "Pro-Bend Toroid", value: "probend2"},
 			{txt: "Iso-Bend Toroid (Backward)", value: "isobend-4"},
 			{txt: "Anti-Bend Toroid (Backward)", value: "antibend-4"},
-			{txt: "Pro-Bend Toroid (Backward)", value: "probend-2"}
+			{txt: "Pro-Bend Toroid (Backward)", value: "probend-2"},
+			{txt: "Iso-Bend Toroid (Box)", value: "isobend4b"},
+			{txt: "Anti-Bend Toroid (Box)", value: "antibend4b"},
+			{txt: "Iso-Bend Toroid (Back Box)", value: "isobend-4b"},
+			{txt: "Anti-Bend Toroid (Back Box)", value: "antibend-4b"}
 		]
 	};
 
@@ -117,7 +118,7 @@
 	}
 
 	function play() {
-		//player.play();
+		player.play();
 	}
 
 	function setupPlayer() {
@@ -179,13 +180,20 @@
 		setMoves();
 	}
 
-	function setMoves() {
+	function setMoves(e) {
+		let chosen = (e) ? e.target.id : "";
 		for (let i=0; i<4; i++) {
 			let model = document.getElementById("model"+i).value;
 			let plane = document.getElementById("plane"+i).value;
 			let align = document.getElementById("align"+i).value;
+			let oriented = document.getElementById("orient"+i).value;
 			let direction = document.getElementById("direction"+i).value;
 			let recipe = document.getElementById("move"+i).value;
+			// special overrides
+			if (chosen==="move"+i && ["pendulum","1.5"].includes(recipe)) {
+				oriented = "DOWN";
+				document.getElementById("orient"+i).value = "DOWN";
+			}
 			let prop = player.props[i];
 			if (prop.model!==model) {
 				prop = new VS3D.PropWrapper(prop.prop, {color: prop.color, model: model, nudged: prop.nudged});
@@ -194,83 +202,88 @@
 			let move;
 			let dir = VS3D[direction];
 			let angle = VS3D[align];
+			let orient = VS3D[oriented];
 			let p = VS3D[plane];
-			let start = VS3D.snapto({hand: {a: angle}, head: {a: angle}, p: p});
+			let {SPLIT, BOX, DIAMOND} = VS3D;
 			prop.setHeadAngle(angle, p);
 			prop.setHandAngle(angle, p);
 			if (recipe==="extension") {
-				move = {recipe: "flower", orient: angle, petals: 0, direction: dir, p: p};
+				move = {recipe: "flower", petals: 0};
 			} else if (recipe==="pointiso") {
-				move = {recipe: "flower", mode: orient: angle, petals: 0, direction: dir, p: p};
+				prop.setHeadAngle(angle+SPLIT,p);
+				move = {recipe: "flower", mode: BOX, petals: 0};
 			} else if (recipe==="inspin1") {
-				move = {recipe: "flower", orient: angle, petals: 1, direction: dir, p: p};
+				move = {recipe: "flower", petals: 1};
 			} else if (recipe==="inspin2") {
-				move = {recipe: "flower", orient: angle, petals: 2, direction: dir, p: p};
+				move = {recipe: "flower", petals: 2};
 			} else if (recipe==="inspin4") {
-				move = {recipe: "flower", orient: angle, petals: 4, direction: dir, p: p};
+				move = {recipe: "flower", petals: 4};
 			} else if (recipe==="inspin4b") {
-				prop.setHeadAngle(angle+VS3D.SPLIT,p);
-				move = {recipe: "flower", orient: angle, petals: 4, direction: dir, p: p};
+				move = {recipe: "flower", petals: 4};
 			} else if (recipe==="antispin2") {
-				move = {recipe: "flower", orient: angle, petals: 2, spin: -1, direction: dir, p: p};
+				move = {recipe: "flower", petals: 2, spin: -1};
 			} else if (recipe==="antispin3") {
-				move = {recipe: "flower", orient: angle, petals: 3, spin: -1, direction: dir, p: p};
+				move = {recipe: "flower", petals: 3, spin: -1};
 			} else if (recipe==="antispin4") {
-				move = {recipe: "flower", orient: angle, petals: 4, spin: -1, direction: dir, p: p};
+				move = {recipe: "flower", petals: 4, spin: -1};
 			} else if (recipe==="antispin4b") {
-				prop.setHeadAngle(angle+VS3D.SPLIT,p);
-				move = {recipe: "flower", orient: angle, petals: 4, spin: -1, direction: dir, p: p};
+				move = {recipe: "flower", mode: BOX, petals: 4, spin: -1};
 			} else if (recipe==="capin") {
-				move = {recipe: "ccap", orient: angle, direction: dir, p: p};
+				move = {recipe: "ccap"};
 			} else if (recipe==="capanti") {
-				move = {recipe: "ccap", spin: -1, orient: angle, direction: dir, p: p};
+				move = {recipe: "ccap", spin: -1};
 			} else if (recipe==="iso") {
-				prop.setHeadAngle(angle+VS3D.SPLIT, p);
-				prop.setHandRadius(0.5);
-				move = {recipe: "isolation", orient: angle, direction: dir, p: p};
+				move = {recipe: "isolation"};
 			} else if (recipe==="cateye") {
-				prop.setHeadAngle(angle+VS3D.SPLIT, p);
-				prop.setHandRadius(0.5);
-				move = {recipe: "isolation", direction: dir, orient: angle, spin: -1, p: p};
+				move = {recipe: "isolation", spin: -1};
 			} else if (recipe==="hext") {
-				prop.setHandRadius(0.5);;
-				move = {recipe: "isolation", direction: dir, p: p};
+				move = {recipe: "isolation", mode: DIAMOND};
 			} else if (recipe==="lext") {
-				move = {recipe: "snake", orient: angle, direction: dir, p: p};
+				move = {recipe: "snake"};
 			} else if (recipe==="liso") {
-				move = {recipe: "snake", orient: angle, harmonics: 3, ovalness: 0.5, direction: dir, p: p};
+				move = {recipe: "snake", harmonics: 3, ovalness: 0.5};
 			} else if (recipe==="isobend2") {
-				move = {recipe: "toroid", orient: angle, bend: 1, harmonics: 2, direction: dir, p: p};
+				move = {recipe: "toroid", bend: 1, harmonics: 2};
 			} else if (recipe==="isobend4") {
-				move = {recipe: "toroid", orient: angle, bend: 1, harmonics: 4, direction: dir, p: p};
+				move = {recipe: "toroid", bend: 1, harmonics: 4};
+			} else if (recipe==="isobend4b") {
+				move = {recipe: "toroid", mode: BOX, bend: 1, harmonics: 4};
 			} else if (recipe==="antibend2") {
-				move = {recipe: "toroid", orient: angle, bend: -1, harmonics: 2, direction: dir, p: p};
+				move = {recipe: "toroid", bend: -1, harmonics: 2};
 			} else if (recipe==="antibend4") {
-				move = {recipe: "toroid", orient: angle, bend: -1, harmonics: 4, direction: dir, p: p};
+				move = {recipe: "toroid", bend: -1, harmonics: 4};
+			} else if (recipe==="antibend4b") {
+				move = {recipe: "toroid", mode: BOX, bend: -1, harmonics: 4};
 			} else if (recipe==="probend2") {
-				move = {recipe: "toroid", orient: angle, bend: 3, harmonics: 2, direction: dir, p: p};
-			} else if (recipe==="probend4") {
-				move = {recipe: "toroid", orient: angle, bend: 3, harmonics: 4, direction: dir, p: p};
+				move = {recipe: "toroid", bend: 3, harmonics: 2};
+			} else if (recipe==="shim_probend4") {
+				move = {recipe: "toroid", bend: 3, harmonics: 4};
 			} else if (recipe==="isobend-2") {
-				move = {recipe: "toroid", orient: angle, bend: 1, harmonics: -2, direction: dir, p: p};
+				move = {recipe: "toroid", bend: 1, harmonics: -2};
 			} else if (recipe==="isobend-4") {
-				move = {recipe: "toroid", orient: angle, bend: 1, harmonics: -4, direction: dir, p: p};
+				move = {recipe: "toroid", bend: 1, harmonics: -4};
+			} else if (recipe==="isobend-4b") {
+				move = {recipe: "toroid", mode: BOX, bend: 1, harmonics: -4};
 			} else if (recipe==="antibend-2") {
-				move = {recipe: "toroid", orient: angle, bend: -1, harmonics: -2, direction: dir, p: p};
+				move = {recipe: "toroid", bend: -1, harmonics: -2};
 			} else if (recipe==="antibend-4") {
-				move = {recipe: "toroid", orient: angle, bend: -1, harmonics: -4, direction: dir, p: p};
+				move = {recipe: "toroid", bend: -1, harmonics: -4};
+			} else if (recipe==="antibend-4b") {
+				move = {recipe: "toroid", mode: BOX, bend: -1, harmonics: -4};
 			} else if (recipe==="probend-2") {
-				move = {recipe: "toroid", orient: angle, bend: 3, harmonics: -2, direction: dir, p: p};
+				move = {recipe: "toroid", bend: 3, harmonics: -2};
 			} else if (recipe==="probend-4") {
-				move = {recipe: "toroid", orient: angle, bend: 3, harmonics: -4, direction: dir, p: p};
+				move = {recipe: "shim_toroid", bend: 3, harmonics: -4};
 			} else if (recipe==="pendulum") {
-				// if (align==="UP") {
-				// 	prop.setHeadAngle(VS3D.DOWN, p);
-				// }
-				move = {recipe: "pendulum", direction: dir, p: p, nofit: true, entry: angle};
+				move = {recipe: "pendulum"};
 			} else if (recipe==="1.5") {
-				move = {recipe: "pendulum", onepointfive: true, direction: dir, p: p};
+				move = {recipe: "pendulum", onepointfive: true};
 			};
+			move.nofit = true;
+			move.entry = angle;
+			move.orient = orient;
+			move.p = p;
+			move.direction = dir;
 			prop.moves[0] = move;
 		}
 		player.update();

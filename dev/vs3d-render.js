@@ -31,7 +31,7 @@ VS3D = (function(VS3D) {
 		light.position.set(0,0,100);
 		this.scene.add(light);
 		light = new THREE.PointLight(0xffffff);
-		let gcolor = 0x303030;
+		let gcolor = 0x202020;
 		let grid = new THREE.GridHelper(10, 10, gcolor, gcolor);
 		grid.material.tranparent = true;
 		grid.material.opacity = 0.2;

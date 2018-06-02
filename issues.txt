@@ -5,10 +5,10 @@ Engine:
 - Should extend() wrap around?
 
 Bugs:
-- Solver should prefer to spin the shorter route.
+- Probend toroids look wrong, unless we use shims.  Why???
+
 
 Apps:
-- Make orientation menus actually work.
 - Get multi-view working.
 - Comborific.
 - Integrate it with React.
@@ -20,14 +20,3 @@ Ideas:
 	- Positions are non-unique.
 	- Prop can have twist and bend natively.
 	- Against this, we have this general idea that...like...props are for reading, moves are for writing?  Certainly it gets harder when you don't treat it that way.
-
-
-
-// so this guy right here...takes a prop that is oriented a certain way, and a recipe, and returns a
-prop that has been adjusted such that it fits given a weird criteria; default is hand angles being equal.
-VS3D.conform(new VS3D.Prop(),{orient: 180, mode: VS3D.DIAMOND, recipe: "flower", petals: 1});
-
-// that there's a strange beast.  it gets *a* job done, for sure.  is there another way to achieve that thing?
-
-// well, first off we can try to get "nofit" back in there.  that fixes part of the thing.
-// the other thing is handling entry.  so...for that, the most straightforward way is to pass an "entry" argument I guess.  you still need that "revolve" method though...cycle(move,(s=>nearly(hand.r,entry))

@@ -102,13 +102,16 @@ VS3D = (function(VS3D) {
 			if (spin===ANTISPIN) {
 				move = move.slice(2).concat(move.slice(0,2));
 			}
-			// if (entry!==undefined) {
-			// 	move = realign(move,(s)=>angle$nearly(head.a,entry));
-			// }
+			if (entry!==undefined) {
+				if (angle$nearly(entry, orient+SPLIT)) {
+					move = move.slice(2).concat(move.slice(0,2));
+				} else {
+					move = realign(move,(s)=>angle$nearly(s.hand.a,entry));
+				}
+			}
 			return move;
 		}
 	);
-	// so I don't break things while working on variants
 	recipe(
 		"pendulum",
 		{
@@ -119,7 +122,6 @@ VS3D = (function(VS3D) {
 		},
 		options => {
 			let {beats, speed, hand, head, spin, orient, direction, onepointfive, hybrid, entry} = options;
-			// floor plane pendulums don't work right...is that okay?
 			let segment = Move(merge(options, {
 				beats: beats/4,
 				hand: {a: orient, va: direction*speed},
@@ -156,7 +158,7 @@ VS3D = (function(VS3D) {
 			}));
 			let move = extend([segment,{},{},{}]);
 			if (entry!==undefined) {
-				move = realign(move,(s)=>angle$nearly(hand.a,entry));
+				move = realign(move,(s)=>angle$nearly(s.hand.a,entry));
 			}
 			return move;
 		}
@@ -165,25 +167,23 @@ VS3D = (function(VS3D) {
 	recipe(
 		"isolation",
 		{
-			hand: {r: 0.5},
 			mode: BOX
 		},
 		options => {
 			let {beats, mode, speed, hand, head, spin, orient, direction, entry} = options;
-			let hangle = mode;
+			let hangle = (mode!==undefined) ? orient+mode : head.a;
 			if (spin===ANTISPIN) {
 				// mode is not a very intuitive parameter for cateyes
 				hangle = -hangle;
 			}
-			// should r be a harder-than-usual default?
 			let segment = Move(merge(options,{
 				beats: beats/4,
-				hand: {a: orient, va: direction*speed},
+				hand: {r: 0.5, a: orient, va: direction*speed},
 				head: {a: hangle, va: spin*direction*speed}
 			}));
 			let move = extend([segment,{},{},{}])
 			if (entry!==undefined) {
-				move = realign(move,(s)=>angle$nearly(hand.a,entry));
+				move = realign(move,(s)=>angle$nearly(s.hand.a, entry));
 			}
 			return move;
 		}
@@ -208,9 +208,30 @@ VS3D = (function(VS3D) {
 			}));
 			let move = extend([segment,{},{},{}]);
 			if (entry!==undefined) {
-				move = realign(move,(s)=>angle$nearly(hand.a,entry));
+				move = realign(move,(s)=>angle$nearly(s.hand.a,entry));
 			}
 			return move;
+		}
+	);
+
+	recipe(
+		"toroid",
+		{
+			bend: ISOBEND,
+			pitch: FORWARD,
+			harmonics: 4
+		},
+		options => {
+			let {beats, mode, speed, hand, head, bend, harmonics, orient, direction, pitch, p, entry} = options;
+			//mode is a "soft default"
+			let hangle = (mode!==undefined) ? orient+mode : orient+head.a-hand.a;
+			let segment = Move(merge(options,{
+				beats: beats,
+				vb: -pitch*harmonics,
+				hand: {a: orient, va: direction*speed},
+				head: {a: hangle, va: bend*direction*speed}
+			}));
+			return [segment];
 		}
 	);
 
@@ -218,11 +239,10 @@ VS3D = (function(VS3D) {
 		"snake",
 		{
 			harmonics: 1,
-			ovalness: 0	
+			ovalness: 0.01	
 		},
 		options => {
 			let {beats, mode, speed, hand, head, harmonics, orient, direction, ovalness, p, entry} = options;
-			mode = DIAMOND; // for now...
 			let hangle = orient+mode;
 			let segment = Move(merge(options,{
 				beats: beats/4,
@@ -235,9 +255,9 @@ VS3D = (function(VS3D) {
 				{hand: {r1: ovalness, a1: orient-QUARTER}},
 				{hand: {r1: hand.r, vl1: 0, a1: orient}}
 			]);
-			// if (entry!==undefined) {
-				// move = realign(move,(s)=>angle$nearly(hand.a,entry));
-			// }
+			if (entry!==undefined) {
+				move = realign(move,(s)=>angle$nearly(s.hand.a,entry));
+			}
 			return move;
 		}
 	);
