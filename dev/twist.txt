@@ -72,3 +72,41 @@ Alright.  So what I'm thinking is that WALL and WHEEL and everything in between 
 There's a 90-degree span between FLOOR and WHEEL at 180.  It ranges from 270 to 360.  And when the plane is halfway between, the peak is halfway between.  Ranges from 45 to -45.  So...square the z component and multiply by 45, that's the amplitude.
 
 Okay this is looking a lot like the negative cosine.  So...270-cos(angle)*90*zsquared
+
+~
+
+Okay, here's from someone who probably has the right answer.
+
+1) We're using z as up/down.
+2) We're looking at the longitude line that's q radians from 1,0,0, which happens to be bearing b
+3) Great circle is defined by normal vector, with weird restriction that z is positive.  Wait, that's y, so not so weird.
+4) Math.PI - Math.acos
+
+
+let bearing;
+let {x, y, z};
+let angle = (Math.PI-Math.acos(arcbounds(
+	Math.cos(bearing*UNIT)*z - Math.sin(bearing*UNIT)*x
+	/ (x*x+y*y+z*z)
+)))/UNIT;
+
+That seems wrong for the equator, except...
+The angle that the two great circles cut out should be pi minus the angle between two vectors perpendicular to planes containing those great circles.
+
+Then the plane through the origin and containing the longitude line you care about is
+-(sin q)x+(cos q)y=0,
+so a vector perpendicular to that plane is:
+<-sin q, cos q,0>.
+
+The plane through the origin containing the great circles is
+ax+by+cz=0,
+so a vector perpendicular to that plane is <a,b,c>.
+
+For any two vectors <u1,u2,u3> and <v1,v2,v3>, neither of which are zero, the angle between them in radians is:
+arccos[(u1v1+u2v2+u3v3)/([u1^2+u2^2+u3^2][v1^2+v2^2+v3^2])].
+Now put <u1,u2,u3>=<-sin q,cos q,0> and <v1,v2,v3>=<a,b,c> to get the formula I said.
+
+
+I may be misunderstanding something about the setup, but that equation doesn't seem to work for the equator.  The equator should cut out the same angle for every longitude line, but as you go around the equator, q is changing while all the other terms in the equation stay the same.  
+
+

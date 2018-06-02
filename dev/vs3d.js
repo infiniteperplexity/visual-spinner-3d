@@ -155,9 +155,8 @@ VS3D = function() {
 	// nearly, but for angles
 	function angle$nearly(a1, a2, delta) {
 		a1 = angle(a1);
-		a2 = 
-		angle(a2);
-		return (nearly(a1,a2,delta) || nearly(a1+1,a2,delta) || nearly(a1,a2+1,delta));
+		a2 = angle(a2);
+		return (nearly(a1,a2,delta) || nearly(a1+2*Math.PI/UNIT,a2,delta) || nearly(a1,a2+2*Math.PI/UNIT,delta));
 	}
 	// zeroish, but for angles
 	function angle$zeroish(a, delta) {
@@ -284,7 +283,7 @@ VS3D = function() {
 			return ZAXIS;
 		}
 		// for all others, look for its two intersections with the wheel plane
-		// includes WAXWL and WAWHFL
+		// includes WHXFL and WAWHFL
 		let cross = vector$unitize(vector$cross(vec, WHEEL));
 		// force positive z
 		if (cross.z<0) {
@@ -348,13 +347,34 @@ VS3D = function() {
 		return v;
 	}
 	function angle$spherify(ang, p) {
+		ang = angle(ang);
 		// spherifying an angle to exactly zero tends to cause rounding issues
 		if (angle$nearly(ang,0,SMALL)) {
 			ang = TINY;
 			//ang = SMALL;
 		}
-		return vector$spherify(angle$vectorize(ang, p));
+		let v = angle$vectorize(ang, p);
+		let s = vector$spherify(v);
+		if (p.y!==0 && ang>Math.PI/UNIT) {
+			s.a = angle(-s.a);
+			s.b = angle(s.b-Math.PI/UNIT);
+		}
+		return s;
 	}
+
+	// console.log("test for cusps in angle$spherify");
+	// for (let i=0; i<360; i++) {
+	// 	let p = VS3D.WHXFL;
+	// 	let b1 = angle$spherify(i,p);
+	// 	let b2 = angle$spherify(i+1,p);
+	// 	if (!angle$nearly(b1.b, b2.b,10)) {
+	// 		console.log("cusp at "+angle(i)+", "+angle(i+1));
+	// 		console.log(Math.round(b1.a), Math.round(b1.b));
+	// 		console.log(Math.round(b2.a), Math.round(b2.b));
+	// 	}
+	// }
+
+
 	function angle$rotate(s, ang, p) {
 		p = p || WALL;
 		let {r, a, b} = s;
@@ -366,6 +386,23 @@ VS3D = function() {
 		let v = vector$unitize(vector$rotate(projected, ang, p));
 		s = vector$spherify(v);
 		return {r: r, ...s}
+	}
+
+
+	// takes a bearing and a plane
+	// returns the angle at that bearing between the plane and the longitude lines
+	function angle$longitude(b, p) {
+		p = p || WALL;
+		let {x, y, z} = p;
+		// thanks to Jason Ferguson for providing this formula
+		let a = Math.PI-Math.acos(arcbounds(
+			Math.cos(b*UNIT)*z - Math.sin(b*UNIT)*x
+			/ Math.sqrt(x*x+y*y+z*z)
+		));
+		if (y<0) {
+			a-=(Math.PI);
+		}
+		return angle(a/UNIT);
 	}
 
 	// create a new, default prop
@@ -493,14 +530,15 @@ VS3D = function() {
 			bent: bent
 		};
 		let fitted = fit(prop, prp);
-		return spin(prp,0);
+		return spin(prp,0,"dummy");
 	}
 
 	// takes a move and a time, returns a prop
-	function spin(move, t) {
+	// dummy is just a convenience to distinguish "real" spinning from sockets and such
+	function spin(move, t, dummy) {
 		if (move.recipe) {
 			console.log("getting here is usually a bad thing");
-			return spin(build(move, new Prop()),t);
+			return spin(build(move, new Prop()),t,dummy);
 		}
 		if (Array.isArray(move)) {
 			if (move.length===0) {
@@ -511,7 +549,7 @@ VS3D = function() {
 			while (past<=t) {
 				let ticks = beats(move[i])*BEAT || 1*BEAT;
 				if (past+ticks>=t) {
-					return spin(move[i], t-past);
+					return spin(move[i], t-past, dummy);
 				} else {
 					past+=ticks;
 					i=(i+1)%move.length;
@@ -536,32 +574,58 @@ VS3D = function() {
 		let hand = spin_node({beats: b, p: p, ...move.hand}, t);
 		let grip = spin_node({beats: b, p: p, ...move.grip}, t);
 		let head = spin_node({beats: b, p: p, ...move.head}, t);
+		if (!dummy) {
+			console.log("bearing: "+head.b);
+		}
 		let axis = vector$unitize(sphere$vectorize(head));
 		let tangent = vector$cross(axis,p);
 		let twist = move.twist + move.vt*t*SPEED;
 		let bent = move.bent + move.vb*t*SPEED;
-		if (move.vb===-2) {
-			console.log("testing");
-		}
-		headv = sphere$vectorize(head); 
+		// if (move.vb===-2) {
+		// 	console.log("testing");
+		// }
+		// headv = sphere$vectorize(head); 
 		// do the same with GRIP?
-		head = vector$spherify(vector$rotate(headv,bent,tangent));
+		// head = vector$spherify(vector$rotate(headv,bent,tangent));
 		// handle default TWIST
-		let angle = sphere$planify(head,p);
-		// WHEEL, WALL, and WAXWH are sui generis special cases, I think
-		if (p.y===0) {
-			twist+=0;
-		// FLOOR is a special case of the general case
-		} else if (Math.abs(p.y)===1) {
-			twist+=(p.y*90);
-			if (angle>180) {
-				twist-=180;
-			}
+			// should account for BENT eventually
+			// interesting question: should this account for direction?
+		let bearing = head.b;
+		// if (bearing<90) {
+		// 	bearing+=180;
+		// }
+		// if (p.y!==0 && head.a>180) {
+		// 	if (!dummy) {
+		// 		console.log(bearing);
+		// 	}
+		// 	bearing-=180;
+		// 	if (!dummy) {
+		// 		console.log(bearing);
+		// 	}
+		// }
+
+
+		let twangle = angle$longitude(bearing,p);
+		// if (p.y!==0 && head.a>180) {
+		// 	twangle-=180;
+		// }
+		if (!dummy) {
+			// console.log(twangle);
 		}
-		// have not yet solved the general case
-		// twist = 270-Math.cos(angle*UNIT)*90*(1-p.y**2) + ((angle>180) ? 180 : 0);
-		// if (angle>180) {
-		// 	twist+=180;
+		// if (p.y!==0 && bearing>181) {
+		// 	twangle-=180;
+		// } 
+		twist+=twangle;
+		// this flips at bearing abs>90
+		// WHEEL, WALL, and WAXWH are sui generis special cases, I think
+		// if (p.y===0) {
+		// 	twist+=0;
+		// // FLOOR is a special case of the general case
+		// } else if (Math.abs(p.y)===1) {
+		// 	twist+=(p.y*90);
+		// 	if (angle>180) {
+		// 		twist-=180;
+		// 	}
 		// }
 		return {
 			body: body,
@@ -590,7 +654,7 @@ VS3D = function() {
 		if (Array.isArray(move)) {
 			return fits(prop, move[0]);
 		}
-		let m = spin(move, 0);
+		let m = spin(move, 0, "dummy");
 		return (	sphere$nearly(sum_nodes(prop, HAND),sum_nodes(m), HAND), SMALL)
 					&& sphere$nearly(sum_nodes(prop, HEAD),sum_nodes(m, HEAD), SMALL);
 	}
@@ -692,7 +756,7 @@ VS3D = function() {
 			return socket(move[0]);
 		}
 		move.beats = move.beats || 1;
-		return spin(move, move.beats*BEAT);
+		return spin(move, move.beats*BEAT, "dummy");
 	}
 
 
@@ -797,6 +861,8 @@ VS3D = function() {
 		let r = args.r + args.vr*t + args.ar*t*t/2;
 		let a = args.a + args.va*t*SPEED + args.aa*t*t*SPEED*SPEED/2;
 		let p = args.p;
+		// console.log("angle: " +a);
+		// console.log(p);
 		return {...angle$spherify(a, p), r: r};
 	}
 
@@ -1091,13 +1157,13 @@ VS3D = function() {
 	}
 	// should the callback be able to take cosmetic properties?
 	Player.prototype.render = function(wrappers, positions) {};
+
 	Player.prototype.goto = function(t) {
 		this.tick = t;
 		let positions = [];
 		for (let prop of this.props) {
 			try {
 				positions.push(prop.spin(this.tick));
-				//positions.push(spin(prop.prop, prop.moves, this.tick));
 			} catch (e) {
 				console.log("Error in player.goto");
 				console.log(prop);
@@ -1235,6 +1301,7 @@ VS3D = function() {
 	VS3D.angle$vectorize = angle$vectorize;
 	VS3D.angle$spherify = angle$spherify;
 	VS3D.angle$rotate = angle$rotate;
+	VS3D.angle$longitude = angle$longitude;
 	VS3D.Prop = Prop;
 	VS3D.Move = Move;
 	VS3D.spin = spin;

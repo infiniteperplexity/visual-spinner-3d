@@ -99,14 +99,10 @@ VS3D = (function(VS3D) {
 			shapes.rotateY(+prop[node].b*VS3D.UNIT);
 		}
 		// BEND should be handled elsewhere
-		
-		// handle TWIST (possibly this should go before GRIP?)
-		shapes.rotateOnAxis(axis,prop.twist*VS3D.UNIT);
+		let twist = prop.twist;
+		shapes.rotateOnAxis(axis,twist*VS3D.UNIT);
 		shapes.rotateY(-prop.head.b*VS3D.UNIT);
 		shapes.rotateZ(-prop.head.a*VS3D.UNIT);
-		
-		//shapes.rotateY(+prop.head.b*VS3D.UNIT);
-		// leave HEAD.R out of this for now
 	}
 
 	

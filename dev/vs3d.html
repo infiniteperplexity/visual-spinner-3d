@@ -10,16 +10,22 @@
 <script src="three.min.js"></script>
 <script src="vs3d-render.js"></script>
 <script>
+
+	let d = VS3D.DIAG;
 	let renderer, player;
 	let red = new VS3D.Prop();
-	//red = VS3D.nudge(red);
-	let move = VS3D.Move({hand: {a: 0, va: 1}, head: {a: 0, va: 1}});
+	// every WAXWH plane looks correct
+	//let p = VS3D.WAXfl;
+	//let p = VS3D.WAXFL;
+	// Now that I've fixed the -y issue, FLOOR is correct in the 1st half and wrong in the second.
+
+	let move = {recipe: "flower", petals: 0, p: p, nofit: true};
 	function init() {	
 		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
 		player = new VS3D.Player();
-		player.addProp(red,{model: "poi"});
-		player.props[0].setHandAngle(180);
-		player.props[0].setHeadAngle(180);
+		player.addProp(red,{model: "fan"});
+		// player.props[0].setHandAngle(180);
+		// player.props[0].setHeadAngle(180);
 		//player.addProp(blue, {color: "blue"});
 		player.props[0].moves.push(move);
 		//player.props[1].addMove(move2);
@@ -29,11 +35,6 @@
 		player.reset();
 		//player.goto(89);
 		//player.play();
-	}
-	function goto() {
-		let angle = 0;
-		let twist = 0;
-		// okay...I'm having a little trouble with something that should be simple...show this prop in this position with this twist.
 	}
 
 	let u = VS3D.UNIT;
