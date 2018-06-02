@@ -1,19 +1,17 @@
 Engine:
-- Figure out TWIST
 - Allow optional planes per node.
 - Are defaults injected in the right places?
 - Should extend() wrap around?
-- angle$spherify gives results that are correct for spherical coordinates, but sometimes flipped from how they would be useful.
-	- That's because it uses angle$vectorize and vector$spherify.  The plane gets erased one step before the conversion to spherical coordinates.
-
-Bugs:
-- Probend toroids look wrong, unless we use shims.  Why???
-
+- All breaks in angle$spherify are gone, but are there maybe still cusps?
 
 Apps:
 - Get multi-view working.
 - Comborific.
 - Integrate it with React.
+
+Bugs:
+- TWIST still looks wrong in parts of WHXFL plane.
+- Fan-based toroids flicker in certain spots.
 
 Ideas:
 - Make it so props use the same data structure as moves.
@@ -22,8 +20,3 @@ Ideas:
 	- Positions are non-unique.
 	- Prop can have twist and bend natively.
 	- Against this, we have this general idea that...like...props are for reading, moves are for writing?  Certainly it gets harder when you don't treat it that way.
-
-
-Okay, so the formula is totally correct.  The problem seems to be in how the spherify formula works...it flips the bearing for floor-ish moves when the angle is between 
-
-// uh oh...we seem to have some issue where it looks wrong even when there's no cusp, in WHXFL?  Could that have to do with the weird reference angles for those planes?  Eh...it really shouldn't, because we don't even look at those.

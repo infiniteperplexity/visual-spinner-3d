@@ -24,7 +24,6 @@ VS3D = (function(VS3D) {
 		el.appendChild(this.renderer.domElement);
 		this.scene = new THREE.Scene();
 		this.camera = new THREE.PerspectiveCamera(45, this.width/this.height, 0.1, 1000);
-		//this.camera.position.set(0,0,8);
 		this.camera.position.set(0,0,8);
 		this.scene.add(this.camera);
 		this.renderer.setClearColor(0x000000,1.0);
@@ -32,7 +31,7 @@ VS3D = (function(VS3D) {
 		light.position.set(0,0,100);
 		this.scene.add(light);
 		light = new THREE.PointLight(0xffffff);
-		let gcolor = 0x303030;
+		let gcolor = 0x202020;
 		let grid = new THREE.GridHelper(10, 10, gcolor, gcolor);
 		grid.material.tranparent = true;
 		grid.material.opacity = 0.2;
@@ -75,17 +74,17 @@ VS3D = (function(VS3D) {
 		// update all prop locations
 		for (let i=0; i<wrappers.length; i++) {
 			let idx = this.registry.indexOf(wrappers[i]);
-			this.update(this.models[idx], positions[i], i);
+			this.update(this.models[idx], positions[i], wrappers[i].nudged);
 		}
 		this.renderer.render(this.scene, this.camera);
 	}
 
 
-	ThreeRenderer.prototype.update = function(shapes, prop, i) {
-		// rotate and translate according to "body", "pivot", "helper", and "hand"
+	ThreeRenderer.prototype.update = function(shapes, prop, nudged) {
+		nudged = nudged || 0;
 		shapes.position.x = 0;
 		shapes.position.y = 0;
-		shapes.position.z = 0;
+		shapes.position.z = nudged;
 		shapes.rotation.x = 0;
 		shapes.rotation.y = 0;
 		shapes.rotation.z = 0;
@@ -100,14 +99,10 @@ VS3D = (function(VS3D) {
 			shapes.rotateY(+prop[node].b*VS3D.UNIT);
 		}
 		// BEND should be handled elsewhere
-		
-		// handle TWIST (possibly this should go before GRIP?)
-		shapes.rotateOnAxis(axis,prop.twist*VS3D.UNIT);
+		let twist = prop.twist;
+		shapes.rotateOnAxis(axis,twist*VS3D.UNIT);
 		shapes.rotateY(-prop.head.b*VS3D.UNIT);
 		shapes.rotateZ(-prop.head.a*VS3D.UNIT);
-		
-		//shapes.rotateY(+prop.head.b*VS3D.UNIT);
-		// leave HEAD.R out of this for now
 	}
 
 	
@@ -203,9 +198,10 @@ VS3D = (function(VS3D) {
 		let group = new THREE.Group();
 		group.add(ring);
 		for (var i=0; i<tines; i++) {
-			tine = new THREE.Mesh(
+			let c = (i===0) ? "gray" : this.colors(color);
+				tine = new THREE.Mesh(
 				new THREE.CylinderGeometry(0.05,0.05,0.8,8),
-				new THREE.MeshLambertMaterial({color: this.colors(color)})
+				new THREE.MeshLambertMaterial({color: this.colors(c)})
 			);
 			tine.rotateZ(-angle+i*angle);
 			tine.translateOnAxis(THREEY,0.6);

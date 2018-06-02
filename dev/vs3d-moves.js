@@ -215,27 +215,6 @@ VS3D = (function(VS3D) {
 	);
 
 	recipe(
-		"shim_toroid",
-		{
-			bend: ISOBEND,
-			pitch: FORWARD,
-			harmonics: 4
-		},
-		options => {
-			let {beats, mode, speed, hand, head, bend, harmonics, orient, direction, pitch, p, entry} = options;
-			//mode is a "soft default"
-			let hangle = (mode!==undefined) ? orient+mode : orient+head.a-hand.a;
-			let segment = Move(merge(options,{
-				beats: beats,
-				vb: -pitch*harmonics,
-				hand: {a: orient, va: direction*speed},
-				head: {a: hangle, va: bend*direction*speed}
-			}));
-			return [segment];
-		}
-	);
-
-	recipe(
 		"snake",
 		{
 			harmonics: 1,
@@ -243,21 +222,21 @@ VS3D = (function(VS3D) {
 		},
 		options => {
 			let {beats, mode, speed, hand, head, harmonics, orient, direction, ovalness, p, entry} = options;
-			let hangle = orient+mode;
+			// let's say there's no such thing as mode for now
 			let segment = Move(merge(options,{
 				beats: beats/4,
 				hand: {a: orient, r: hand.r, vl: 0, a1: orient+QUARTER*direction, r1: ovalness},
-				head: {a: hangle, va: speed*direction*harmonics}
+				head: {a: orient, va: speed*direction*harmonics}
 			}));
 			let move = extend([
 				segment,
 				{hand: {r1: hand.r,  a1: orient+SPLIT, vl1: 0}},
-				{hand: {r1: ovalness, a1: orient-QUARTER}},
+				{hand: {r1: ovalness, a1: orient-QUARTER*direction}},
 				{hand: {r1: hand.r, vl1: 0, a1: orient}}
 			]);
 			if (entry!==undefined) {
-				move = realign(move,(s)=>angle$nearly(s.hand.a,entry));
-			}
+				move = realign(move,(s)=>angle$nearly(s.hand.a,entry,SMALL));
+			}	
 			return move;
 		}
 	);

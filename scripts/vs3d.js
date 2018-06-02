@@ -77,6 +77,9 @@ VS3D = function() {
 	const ISOBEND = VS3D.ISOBEND = 1;
 	const ANTIBEND = VS3D.ANTIBEND = -1;
 
+	const _WALL = VS3D._WALL = plane(0,0,1);
+	const _WHEEL = VS3D._WHEEL = plane(-1,0,0);
+	const _FLOOR = VS3D._FLOOR = plane(0,1,0);
 	// diagonal planes, mostly for testing
 	function almost(n) {
 		return Math.sqrt(1-n**2);
@@ -152,9 +155,8 @@ VS3D = function() {
 	// nearly, but for angles
 	function angle$nearly(a1, a2, delta) {
 		a1 = angle(a1);
-		a2 = 
-		angle(a2);
-		return (nearly(a1,a2,delta) || nearly(a1+1,a2,delta) || nearly(a1,a2+1,delta));
+		a2 = angle(a2);
+		return (nearly(a1,a2,delta) || nearly(a1+2*Math.PI/UNIT,a2,delta) || nearly(a1,a2+2*Math.PI/UNIT,delta));
 	}
 	// zeroish, but for angles
 	function angle$zeroish(a, delta) {
@@ -224,6 +226,7 @@ VS3D = function() {
 		let c = (w*s*(1-cs)+t*z*cs+sq*(u*y-v*x)*sn)/t;
 		return vector(a,b,c);
 	}
+
 	// cross product of two vectors
 	function vector$cross(v1, v2) {
 		let {x: x1, y: y1, z: z1} = v1;
@@ -280,7 +283,7 @@ VS3D = function() {
 			return ZAXIS;
 		}
 		// for all others, look for its two intersections with the wheel plane
-		// includes WAXWL and WAWHFL
+		// includes WHXFL and WAWHFL
 		let cross = vector$unitize(vector$cross(vec, WHEEL));
 		// force positive z
 		if (cross.z<0) {
@@ -297,8 +300,7 @@ VS3D = function() {
 	// convert a spherical coordinate into a vector
 	function sphere$vectorize(s) {
 		let {r, a, b} = s;
-		// r = r || TINY; // should we trap zero here?
-		// a = a || TINY;
+		r = r || TINY;
 		let x = r*Math.sin(UNIT*a)*Math.cos(UNIT*b);
 		let z = r*Math.sin(UNIT*a)*Math.sin(UNIT*b);
 		let y = r*Math.cos(UNIT*a);
@@ -345,12 +347,34 @@ VS3D = function() {
 		return v;
 	}
 	function angle$spherify(ang, p) {
+		ang = angle(ang);
 		// spherifying an angle to exactly zero tends to cause rounding issues
 		if (angle$nearly(ang,0,SMALL)) {
-			ang = SMALL;
+			ang = TINY;
+			//ang = SMALL;
 		}
-		return vector$spherify(angle$vectorize(ang, p));
+		let v = angle$vectorize(ang, p);
+		let s = vector$spherify(v);
+		if (p.y!==0 && ang>Math.PI/UNIT) {
+			s.a = angle(-s.a);
+			s.b = angle(s.b-Math.PI/UNIT);
+		}
+		return s;
 	}
+
+	// console.log("test for cusps in angle$spherify");
+	// for (let i=0; i<360; i++) {
+	// 	let p = VS3D.WHXFL;
+	// 	let b1 = angle$spherify(i,p);
+	// 	let b2 = angle$spherify(i+1,p);
+	// 	if (!angle$nearly(b1.b, b2.b,10)) {
+	// 		console.log("cusp at "+angle(i)+", "+angle(i+1));
+	// 		console.log(Math.round(b1.a), Math.round(b1.b));
+	// 		console.log(Math.round(b2.a), Math.round(b2.b));
+	// 	}
+	// }
+
+
 	function angle$rotate(s, ang, p) {
 		p = p || WALL;
 		let {r, a, b} = s;
@@ -362,6 +386,23 @@ VS3D = function() {
 		let v = vector$unitize(vector$rotate(projected, ang, p));
 		s = vector$spherify(v);
 		return {r: r, ...s}
+	}
+
+
+	// takes a bearing and a plane
+	// returns the angle at that bearing between the plane and the longitude lines
+	function angle$longitude(b, p) {
+		p = p || WALL;
+		let {x, y, z} = p;
+		// thanks to Jason Ferguson for providing this formula
+		let a = Math.PI-Math.acos(arcbounds(
+			Math.cos(b*UNIT)*z - Math.sin(b*UNIT)*x
+			/ Math.sqrt(x*x+y*y+z*z)
+		));
+		if (y<0) {
+			a-=(Math.PI);
+		}
+		return angle(a/UNIT);
 	}
 
 	// create a new, default prop
@@ -446,6 +487,12 @@ VS3D = function() {
 	// !!!another way to parameterize would be snapto(fit(prop, args));
 	function snapto(args, prop) {
 		prop = prop || new Prop();
+		if (Array.isArray(args)) {
+			if (args.length===0) {
+				return prop;
+			}
+			return snapto(args[0],prop);
+		}
 		let p = args.p || WALL;
 		args.body = args.body || {};
 		args.pivot = args.pivot || {};
@@ -467,7 +514,6 @@ VS3D = function() {
 		head = merge(head, args.head);
 		// !!!! Might want to consider plane to decide default
 		let twist = (args.twist!==undefined) ? args.twist : prop.twist;
-		// twist = 0+90*p.z;
 		let bent = args.bent || 0;
 		let prp = {
 			body: body,
@@ -483,14 +529,15 @@ VS3D = function() {
 			bent: bent
 		};
 		let fitted = fit(prop, prp);
-		return spin(prp,0);
+		return spin(prp,0,"dummy");
 	}
 
 	// takes a move and a time, returns a prop
-	function spin(move, t) {
+	// dummy is just a convenience to distinguish "real" spinning from sockets and such
+	function spin(move, t, dummy) {
 		if (move.recipe) {
 			console.log("getting here is usually a bad thing");
-			return spin(build(move, new Prop()),t);
+			return spin(build(move, new Prop()),t,dummy);
 		}
 		if (Array.isArray(move)) {
 			if (move.length===0) {
@@ -501,7 +548,7 @@ VS3D = function() {
 			while (past<=t) {
 				let ticks = beats(move[i])*BEAT || 1*BEAT;
 				if (past+ticks>=t) {
-					return spin(move[i], t-past);
+					return spin(move[i], t-past, dummy);
 				} else {
 					past+=ticks;
 					i=(i+1)%move.length;
@@ -510,7 +557,6 @@ VS3D = function() {
 		}
 		let p = move.p || WALL;
 		let b = move.beats || 1;
-		// why are these spheres and not planar angles?
 		move.body = move.body || {r: 0, a: 0, p: p};
 		move.pivot = move.pivot || {r: 0, a: 0, p: p};
 		move.helper = move.helper || {r: 0, a: 0, p: p};
@@ -525,41 +571,23 @@ VS3D = function() {
 		let pivot = spin_node({beats: b, p: p, ...move.pivot}, t);
 		let helper = spin_node({beats: b, p: p, ...move.helper}, t);
 		let hand = spin_node({beats: b, p: p, ...move.hand}, t);
-		
-		let twist = move.twist + move.vt*t*SPEED;
-		let bent = move.bent + move.vb*t*SPEED;
-		// let axis = vector$unitize(sphere$vectorize(hand));
-		// let tangent = vector$cross(axis,p);
-		// let bend = vector$rotate(p,bent,tangent);
-		// move.head.p = bend;
 		let grip = spin_node({beats: b, p: p, ...move.grip}, t);
 		let head = spin_node({beats: b, p: p, ...move.head}, t);
-		// okay...so here we need to take at least the HEAD node...
-		// ...and rotate it by BENT around the cross product of the HAND axis and the plane
-		// This is a shim for the real system, which I haven't gotten to work yet
-		let axis = vector$unitize(sphere$vectorize(head));
-		let tangent = vector$cross(axis,p);
-		// if (bent!==0) {
-		// 	console.log("axis, tangent");
-		// 	console.log(axis);
-		// 	console.log(tangent);
-		// }
-		head = vector$spherify(vector$rotate(sphere$vectorize(head),bent,tangent));
-		grip = vector$spherify(vector$rotate(sphere$vectorize(grip),bent,tangent));
-
-		// This is a cosmetic hack
-		// I don't know the real solution
-		// In WHXFL, 45 looks right across most of the back, and -45 looks right across most of the front
-		// The switchover is quite abrupt
-		// anything that involved both angle and bearing would have to be extremely complex
-		// what about the head axis?
-		// in wall, the x and y components change and z stays the same
-		// in wheel, the z and y components change and x stays the same
-		// in floor, the x and z components change and y stays the same
-		axis = vector$unitize(sphere$vectorize(head));
-		if (p.y===-1) {
-			twist+=90;
+		let twist = move.twist + move.vt*t*SPEED;
+		let bent = move.bent + move.vb*t*SPEED;
+		let bearing = head.b;
+		if (bent!==0 || move.vb!==0) {
+			let axis = vector$unitize(sphere$vectorize(head));
+			let tangent = vector$cross(axis,p);
+			headv = sphere$vectorize(head); 
+			head = vector$spherify(vector$rotate(headv,bent,tangent));
+			// fix bearing...toroids still flicker
+			let rotate = t*move.vb/2 || SMALL;
+			let bentp = vector$rotate(p,rotate,tangent);
+			bearing = angle$spherify(sphere$planify(head,bentp),bentp).b;
 		}
+		let twangle = angle$longitude(bearing,p);
+		twist+=twangle;
 		return {
 			body: body,
 			pivot: pivot,
@@ -587,10 +615,31 @@ VS3D = function() {
 		if (Array.isArray(move)) {
 			return fits(prop, move[0]);
 		}
-		let m = spin(move, 0);
+		let m = spin(move, 0, "dummy");
 		return (	sphere$nearly(sum_nodes(prop, HAND),sum_nodes(m), HAND), SMALL)
 					&& sphere$nearly(sum_nodes(prop, HEAD),sum_nodes(m, HEAD), SMALL);
 	}
+
+	// generalized
+	function realign(move, fitter) {
+		let oriented = move;
+		for (let i=0; i<move.length; i++) {
+			if (fitter(oriented[0])) {
+				return oriented;
+			} else {
+				console.log("realigning");
+				let head = oriented[0];
+				let tail = oriented.slice(1);
+				oriented = tail.concat(head);
+			}
+		}
+		console.log("realignment failed");
+		alert("realignment failed");
+		console.log(move);
+		throw new Error("realignment failed");
+		return move;
+	}
+
 
 	function fit(prop, move) {
 		if (Array.isArray(move)) {
@@ -607,10 +656,13 @@ VS3D = function() {
 		} else {
 			if (move.recipe) {
 				let built = build(move, prop);
-				let aligned = realign(prop, built);
+				if (move.nofit) {
+					return built;
+				}
+				let aligned = realign(built, (s)=>fits(prop,s))
 				return aligned;
 			}
-			if (fits(prop, move)) {
+			if (move.nofit || fits(prop, move)) {
 				return move;
 			} else {
 				// !!!this actually has a pretty high chance of messing up, for any 3d move...
@@ -623,8 +675,7 @@ VS3D = function() {
 				hand = {r: hand.r, a: sphere$planify(hand, plane)};
 				// at least for how we currently handle TWIST
 				twist = twist || 0;
-				// so...ooh boy...better hope you never have a BENDED prop at the beginning of a move :(
-				// !!!!!!I think what I actually need to do is BEND the move's head and grip here
+				// fit() should ignore BENT
 				grip = {r: grip.r, a: sphere$planify(grip, plane)};
 				head = {r: head.r, a: sphere$planify(head, plane)};
 				let aligned = {
@@ -633,6 +684,8 @@ VS3D = function() {
 					helper: merge(move.helper,helper),
 					hand: merge(move.hand, hand),
 					twist: twist,
+					vt: move.vt,
+					vb: move.vb,
 					grip: merge(move.grip, grip),
 					head: merge(move.head, head),
 					p: plane
@@ -664,33 +717,18 @@ VS3D = function() {
 			return socket(move[0]);
 		}
 		move.beats = move.beats || 1;
-		return spin(move, move.beats*BEAT);
+		return spin(move, move.beats*BEAT, "dummy");
 	}
 
-	function realign(prop, move) {
-		let oriented = move;
-		for (let i=0; i<move.length; i++) {
-			if (fits(prop, oriented)) {
-				return oriented;
-			} else {
-				//console.log("realigning");
-				let head = oriented[0];
-				let tail = oriented.slice(1);
-				oriented = tail.concat(head);
-			}
-		}
-		console.log("realignment failed");
-		alert("realignment failed");
-		console.log(prop);
-		console.log(move);
-		throw new Error("realignment failed");
-		return move;
-	}
-	function nudge(prop, axis) {
+
+	function nudge(prop, axis, n) {
+		n = n || NUDGE;
 		axis = axis || WALL;
 		let p = clone(prop);
-		let v = sphere$vectorize(p.home);
-		// finish this later
+		let v = sphere$vectorize(p[NODES[BODY]]);
+		let v1 = vector(v.x+n*axis.x, v.y+n*axis.y, v.z+n*axis.z);
+		p.body = vector$spherify(v1);
+		return p;
 	}
 
 	function chain(arr) {
@@ -705,37 +743,48 @@ VS3D = function() {
 		for (let i=1; i<arr.length; i++) {
 			let prev = arr[i-1];
 			let prop = socket(prev);
-			let planed = Move({...arr[i], p: prev.p});
+			let args = arr[i];
+			let planed = Move({...args, p: prev.p});
 			for (let node of NODES) {
 				if (prev[node].m==="linear" || prev[node].la!==undefined || prev[node].vl!==undefined || prev[node].vl1!==undefined || prev[node].al!==undefined) {
 					planed[node].m = "linear";
 				}	
-			}		
-			let move = fit(prop, planed);
+			}
+			let fitted = fit(prop, planed);
 			let moments = {};
 			for (let node of NODES) {
-				if (move[node].m==="linear" || move[node].la!==undefined || move[node].vl!==undefined || move[node].vl1!==undefined || move[node].al!==undefined) {
-					let {vl1: vl, la: la} = moments_linear({...prev[node], beats: prev.beats});
+				if (fitted[node].m==="linear" || fitted[node].la!==undefined || fitted[node].vl!==undefined || fitted[node].vl1!==undefined || fitted[node].al!==undefined) {
+					let {vl1: vl, la: la, a1: a} = moments_linear({...prev[node], beats: prev.beats});
 					// !!! we probably need a better way of doing this...
-					vl*=90;
-					moments[node] = {vl: vl, la: la};
+					vl*=BEAT;
+					moments[node] = {vl: vl, la: la, a: a};
 				} else {
-					let {va1: va, vr1: vr} =  moments_angular({...prev[node], beats: prev.beats});
-					moments[node] = {va: va, vr: vr};
+					let {va1: va, vr1: vr, a1: a} =  moments_angular({...prev[node], beats: prev.beats});
+					moments[node] = {va: va, vr: vr, a: a};
 				}
 			}
-			// at this point we *could* snag the starting positions off the head of the prop for the last move...
+			let bent = 0;
+			if (prev.bent) {
+				bent += prev.bent;
+				fitted.head.a = moments.a;
+			}
+			if (prev.vb) {
+				bent += prev.vb*prev.beats*BEAT;
+				fitted.head.a = moments.a;
+			}
+			bent = angle(bent);
 			let extended = {
-				body: merge(moments.body, move.body),
-				pivot: merge(moments.pivot, move.pivot),
-				helper: merge(moments.helper, move.helper),
-				hand: merge(moments.hand, move.hand),
-				grip: merge(moments.grip, move.grip),
-				head: merge(moments.head, move.head),
-				vt: (move.vt!==undefined) ? move.vt : prev.vt,
-				vb: (move.vb!==undefined) ? move.vb : prev.vb,
+				body: merge(moments.body, fitted.body),
+				pivot: merge(moments.pivot, fitted.pivot),
+				helper: merge(moments.helper, fitted.helper),
+				hand: merge(moments.hand, fitted.hand),
+				grip: merge(moments.grip, fitted.grip),
+				head: merge(moments.head, fitted.head),
+				vt: (args.vt!==undefined) ? args.vt : prev.vt,
+				vb: (args.vb!==undefined) ? args.vb : prev.vb,
+				bent: (args.bent!==undefined) ? args.bent : bent,
 				p: prev.p,
-				beats: (arr[i].beats!==undefined) ? arr[i].beats : prev.beats
+				beats: (args.beats!==undefined) ? args.beats : prev.beats
 			};
 			arr[i] = extended;
 		}
@@ -775,6 +824,8 @@ VS3D = function() {
 		let r = args.r + args.vr*t + args.ar*t*t/2;
 		let a = args.a + args.va*t*SPEED + args.aa*t*t*SPEED*SPEED/2;
 		let p = args.p;
+		// console.log("angle: " +a);
+		// console.log(p);
 		return {...angle$spherify(a, p), r: r};
 	}
 
@@ -835,8 +886,6 @@ VS3D = function() {
 			x1 = x0+v0*t+a*t*t/2;
 		// solve for beginning speed and acceleration given both positions and final speed
 		} else if (known.x0 && known.x1 && known.v1 && known.t) {
-			// console.log(x0);
-			// console.log(x1);
 			a = 2*(v1/t-(x1-x0)/(t*t));
 			v0 = v1-a*t;
 		// impute acceleration to zero
@@ -867,10 +916,6 @@ VS3D = function() {
 		return {x0: x0, x1: x1, v0: v0, v1: v1, a: a, t: t};
 	}
 
-
-
-
-
 	function solve_angle(args) {
 		let {x0, x1, v0, v1, a, t, spin} = args;
 		let known = {};
@@ -889,16 +934,15 @@ VS3D = function() {
 		}
 		if (known.x0 && known.x1) {
 			if (!known.spin) {
-				// try like heck to pick a good default
 				let trend = 0;
 				if (known.v0) {
-					trend+=Math.sign(v0);
+					trend+=(zeroish(v0) ? 0 : Math.sign(v0));
 				}
 				if (known.v1) {
-					trend+=Math.sign(v1);
+					trend+=(zeroish(v1) ? 0 : Math.sign(v1));
 				}
 				if (known.a) {
-					trend+=Math.sign(a);
+					trend+=(zeroish(a) ? 0 : Math.sign(a));
 				}
 				if (trend>0) {
 					spin = +1;
@@ -912,8 +956,8 @@ VS3D = function() {
 					} else {
 						spin = -1;
 					}
-				} else {
-					if ((x1-x0)*UNIT<=Math.PI) {
+				} else if (x1<x0) {
+					if ((x0-x1)*UNIT<=Math.PI) {
 						spin = -1;
 					} else {
 						spin = +1;
@@ -1034,6 +1078,7 @@ VS3D = function() {
 		this.model = args.model || "poi";
 		this.color = args.color || "red";
 		this.fire = args.fire || false;
+		this.nudged = args.nudged || 0;
 		this.prop = prop;
 		this.moves = [];
 	}
@@ -1045,7 +1090,21 @@ VS3D = function() {
 		let move = fit(this.prop, this.moves);
 		return spin(move, t);
 	}
-	
+	for (let node of NODES) {
+		let nname = node[0].toUpperCase()+node.slice(1);
+		PropWrapper.prototype["set"+nname+"Angle"] = function(a,p) {
+			p = p || WALL;
+			let arg = {};
+			arg[node] = {a: a};
+			this.prop = snapto(arg,this.prop)
+		}
+		PropWrapper.prototype["set"+nname+"Radius"] = function(r) {
+			let arg = {};
+			arg[node] = {r: r};
+			this.prop = snapto(arg,this.prop)
+		}
+	}
+
 	function Player(args) {
 		args = args || {};
 		this.props = [];
@@ -1054,17 +1113,20 @@ VS3D = function() {
 		this.tick = 0;
 	}
 	Player.prototype.addProp = function(prop, args) {
-		this.props.push(new PropWrapper(prop, args));
+		prop = prop || new Prop();
+		let wrapper = new PropWrapper(prop, args);
+		this.props.push(wrapper);
+		return wrapper;
 	}
 	// should the callback be able to take cosmetic properties?
 	Player.prototype.render = function(wrappers, positions) {};
+
 	Player.prototype.goto = function(t) {
 		this.tick = t;
 		let positions = [];
 		for (let prop of this.props) {
 			try {
 				positions.push(prop.spin(this.tick));
-				//positions.push(spin(prop.prop, prop.moves, this.tick));
 			} catch (e) {
 				console.log("Error in player.goto");
 				console.log(prop);
@@ -1072,6 +1134,7 @@ VS3D = function() {
 			}
 		}
 		this.render(this.props, positions);
+		return positions;
 	}
 	Player.prototype.play = function() {
 		this.stop();
@@ -1098,7 +1161,6 @@ VS3D = function() {
 			plane: WALL,
 			orient: UP,
 			spin: INSPIN,
-			mode: DIAMOND,
 			beats: 4,
 			speed: 1,
 			direction: CLOCKWISE,
@@ -1144,6 +1206,32 @@ VS3D = function() {
 		}
 	}
 
+	function stringify(thing) {
+		return JSON.stringify(thing, function(key, value) {
+			console.log(key,value);
+			if (["a","b","bent","twist","a1","la"].includes(key)) {
+				return Math.round(value);
+			} else if (["x","y","z"].includes(key)) {
+				return round(value,0.001);
+			} else if (["r","r1"].includes(key)) {
+				return round(value,0.01);
+			} else if (["va","va1","vr","vr1","aa","ar","vl","vl2","al"].includes(key)) {
+				return round(value,0.0001);
+			} else {
+				return value;
+			}
+		},2);
+	}
+
+	function parse(thing) {
+		return JSON.parse(thing, function(key, value) {
+			if (["r","r1"].includes(key)) {
+				return (value || SMALL);
+			} else {
+				return value;
+			}
+		});
+	}
 
 	VS3D.clone = clone;
 	VS3D.merge = merge;
@@ -1176,6 +1264,7 @@ VS3D = function() {
 	VS3D.angle$vectorize = angle$vectorize;
 	VS3D.angle$spherify = angle$spherify;
 	VS3D.angle$rotate = angle$rotate;
+	VS3D.angle$longitude = angle$longitude;
 	VS3D.Prop = Prop;
 	VS3D.Move = Move;
 	VS3D.spin = spin;
@@ -1184,13 +1273,13 @@ VS3D = function() {
 	VS3D.fit = fit;
 	VS3D.sum_nodes = sum_nodes;
 	VS3D.snapto = snapto;
+	VS3D.nudge = nudge;
 	VS3D.axis = axis;
 	VS3D.socket = socket;
 	VS3D.MoveFactory = MoveFactory;
 	VS3D.recipe = recipe;
 	VS3D.build = build;
 	VS3D.variant = variant;
-	// VS3D.refit = refit;
 	VS3D.realign = realign;
 	VS3D.extend = extend;
 	VS3D.chain = chain;
@@ -1202,6 +1291,8 @@ VS3D = function() {
 	VS3D.solve_angle = solve_angle;
 	VS3D.PropWrapper = PropWrapper;
 	VS3D.Player = Player;
+	VS3D.stringify = stringify;
+	VS3D.parse = parse;
 	VS3D.debug = debug;
 	return VS3D;
 }();

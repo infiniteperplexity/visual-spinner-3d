@@ -573,15 +573,18 @@ VS3D = function() {
 		let hand = spin_node({beats: b, p: p, ...move.hand}, t);
 		let grip = spin_node({beats: b, p: p, ...move.grip}, t);
 		let head = spin_node({beats: b, p: p, ...move.head}, t);
-		let axis = vector$unitize(sphere$vectorize(head));
-		let tangent = vector$cross(axis,p);
 		let twist = move.twist + move.vt*t*SPEED;
 		let bent = move.bent + move.vb*t*SPEED;
 		let bearing = head.b;
-		if (bent!==0) {
+		if (bent!==0 || move.vb!==0) {
+			let axis = vector$unitize(sphere$vectorize(head));
+			let tangent = vector$cross(axis,p);
 			headv = sphere$vectorize(head); 
-			// This erases the plane, which can lead to problematic bearings.
 			head = vector$spherify(vector$rotate(headv,bent,tangent));
+			// fix bearing...toroids still flicker
+			let rotate = t*move.vb/2 || SMALL;
+			let bentp = vector$rotate(p,rotate,tangent);
+			bearing = angle$spherify(sphere$planify(head,bentp),bentp).b;
 		}
 		let twangle = angle$longitude(bearing,p);
 		twist+=twangle;
@@ -751,7 +754,7 @@ VS3D = function() {
 			let moments = {};
 			for (let node of NODES) {
 				if (fitted[node].m==="linear" || fitted[node].la!==undefined || fitted[node].vl!==undefined || fitted[node].vl1!==undefined || fitted[node].al!==undefined) {
-					let {vl1: vl, la: la, a: a1} = moments_linear({...prev[node], beats: prev.beats});
+					let {vl1: vl, la: la, a1: a} = moments_linear({...prev[node], beats: prev.beats});
 					// !!! we probably need a better way of doing this...
 					vl*=BEAT;
 					moments[node] = {vl: vl, la: la, a: a};

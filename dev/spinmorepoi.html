@@ -6,7 +6,6 @@
 <title>VisualSpinner3D Demo, by Glenn Wright</title>
 <style>
 	#grid1 {
-		width: 800px;
         display: grid;
         grid-column-gap: 3px;
         grid-row-gap: 3px;
@@ -15,14 +14,8 @@
      }
      #grid2 {
         display: grid;
-        grid-template-rows: auto auto auto auto auto;
+        grid-template-rows: auto auto auto auto auto auto;
         grid-template-columns: auto auto auto auto auto;
-     }
-     #grid3 {
-        display: grid;
-
-        grid-template-rows: auto auto auto auto auto auto auto auto;
-        grid-template-columns: auto;
      }
 </style>
 </head>
@@ -286,7 +279,30 @@
 			move.direction = dir;
 			prop.moves[0] = move;
 		}
-		player.update();
+		try {
+			player.update();
+		} catch(e) {
+			for (let i=0; i<4; i++) {
+				let model = document.getElementById("model"+i).value;
+				let plane = document.getElementById("plane"+i).value;
+				let align = document.getElementById("align"+i).value;
+				let oriented = document.getElementById("orient"+i).value;
+				let direction = document.getElementById("direction"+i).value;
+				let recipe = document.getElementById("move"+i).value;
+				console.log("prop: "+i);
+				console.log("model: "+model);
+				console.log("plane: "+plane);
+				console.log("align: "+align);
+				console.log("orient: "+oriented);
+				console.log("direction: "+direction);
+				console.log("recipe: "+recipe);
+			}
+			throw e;
+		}
+	}
+
+	function tests() {
+		
 	}
 
 
@@ -297,12 +313,12 @@
 	<div id="display"></div>
 	<div>
 		<div id="grid2">
-			<p>Props:</p>
+			<p>Prop:</p>
 			<select id="model0"></select>
 			<select id="model1"></select>
 			<select id="model2"></select>
 			<select id="model3"></select>
-			<p>Planes:</p>
+			<p>Plane:</p>
 			<select id="plane0"></select>
 			<select id="plane1"></select>
 			<select id="plane2"></select>
@@ -322,15 +338,10 @@
 			<select id="direction1"></select>
 			<select id="direction2"></select>
 			<select id="direction3"></select>
-		</div>
-		<div id="grid3">
-			<p>First Move:</p>
+			<p>Move:</p>
 			<select id="move0"></select>
-			<p>Second Move:</p>
 			<select id="move1"></select>
-			<p>Third Move:</p>
 			<select id="move2"></select>
-			<p>Fourth Move:</p>
 			<select id="move3"></select>
 		</div>
 	</div>
