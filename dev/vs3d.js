@@ -514,7 +514,6 @@ VS3D = function() {
 		head = merge(head, args.head);
 		// !!!! Might want to consider plane to decide default
 		let twist = (args.twist!==undefined) ? args.twist : prop.twist;
-		// twist = 0+90*p.z;
 		let bent = args.bent || 0;
 		let prp = {
 			body: body,
@@ -574,59 +573,18 @@ VS3D = function() {
 		let hand = spin_node({beats: b, p: p, ...move.hand}, t);
 		let grip = spin_node({beats: b, p: p, ...move.grip}, t);
 		let head = spin_node({beats: b, p: p, ...move.head}, t);
-		if (!dummy) {
-			console.log("bearing: "+head.b);
-		}
 		let axis = vector$unitize(sphere$vectorize(head));
 		let tangent = vector$cross(axis,p);
 		let twist = move.twist + move.vt*t*SPEED;
 		let bent = move.bent + move.vb*t*SPEED;
-		// if (move.vb===-2) {
-		// 	console.log("testing");
-		// }
-		// headv = sphere$vectorize(head); 
-		// do the same with GRIP?
-		// head = vector$spherify(vector$rotate(headv,bent,tangent));
-		// handle default TWIST
-			// should account for BENT eventually
-			// interesting question: should this account for direction?
 		let bearing = head.b;
-		// if (bearing<90) {
-		// 	bearing+=180;
-		// }
-		// if (p.y!==0 && head.a>180) {
-		// 	if (!dummy) {
-		// 		console.log(bearing);
-		// 	}
-		// 	bearing-=180;
-		// 	if (!dummy) {
-		// 		console.log(bearing);
-		// 	}
-		// }
-
-
-		let twangle = angle$longitude(bearing,p);
-		// if (p.y!==0 && head.a>180) {
-		// 	twangle-=180;
-		// }
-		if (!dummy) {
-			// console.log(twangle);
+		if (bent!==0) {
+			headv = sphere$vectorize(head); 
+			// This erases the plane, which can lead to problematic bearings.
+			head = vector$spherify(vector$rotate(headv,bent,tangent));
 		}
-		// if (p.y!==0 && bearing>181) {
-		// 	twangle-=180;
-		// } 
+		let twangle = angle$longitude(bearing,p);
 		twist+=twangle;
-		// this flips at bearing abs>90
-		// WHEEL, WALL, and WAXWH are sui generis special cases, I think
-		// if (p.y===0) {
-		// 	twist+=0;
-		// // FLOOR is a special case of the general case
-		// } else if (Math.abs(p.y)===1) {
-		// 	twist+=(p.y*90);
-		// 	if (angle>180) {
-		// 		twist-=180;
-		// 	}
-		// }
 		return {
 			body: body,
 			pivot: pivot,
