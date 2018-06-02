@@ -20,11 +20,11 @@
 	//let p = VS3D.WAXFL;
 	// Now that I've fixed the -y issue, FLOOR is correct in the 1st half and wrong in the second.
 
-	let move = {recipe: "flower", petals: 0, p: p, nofit: true};
+	let move = {recipe: "toroid", bend: -1, harmonics: 2};
 	function init() {	
 		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
 		player = new VS3D.Player();
-		player.addProp(red,{model: "fan"});
+		player.addProp(red,{model: "poi"});
 		// player.props[0].setHandAngle(180);
 		// player.props[0].setHeadAngle(180);
 		//player.addProp(blue, {color: "blue"});

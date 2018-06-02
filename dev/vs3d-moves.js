@@ -207,7 +207,6 @@ VS3D = (function(VS3D) {
 				head: {a: hangle, va: bend*direction*speed}
 			}));
 			let move = extend([segment,{},{},{}]);
-			console.log(clone(move));
 			if (entry!==undefined) {
 				move = realign(move,(s)=>angle$nearly(s.hand.a,entry));
 			}

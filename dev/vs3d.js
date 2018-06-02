@@ -751,21 +751,23 @@ VS3D = function() {
 			let moments = {};
 			for (let node of NODES) {
 				if (fitted[node].m==="linear" || fitted[node].la!==undefined || fitted[node].vl!==undefined || fitted[node].vl1!==undefined || fitted[node].al!==undefined) {
-					let {vl1: vl, la: la} = moments_linear({...prev[node], beats: prev.beats});
+					let {vl1: vl, la: la, a: a1} = moments_linear({...prev[node], beats: prev.beats});
 					// !!! we probably need a better way of doing this...
 					vl*=BEAT;
-					moments[node] = {vl: vl, la: la};
+					moments[node] = {vl: vl, la: la, a: a};
 				} else {
-					let {va1: va, vr1: vr} =  moments_angular({...prev[node], beats: prev.beats});
-					moments[node] = {va: va, vr: vr};
+					let {va1: va, vr1: vr, a1: a} =  moments_angular({...prev[node], beats: prev.beats});
+					moments[node] = {va: va, vr: vr, a: a};
 				}
 			}
 			let bent = 0;
 			if (prev.bent) {
 				bent += prev.bent;
+				fitted.head.a = moments.a;
 			}
 			if (prev.vb) {
 				bent += prev.vb*prev.beats*BEAT;
+				fitted.head.a = moments.a;
 			}
 			bent = angle(bent);
 			let extended = {
