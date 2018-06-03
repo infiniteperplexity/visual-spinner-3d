@@ -99,17 +99,31 @@ VS3D = function() {
 
 	/// immutability helper
 	function clone(obj) {
-	  let nobj = {...obj};
-	  for (let prop in nobj) {
-	    if (typeof(nobj[prop])==="object") {
-	      nobj[prop] = {...clone(nobj[prop])};
-	    }
-	  }
-	  return nobj;
+		let nobj;
+		if (Array.isArray(obj)) {
+			nobj = [...obj];
+			for (let i=0; i<nobj.length; i++) {
+				nobj[i] = clone(nobj[i]);
+			}
+			return nobj;
+		}
+		nobj = {...obj};
+		for (let prop in nobj) {
+		    if (typeof(nobj[prop])==="object") {
+		      	nobj[prop] = {...clone(nobj[prop])};
+		    }
+		}
+		return nobj;
 	}
 
 	function merge(obj1, obj2) {
+		if (!obj1) {
+			return clone(obj2);
+		}
 		let nobj = clone(obj1);
+		if (!obj2) {
+			return nobj;
+		}
 		for (let prop in obj2) {
 			if (typeof(obj2[prop])==="object") {
 				if (typeof(nobj[prop])==="object") {
@@ -454,7 +468,7 @@ VS3D = function() {
 	function Move(args) {
 		args = args || {};
 		let p = args.p || WALL;
-		let beats = args.beats || 4;
+		let beats = args.beats || 4; // !!!! is this a good default?
 		// set default values for node positions
 		let body = merge({r: 0, a: 0}, args.body);
 		let pivot = merge({r: 0, a: 0}, args.pivot);
@@ -554,22 +568,25 @@ VS3D = function() {
 					i=(i+1)%move.length;
 				}
 			}
+			throw new Error("shouldn't get here");
 		}
+		let notes = move.notes;
 		let p = move.p || WALL;
-		let b = move.beats || 1;
-		move.body = move.body || {r: 0, a: 0, p: p};
-		move.pivot = move.pivot || {r: 0, a: 0, p: p};
-		move.helper = move.helper || {r: 0, a: 0, p: p};
-		move.hand = move.hand || {r: 1, a: 0, p: p};
+		let b = move.beats || 4;
+		move.body = merge({r: 0, a: 0, notes: notes}, move.body);
+		move.pivot = merge({r: 0, a: 0, notes: notes}, move.pivot);
+		move.helper = merge({r: 0, a: 0, notes: notes}, move.helper);
+		move.hand = merge({r: 1, a: 0, notes: notes}, move.hand);
 		move.twist = move.twist || 0;
 		move.bent = move.bent || 0;
 		move.vt = move.vt || 0;
 		move.vb = move.vb || 0;
-		move.grip = move.grip || {r: 0, a: 0, p: p};
-		move.head = move.head || {r: 1, a: 0, p: p};	
+		move.grip = merge({r: 0, a: 0, notes: notes}, move.grip);
+		move.head = merge({r: 1, a: 0, notes: notes}, move.head);	
 		let body = spin_node({beats: b, p: p, ...move.body}, t);
 		let pivot = spin_node({beats: b, p: p, ...move.pivot}, t);
 		let helper = spin_node({beats: b, p: p, ...move.helper}, t);
+		// okay, the problem is that it doesn't pass the positions and stuff...
 		let hand = spin_node({beats: b, p: p, ...move.hand}, t);
 		let grip = spin_node({beats: b, p: p, ...move.grip}, t);
 		let head = spin_node({beats: b, p: p, ...move.head}, t);
@@ -603,11 +620,11 @@ VS3D = function() {
 		if (Array.isArray(move)) {
 			let b = 0;
 			for (let m of move) {
-				b+=(beats(m) || 1);
+				b+=(beats(m) || 4);
 			}
 			return b;
 		} else {
-			return (move.beats || 1);
+			return (move.beats || 4);
 		}
 	}	
 
@@ -646,7 +663,7 @@ VS3D = function() {
 			if (move.length===0) {
 				return [];
 			}
-			let fitted = [];
+			let fitted = clone(move);
 			fitted[0] = fit(prop, move[0]);
 			for (let i=1; i<move.length; i++) {
 				// !!! Should we consider propagating planes at this point?
@@ -669,6 +686,7 @@ VS3D = function() {
 				let plane = move.p || WALL;
 				// !!!in a perfect world, this would have a preference for keeping defaults on body, pivot, or hinge
 				let {body, pivot, helper, hand, twist, bend, grip, head} = prop;
+
 				body = {r: body.r, a: sphere$planify(body, plane)};
 				pivot = {r: pivot.r, a: sphere$planify(pivot, plane)};
 				helper = {r: helper.r, a: sphere$planify(helper, plane)};
@@ -688,7 +706,8 @@ VS3D = function() {
 					vb: move.vb,
 					grip: merge(move.grip, grip),
 					head: merge(move.head, head),
-					p: plane
+					p: plane,
+					beats: move.beats
 				};
 				return aligned;
 			}
@@ -798,8 +817,14 @@ VS3D = function() {
 		if (m==="linear" || args.la!==undefined || args.vl!==undefined || args.vl1!==undefined || args.al!==undefined) {
 			let moments = moments_linear(args);
 			return spin_linear({...moments, p: p}, t);
+
 		}
 		let moments = moments_angular(args);
+		// if (!args.notes && args.a1===270) {
+		// 	console.trace();
+		// 	console.log(args);
+		// 	console.log(t);
+		// }
 		return spin_angular({...moments, p: p}, t);
 	}
 
@@ -845,7 +870,7 @@ VS3D = function() {
 			motion: "m",
 			vl0: "vl"
 		}
-		let vals = ["r","r1","a","a1","va","vr","va1","vr1","c","p","m","beats","vl","al","la","t","spin"];
+		let vals = ["r","r1","a","a1","va","vr","va1","vr1","c","p","m","beats","vl","al","la","t","spin","notes"];
 		let nargs = {};
 		for (let val of vals) {
 			if (nargs[val]===undefined) {
@@ -1156,6 +1181,10 @@ VS3D = function() {
 		this.goto(this.tick);
 	}
 
+	Player.prototype.ready = function() {
+		this.reset();
+	}
+
 	Player.prototype.update = function(positions) {
 		// example
 		// renderer.render(this.props, positions);
@@ -1166,26 +1195,26 @@ VS3D = function() {
 		this.tick = (player) ? player.tick : 0;
 		let controls = document.createElement("div");
 		this.div = controls;
-		controls.class = "vs3d-controls";
+		controls.className = "vs3d-controls";
 		let button;
 		button = document.createElement("button");
-		button.class = "vs3d-button";
+		button.className = "vs3d-button";
 		button.onclick = ()=>player.play();
 		button.innerHTML = "Play";
 		controls.appendChild(button);
 		button = document.createElement("button");
-		button.class = "vs3d-button";
+		button.className = "vs3d-button";
 		button.onclick = ()=>player.stop();
 		button.innerHTML = "Pause";
 		controls.appendChild(button);
 		button = document.createElement("button");
-		button.class = "vs3d-button";
-		button.onclick = ()=>this.setTick(Math.max(0,player.tick-1));
+		button.className = "vs3d-button";
+		button.onclick = ()=>player.goto(Math.max(0,player.tick-1));
 		button.innerHTML = "-";
 		controls.appendChild(button);
 		let input = document.createElement("input");
 		input.type = "number";
-		input.class = "vs3d-number-input";
+		input.className = "vs3d-number-input";
 		input.value = this.tick;
 		input.min = "0";
 		input.style.width = "80px";
@@ -1193,22 +1222,21 @@ VS3D = function() {
 		input.oninput = input.onchange;
 		controls.appendChild(input);
 		button = document.createElement("button");
-		button.class = "vs3d-button";
-		button.onclick = ()=>this.setTick(player.tick+1);
+		button.className = "vs3d-button";
+		button.onclick = ()=>this.player.goto(player.tick+1);
 		button.innerHTML = "+";
 		controls.appendChild(button);
 		button = document.createElement("button");
-		button.class = "vs3d-button";
-		button.onclick = ()=>{this.setTick(0); player.reset();};
+		button.className = "vs3d-button";
+		button.onclick = ()=>player.reset();
 		button.innerHTML = "Reset";
 		controls.appendChild(button);
 	}
-	Controls.prototype.setTick = function(t) {
-		this.tick = t;
-		this.player.goto(t);
-		this.player.refresh;
+	Controls.prototype.update = function(t) {
+		let input = this.div.querySelector(".vs3d-number-input");
+		input.value = t;
 	}
-
+	// ok...think harder...
 
 	let MoveFactory = {
 		defaults: {
@@ -1246,7 +1274,8 @@ VS3D = function() {
 			head: head,
 		}
 		let args = merge(aligned, recipe);
-		return MoveFactory[args.recipe](args);
+		let m = MoveFactory[args.recipe](args);
+		return m;
 	}
 
 	function recipe(name, defs, f) {

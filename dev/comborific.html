@@ -30,7 +30,13 @@ function init() {
 let renderer, player, orange, white;
 function setup() {
 	renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
-	player = new VS3D.Player(renderer);
+	player = new VS3D.Player();
+	let controls = new VS3D.Controls(player);
+	renderer.div.appendChild(controls.div);
+	player.update = function(positions) {
+		renderer.render(this.props, positions);
+		controls.update(this.tick);
+	}
 	orange = player.addProp(new VS3D.Prop(), {color: "orange"});
 	white = player.addProp(new VS3D.Prop(), {color: "white"});
 	const {UP, DOWN, LEFT, RIGHT} = VS3D;
@@ -47,15 +53,19 @@ function setup() {
 	// should not need to use the MOVE() constructor
 
 	// make beats=1 by default?
-	orange.moves.push({label: "pendulum", beats: 1, hand: {a: LEFT, va: 0, a1: DOWN}, head: {a: LEFT, va: 0, a1: DOWN}});
-	//orange.moves.push({label: "pendulum", beats: 1, hand: {va1: 0, a1: RIGHT}, head: {va1: 0, a1: RIGHT}});
-	white.moves.push({label: "pendulum", beats: 1, head: {a: LEFT, va: 0, a1: DOWN}});
-	//white.moves.push({label: "pendulum", beats: 1, head: {a: DOWN, va1: 0, a1: RIGHT}});
 
-	// orange.moves.push({label: "pendulum", beats: 1, hand: {va: 0, a1: DOWN}, head: {va: 0, a1: DOWN, spin: -1}});
-	// orange.moves.push({label: "pendulum", beats: 1, hand: {va1: 0, a1: RIGHT}, head: {va1: 0, a1: LEFT, spin: -1}});
-	// white.moves.push({label: "pendulum", beats: 1, head: {va: 0, a1: DOWN}});
-	// white.moves.push({label: "pendulum", beats: 1, head: {va1: 0, a1: RIGHT}});
+	orange.moves.push({beats: 1, hand: {va: 0, a1: DOWN}, head: {va: 0, a1: DOWN}});
+	orange.moves.push({beats: 1, hand: {va1: 0, a1: RIGHT}, head: {va1: 0, a1: RIGHT}});
+	white.moves.push({beats: 1, head: {va: 0, a1: DOWN}});
+	white.moves.push({beats: 1, head: {va1: 0, a1: RIGHT}});
+
+	orange.moves.push({beats: 1, hand: {va: 0, a1: DOWN}, head: {va: 0, a1: DOWN, spin: -1}});
+	orange.moves.push({beats: 1, hand: {va1: 0, a1: LEFT}, head: {va1: 0, a1: LEFT, spin: -1}});
+	white.moves.push({beats: 1, head: {va: 0, a1: DOWN}});
+	white.moves.push({beats: 1, head: {va1: 0, a1: LEFT}});
+
+	// orange.moves.push({beats: 2, hand: {va: -1}});
+	// white.moves.push({beats: 2, hand: {va: -1}});
 
 	// orange.moves.push({label: "pendulum", beats: 1, hand: {va: 0, a1: DOWN}, head: {va: 0, a1: DOWN}});
 	// orange.moves.push({label: "pendulum", beats: 1, hand: {va1: 0, a1: RIGHT}, head: {va1: 0, a1: RIGHT}});
@@ -67,7 +77,7 @@ function setup() {
 	// white.moves.push({beats: 1, head: {va: 0, a1: DOWN}});
 	// white.moves.push({beats: 1, head: {va1: 0, a1: RIGHT}});
 
-	player.reset();
+	player.ready();
 	//player.play();	
 }
 </script>

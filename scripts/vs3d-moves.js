@@ -160,6 +160,7 @@ VS3D = (function(VS3D) {
 			if (entry!==undefined) {
 				move = realign(move,(s)=>angle$nearly(s.hand.a,entry));
 			}
+			console.log(move);
 			return move;
 		}
 	);
