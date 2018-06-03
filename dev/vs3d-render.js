@@ -17,6 +17,8 @@ VS3D = (function(VS3D) {
 	}
 
 	function ThreeRenderer(el,width,height,fov) {
+		this.element = el;
+		// or could maybe throw this in its own div, with relative positioning?
 		this.width = width || 400;
 		this.height = height || 400;
 		this.fov = fov || 45;
@@ -125,6 +127,44 @@ VS3D = (function(VS3D) {
 
 	
 
+	// This should not be a property of one particular renderer...maybe Player?
+	// That way we can sync it.
+	ThreeRenderer.prototype.addControls = function() {
+		if (this.controls) {
+			this.element.removeChild(this.controls);
+		}
+		// need to update the number box...
+		this.controls = document.createElement("div");
+		let button;
+		button = document.createElement("button");
+		button.onclick = ()=>player.play();
+		button.innerHTML = "Play";
+		this.controls.appendChild(button);
+		button = document.createElement("button");
+		button.onclick = ()=>player.stop();
+		button.innerHTML = "Pause";
+		this.controls.appendChild(button);
+		button = document.createElement("button");
+		button.onclick = ()=>player.goto(Math.max(0,player.tick-1));
+		button.innerHTML = "-";
+		this.controls.appendChild(button);
+		let input = document.createElement("input");
+		input.type = "number";
+		input.value = "0";
+		input.min = "0";
+		input.style.width = "80px";
+		input.onchange = (e)=>player.goto(e.target.value);
+		this.controls.appendChild(input);
+		button = document.createElement("button");
+		button.onclick = ()=>player.goto(player.tick+1);
+		button.innerHTML = "+";
+		this.controls.appendChild(button);
+		button = document.createElement("button");
+		button.onclick = ()=>player.reset();
+		button.innerHTML = "Reset";
+		this.controls.appendChild(button);
+		this.element.appendChild(this.controls);
+	}
 	ThreeRenderer.prototype.builder = {};
 
 	ThreeRenderer.prototype.builder.colors = function(c) {

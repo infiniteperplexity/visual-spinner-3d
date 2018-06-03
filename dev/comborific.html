@@ -1,0 +1,86 @@
+<!--Distributed under GNU Public License version 3-->
+<!DOCTYPE html>
+<html><head>
+<style>
+body {margin: 0; padding: 0; background-color: #679}
+h1, h2, header p {text-align: center}
+header {width: 1240px; height: 100px}
+header a {position: absolute; top: 5px; left: 5px}
+#content {width: 1250px; height: 510px;}
+canvas {width: 400px; height: 400px; background-color: #000;}
+section {margin: 0; padding: 0}
+header, section div {vertical-align: top; padding: 2.5px; border: 5px solid gray; margin: -2.5px; display: inline-block;}
+#display {width: 400px; height: 400px; float: left}
+#popimport {height: 240px; width: 400px}
+#frameN {width: 100px}
+</style>
+
+
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Drex's "combo-rific" video modeled in VisualSpinner, by Glenn Wright)</title>
+<script src="vs3d.js"></script>
+<script src="vs3d-moves.js"></script>
+<script src="three.min.js"></script>
+<script src="vs3d-render.js"></script><script>
+
+function init() {
+	setup();
+}
+
+let renderer, player, orange, white;
+function setup() {
+	renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
+	player = new VS3D.Player(renderer);
+	orange = player.addProp(new VS3D.Prop(), {color: "orange"});
+	white = player.addProp(new VS3D.Prop(), {color: "white"});
+	const {UP, DOWN, LEFT, RIGHT} = VS3D;
+	orange.setHandAngle(LEFT);
+	orange.setHeadAngle(LEFT)
+	white.setHeadAngle(LEFT);
+	white.setHandRadius(0);
+	// Drex begins with a vs.CCW pendulum vs. extended pendulum hybrid.
+		// Note the use of "hybrid: true" on the extended pendulum.
+			// This tells the hand speed the smooth path of the other pendulum's prop
+			// The default (hybrid: false) instead spins at a constant speed that will match a static spin or flower
+			// Note that the constant vs.THREE, vs.SIX, vs.NINE, and vs.TWELVE refer to the clock points (directions)
+		// Pendulum paths are not true to real-world gravity, because I use a simplified function
+	// should not need to use the MOVE() constructor
+
+	// make beats=1 by default?
+	orange.moves.push({label: "pendulum", beats: 1, hand: {a: LEFT, va: 0, a1: DOWN}, head: {a: LEFT, va: 0, a1: DOWN}});
+	//orange.moves.push({label: "pendulum", beats: 1, hand: {va1: 0, a1: RIGHT}, head: {va1: 0, a1: RIGHT}});
+	white.moves.push({label: "pendulum", beats: 1, head: {a: LEFT, va: 0, a1: DOWN}});
+	//white.moves.push({label: "pendulum", beats: 1, head: {a: DOWN, va1: 0, a1: RIGHT}});
+
+	// orange.moves.push({label: "pendulum", beats: 1, hand: {va: 0, a1: DOWN}, head: {va: 0, a1: DOWN, spin: -1}});
+	// orange.moves.push({label: "pendulum", beats: 1, hand: {va1: 0, a1: RIGHT}, head: {va1: 0, a1: LEFT, spin: -1}});
+	// white.moves.push({label: "pendulum", beats: 1, head: {va: 0, a1: DOWN}});
+	// white.moves.push({label: "pendulum", beats: 1, head: {va1: 0, a1: RIGHT}});
+
+	// orange.moves.push({label: "pendulum", beats: 1, hand: {va: 0, a1: DOWN}, head: {va: 0, a1: DOWN}});
+	// orange.moves.push({label: "pendulum", beats: 1, hand: {va1: 0, a1: RIGHT}, head: {va1: 0, a1: RIGHT}});
+	// white.moves.push({label: "pendulum", beats: 1, head: {va: 0, a1: DOWN}});
+	// white.moves.push({label: "pendulum", beats: 1, head: {va1: 0, a1: RIGHT}});
+
+	// orange.moves.push({beats: 1, hand: {va: 0, a1: DOWN}, head: {va: 0, a1: DOWN, spin: -1}});
+	// orange.moves.push({beats: 1, hand: {va1: 0, a1: RIGHT}, head: {va1: 0, a1: LEFT, spin: -1}});
+	// white.moves.push({beats: 1, head: {va: 0, a1: DOWN}});
+	// white.moves.push({beats: 1, head: {va1: 0, a1: RIGHT}});
+
+	player.reset();
+	//player.play();	
+}
+</script>
+</head>
+<body onload="init();">
+<header>
+	<a href='http://infiniteperplexity.github.io/visual-spinner-3d/'>See more at the VisualSpinner3D main site.</a>
+	<h1>Welcome to VisualSpinner3D. </h1>
+	<p>(we have successfully digitized Drex.)</p>
+</header>
+	<section>
+<div id="display">
+</div>
+
+</section>
+</body></html>

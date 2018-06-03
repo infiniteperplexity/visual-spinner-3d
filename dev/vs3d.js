@@ -1105,11 +1105,15 @@ VS3D = function() {
 		}
 	}
 
-	function Player(args) {
-		args = args || {};
+	function Player(renderer) {
+		if (renderer) {
+			this.render = function(wrappers, positions) {
+				renderer.render(wrappers, positions);
+			};
+		}
 		this.props = [];
-		this.speed = args.speed || 10;
-		this.rate = args.rate || 1;
+		this.speed = 10;
+		this.rate = 1;
 		this.tick = 0;
 	}
 	Player.prototype.addProp = function(prop, args) {
