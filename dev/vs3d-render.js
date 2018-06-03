@@ -17,14 +17,17 @@ VS3D = (function(VS3D) {
 	}
 
 	function ThreeRenderer(el,width,height,fov) {
-		this.element = el;
+		this.div = document.createElement("div");
+		this.div.class = "vs3d-renderer";
+		this.div.style.position = "relative";
+		el.appendChild(this.div);
 		// or could maybe throw this in its own div, with relative positioning?
 		this.width = width || 400;
 		this.height = height || 400;
 		this.fov = fov || 45;
 		this.renderer = new THREE.WebGLRenderer(); // antialias = true
 		this.renderer.setSize(this.width,this.height);
-		el.appendChild(this.renderer.domElement);
+		this.div.appendChild(this.renderer.domElement);
 		this.scene = new THREE.Scene();
 		this.camera = new THREE.PerspectiveCamera(this.fov, this.width/this.height);
 		this.camera.position.set(0,0,8);
@@ -57,6 +60,7 @@ VS3D = (function(VS3D) {
 
 		// set up a text overlay with nice default
 		this.overlay = document.createElement("div");
+		this.overlay.class = "vs3d-overlay";
 		this.overlay.appendChild(document.createTextNode(""));
 		this.overlay.style.color = "yellow";
 		this.overlay.style.position = "absolute";
@@ -65,7 +69,7 @@ VS3D = (function(VS3D) {
 		this.overlay.style.left = "190px";
 		this.overlay.style.display = "block";
 		this.overlay.style.textAlign = "left";
-		el.appendChild(this.overlay);
+		this.div.appendChild(this.overlay);
 	}
 
 	ThreeRenderer.prototype.render = function(wrappers, positions) {
@@ -127,44 +131,6 @@ VS3D = (function(VS3D) {
 
 	
 
-	// This should not be a property of one particular renderer...maybe Player?
-	// That way we can sync it.
-	ThreeRenderer.prototype.addControls = function() {
-		if (this.controls) {
-			this.element.removeChild(this.controls);
-		}
-		// need to update the number box...
-		this.controls = document.createElement("div");
-		let button;
-		button = document.createElement("button");
-		button.onclick = ()=>player.play();
-		button.innerHTML = "Play";
-		this.controls.appendChild(button);
-		button = document.createElement("button");
-		button.onclick = ()=>player.stop();
-		button.innerHTML = "Pause";
-		this.controls.appendChild(button);
-		button = document.createElement("button");
-		button.onclick = ()=>player.goto(Math.max(0,player.tick-1));
-		button.innerHTML = "-";
-		this.controls.appendChild(button);
-		let input = document.createElement("input");
-		input.type = "number";
-		input.value = "0";
-		input.min = "0";
-		input.style.width = "80px";
-		input.onchange = (e)=>player.goto(e.target.value);
-		this.controls.appendChild(input);
-		button = document.createElement("button");
-		button.onclick = ()=>player.goto(player.tick+1);
-		button.innerHTML = "+";
-		this.controls.appendChild(button);
-		button = document.createElement("button");
-		button.onclick = ()=>player.reset();
-		button.innerHTML = "Reset";
-		this.controls.appendChild(button);
-		this.element.appendChild(this.controls);
-	}
 	ThreeRenderer.prototype.builder = {};
 
 	ThreeRenderer.prototype.builder.colors = function(c) {

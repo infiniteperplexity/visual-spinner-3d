@@ -121,8 +121,8 @@
 		player.addProp(new VS3D.Prop(), {color: "blue", nudged: 0.10});
 		player.addProp(new VS3D.Prop(), {color: "green", nudged: 0.05});
 		player.addProp(new VS3D.Prop(), {color: "yellow", nudged: 0.0});
-		player.render = function(props, positions) {
-			renderer.render(props, positions);
+		player.update = function(positions) {
+			renderer.render(this.props, positions);
 		}
 		player.reset();
 	}
@@ -280,7 +280,7 @@
 			prop.moves[0] = move;
 		}
 		try {
-			player.update();
+			player.refresh();
 		} catch(e) {
 			for (let i=0; i<4; i++) {
 				let model = document.getElementById("model"+i).value;

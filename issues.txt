@@ -1,5 +1,6 @@
 Dev:
 - Allow varying size on the renderer.
+- Shouldn't require the Move() constructor 
 - Allow truncated moves.  "beats" is the way to do this...I dunno about like, entry though.
 	- We essentially don't need realign if we use ENTRY.
 - Create standard buttons for renderer.

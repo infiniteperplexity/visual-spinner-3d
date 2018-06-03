@@ -1122,9 +1122,6 @@ VS3D = function() {
 		this.props.push(wrapper);
 		return wrapper;
 	}
-	// should the callback be able to take cosmetic properties?
-	Player.prototype.render = function(wrappers, positions) {};
-
 	Player.prototype.goto = function(t) {
 		this.tick = t;
 		let positions = [];
@@ -1137,7 +1134,7 @@ VS3D = function() {
 				throw(e);
 			}
 		}
-		this.render(this.props, positions);
+		this.update(positions);
 		return positions;
 	}
 	Player.prototype.play = function() {
@@ -1155,8 +1152,61 @@ VS3D = function() {
 		this.goto(0);
 	}
 
-	Player.prototype.update = function() {
+	Player.prototype.refresh = function() {
 		this.goto(this.tick);
+	}
+
+	Player.prototype.update = function(positions) {
+		// example
+		// renderer.render(this.props, positions);
+	}
+
+	function Controls(player) {
+		this.player = player;
+		this.tick = (player) ? player.tick : 0;
+		let controls = document.createElement("div");
+		this.div = controls;
+		controls.class = "vs3d-controls";
+		let button;
+		button = document.createElement("button");
+		button.class = "vs3d-button";
+		button.onclick = ()=>player.play();
+		button.innerHTML = "Play";
+		controls.appendChild(button);
+		button = document.createElement("button");
+		button.class = "vs3d-button";
+		button.onclick = ()=>player.stop();
+		button.innerHTML = "Pause";
+		controls.appendChild(button);
+		button = document.createElement("button");
+		button.class = "vs3d-button";
+		button.onclick = ()=>this.setTick(Math.max(0,player.tick-1));
+		button.innerHTML = "-";
+		controls.appendChild(button);
+		let input = document.createElement("input");
+		input.type = "number";
+		input.class = "vs3d-number-input";
+		input.value = this.tick;
+		input.min = "0";
+		input.style.width = "80px";
+		input.onchange = (e)=>this.setTick(e.target.value);
+		input.oninput = input.onchange;
+		controls.appendChild(input);
+		button = document.createElement("button");
+		button.class = "vs3d-button";
+		button.onclick = ()=>this.setTick(player.tick+1);
+		button.innerHTML = "+";
+		controls.appendChild(button);
+		button = document.createElement("button");
+		button.class = "vs3d-button";
+		button.onclick = ()=>{this.setTick(0); player.reset();};
+		button.innerHTML = "Reset";
+		controls.appendChild(button);
+	}
+	Controls.prototype.setTick = function(t) {
+		this.tick = t;
+		this.player.goto(t);
+		this.player.refresh;
 	}
 
 
@@ -1295,6 +1345,7 @@ VS3D = function() {
 	VS3D.solve_angle = solve_angle;
 	VS3D.PropWrapper = PropWrapper;
 	VS3D.Player = Player;
+	VS3D.Controls = Controls;
 	VS3D.stringify = stringify;
 	VS3D.parse = parse;
 	VS3D.debug = debug;

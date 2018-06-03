@@ -27,14 +27,17 @@
 	function init() {	
 		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
 		player = new VS3D.Player();
+		let controls = new VS3D.Controls(player);
+		console.log(controls.tick);
+		renderer.div.appendChild(controls.div);
 		player.addProp(red,{model: "poi"});
 		// player.props[0].setHandAngle(180);
 		// player.props[0].setHeadAngle(180);
 		//player.addProp(blue, {color: "blue"});
 		player.props[0].moves.push(move);
 		//player.props[1].addMove(move2);
-		player.render = function(props, positions) {
-			renderer.render(props, positions);
+		player.update = function(positions) {
+			renderer.render(this.props, positions);
 		}
 		player.reset();
 		//player.goto(89);
