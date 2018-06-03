@@ -1,3 +1,14 @@
+Dev:
+- Allow varying size on the renderer.
+- Allow truncated moves.  "beats" is the way to do this...I dunno about like, entry though.
+	- We essentially don't need realign if we use ENTRY.
+- Create standard buttons for renderer.
+- Wow, the fan toroids actually look good.
+- Annotations...can that sit on top of THREE?
+- Change camera angle on renderer.
+- Test out multi-view.
+- That exhibit is a useful thing.
+
 Engine:
 - Allow optional planes per node.
 - Are defaults injected in the right places?

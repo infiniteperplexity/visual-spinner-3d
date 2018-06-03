@@ -83,7 +83,7 @@ VS3D = (function(VS3D) {
 		options => {
 			let {beats, speed, hand, spin, orient, direction, p, entry} = options;
 			let segment = Move(merge(options,{
-				beats: beats/4,
+				beats: 1,
 				hand: {a: orient, va: spin*direction*speed},
 				head: {a: orient, va: spin*direction*speed}
 			})); 
@@ -123,7 +123,7 @@ VS3D = (function(VS3D) {
 		options => {
 			let {beats, speed, hand, head, spin, orient, direction, onepointfive, hybrid, entry} = options;
 			let segment = Move(merge(options, {
-				beats: beats/4,
+				beats: 1,
 				hand: {a: orient, va: direction*speed},
 				head: {a: orient, a1: orient+QUARTER*direction, va1: 0}
 			}));
@@ -152,7 +152,7 @@ VS3D = (function(VS3D) {
 			// mode is a "soft default"
 			let hangle = (mode!==undefined) ? orient+mode : orient+head.a-hand.a;
 			let segment = Move(merge(options,{
-				beats: beats/4,
+				beats: 1,
 				hand: {a: orient, va: direction*speed},
 				head: {a: hangle, va: v*spin*direction*speed}
 			}));
@@ -177,7 +177,7 @@ VS3D = (function(VS3D) {
 				hangle = -hangle;
 			}
 			let segment = Move(merge(options,{
-				beats: beats/4,
+				beats: 1,
 				hand: {r: 0.5, a: orient, va: direction*speed},
 				head: {a: hangle, va: spin*direction*speed}
 			}));
@@ -201,7 +201,7 @@ VS3D = (function(VS3D) {
 			//mode is a "soft default"
 			let hangle = (mode!==undefined) ? orient+mode : orient+head.a-hand.a;
 			let segment = Move(merge(options,{
-				beats: beats/4,
+				beats: 1,
 				vb: -pitch*harmonics,
 				hand: {a: orient, va: direction*speed},
 				head: {a: hangle, va: bend*direction*speed}
@@ -224,7 +224,7 @@ VS3D = (function(VS3D) {
 			let {beats, mode, speed, hand, head, harmonics, orient, direction, ovalness, p, entry} = options;
 			// let's say there's no such thing as mode for now
 			let segment = Move(merge(options,{
-				beats: beats/4,
+				beats: 1,
 				hand: {a: orient, r: hand.r, vl: 0, a1: orient+QUARTER*direction, r1: ovalness},
 				head: {a: orient, va: speed*direction*harmonics}
 			}));

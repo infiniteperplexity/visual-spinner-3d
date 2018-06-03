@@ -1,0 +1,84 @@
+<!--Distributed under GNU Public License version 3-->
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Four-Petal Anti-Spin Flower Transitions Demo (using the VisualSpinner Engine)</title>
+<script src="vs3d.js"></script>
+<script src="vs3d-moves.js"></script>
+<script src="three.min.js"></script>
+<script src="vs3d-render.js"></script>
+<script>
+// set parameters
+
+let vs, renderer, player;
+function init() {
+	vs = VS3D;
+	renderer = new vs.ThreeRenderer(document.getElementById("player"));
+	player = new vs.Player();
+	player.render = function(props, positions) {
+		renderer.render(props, positions);
+	}
+	let red = player.addProp(new VS3D.Prop(), {color: "red", nudged: 0.05});
+	let blue = player.addProp(new VS3D.Prop(), {color: "blue", nudged: 0.0});
+	let green = player.addProp(new VS3D.Prop(), {color: "green", nudged: 0.05});
+	let yellow = player.addProp(new VS3D.Prop(), {color: "yellow", nudged: 0.0});
+	red.setHandAngle(vs.RIGHT);
+	red.setPropAngle(vs.RIGHT);
+	blue.setHandAngle(vs.RIGHT);
+	blue.setPropAngle(vs.RIGHT);
+
+	var propOne = vs.addProp();
+	propOne.color = "red";
+	var propTwo = vs.addProp();
+	propTwo.color = "blue";
+	propOne.nudge(3,0,0);
+	propTwo.nudge(3.1,0,0);
+	propOne.hand.radius = 1;
+	propTwo.hand.radius = 1;
+	var propThree = vs.addProp();
+	propThree.color = "yellow";
+	var propFour = vs.addProp();
+	propFour.color = "green";
+	propThree.nudge(-3,0,0);
+	propFour.nudge(-3.1,0,0);
+	propThree.hand.angle = vs.NINE;
+	propThree.prop.angle = vs.NINE;
+	propFour.hand.angle = vs.NINE;
+	propFour.prop.angle = vs.NINE;
+	propThree.hand.radius = 1;
+	propFour.hand.radius = 1;
+	for (var i = 0; i<8; i++) {
+		propOne.addMove(moves.build.flower({direction: vs.CLOCKWISE, spin: vs.ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
+		propTwo.addMove(moves.build.flower({direction: 1-(i%2)*2, spin: vs.ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
+		propThree.addMove(moves.build.flower({direction: vs.COUNTERCLOCKWISE, spin: vs.ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
+		propFour.addMove(moves.build.flower({direction: (i%2)*2-1, spin: vs.ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
+	}
+	propOne.addMove(moves.build.flower({direction: vs.CLOCKWISE, spin: vs.ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
+	propTwo.addMove(moves.build.flower({direction: 1-(i%2)*2, spin: vs.ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
+	propThree.addMove(moves.build.flower({direction: vs.COUNTERCLOCKWISE, spin: vs.ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
+	propFour.addMove(moves.build.flower({direction: (i%2)*2-1, spin: vs.ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
+	vs.ready();
+	vs.play();
+}
+</script>
+</head><body onload="init();">
+<a href='http://infiniteperplexity.github.io/visual-spinner-3d/'>See more at the VisualSpinner3D main site.</a>
+<div id="player"></div>
+<p>Using the VisualSpinner Engine, someone with basic programming knowledge can easily create complex patterns.</p>
+<p>Here is the code that drives the entire pattern:</p>
+<p></p>
+<p>for (var i = 0; i&lt;8; i++) {</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;propOne.addMove(moves.build.flower({direction:
+CLOCKWISE, entry: propOne.socket().hand.angle, spin: vs.ANTISPIN, duration:
+  (i==4) ? 1 : 1.25}));</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;propTwo.addMove(moves.build.flower({direction:
+1-(i%2)*2, entry: propTwo.socket().hand.angle, spin: vs.ANTISPIN, duration:
+  (i==4) ? 1 : 1.25}));</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;propThree.addMove(moves.build.flower({direction:
+COUNTERCLOCKWISE, entry: propThree.socket().hand.angle, spin: vs.ANTISPIN,
+duration:  (i==4) ? 1 : 1.25}));</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;propFour.addMove(moves.build.flower({direction:
+(i%2)*2-1, entry: propFour.socket().hand.angle, spin: vs.ANTISPIN,
+duration:  (i==4) ? 1 : 1.25}));</p>
+<p>}</p>
+
+</body></html>

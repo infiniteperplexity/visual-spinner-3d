@@ -16,23 +16,29 @@ VS3D = (function(VS3D) {
 		}
 	}
 
-	function ThreeRenderer(el,width,height) {
+	function ThreeRenderer(el,width,height,fov) {
 		this.width = width || 400;
 		this.height = height || 400;
+		this.fov = fov || 45;
 		this.renderer = new THREE.WebGLRenderer(); // antialias = true
 		this.renderer.setSize(this.width,this.height);
 		el.appendChild(this.renderer.domElement);
 		this.scene = new THREE.Scene();
-		this.camera = new THREE.PerspectiveCamera(45, this.width/this.height, 0.1, 1000);
+		this.camera = new THREE.PerspectiveCamera(this.fov, this.width/this.height);
 		this.camera.position.set(0,0,8);
+		// this.camera.position.set(8,0,0);
+		// this.camera.position.set(0,8,0);
+		this.camera.lookAt(this.scene.position);
 		this.scene.add(this.camera);
 		this.renderer.setClearColor(0x000000,1.0);
 		let light = new THREE.PointLight(0xffffff);
 		light.position.set(0,0,100);
 		this.scene.add(light);
 		light = new THREE.PointLight(0xffffff);
+		light.position.set(0,0,-500);
+		this.scene.add(light);
 		let gcolor = 0x202020;
-		let grid = new THREE.GridHelper(10, 10, gcolor, gcolor);
+		let grid = new THREE.GridHelper(20, 20, gcolor, gcolor);
 		grid.material.tranparent = true;
 		grid.material.opacity = 0.2;
 		grid.rotateX(Math.PI/2);
@@ -46,6 +52,18 @@ VS3D = (function(VS3D) {
 		this.registry = [];
 		this.models = [];
 		this.tick = 0;
+
+		// set up a text overlay with nice default
+		this.overlay = document.createElement("div");
+		this.overlay.appendChild(document.createTextNode(""));
+		this.overlay.style.color = "yellow";
+		this.overlay.style.position = "absolute";
+		this.overlay.style.width = "100%";
+		this.overlay.style.top = "25px";
+		this.overlay.style.left = "190px";
+		this.overlay.style.display = "block";
+		this.overlay.style.textAlign = "left";
+		el.appendChild(this.overlay);
 	}
 
 	ThreeRenderer.prototype.render = function(wrappers, positions) {
@@ -216,5 +234,21 @@ VS3D = (function(VS3D) {
 
 	VS3D.ThreeRenderer = ThreeRenderer;
 	
+
+
+	// how to handle captions
+	// let overlay = document.createElement("div");
+	// overlay.appendChild(document.createTextNode("hello world!"));
+	// overlay.style.color ="yellow";
+	// overlay.style.position = "absolute";
+	// overlay.style.top = "10px";
+	// overlay.style.width = "100%";
+	// overlay.style.zIndex = "100";
+	// overlay.style.display = "block";
+	// overlay.style.textAlign= "left";
+	// document.body.appendChild(overlay);
+	// overlay.innerHTML = "Testing";
+
+
 	return VS3D;
 })(VS3D);
