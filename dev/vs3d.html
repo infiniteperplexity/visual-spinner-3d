@@ -28,7 +28,6 @@
 		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
 		player = new VS3D.Player();
 		let controls = new VS3D.Controls(player);
-		console.log(controls.tick);
 		renderer.div.appendChild(controls.div);
 		player.addProp(red,{model: "poi"});
 		// player.props[0].setHandAngle(180);

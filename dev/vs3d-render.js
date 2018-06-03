@@ -30,34 +30,11 @@ VS3D = (function(VS3D) {
 		this.div.appendChild(this.renderer.domElement);
 		this.scene = new THREE.Scene();
 		this.camera = new THREE.PerspectiveCamera(this.fov, this.width/this.height);
-		this.camera.position.set(0,0,8);
-		// this.camera.position.set(8,0,0);
-		// this.camera.position.set(0,8,0);
-		this.camera.lookAt(this.scene.position);
-		this.scene.add(this.camera);
-		this.renderer.setClearColor(0x000000,1.0);
-		let light = new THREE.PointLight(0xffffff);
-		light.position.set(0,0,100);
-		this.scene.add(light);
-		light = new THREE.PointLight(0xffffff);
-		light.position.set(0,0,-500);
-		this.scene.add(light);
-		let gcolor = 0x202020;
-		let grid = new THREE.GridHelper(20, 20, gcolor, gcolor);
-		grid.material.tranparent = true;
-		grid.material.opacity = 0.2;
-		grid.rotateX(Math.PI/2);
-		this.scene.add(grid);
-		let polar = new THREE.PolarGridHelper(10, 8, 20, 64, gcolor, gcolor);
-		polar.material.tranparent = true;
-		polar.material.opacity = 0.2;
-		polar.rotateX(Math.PI/2);
-		this.scene.add(polar);
+		this.setCameraPosition(0,0,8);
 		this.scene.fog = new THREE.FogExp2( 0x000000, 0.0128 );
 		this.registry = [];
 		this.models = [];
 		this.tick = 0;
-
 		// set up a text overlay with nice default
 		this.overlay = document.createElement("div");
 		this.overlay.class = "vs3d-overlay";
@@ -71,6 +48,42 @@ VS3D = (function(VS3D) {
 		this.overlay.style.textAlign = "left";
 		this.div.appendChild(this.overlay);
 	}
+
+	ThreeRenderer.prototype.setCameraPosition = function(x,y,z) {
+		this.camera.position.set(x,y,z);
+		this.camera.lookAt(this.scene.position);
+		if (this.grid) {
+			this.scene.remove(this.grid);
+		}
+		if (this.polar) {
+			this.scene.remove(this.polar);
+		}
+		if (this.light) {
+			this.scene.remove(
+				this.light);
+		}
+		this.camera.position.set(x,y,z);
+		this.camera.lookAt(this.scene.position);
+		this.scene.add(this.camera);
+		this.renderer.setClearColor(0x000000,1.0);
+		let light = new THREE.PointLight(0xffffff);
+		light.position.set(x,y,z*10);
+		this.scene.add(light);
+		this.light = light;
+		let gcolor = 0x202020;
+		let grid = new THREE.GridHelper(20, 20, gcolor, gcolor);
+		grid.material.tranparent = true;
+		grid.material.opacity = 0.2;
+		grid.rotateOnAxis(VS3D.vector(1,0,0),Math.PI/2);
+		this.scene.add(grid);
+		this.grid = grid;
+		let polar = new THREE.PolarGridHelper(10, 8, 20, 64, gcolor, gcolor);
+		polar.material.tranparent = true;
+		polar.material.opacity = 0.2;
+		polar.rotateOnAxis(VS3D.vector(1,0,0),Math.PI/2);
+		this.polar = polar;
+		this.scene.add(polar);
+	};
 
 	ThreeRenderer.prototype.render = function(wrappers, positions) {
 		let removes = [];
