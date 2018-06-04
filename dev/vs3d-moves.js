@@ -81,22 +81,22 @@ VS3D = (function(VS3D) {
 		"ccap",
 		{},
 		options => {
-			let {beats, speed, hand, spin, orient, direction, p, entry} = options;
+			let {beats, hand, spin, orient, direction, p, entry} = options;
 			let segment = Move(merge(options,{
 				beats: 1,
-				hand: {a: orient, va: spin*direction*speed},
-				head: {a: orient, va: spin*direction*speed}
+				hand: {a: orient, va: spin*direction},
+				head: {a: orient, va: spin*direction}
 			})); 
 			let move = extend([
 				segment,
 				{	
-					hand: {va: -spin*direction*speed},
-					head: {va: 3*spin*direction*speed}
+					hand: {va: -spin*direction},
+					head: {va: 3*spin*direction}
 				},
 				{},
 				{
-					hand: {va: spin*direction*speed},
-					head: {va: spin*direction*speed}
+					hand: {va: spin*direction},
+					head: {va: spin*direction}
 				}
 			]);
 			if (spin===ANTISPIN) {
@@ -121,10 +121,10 @@ VS3D = (function(VS3D) {
 			hybrid: false
 		},
 		options => {
-			let {beats, speed, hand, head, spin, orient, direction, onepointfive, hybrid, entry} = options;
+			let {beats, hand, head, spin, orient, direction, onepointfive, hybrid, entry} = options;
 			let segment = Move(merge(options, {
 				beats: 1,
-				hand: {a: orient, va: direction*speed},
+				hand: {a: orient, va: direction},
 				head: {a: orient, a1: orient+QUARTER*direction, va1: 0}
 			}));
 			let topangle = (onepointfive) ? orient+SPLIT : orient;
@@ -147,14 +147,14 @@ VS3D = (function(VS3D) {
 			petals: 4
 		},
 		options => {
-			let {beats, mode, speed, hand, head, spin, orient, direction, petals, p, entry} = options;
+			let {beats, mode, hand, head, spin, orient, direction, petals, p, entry} = options;
 			let v = (spin===INSPIN) ? (petals+1) : (petals-1);
 			// mode is a "soft default"
 			let hangle = (mode!==undefined) ? orient+mode : orient+head.a-hand.a;
 			let segment = Move(merge(options,{
 				beats: 1,
-				hand: {a: orient, va: direction*speed},
-				head: {a: hangle, va: v*spin*direction*speed}
+				hand: {a: orient, va: direction},
+				head: {a: hangle, va: v*spin*direction}
 			}));
 			let move = extend([segment,{},{},{}]);
 			if (entry!==undefined) {
@@ -170,7 +170,7 @@ VS3D = (function(VS3D) {
 			mode: BOX
 		},
 		options => {
-			let {beats, mode, speed, hand, head, spin, orient, direction, entry} = options;
+			let {beats, mode, hand, head, spin, orient, direction, entry} = options;
 			let hangle = (mode!==undefined) ? orient+mode : head.a;
 			if (spin===ANTISPIN) {
 				// mode is not a very intuitive parameter for cateyes
@@ -178,8 +178,8 @@ VS3D = (function(VS3D) {
 			}
 			let segment = Move(merge(options,{
 				beats: 1,
-				hand: {r: 0.5, a: orient, va: direction*speed},
-				head: {a: hangle, va: spin*direction*speed}
+				hand: {r: 0.5, a: orient, va: direction},
+				head: {a: hangle, va: spin*direction}
 			}));
 			let move = extend([segment,{},{},{}])
 			if (entry!==undefined) {
@@ -197,14 +197,14 @@ VS3D = (function(VS3D) {
 			harmonics: 4
 		},
 		options => {
-			let {beats, mode, speed, hand, head, bend, harmonics, orient, direction, pitch, p, entry} = options;
+			let {beats, mode, hand, head, bend, harmonics, orient, direction, pitch, p, entry} = options;
 			//mode is a "soft default"
 			let hangle = (mode!==undefined) ? orient+mode : orient+head.a-hand.a;
 			let segment = Move(merge(options,{
 				beats: 1,
 				vb: -pitch*harmonics,
-				hand: {a: orient, va: direction*speed},
-				head: {a: hangle, va: bend*direction*speed}
+				hand: {a: orient, va: direction},
+				head: {a: hangle, va: bend*direction}
 			}));
 			let move = extend([segment,{},{},{}]);
 			if (entry!==undefined) {
@@ -221,12 +221,12 @@ VS3D = (function(VS3D) {
 			ovalness: 0.01	
 		},
 		options => {
-			let {beats, mode, speed, hand, head, harmonics, orient, direction, ovalness, p, entry} = options;
+			let {beats, mode, hand, head, harmonics, orient, direction, ovalness, p, entry} = options;
 			// let's say there's no such thing as mode for now
 			let segment = Move(merge(options,{
 				beats: 1,
 				hand: {a: orient, r: hand.r, vl: 0, a1: orient+QUARTER*direction, r1: ovalness},
-				head: {a: orient, va: speed*direction*harmonics}
+				head: {a: orient, va: direction*harmonics}
 			}));
 			let move = extend([
 				segment,

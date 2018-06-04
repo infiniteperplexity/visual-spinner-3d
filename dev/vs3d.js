@@ -733,9 +733,12 @@ VS3D = function() {
 	// returns a prop aligned to the final frame of the move in question
 	function socket(move) {
 		if (Array.isArray(move)) {
-			return socket(move[0]);
+			if (move.length===0) {
+				return new Prop();
+			}
+			return socket(move[move.length-1]);
 		}
-		move.beats = move.beats || 1;
+		move.beats = move.beats || 4;
 		return spin(move, move.beats*BEAT, "dummy");
 	}
 
@@ -1148,7 +1151,17 @@ VS3D = function() {
 		return wrapper;
 	}
 	Player.prototype.goto = function(t) {
-		this.tick = t;
+		let shortest;
+		for (let prop of this.props) {
+			if (shortest===undefined || beats(prop.moves)*BEAT<shortest) {
+				shortest = beats(prop.moves)*BEAT;
+			}
+		}
+		if (t<0) {
+			this.tick = shortest + 1- (-t)%shortest;
+		} else {
+			this.tick = t%shortest;
+		}
 		let positions = [];
 		for (let prop of this.props) {
 			try {
@@ -1209,7 +1222,7 @@ VS3D = function() {
 		controls.appendChild(button);
 		button = document.createElement("button");
 		button.className = "vs3d-button";
-		button.onclick = ()=>player.goto(Math.max(0,player.tick-1));
+		button.onclick = ()=>player.goto(player.tick-1);
 		button.innerHTML = "-";
 		controls.appendChild(button);
 		let input = document.createElement("input");
@@ -1218,7 +1231,7 @@ VS3D = function() {
 		input.value = this.tick;
 		input.min = "0";
 		input.style.width = "80px";
-		input.onchange = (e)=>this.setTick(e.target.value);
+		input.onchange = (e)=>player.goto(e.target.value);
 		input.oninput = input.onchange;
 		controls.appendChild(input);
 		button = document.createElement("button");
@@ -1244,7 +1257,6 @@ VS3D = function() {
 			orient: UP,
 			spin: INSPIN,
 			beats: 4,
-			speed: 1,
 			direction: CLOCKWISE,
 			hand: {r: 1},
 			head: {r: 1}

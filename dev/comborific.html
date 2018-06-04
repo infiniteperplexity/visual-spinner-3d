@@ -64,18 +64,17 @@ function setup() {
 	white.moves.push({beats: 1, head: {va: 0, a1: DOWN}});
 	white.moves.push({beats: 1, head: {va1: 0, a1: LEFT}});
 
-	// orange.moves.push({beats: 2, hand: {va: -1}});
-	// white.moves.push({beats: 2, hand: {va: -1}});
+	orange.moves.push({beats: 1, hand: {va: 0, a1: DOWN}, head: {va: 0, a1: DOWN}});
+	orange.moves.push({beats: 1, hand: {va1: 0, a1: RIGHT}, head: {va1: 0, a1: RIGHT}});
+	white.moves.push({beats: 1, head: {va: 0, a1: DOWN}});
+	white.moves.push({beats: 1, head: {va1: 0, a1: RIGHT}});
 
-	// orange.moves.push({label: "pendulum", beats: 1, hand: {va: 0, a1: DOWN}, head: {va: 0, a1: DOWN}});
-	// orange.moves.push({label: "pendulum", beats: 1, hand: {va1: 0, a1: RIGHT}, head: {va1: 0, a1: RIGHT}});
-	// white.moves.push({label: "pendulum", beats: 1, head: {va: 0, a1: DOWN}});
-	// white.moves.push({label: "pendulum", beats: 1, head: {va1: 0, a1: RIGHT}});
+	orange.moves.push({beats: 1, hand: {va: 0, a1: DOWN}, head: {va: 0, a1: DOWN, spin: -1}});
+	orange.moves.push({beats: 1, hand: {va1: 0, a1: LEFT}, head: {va1: 0, a1: LEFT, spin: -1}});
+	white.moves.push({beats: 1, head: {va: 0, a1: DOWN}});
+	white.moves.push({beats: 1, head: {va1: 0, a1: LEFT}});
+	
 
-	// orange.moves.push({beats: 1, hand: {va: 0, a1: DOWN}, head: {va: 0, a1: DOWN, spin: -1}});
-	// orange.moves.push({beats: 1, hand: {va1: 0, a1: RIGHT}, head: {va1: 0, a1: LEFT, spin: -1}});
-	// white.moves.push({beats: 1, head: {va: 0, a1: DOWN}});
-	// white.moves.push({beats: 1, head: {va1: 0, a1: RIGHT}});
 
 	player.ready();
 	//player.play();	

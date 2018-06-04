@@ -1,9 +1,8 @@
 Dev:
 - Allow truncated moves.  "beats" is the way to do this...I dunno about like, entry though.
 	- We essentially don't need realign if we use ENTRY.
+	- Could also just maybe hack it into fit().
 - Wow, the fan toroids actually look good in the old engine.
-- Test out multi-view.
-- How do I handle t overflow?
 - That exhibit is a useful thing.
 - Overlay should maybe have its own methods.
 
@@ -21,11 +20,4 @@ Apps:
 Bugs:
 - TWIST still looks wrong in parts of WHXFL plane.
 - Fan-based toroids flicker in certain spots.
-
-Ideas:
-- Make it so props use the same data structure as moves.
-	- Have to rewrite a ton of stuff.
-	- Fewer conversions needed.
-	- Positions are non-unique.
-	- Prop can have twist and bend natively.
-	- Against this, we have this general idea that...like...props are for reading, moves are for writing?  Certainly it gets harder when you don't treat it that way.
+- Socket seems to return 90 beats further than it should, for recipe-type moves?

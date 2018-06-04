@@ -1,0 +1,78 @@
+<!--Distributed under GNU Public License version 3-->
+<!DOCTYPE html>
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Toroids in VisualSpinner3D</title>
+<style>
+	#grid {
+		display: grid;
+		grid-column-gap: 3px;
+        grid-row-gap: 3px;
+        grid-template-rows: auto;
+        grid-template-columns: 400px 400px 400px;
+	}
+	.header {
+		text-align: center;
+	}
+</style>
+<script src="vs3d.js"></script>
+<script src="vs3d-moves.js"></script>
+<script src="three.min.js"></script>
+<script src="vs3d-render.js"></script><script>
+
+function init() {
+	setup();
+}
+
+let renderer1, renderer2, renderer3, player, red, blue;
+function setup() {
+	renderer1 = new VS3D.ThreeRenderer(document.getElementById("side"));
+	renderer2 = new VS3D.ThreeRenderer(document.getElementById("front"));
+	renderer3 = new VS3D.ThreeRenderer(document.getElementById("top"));
+	renderer1.setCameraPosition(8,0,0);
+	renderer3.setCameraPosition(0,8,0);
+	player = new VS3D.Player();
+	let controls = new VS3D.Controls(player);
+	renderer2.div.appendChild(controls.div);
+	player.update = function(positions) {
+		renderer1.render(this.props, positions);
+		renderer2.render(this.props, positions);
+		renderer3.render(this.props, positions);
+		// so...we could try to snap up "notes" from moves...
+		// or "caption"...
+		// we'd need a "moveAt" function
+		renderer2.overlay.innerHTML = this.tick;
+		controls.update(this.tick);
+	}
+	red = player.addProp(new VS3D.Prop(), {color: "red", nudged: 0.05});
+	blue = player.addProp(new VS3D.Prop(), {color: "blue", nudged: -0.05});
+	const {UP, DOWN, LEFT, RIGHT, ISOBEND, ANTIBEND, PROBEND} = VS3D;
+	blue.setHandAngle(DOWN);
+	blue.setHeadAngle(DOWN);
+
+	player.ready();
+	// red.moves.push({recipe: "flower"});
+	// blue.moves.push({recipe: "flower"});
+	// red.moves.push({recipe: "flower", spin: -1});
+	// blue.moves.push({recipe: "flower", spin: -1});
+
+
+	red.moves.push({recipe: "toroid"});
+	blue.moves.push({recipe: "toroid"});
+
+	red.moves.push({recipe: "toroid", bend: ANTIBEND});
+	blue.moves.push({recipe: "toroid", bend: ANTIBEND});
+	red.moves.push({recipe: "toroid", bend: PROBEND, harmonics: 2});
+	blue.moves.push({recipe: "toroid", bend: PROBEND, harmonics: 2});
+	player.ready();
+	//console.log(VS3D.socket(red.moves[0][1]));
+}
+</script>
+</head>
+<body onload="init();">
+<div id="grid">
+	<div id="side"><p class="header">Side</p></div>
+	<div id="front"><p class="header">Front</div>
+	<div id="top"><p class="header">Top</p></div>
+</div>
+</body></html>

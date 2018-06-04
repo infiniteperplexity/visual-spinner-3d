@@ -43,9 +43,7 @@ VS3D = (function(VS3D) {
 		this.overlay.style.position = "absolute";
 		this.overlay.style.width = "100%";
 		this.overlay.style.top = "25px";
-		this.overlay.style.left = "190px";
-		this.overlay.style.display = "block";
-		this.overlay.style.textAlign = "left";
+		this.overlay.style.textAlign = "center";
 		this.div.appendChild(this.overlay);
 	}
 
@@ -74,13 +72,13 @@ VS3D = (function(VS3D) {
 		let grid = new THREE.GridHelper(20, 20, gcolor, gcolor);
 		grid.material.tranparent = true;
 		grid.material.opacity = 0.2;
-		grid.rotateOnAxis(VS3D.vector(1,0,0),Math.PI/2);
+		grid.rotateOnAxis(VS3D.vector(Math.sign(z),Math.sign(y),Math.sign(x)),Math.PI/2);
 		this.scene.add(grid);
 		this.grid = grid;
 		let polar = new THREE.PolarGridHelper(10, 8, 20, 64, gcolor, gcolor);
 		polar.material.tranparent = true;
 		polar.material.opacity = 0.2;
-		polar.rotateOnAxis(VS3D.vector(1,0,0),Math.PI/2);
+		polar.rotateOnAxis(VS3D.vector(Math.sign(z),Math.sign(y),Math.sign(x)),Math.PI/2);
 		this.polar = polar;
 		this.scene.add(polar);
 	};
@@ -119,9 +117,9 @@ VS3D = (function(VS3D) {
 
 	ThreeRenderer.prototype.update = function(shapes, prop, nudged) {
 		nudged = nudged || 0;
-		shapes.position.x = 0;
-		shapes.position.y = 0;
-		shapes.position.z = nudged;
+		shapes.position.x = Math.sign(this.camera.position.x)*nudged;
+		shapes.position.y = Math.sign(this.camera.position.y)*nudged;
+		shapes.position.z = Math.sign(this.camera.position.z)*nudged;
 		shapes.rotation.x = 0;
 		shapes.rotation.y = 0;
 		shapes.rotation.z = 0;
