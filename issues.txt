@@ -20,4 +20,5 @@ Apps:
 Bugs:
 - TWIST still looks wrong in parts of WHXFL plane.
 - Fan-based toroids flicker in certain spots.
-- Socket seems to return 90 beats further than it should, for recipe-type moves?
+
+- Omg...linear isolations look just fine using only angular movements.

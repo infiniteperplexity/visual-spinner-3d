@@ -549,6 +549,7 @@ VS3D = function() {
 	// takes a move and a time, returns a prop
 	// dummy is just a convenience to distinguish "real" spinning from sockets and such
 	function spin(move, t, dummy) {
+		move = clone(move);
 		if (move.recipe) {
 			console.log("getting here is usually a bad thing");
 			return spin(build(move, new Prop()),t,dummy);
@@ -636,8 +637,23 @@ VS3D = function() {
 			return fits(prop, move[0]);
 		}
 		let m = spin(move, 0, "dummy");
-		return (	sphere$nearly(sum_nodes(prop, HAND),sum_nodes(m), HAND), SMALL)
-					&& sphere$nearly(sum_nodes(prop, HEAD),sum_nodes(m, HEAD), SMALL);
+		if (move.notes==="white") {
+			console.log(m); // we lost the pivot node somehow.
+			console.log(sum_nodes(prop, HAND));
+			console.log(sum_nodes(m, HAND));
+			let [xs, ys, zs] = [0, 0, 0];
+			for (let i=BODY; i<=HAND; i++) {
+				let {x, y, z} = sphere$vectorize(m[NODES[i]]);
+				xs+=x;
+				ys+=y;
+				zs+=z;
+				console.log(NODES[i]);
+				console.log(xs,ys,zs);
+			}
+		}
+
+		return (	sphere$nearly(sum_nodes(prop, HAND),sum_nodes(m, HAND), SMALL)
+					&& sphere$nearly(sum_nodes(prop, HEAD),sum_nodes(m, HEAD), SMALL));
 	}
 
 	// generalized
@@ -685,9 +701,8 @@ VS3D = function() {
 			if (move.nofit || fits(prop, move)) {
 				return move;
 			} else {
-				// !!!this actually has a pretty high chance of messing up, for any 3d move...
+				// !!!does this actually has a pretty high chance of messing up, for any 3d move?
 				let plane = move.p || WALL;
-				// !!!in a perfect world, this would have a preference for keeping defaults on body, pivot, or hinge
 				let {body, pivot, helper, hand, twist, bend, grip, head} = prop;
 
 				body = {r: body.r, a: sphere$planify(body, plane)};
@@ -699,7 +714,32 @@ VS3D = function() {
 				// fit() should ignore BENT
 				grip = {r: grip.r, a: sphere$planify(grip, plane)};
 				head = {r: head.r, a: sphere$planify(head, plane)};
+
 				let aligned = {
+					body: merge(body, move.body),
+					pivot: merge(pivot, move.pivot),
+					helper: merge(helper, move.helper),
+					hand: merge(hand, move.hand),
+					twist: twist,
+					vt: move.vt,
+					vb: move.vb,
+					grip: merge(grip, move.grip),
+					head: merge(head, move.head),
+					p: plane,
+					beats: move.beats,
+					notes: move.notes
+				};
+				// if (move.notes) {
+				// 	console.log(move.notes);
+				// 	console.log(clone(prop))
+				// 	console.log(clone(aligned));
+				// 	console.log(fits(prop, aligned));
+				// }
+				if (fits(prop, aligned)) {
+					return aligned;
+				}
+				// is this actually what we want, ever?
+				aligned = {
 					body: merge(move.body, body),
 					pivot: merge(move.pivot, pivot),
 					helper: merge(move.helper,helper),
@@ -710,7 +750,8 @@ VS3D = function() {
 					grip: merge(move.grip, grip),
 					head: merge(move.head, head),
 					p: plane,
-					beats: move.beats
+					beats: move.beats,
+					notes: move.notes
 				};
 				return aligned;
 			}
@@ -1211,6 +1252,7 @@ VS3D = function() {
 	function Controls(player) {
 		this.player = player;
 		this.tick = (player) ? player.tick : 0;
+		this.rate = 15;
 		let controls = document.createElement("div");
 		this.div = controls;
 		controls.className = "vs3d-controls";
@@ -1227,7 +1269,7 @@ VS3D = function() {
 		controls.appendChild(button);
 		button = document.createElement("button");
 		button.className = "vs3d-button";
-		button.onclick = ()=>player.goto(player.tick-1);
+		button.onclick = ()=>player.goto(player.tick-this.rate);
 		button.innerHTML = "-";
 		controls.appendChild(button);
 		let input = document.createElement("input");
@@ -1241,7 +1283,7 @@ VS3D = function() {
 		controls.appendChild(input);
 		button = document.createElement("button");
 		button.className = "vs3d-button";
-		button.onclick = ()=>this.player.goto(player.tick+1);
+		button.onclick = ()=>this.player.goto(player.tick+this.rate);
 		button.innerHTML = "+";
 		controls.appendChild(button);
 		button = document.createElement("button");
