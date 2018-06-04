@@ -568,6 +568,9 @@ VS3D = function() {
 					i=(i+1)%move.length;
 				}
 			}
+			console.log(move);
+			console.log(t);
+			console.trace();
 			throw new Error("shouldn't get here");
 		}
 		let notes = move.notes;
@@ -1159,6 +1162,8 @@ VS3D = function() {
 		}
 		if (t<0) {
 			this.tick = shortest + 1- (-t)%shortest;
+		} else if (shortest===0) {
+			this.tick = 0;
 		} else {
 			this.tick = t%shortest;
 		}
