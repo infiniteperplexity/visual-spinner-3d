@@ -47,6 +47,15 @@ VS3D = function() {
 	const THREE = VS3D.THREE = EAST;
 	const SIX = VS3D.SIX = SOUTH;
 	const NINE = VS3D.NINE = WEST;
+	const TWELFTH = Math.PI/(6*UNIT);
+	const ONE = VS3D.ONE = TWELVE + TWELFTH;
+	const TWO = VS3D.TWO = ONE + TWELFTH;
+	const FOUR = VS3D.FOUR = THREE + TWELFTH;
+	const FIVE = VS3D.FIVE = FOUR + TWELFTH;
+	const SEVEN = VS3D.SEVEN = SIX + TWELFTH;
+	const EIGHT = VS3D.EIGHT = SEVEN + TWELFTH;
+	const TEN = VS3D.TEN = NINE + TWELFTH;
+	const ELEVEN = VS3D.ELEVEN = TEN + TWELFTH;
 	const UP = VS3D.UP = NORTH;
 	const DOWN = VS3D.DOWN = SOUTH;
 	const RIGHT = VS3D.RIGHT = EAST;
@@ -637,21 +646,6 @@ VS3D = function() {
 			return fits(prop, move[0]);
 		}
 		let m = spin(move, 0, "dummy");
-		if (move.notes==="white") {
-			console.log(m); // we lost the pivot node somehow.
-			console.log(sum_nodes(prop, HAND));
-			console.log(sum_nodes(m, HAND));
-			let [xs, ys, zs] = [0, 0, 0];
-			for (let i=BODY; i<=HAND; i++) {
-				let {x, y, z} = sphere$vectorize(m[NODES[i]]);
-				xs+=x;
-				ys+=y;
-				zs+=z;
-				console.log(NODES[i]);
-				console.log(xs,ys,zs);
-			}
-		}
-
 		return (	sphere$nearly(sum_nodes(prop, HAND),sum_nodes(m, HAND), SMALL)
 					&& sphere$nearly(sum_nodes(prop, HEAD),sum_nodes(m, HEAD), SMALL));
 	}
@@ -729,12 +723,12 @@ VS3D = function() {
 					beats: move.beats,
 					notes: move.notes
 				};
-				// if (move.notes) {
-				// 	console.log(move.notes);
-				// 	console.log(clone(prop))
-				// 	console.log(clone(aligned));
-				// 	console.log(fits(prop, aligned));
-				// }
+				if (move.notes) {
+					console.log(move.notes);
+					console.log(clone(prop))
+					console.log(clone(aligned));
+					console.log(fits(prop, aligned));
+				}
 				if (fits(prop, aligned)) {
 					return aligned;
 				}
@@ -1185,7 +1179,7 @@ VS3D = function() {
 		}
 		this.props = [];
 		this.speed = 10;
-		this.rate = 1;
+		this.rate = 3;
 		this.tick = 0;
 	}
 	Player.prototype.addProp = function(prop, args) {
@@ -1202,7 +1196,7 @@ VS3D = function() {
 			}
 		}
 		if (t<0) {
-			this.tick = shortest + 1- (-t)%shortest;
+			this.tick = shortest - (-t)%shortest;
 		} else if (shortest===0) {
 			this.tick = 0;
 		} else {
@@ -1276,7 +1270,7 @@ VS3D = function() {
 		input.type = "number";
 		input.className = "vs3d-number-input";
 		input.value = this.tick;
-		input.min = "0";
+		//input.min = "0";
 		input.style.width = "80px";
 		input.onchange = (e)=>player.goto(e.target.value);
 		input.oninput = input.onchange;

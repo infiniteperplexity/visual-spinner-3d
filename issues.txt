@@ -22,3 +22,4 @@ Bugs:
 - Fan-based toroids flicker in certain spots.
 
 - Omg...linear isolations look just fine using only angular movements.
+- Would be really nice to just roll with beats: 1 by default...
