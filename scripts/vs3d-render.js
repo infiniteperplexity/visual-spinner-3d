@@ -16,37 +16,72 @@ VS3D = (function(VS3D) {
 		}
 	}
 
-	function ThreeRenderer(el,width,height) {
+	function ThreeRenderer(el,width,height,fov) {
+		this.div = document.createElement("div");
+		this.div.class = "vs3d-renderer";
+		this.div.style.position = "relative";
+		el.appendChild(this.div);
+		// or could maybe throw this in its own div, with relative positioning?
 		this.width = width || 400;
 		this.height = height || 400;
+		this.fov = fov || 45;
 		this.renderer = new THREE.WebGLRenderer(); // antialias = true
 		this.renderer.setSize(this.width,this.height);
-		el.appendChild(this.renderer.domElement);
+		this.div.appendChild(this.renderer.domElement);
 		this.scene = new THREE.Scene();
-		this.camera = new THREE.PerspectiveCamera(45, this.width/this.height, 0.1, 1000);
-		this.camera.position.set(0,0,8);
-		this.scene.add(this.camera);
-		this.renderer.setClearColor(0x000000,1.0);
-		let light = new THREE.PointLight(0xffffff);
-		light.position.set(0,0,100);
-		this.scene.add(light);
-		light = new THREE.PointLight(0xffffff);
-		let gcolor = 0x202020;
-		let grid = new THREE.GridHelper(10, 10, gcolor, gcolor);
-		grid.material.tranparent = true;
-		grid.material.opacity = 0.2;
-		grid.rotateX(Math.PI/2);
-		this.scene.add(grid);
-		let polar = new THREE.PolarGridHelper(10, 8, 20, 64, gcolor, gcolor);
-		polar.material.tranparent = true;
-		polar.material.opacity = 0.2;
-		polar.rotateX(Math.PI/2);
-		this.scene.add(polar);
+		this.camera = new THREE.PerspectiveCamera(this.fov, this.width/this.height);
+		this.setCameraPosition(0,0,8);
 		this.scene.fog = new THREE.FogExp2( 0x000000, 0.0128 );
 		this.registry = [];
 		this.models = [];
 		this.tick = 0;
+		// set up a text overlay with nice default
+		this.overlay = document.createElement("div");
+		this.overlay.class = "vs3d-overlay";
+		this.overlay.appendChild(document.createTextNode(""));
+		this.overlay.style.color = "yellow";
+		this.overlay.style.position = "absolute";
+		this.overlay.style.width = "100%";
+		this.overlay.style.top = "25px";
+		this.overlay.style.textAlign = "center";
+		this.div.appendChild(this.overlay);
 	}
+
+	ThreeRenderer.prototype.setCameraPosition = function(x,y,z) {
+		this.camera.position.set(x,y,z);
+		this.camera.lookAt(this.scene.position);
+		if (this.grid) {
+			this.scene.remove(this.grid);
+		}
+		if (this.polar) {
+			this.scene.remove(this.polar);
+		}
+		if (this.light) {
+			this.scene.remove(
+				this.light);
+		}
+		this.camera.position.set(x,y,z);
+		this.camera.lookAt(this.scene.position);
+		this.scene.add(this.camera);
+		this.renderer.setClearColor(0x000000,1.0);
+		let light = new THREE.PointLight(0xffffff);
+		light.position.set(x,y,z*10);
+		this.scene.add(light);
+		this.light = light;
+		let gcolor = 0x202020;
+		let grid = new THREE.GridHelper(20, 20, gcolor, gcolor);
+		grid.material.tranparent = true;
+		grid.material.opacity = 0.2;
+		grid.rotateOnAxis(VS3D.vector(Math.sign(z),Math.sign(y),Math.sign(x)),Math.PI/2);
+		this.scene.add(grid);
+		this.grid = grid;
+		let polar = new THREE.PolarGridHelper(10, 8, 20, 64, gcolor, gcolor);
+		polar.material.tranparent = true;
+		polar.material.opacity = 0.2;
+		polar.rotateOnAxis(VS3D.vector(Math.sign(z),Math.sign(y),Math.sign(x)),Math.PI/2);
+		this.polar = polar;
+		this.scene.add(polar);
+	};
 
 	ThreeRenderer.prototype.render = function(wrappers, positions) {
 		let removes = [];
@@ -82,14 +117,24 @@ VS3D = (function(VS3D) {
 
 	ThreeRenderer.prototype.update = function(shapes, prop, nudged) {
 		nudged = nudged || 0;
-		shapes.position.x = 0;
-		shapes.position.y = 0;
-		shapes.position.z = nudged;
+		shapes.position.x = Math.sign(this.camera.position.x)*nudged;
+		shapes.position.y = Math.sign(this.camera.position.y)*nudged;
+		shapes.position.z = Math.sign(this.camera.position.z)*nudged;
 		shapes.rotation.x = 0;
 		shapes.rotation.y = 0;
 		shapes.rotation.z = 0;
+		for (let shape of shapes.children) {
+			if (shape.userData.stretchy) {
+				shape.scale.set(1,prop.head.r,1);
+			}
+			if (shape.userData.slideish) {
+				shape.position.y = prop.head.r/2;
+			}
+			if (shape.userData.slidey) {
+				shape.position.y = prop.head.r;
+			}
+		}
 		let axis = VS3D.axis(prop);
-		
 		for (let i=VS3D.BODY; i<VS3D.HEAD; i++) {
 			let node = VS3D.NODES[i];
 			shapes.rotateY(-prop[node].b*VS3D.UNIT);
@@ -122,22 +167,19 @@ VS3D = (function(VS3D) {
 			new THREE.SphereGeometry(0.2,16,16),
 			new THREE.MeshLambertMaterial({color: this.colors(color)})
 		);
-		//head.material.depthTest = false;
-		head.position.y = 1;
+		//head.position.y = 1;
+		head.userData.slidey = true;
 		let tether = new THREE.Mesh(
 			new THREE.CylinderGeometry(0.025,0.025,1,4),
 			new THREE.MeshLambertMaterial({color: "white"})
 		);
-		tether.position.y = 0.5;
-		tether.userData.stretchy = "soooo stretchy!";
-		console.log(tether.userData.stretchy);
+		// tether.position.y = 0.5;
+		tether.userData.stretchy = true;
+		tether.userData.slideish = true;
 		let handle = new THREE.Mesh(
 			new THREE.SphereGeometry(0.075,8,8),
 			new THREE.MeshLambertMaterial({color: this.colors(color)})
 		);
-		//handle.material.depthTest = false; 		
-		//tether.renderOrder = -1;
-		//tether.material.depthTest = false;
 		let group = new THREE.Group();
 		group.add(head);
 		group.add(tether);
@@ -218,5 +260,21 @@ VS3D = (function(VS3D) {
 
 	VS3D.ThreeRenderer = ThreeRenderer;
 	
+
+
+	// how to handle captions
+	// let overlay = document.createElement("div");
+	// overlay.appendChild(document.createTextNode("hello world!"));
+	// overlay.style.color ="yellow";
+	// overlay.style.position = "absolute";
+	// overlay.style.top = "10px";
+	// overlay.style.width = "100%";
+	// overlay.style.zIndex = "100";
+	// overlay.style.display = "block";
+	// overlay.style.textAlign= "left";
+	// document.body.appendChild(overlay);
+	// overlay.innerHTML = "Testing";
+
+
 	return VS3D;
 })(VS3D);

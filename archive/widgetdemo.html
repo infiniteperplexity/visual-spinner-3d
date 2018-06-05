@@ -1,0 +1,64 @@
+<!--Distributed under GNU Public License version 3-->
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>VisualSpinner3D v. 3.0, by Glenn Wright</title>
+<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="scripts/three.min.js"></script>
+<script src="scripts/gl-matrix-min.js"></script>
+<script src="scripts/phoria-min.js"></script>
+<script src="scripts/visual-spinner-engine.js"></script>
+<script src="scripts/visual-spinner-moves.js"></script>
+<script src="scripts/visual-spinner-ui.js"></script><script>
+function init() {
+	var vs = VS3D.VisualSpinnerWidget();
+	vs.embedById("vs-div");
+	var propOne = vs.addProp();
+	var propTwo = vs.addProp();
+	propOne.color = "red";
+	propTwo.color = "blue";
+	propOne.hand.radius = 1;
+	propTwo.hand.radius = 1;
+	propOne.addMove(vs.Moves.build.flower({spin: vs.ANTISPIN}));
+	propTwo.addMove(vs.Moves.build.flower({spin: vs.ANTISPIN, direction: vs.COUNTERCLOCKWISE}));
+	vs.addControls("play","pause","rewind","frame","forward","reset","2d3d");
+	vs.ready();
+}
+</script>
+<body onload="init();">
+<a href='http://infiniteperplexity.github.io/visual-spinner-3d/'>See more at the VisualSpinner3D main site.</a>
+<div id="vs-div">
+</div>
+<p>
+You can now embed a VisualSpinner widget in your web page with simple JavaScript:
+</p>
+<code>
+&lt;script src="http://code.jquery.com/jquery-1.10.2.min.js"&gt;&lt;/script&gt;<br>
+&lt;script src="scripts/requestAnimationFrame.js"&gt;&lt;/script&gt;<br>
+&lt;script src="scripts/three.min.js"&gt;&lt;/script&gt;<br>
+&lt;script src="scripts/gl-matrix-min.js"&gt;&lt;/script&gt;<br>
+&lt;script src="scripts/phoria-min.js"&gt;&lt;/script&gt;<br>
+&lt;script src="scripts/visual-spinner-engine.js"&gt;&lt;/script&gt;<br>
+&lt;script src="scripts/visual-spinner-moves.js"&gt;&lt;/script&gt;<br>
+&lt;script src="scripts/visual-spinner-ui.js"&gt;&lt;/script&gt;<br>
+&lt;script&gt;<br>
+function init() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;var vs = VS3D.VisualSpinnerWidget();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;VS3D.Constants.rescope(vs);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;vs.embedById("vs-div");<br>
+&nbsp;&nbsp;&nbsp;&nbsp;var propOne = vs.addProp();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;var propTwo = vs.addProp();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;propOne.color = "red";<br>
+&nbsp;&nbsp;&nbsp;&nbsp;propTwo.color = "blue";<br>
+&nbsp;&nbsp;&nbsp;&nbsp;propOne.hand.radius = 1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;propTwo.hand.radius = 1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;propOne.addMove(vs.Moves.build.flower({spin: vs.ANTISPIN}));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;propTwo.addMove(vs.Moves.build.flower({spin: vs.ANTISPIN, direction: vs.COUNTERCLOCKWISE}));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;vs.addControls("play","pause","rewind","frame","forward","reset","2d3d");<br>
+&nbsp;&nbsp;&nbsp;&nbsp;vs.ready();<br>
+}<br>
+&lt;/script&gt;<br>
+&lt;body onload="init();"&gt;<br>
+&lt;div id="vs-div"&gt;<br>
+&lt;/div&gt;<br>
+</code>
+</body></html>

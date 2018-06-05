@@ -47,6 +47,15 @@ VS3D = function() {
 	const THREE = VS3D.THREE = EAST;
 	const SIX = VS3D.SIX = SOUTH;
 	const NINE = VS3D.NINE = WEST;
+	const TWELFTH = Math.PI/(6*UNIT);
+	const ONE = VS3D.ONE = TWELVE + TWELFTH;
+	const TWO = VS3D.TWO = ONE + TWELFTH;
+	const FOUR = VS3D.FOUR = THREE + TWELFTH;
+	const FIVE = VS3D.FIVE = FOUR + TWELFTH;
+	const SEVEN = VS3D.SEVEN = SIX + TWELFTH;
+	const EIGHT = VS3D.EIGHT = SEVEN + TWELFTH;
+	const TEN = VS3D.TEN = NINE + TWELFTH;
+	const ELEVEN = VS3D.ELEVEN = TEN + TWELFTH;
 	const UP = VS3D.UP = NORTH;
 	const DOWN = VS3D.DOWN = SOUTH;
 	const RIGHT = VS3D.RIGHT = EAST;
@@ -99,17 +108,31 @@ VS3D = function() {
 
 	/// immutability helper
 	function clone(obj) {
-	  let nobj = {...obj};
-	  for (let prop in nobj) {
-	    if (typeof(nobj[prop])==="object") {
-	      nobj[prop] = {...clone(nobj[prop])};
-	    }
-	  }
-	  return nobj;
+		let nobj;
+		if (Array.isArray(obj)) {
+			nobj = [...obj];
+			for (let i=0; i<nobj.length; i++) {
+				nobj[i] = clone(nobj[i]);
+			}
+			return nobj;
+		}
+		nobj = {...obj};
+		for (let prop in nobj) {
+		    if (typeof(nobj[prop])==="object") {
+		      	nobj[prop] = {...clone(nobj[prop])};
+		    }
+		}
+		return nobj;
 	}
 
 	function merge(obj1, obj2) {
+		if (!obj1) {
+			return clone(obj2);
+		}
 		let nobj = clone(obj1);
+		if (!obj2) {
+			return nobj;
+		}
 		for (let prop in obj2) {
 			if (typeof(obj2[prop])==="object") {
 				if (typeof(nobj[prop])==="object") {
@@ -454,7 +477,7 @@ VS3D = function() {
 	function Move(args) {
 		args = args || {};
 		let p = args.p || WALL;
-		let beats = args.beats || 4;
+		let beats = args.beats || 1; // !!!! is this a good default?
 		// set default values for node positions
 		let body = merge({r: 0, a: 0}, args.body);
 		let pivot = merge({r: 0, a: 0}, args.pivot);
@@ -535,6 +558,7 @@ VS3D = function() {
 	// takes a move and a time, returns a prop
 	// dummy is just a convenience to distinguish "real" spinning from sockets and such
 	function spin(move, t, dummy) {
+		// move = clone(move);
 		if (move.recipe) {
 			console.log("getting here is usually a bad thing");
 			return spin(build(move, new Prop()),t,dummy);
@@ -554,27 +578,33 @@ VS3D = function() {
 					i=(i+1)%move.length;
 				}
 			}
+			console.log(move);
+			console.log(t);
+			console.trace();
+			throw new Error("shouldn't get here");
 		}
+		let notes = move.notes;
 		let p = move.p || WALL;
-		let b = move.beats || 1;
-		move.body = move.body || {r: 0, a: 0, p: p};
-		move.pivot = move.pivot || {r: 0, a: 0, p: p};
-		move.helper = move.helper || {r: 0, a: 0, p: p};
-		move.hand = move.hand || {r: 1, a: 0, p: p};
-		move.twist = move.twist || 0;
-		move.bent = move.bent || 0;
-		move.vt = move.vt || 0;
-		move.vb = move.vb || 0;
-		move.grip = move.grip || {r: 0, a: 0, p: p};
-		move.head = move.head || {r: 1, a: 0, p: p};	
-		let body = spin_node({beats: b, p: p, ...move.body}, t);
-		let pivot = spin_node({beats: b, p: p, ...move.pivot}, t);
-		let helper = spin_node({beats: b, p: p, ...move.helper}, t);
-		let hand = spin_node({beats: b, p: p, ...move.hand}, t);
-		let grip = spin_node({beats: b, p: p, ...move.grip}, t);
-		let head = spin_node({beats: b, p: p, ...move.head}, t);
-		let twist = move.twist + move.vt*t*SPEED;
-		let bent = move.bent + move.vb*t*SPEED;
+		let b = move.beats || 1; // !!!! is this a good default?
+		let mbody = merge({r: 0, a: 0, notes: notes}, move.body);
+		let mpivot = merge({r: 0, a: 0, notes: notes}, move.pivot);
+		let mhelper = merge({r: 0, a: 0, notes: notes}, move.helper);
+		let mhand = merge({r: 1, a: 0, notes: notes}, move.hand);
+		let mtwist = move.twist || 0;
+		let mbent = move.bent || 0;
+		let mvt = move.vt || 0;
+		let mvb = move.vb || 0;
+		let mgrip = merge({r: 0, a: 0, notes: notes}, move.grip);
+		let mhead = merge({r: 1, a: 0, notes: notes}, move.head);	
+		let body = spin_node({beats: b, p: p, ...mbody}, t);
+		let pivot = spin_node({beats: b, p: p, ...mpivot}, t);
+		let helper = spin_node({beats: b, p: p, ...mhelper}, t);
+		// okay, the problem is that it doesn't pass the positions and stuff...
+		let hand = spin_node({beats: b, p: p, ...mhand}, t);
+		let grip = spin_node({beats: b, p: p, ...mgrip}, t);
+		let head = spin_node({beats: b, p: p, ...mhead}, t);
+		let twist = mtwist + mvt*t*SPEED;
+		let bent = mbent + mvb*t*SPEED;
 		let bearing = head.b;
 		if (bent!==0 || move.vb!==0) {
 			let axis = vector$unitize(sphere$vectorize(head));
@@ -603,11 +633,13 @@ VS3D = function() {
 		if (Array.isArray(move)) {
 			let b = 0;
 			for (let m of move) {
-				b+=(beats(m) || 1);
+				b+=(beats(m) || 1); // !!!! is this a good default?
 			}
 			return b;
+		} else if (move.recipe) {
+			return move.beats || 4;
 		} else {
-			return (move.beats || 1);
+			return (move.beats || 1); // !!!! is this a good default?
 		}
 	}	
 
@@ -616,8 +648,8 @@ VS3D = function() {
 			return fits(prop, move[0]);
 		}
 		let m = spin(move, 0, "dummy");
-		return (	sphere$nearly(sum_nodes(prop, HAND),sum_nodes(m), HAND), SMALL)
-					&& sphere$nearly(sum_nodes(prop, HEAD),sum_nodes(m, HEAD), SMALL);
+		return (	sphere$nearly(sum_nodes(prop, HAND),sum_nodes(m, HAND), SMALL)
+					&& sphere$nearly(sum_nodes(prop, HEAD),sum_nodes(m, HEAD), SMALL));
 	}
 
 	// generalized
@@ -646,7 +678,7 @@ VS3D = function() {
 			if (move.length===0) {
 				return [];
 			}
-			let fitted = [];
+			let fitted = clone(move);
 			fitted[0] = fit(prop, move[0]);
 			for (let i=1; i<move.length; i++) {
 				// !!! Should we consider propagating planes at this point?
@@ -665,10 +697,10 @@ VS3D = function() {
 			if (move.nofit || fits(prop, move)) {
 				return move;
 			} else {
-				// !!!this actually has a pretty high chance of messing up, for any 3d move...
+				// !!!does this actually has a pretty high chance of messing up, for any 3d move?
 				let plane = move.p || WALL;
-				// !!!in a perfect world, this would have a preference for keeping defaults on body, pivot, or hinge
 				let {body, pivot, helper, hand, twist, bend, grip, head} = prop;
+
 				body = {r: body.r, a: sphere$planify(body, plane)};
 				pivot = {r: pivot.r, a: sphere$planify(pivot, plane)};
 				helper = {r: helper.r, a: sphere$planify(helper, plane)};
@@ -678,7 +710,32 @@ VS3D = function() {
 				// fit() should ignore BENT
 				grip = {r: grip.r, a: sphere$planify(grip, plane)};
 				head = {r: head.r, a: sphere$planify(head, plane)};
+
 				let aligned = {
+					body: merge(body, move.body),
+					pivot: merge(pivot, move.pivot),
+					helper: merge(helper, move.helper),
+					hand: merge(hand, move.hand),
+					twist: twist,
+					vt: move.vt,
+					vb: move.vb,
+					grip: merge(grip, move.grip),
+					head: merge(head, move.head),
+					p: plane,
+					beats: move.beats,
+					notes: move.notes
+				};
+				if (move.notes) {
+					console.log(move.notes);
+					console.log(clone(prop))
+					console.log(clone(aligned));
+					console.log(fits(prop, aligned));
+				}
+				if (fits(prop, aligned)) {
+					return aligned;
+				}
+				// is this actually what we want, ever?
+				aligned = {
 					body: merge(move.body, body),
 					pivot: merge(move.pivot, pivot),
 					helper: merge(move.helper,helper),
@@ -688,7 +745,9 @@ VS3D = function() {
 					vb: move.vb,
 					grip: merge(move.grip, grip),
 					head: merge(move.head, head),
-					p: plane
+					p: plane,
+					beats: move.beats,
+					notes: move.notes
 				};
 				return aligned;
 			}
@@ -714,10 +773,12 @@ VS3D = function() {
 	// returns a prop aligned to the final frame of the move in question
 	function socket(move) {
 		if (Array.isArray(move)) {
-			return socket(move[0]);
+			if (move.length===0) {
+				return new Prop();
+			}
+			return socket(move[move.length-1]);
 		}
-		move.beats = move.beats || 1;
-		return spin(move, move.beats*BEAT, "dummy");
+		return spin(move, beats(move)*BEAT, "dummy");
 	}
 
 
@@ -773,6 +834,7 @@ VS3D = function() {
 				fitted.head.a = moments.a;
 			}
 			bent = angle(bent);
+			//  !!!! this a problem sometimes because merging happens before solving
 			let extended = {
 				body: merge(moments.body, fitted.body),
 				pivot: merge(moments.pivot, fitted.pivot),
@@ -798,6 +860,7 @@ VS3D = function() {
 		if (m==="linear" || args.la!==undefined || args.vl!==undefined || args.vl1!==undefined || args.al!==undefined) {
 			let moments = moments_linear(args);
 			return spin_linear({...moments, p: p}, t);
+
 		}
 		let moments = moments_angular(args);
 		return spin_angular({...moments, p: p}, t);
@@ -829,26 +892,27 @@ VS3D = function() {
 		return {...angle$spherify(a, p), r: r};
 	}
 
+	let aliases = {
+		radius: "r",
+		r0: "r",
+		radius0: "r",
+		radius1: "r1",
+		angle: "a",
+		angle0: "a",
+		a0: "a",
+		angle1: "a1",
+		speed: "va",
+		speed0: "va",
+		speed1: "va1",
+		motion: "m",
+		vl0: "vl"
+	}
 	function alias(args) {
-		let aliases = {
-			radius: "r",
-			r0: "r",
-			radius0: "r",
-			radius1: "r1",
-			angle: "a",
-			angle0: "a",
-			a0: "a",
-			angle1: "a1",
-			speed: "va",
-			speed0: "va",
-			speed1: "va1",
-			motion: "m",
-			vl0: "vl"
-		}
-		let vals = ["r","r1","a","a1","va","vr","va1","vr1","c","p","m","beats","vl","al","la","t","spin"];
 		let nargs = {};
-		for (let val of vals) {
-			if (nargs[val]===undefined) {
+		for (let val in args) {
+			if (aliases[val]) {
+				nargs[aliases[val]] = args[val];  
+			} else {
 				nargs[val] = args[val];
 			}
 		}
@@ -1081,14 +1145,21 @@ VS3D = function() {
 		this.nudged = args.nudged || 0;
 		this.prop = prop;
 		this.moves = [];
+		this.fitted = null;
 	}
 
+	PropWrapper.prototype.refit = function() {
+		this.fitted = fit(this.prop, this.moves);
+		return this.fitted;
+	}
 	PropWrapper.prototype.spin = function(t) {
 		if (this.moves.length===0) {
 			return this.prop;
 		}
-		let move = fit(this.prop, this.moves);
-		return spin(move, t);
+		if (!this.fitted) {
+			this.refit();
+		}
+		return spin(this.fitted, t);
 	}
 	for (let node of NODES) {
 		let nname = node[0].toUpperCase()+node.slice(1);
@@ -1105,11 +1176,15 @@ VS3D = function() {
 		}
 	}
 
-	function Player(args) {
-		args = args || {};
+	function Player(renderer) {
+		if (renderer) {
+			this.render = function(wrappers, positions) {
+				renderer.render(wrappers, positions);
+			};
+		}
 		this.props = [];
-		this.speed = args.speed || 10;
-		this.rate = args.rate || 1;
+		this.speed = 10;
+		this.rate = 1;
 		this.tick = 0;
 	}
 	Player.prototype.addProp = function(prop, args) {
@@ -1118,11 +1193,20 @@ VS3D = function() {
 		this.props.push(wrapper);
 		return wrapper;
 	}
-	// should the callback be able to take cosmetic properties?
-	Player.prototype.render = function(wrappers, positions) {};
-
 	Player.prototype.goto = function(t) {
-		this.tick = t;
+		let shortest;
+		for (let prop of this.props) {
+			if (shortest===undefined || beats(prop.moves)*BEAT<shortest) {
+				shortest = beats(prop.moves)*BEAT;
+			}
+		}
+		if (t<0) {
+			this.tick = shortest - (-t)%shortest;
+		} else if (shortest===0) {
+			this.tick = 0;
+		} else {
+			this.tick = t%shortest;
+		}
 		let positions = [];
 		for (let prop of this.props) {
 			try {
@@ -1133,7 +1217,7 @@ VS3D = function() {
 				throw(e);
 			}
 		}
-		this.render(this.props, positions);
+		this.update(positions);
 		return positions;
 	}
 	Player.prototype.play = function() {
@@ -1151,10 +1235,65 @@ VS3D = function() {
 		this.goto(0);
 	}
 
-	Player.prototype.update = function() {
+	Player.prototype.refresh = function() {
 		this.goto(this.tick);
 	}
 
+	Player.prototype.ready = function() {
+		this.reset();
+	}
+
+	Player.prototype.update = function(positions) {
+		// example
+		// renderer.render(this.props, positions);
+	}
+
+	function Controls(player) {
+		this.player = player;
+		this.tick = (player) ? player.tick : 0;
+		this.rate = 15;
+		let controls = document.createElement("div");
+		this.div = controls;
+		controls.className = "vs3d-controls";
+		let button;
+		button = document.createElement("button");
+		button.className = "vs3d-button";
+		button.onclick = ()=>player.play();
+		button.innerHTML = "Play";
+		controls.appendChild(button);
+		button = document.createElement("button");
+		button.className = "vs3d-button";
+		button.onclick = ()=>player.stop();
+		button.innerHTML = "Pause";
+		controls.appendChild(button);
+		button = document.createElement("button");
+		button.className = "vs3d-button";
+		button.onclick = ()=>player.goto(player.tick-this.rate);
+		button.innerHTML = "-";
+		controls.appendChild(button);
+		let input = document.createElement("input");
+		input.type = "number";
+		input.className = "vs3d-number-input";
+		input.value = this.tick;
+		input.style.width = "80px";
+		input.onchange = (e)=>player.goto(e.target.value);
+		input.oninput = input.onchange;
+		controls.appendChild(input);
+		button = document.createElement("button");
+		button.className = "vs3d-button";
+		button.onclick = ()=>this.player.goto(player.tick+this.rate);
+		button.innerHTML = "+";
+		controls.appendChild(button);
+		button = document.createElement("button");
+		button.className = "vs3d-button";
+		button.onclick = ()=>player.reset();
+		button.innerHTML = "Reset";
+		controls.appendChild(button);
+	}
+	Controls.prototype.update = function(t) {
+		let input = this.div.querySelector(".vs3d-number-input");
+		input.value = t;
+	}
 
 	let MoveFactory = {
 		defaults: {
@@ -1162,7 +1301,6 @@ VS3D = function() {
 			orient: UP,
 			spin: INSPIN,
 			beats: 4,
-			speed: 1,
 			direction: CLOCKWISE,
 			hand: {r: 1},
 			head: {r: 1}
@@ -1192,7 +1330,8 @@ VS3D = function() {
 			head: head,
 		}
 		let args = merge(aligned, recipe);
-		return MoveFactory[args.recipe](args);
+		let m = MoveFactory[args.recipe](args);
+		return m;
 	}
 
 	function recipe(name, defs, f) {
@@ -1291,6 +1430,7 @@ VS3D = function() {
 	VS3D.solve_angle = solve_angle;
 	VS3D.PropWrapper = PropWrapper;
 	VS3D.Player = Player;
+	VS3D.Controls = Controls;
 	VS3D.stringify = stringify;
 	VS3D.parse = parse;
 	VS3D.debug = debug;

@@ -2,30 +2,25 @@
 <html><head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Four-Petal Anti-Spin Flower Transitions Demo (using the VisualSpinner Engine)</title>
-<script src="vs3d.js"></script>
-<script src="vs3d-moves.js"></script>
-<script src="three.min.js"></script>
-<script src="vs3d-render.js"></script>
+<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="scripts/three.min.js"></script>
+<script src="scripts/gl-matrix-min.js"></script>
+<script src="scripts/phoria-min.js"></script>
+<script src="scripts/visual-spinner-engine.js"></script>
+<script src="scripts/visual-spinner-moves.js"></script>
+<script src="scripts/visual-spinner-ui.js"></script>
 <script>
 // set parameters
+var myProps = new Array();
+var moves = VS3D.MoveFactory();
+var props = VS3D.PropFactory();
 
-let vs, renderer, player;
+var vs;
 function init() {
-	vs = VS3D;
-	renderer = new vs.ThreeRenderer(document.getElementById("player"));
-	player = new vs.Player();
-	player.render = function(props, positions) {
-		renderer.render(props, positions);
-	}
-	let red = player.addProp(new VS3D.Prop(), {color: "red", nudged: 0.05});
-	let blue = player.addProp(new VS3D.Prop(), {color: "blue", nudged: 0.0});
-	let green = player.addProp(new VS3D.Prop(), {color: "green", nudged: 0.05});
-	let yellow = player.addProp(new VS3D.Prop(), {color: "yellow", nudged: 0.0});
-	red.setHandAngle(vs.RIGHT);
-	red.setPropAngle(vs.RIGHT);
-	blue.setHandAngle(vs.RIGHT);
-	blue.setPropAngle(vs.RIGHT);
-
+	vs = VS3D.VisualSpinnerWidget();
+	vs.width = 800;
+	vs.swapRenderer(VS3D.HTML5Canvas2dRenderer());
+	vs.embedById("vs-div");
 	var propOne = vs.addProp();
 	propOne.color = "red";
 	var propTwo = vs.addProp();
@@ -62,7 +57,13 @@ function init() {
 </script>
 </head><body onload="init();">
 <a href='http://infiniteperplexity.github.io/visual-spinner-3d/'>See more at the VisualSpinner3D main site.</a>
-<div id="player"></div>
+<table>
+<tbody><tr>
+<td rowspan="9" colspan="2">
+	<div id="vs-div"></div>
+</td>
+</tr>
+</tbody></table>
 <p>Using the VisualSpinner Engine, someone with basic programming knowledge can easily create complex patterns.</p>
 <p>Here is the code that drives the entire pattern:</p>
 <p></p>

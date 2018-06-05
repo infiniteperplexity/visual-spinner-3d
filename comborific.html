@@ -2,317 +2,254 @@
 <!DOCTYPE html>
 <html><head>
 <style>
-body {margin: 0; padding: 0; background-color: #679}
-h1, h2, header p {text-align: center}
-header {width: 1240px; height: 100px}
-header a {position: absolute; top: 5px; left: 5px}
-#content {width: 1250px; height: 510px;}
-canvas {width: 400px; height: 400px; background-color: #000;}
-section {margin: 0; padding: 0}
-header, section div {vertical-align: top; padding: 2.5px; border: 5px solid gray; margin: -2.5px; display: inline-block;}
-#display {width: 400px; height: 400px; float: left}
-#popimport {height: 240px; width: 400px}
-#frameN {width: 100px}
+body {
+	margin: 0;
+	padding: 0;
+	background-color: #679
+}
+#grid {
+	display: grid;
+	grid-column-gap: 3px;
+	grid-row-gap: 3px;
+	grid-template-columns: 400px auto;
+}
+video {
+	height: 400px;
+}
 </style>
 
 
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Drex's "combo-rific" video modeled in VisualSpinner, by Glenn Wright)</title>
-<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
-<script data-src="scripts/noise_vertex.js" id="nvertex" type="x-shader/x-vertex"></script>
-<script data-src="scripts/noise_fragment.js" id="nfragment" type="x-shader/x-fragment"></script>
-<script data-src="scripts/displacement_vertex.js" id="dvertex" type="x-shader/x-vertex"></script>
-<script data-src="scripts/displacement_fragment.js" id="dfragment" type="x-shader/x-fragment"></script>
+<script src="scripts/vs3d.js"></script>
+<script src="scripts/vs3d-moves.js"></script>
 <script src="scripts/three.min.js"></script>
-<script src="scripts/gl-matrix-min.js"></script>
-<script src="scripts/phoria-min.js"></script>
-<script src="scripts/visual-spinner-engine.js"></script>
-<script src="scripts/visual-spinner-moves.js"></script>
-<script src="scripts/visual-spinner-ui.js"></script>
-<script>
-// set parameters
-
-var view2d = false;
-
-var myProps = new Array();
-var moves = VS3D.MoveFactory();
+<script src="scripts/vs3d-render.js"></script><script>
 
 function init() {
-	canvasSetup();
+	setup();
 }
 
-var vs;
-function canvasSetup() {
-	vs = VS3D.VisualSpinnerWidget();
-	vs.embedById("display");
-	var orangePoi = vs.addProp();
-	var whitePoi = vs.addProp();
-	//orangePoi.propType = "fan";
-	//whitePoi.propType = "fan";
-	orangePoi.color = "orange";
-	whitePoi.color = "white";
-	vs.addControls("play","pause","rewind","frame","forward","reset","export");
-	//window.addEventListener("keydown", listenForKey, false);
-	// set up props
-	orangePoi.hand.radius = 1;
-	whitePoi.hand.radius = 0;
-	orangePoi.rotateHand(vs.SPLIT);
-	orangePoi.rotateProp(vs.SPLIT);
-	whitePoi.rotateHand(vs.SPLIT);
-	whitePoi.rotateProp(vs.SPLIT);
-
-	// Drex begins with a vs.CCW pendulum vs. extended pendulum hybrid.
-		// Note the use of "hybrid: true" on the extended pendulum.
-			// This tells the hand speed the smooth path of the other pendulum's prop
-			// The default (hybrid: false) instead spins at a constant speed that will match a static spin or flower
-			// Note that the constant vs.THREE, vs.SIX, vs.NINE, and vs.TWELVE refer to the clock points (directions)
-		// Pendulum paths are not true to real-world gravity, because I use a simplified function
-	orangePoi.addMove(moves.build.pendulum({hybrid: true, direction: vs.CCW, extend: 1, duration: 0.5}));
-	whitePoi.addMove(moves.build.pendulum({direction: vs.CCW, extend: vs.TINY, duration: 0.5}));
-
-		// Next Drex does a clockwise pendulum vs. antispin hybrid.
-		// The "twirl" parameter, which is mainly used for 1.5s, turns out to be useful here
-
-	///!!!It's unfortunate, but ENTRY seems to be necessary on these pendulums, because they don't "pass over the top" in the usual sense even when cycled through
-	orangePoi.addMove(moves.build.pendulum({hybrid: true, duration: 0.5, twirl: -3}));
-	whitePoi.addMove(moves.build.pendulum({extend: 0, duration: 0.5}));
-
-		// Back to the original hybrid...
-	orangePoi.addMove(moves.build.pendulum({hybrid: true, direction: vs.CCW, extend: 1, duration: 0.5}));
-	whitePoi.addMove(moves.build.pendulum({direction: vs.CCW, extend: 0, duration: 0.5}));
-
-	// ...and back to the second hybrid
-	orangePoi.addMove(moves.build.pendulum({hybrid: true, duration: 0.5, twirl: -3}));
-	// As Drex transitions to the next move, he distorts the second half of the hybrid in various ways
-		// The orange poi stops and reverses direction (much more slowly) and the hand holding it drifts to the right
-			// (I don't think the pivoting here is essential to Drex's intent for the move...basically it switches from triquetra to cateye partway through)
-	orangePoi.modifyTail({prop_speed: -1, prop_acc: 0, hand_stretch: -2});
-	whitePoi.addMove(moves.build.pendulum({extend: 0, duration: 0.5}));
-		// The white poi drifts to the right so Drex can spin moves that are not centered on his body
-			// VisualSpinner handles this sort of thing using the "pivot" element to recenter the move
-	whitePoi.modifyTail({pivot_stretch: 2, pivot_angle: vs.THREE});
-
-		// The next move is point isolation vs. static spin.  A point isolation can be modeled as a box-mode, zero-petal, in-spin flower.
-	orangePoi.addMove(moves.build.pointiso({pivot_angle: vs.THREE, pivot_radius: 0.5, duration: 0.5}));
-	whitePoi.addMove(moves.build.staticspin({extend: 0.5, duration: 0.5}));
-
-		// The next move is isolation vs. vertical cateye
-	orangePoi.addMove(moves.build.cateye({pivot_angle: vs.THREE, pivot_radius: 1, duration: 1.5}));
-	whitePoi.addMove(moves.build.isolation({pivot_angle: vs.THREE, pivot_radius: 1, duration: 1.5}));
-
-	// Then Drex does the third, "unfolding" variant of point iso vs. static spin from his Tech Blog #390
-	orangePoi.addMove(moves.build.staticspin({direction: vs.CCW, extend: 0.5, duration: 0.5}));
-	whitePoi.addMove(moves.build.pointiso({direction: vs.CCW, pivot_angle: vs.THREE, pivot_radius: 0.5, duration: 0.25}));
-	whitePoi.addMove(moves.build.pointiso({pivot_angle: vs.THREE, pivot_radius: 0.5, duration: 0.25}));
-
-	// Next comes static spin vs. extension, starting pivoted but recentering quickly
-	orangePoi.addMove(moves.build.staticspin({direction: vs.CCW, duration: 0.5, pivot_angle: vs.THREE, pivot_radius: 0.5}));;
-	whitePoi.addMove(moves.build.pointiso({direction: vs.CCW, duration: 0.5, pivot_angle: vs.THREE, pivot_radius: 0.5}));
-	orangePoi.modifyTail({pivot_stretch: 2});
-	whitePoi.modifyTail({pivot_stretch: 2});
-	orangePoi.addMove(moves.build.extension({direction: vs.CCW, duration: 0.5}));
-	whitePoi.addMove(moves.build.staticspin({direction: vs.CCW, duration: 0.5}));
-
-		// Next comes pendulum vs. overhead CAP
-	orangePoi.addMove(moves.build.ccap({orient: vs.TWELVE, direction: vs.CCW, phase: 1}));
-	whitePoi.addMove(moves.build.pendulum({extend:0}));
-	// Then repeat the same hybrid
-	orangePoi.addMove(moves.build.ccap({orient: vs.TWELVE, direction: vs.CCW, phase: 1}));
-	whitePoi.addMove(moves.build.pendulum({extend:0}));
-	// Then one quarter of a repetition
-	orangePoi.addMove(moves.build.ccap({orient: vs.TWELVE, direction: vs.CCW, phase: 1, duration: 0.25}));
-	// The white poi drifts down to prepare for the next move
-	whitePoi.addMove(moves.build.pendulum({extend:0, duration: 0.25}).modify({hand_angle: vs.SIX, hand_speed: 0, hand_stretch: 4}));
-
-	// The next move is a split pair of linear isolations
-		// These have oval hand paths, which are a little tricky to model
-	orangePoi.addMove(moves.build.lineariso({ovalness: 0.5, direction: vs.CCW}));
-	whitePoi.addMove(moves.build.lineariso({ovalness: 0.5, direction: vs.CCW}));
-	// Half a set
-	orangePoi.addMove(moves.build.lineariso({ovalness: 0.5, direction: vs.CCW, duration: 0.25}));
-	whitePoi.addMove(moves.build.lineariso({ovalness: 0.5, direction: vs.CCW, duration: 0.25}));
-
-	// Transition
-		// These isolations drift upwards to prepare for the next combo
-		// Drex actually does this a little earlier but it's way easier to model this way
-	orangePoi.addMove(moves.build.isolation({direction: vs.CCW, duration: 0.25}).modify({pivot_angle: vs.TWELVE, pivot_stretch: 4}));
-	whitePoi.addMove(moves.build.isolation({direction: vs.CCW, duration: 0.25}).modify({pivot_angle: vs.TWELVE, pivot_stretch: 4}));
-
-	//  Triquetra vs. Anti-pendulum
-		// Note that a hybrid anti-pendulum does a couple of weird things...
-			// The top half of it drifts up about half an extension
-			// Also, it only swings about 0.75 times as far as a normal pendulum
-	orangePoi.addMove(moves.build.triquetra({extend: 0.5}));
-	whitePoi.addMove(moves.build.antipendulum({direction: vs.CCW}));
-	// Repeat once
-	orangePoi.addMove(moves.build.triquetra({extend: 0.5}));
-	whitePoi.addMove(moves.build.antipendulum({direction: vs.CCW}));
-	// Half of one more repetition
-		// The white poi drifts upward to prepare for a centered isolation.
-	orangePoi.addMove(moves.build.triquetra({extend: 0.5, duration: 0.5}));
-	whitePoi.addMove(moves.build.antipendulum({direction: vs.CCW, duration: 0.5}));
-	whitePoi.modifyTail({helper_stretch: 2});
-
-	// Isolation vs. Horizontal Cat-Eye
-	orangePoi.addMove(moves.build.cateye());
-	whitePoi.addMove(moves.build.isolation());
-
-	// ...and again...
-	orangePoi.addMove(moves.build.cateye());
-	whitePoi.addMove(moves.build.isolation());
-
-	// Isolation vs. Triquetra
-	orangePoi.addMove(moves.build.triquetra({extend: 0.5}));
-	whitePoi.addMove(moves.build.isolation());
-
-	// ...and another half cycle...
-	orangePoi.addMove(moves.build.triquetra({extend: 0.5, duration: 0.5}));
-	whitePoi.addMove(moves.build.isolation({duration: 0.5}));
-
-	// ...leading into Isolation vs. Vertical Cat-Eye
-	orangePoi.addMove(moves.build.cateye());
-	whitePoi.addMove(moves.build.isolation());
-	// ...and three-quarters of another repetitition
-	orangePoi.addMove(moves.build.cateye({duration: 0.75}));
-	whitePoi.addMove(moves.build.isolation({duration: 0.75}));
-
-	// Point Isolation vs. Static Spin
-	orangePoi.addMove(moves.build.staticspin({direction: vs.CCW, extend: 0.5, duration: 0.5}));
-	whitePoi.addMove(moves.build.pointiso({direction: vs.CCW, pivot_angle: vs.NINE, pivot_radius: 0.5, duration: 0.5}));
-
-	// Pivoted Cat-Eyes vs. Anti-Pendulums
-		// ...attention folks, the storm clouds are about to roll in...
-	// The orange poi turns half an isolation and then does an anti-pendulum
-	orangePoi.addMove(moves.build.isolation({direction: vs.CCW, pivot_angle: vs.NINE, pivot_radius: 1, duration: 0.5}));
-		// We have to do some custom slicing and dicing to make the transition work
-	orangePoi.addMove(moves.build.antipendulum({pivot_angle: vs.NINE, pivot_radius: 1, swing: 1, duration: 0.25}).modify({helper_radius: 0, helper_stretch: 6, helper_stretch_acc: -16}));
-	orangePoi.addMove(moves.build.antipendulum({pivot_angle: vs.NINE, pivot_radius: 1, duration: 0.75}).modifyTail({prop_acc: 4, helper_stretch_acc: -16}));
-	// The white poi is much more straightforward
-	whitePoi.addMove(moves.build.cateye({direction: vs.CCW, pivot_angle: vs.NINE, pivot_radius: 1, duration: 1.5}));
-
-	// Point isolation vs. Static Spin
-	orangePoi.addMove(moves.build.pointiso({pivot_angle: vs.NINE, pivot_radius: 0.5, duration: 0.5}));
-	whitePoi.addMove(moves.build.staticspin({extend: 0.5, duration: 0.5}));
-
-	// Cat-Eye vs. Anti-Pendulum (switch hands)
-	orangePoi.addMove(moves.build.cateye({duration: 1.5}));
-	whitePoi.addMove(moves.build.isolation({duration: 0.5}));
-		// More custom slicing and dicing
-	whitePoi.addMove(moves.build.antipendulum({direction: vs.CCW, swing: 1, duration: 0.25}).modify({helper_radius: 0, helper_stretch: 6, helper_stretch_acc: -16}));
-	whitePoi.addMove(moves.build.antipendulum({direction: vs.CCW, duration: 0.75}).modifyTail({prop_acc: -4, helper_stretch_acc: -16}));
-
-	// Point Iso v. Static Spin
-	orangePoi.addMove(moves.build.staticspin({direction: vs.CCW, extend: 0.5, duration: 0.5}));
-	whitePoi.addMove(moves.build.pointiso({direction: vs.CCW, pivot_angle: vs.NINE, pivot_radius: 0.5, duration: 0.5}));
-
-	// Iso v. V. Cat-eye
-	orangePoi.addMove(moves.build.isolation({direction: vs.CCW, pivot_angle: vs.NINE, pivot_radius: 1, duration: 1.5}));
-	whitePoi.addMove(moves.build.cateye({direction: vs.CCW, pivot_angle: vs.NINE, pivot_radius: 1, duration: 1.5}));
-	// Point Iso v. Static Spin
-		// The complicated pivot going on here makes it easier to just use generic movements
-	orangePoi.addMove(moves.build.generic({hand_angle: vs.NINE, prop_angle: vs.THREE, pivot_angle: vs.NINE, pivot_radius: 1, pivot_stretch: -3, hand_radius: 0.5, hand_speed: -1, prop_speed: -1, duration: 0.5}));
-	whitePoi.addMove(moves.build.generic({hand_angle: vs.THREE, prop_angle: vs.NINE, pivot_angle: vs.NINE, pivot_radius: 1, pivot_stretch: -3, hand_radius: 0.5, hand_speed: -1, prop_speed: -1, duration: 0.5}));
-
-
-	// Iso v. V. Cat-eye
-	orangePoi.addMove(moves.build.cateye({pivot_angle: vs.THREE, pivot_radius: 0.5, duration: 1.5}));
-	whitePoi.addMove(moves.build.isolation({pivot_angle: vs.THREE, pivot_radius: 0.5, duration: 1.5}));
-
-	// Pendulum v. Two-Petal transition
-		// The first "petal" weirdly pendulum-like and distorted so it's best handled as a generic move
-	orangePoi.addMove(moves.build.generic({hand_angle: vs.NINE, prop_angle: vs.THREE, hand_radius: 1, pivot_angle: vs.THREE, pivot_radius: 1, hand_speed: 0, hand_acc: -8, prop_speed: 0, prop_acc: -24, duration: 0.25}));
-	orangePoi.addMove(moves.build.generic({hand_angle: vs.SIX, prop_angle: vs.SIX, hand_radius: 1, pivot_angle: vs.THREE, pivot_radius: 1, hand_speed: -2, hand_acc: 8, prop_speed: -6, prop_acc: 24, duration: 0.25, pivot_stretch: -4}));
-	whitePoi.addMove(moves.build.pendulum({extend: 0, duration: 0.5, pivot_angle: vs.THREE, pivot_radius: 1}).modifyTail({pivot_stretch: -4}));
-
-	// Five repetitions of static pendulum vs. inside stalls
-		// one
-	orangePoi.addMove(moves.build.stall({exit: true, petals: 2, direction: vs.CCW, duration: 0.25}));
-	orangePoi.addMove(moves.build.stall({exit: false, petals: 2, direction: vs.CCW, duration: 0.25}));
-	whitePoi.addMove(moves.build.pendulum({extend: 0, duration: 2}));
-	whitePoi.addMove(moves.build.pendulum({extend: 0, duration: 0.5}));
-		// two
-	orangePoi.addMove(moves.build.stall({exit: true, petals: 2, duration: 0.25}));
-	orangePoi.addMove(moves.build.stall({exit: false, petals: 2, duration: 0.25}));
-		// three
-	orangePoi.addMove(moves.build.stall({exit: true, petals: 2, direction: vs.CCW, duration: 0.25}));
-	orangePoi.addMove(moves.build.stall({exit: false, petals: 2, direction: vs.CCW, duration: 0.25}));
-		// four
-	orangePoi.addMove(moves.build.stall({exit: true, petals: 2, duration: 0.25}));
-	orangePoi.addMove(moves.build.stall({exit: false, petals: 2, duration: 0.25}));
-		// five
-	orangePoi.addMove(moves.build.stall({exit: true, petals: 2, direction: vs.CCW, duration: 0.25}));
-	orangePoi.addMove(moves.build.stall({exit: false, petals: 2, direction: vs.CCW, duration: 0.25}));
-
-	// Two and a half beats of good old fashioned crank isolations
-	orangePoi.addMove(moves.build.isolation({direction: vs.CCW, pivot_angle: vs.NINE, pivot_radius: 0.5, duration: 2.5}));
-	whitePoi.addMove(moves.build.isolation({direction: vs.CCW, pivot_angle: vs.NINE, pivot_radius: 0.5, duration: 2.5}).modifyTail({prop_speed: -2}));
-
-	// Static Spin vs. One-Petal
-	orangePoi.addMove(moves.build.staticspin({direction: vs.CCW, duration: 2.75}).modifyTail({pivot_angle: vs.SIX, pivot_stretch: 2}));
-	whitePoi.addMove(moves.build.flower({petals: 1, direction: vs.CCW, duration: 2.75}).modifyTail({pivot_angle: vs.SIX, pivot_stretch: 2}));
-	// At the end, drift down to do some crank isolations
-
-	// One and a half beats of crank isolations
-	orangePoi.addMove(moves.build.isolation({direction: vs.CCW,duration: 1.5}));
-	whitePoi.addMove(moves.build.isolation({direction: vs.CCW, duration: 1.5}));
-
-	// Oval-shaped "linear" isolations
-	orangePoi.addMove(moves.build.lineariso({ovalness: 0.5, direction: vs.CCW, duration: 0.5}));
-	whitePoi.addMove(moves.build.lineariso({ovalness: 0.5, direction: vs.CCW, duration: 0.5}));
-
-	// What's this?  A three-eighth time transition?  What kind of Colorado weed is Drex smoking?
-	orangePoi.addMove(moves.build.isolation({direction: vs.CCW, duration: 0.5}).modifyTail({duration: 0.125}));
-	whitePoi.addMove(moves.build.isolation({direction: vs.CCW, duration: 0.5}).modifyTail({duration: 0.125}));
-
-	// The orange poi does a diagonal linear isolation in the 10:30 direction, white in the 4:30 direction
-	orangePoi.addMove(moves.build.lineariso({ovalness: 0.5, direction: vs.CCW, entry: vs.ONETHIRTY, orient: vs.TENTHIRTY, duration: 0.5}));
-	whitePoi.addMove(moves.build.lineariso({ovalness: 0.5, direction: vs.CCW, entry: vs.SEVENTHIRTY, orient: vs.FOURTHIRTY, duration: 0.5}));
-
-	// This set of linear isolations is extremely distorted, and threw me for quite a loop
-	orangePoi.addMove(moves.build.generic({hand_angle: vs.SEVENTHIRTY, prop_angle: vs.ONETHIRTY, hand_radius: 0.5, hand_stretch: 2, prop_speed: -2, duration: 0.25}));
-	whitePoi.addMove(moves.build.generic({hand_angle: vs.ONETHIRTY, prop_angle: vs.SEVENTHIRTY, hand_radius: 0.5, hand_stretch: 2, prop_speed: -2, duration: 0.25}));
-	orangePoi.addMove(moves.build.generic({hand_angle: vs.SEVENTHIRTY, prop_angle: vs.SEVENTHIRTY, helper_angle: vs.SIX, helper_stretch: 3, hand_radius: 1, hand_stretch: -8.5, prop_speed: -2, duration: 0.125}));
-	whitePoi.addMove(moves.build.generic({hand_angle: vs.ONETHIRTY, prop_angle: vs.ONETHIRTY, helper_angle: vs.TWELVE, helper_stretch: 3, hand_radius: 1, hand_stretch: -8.5, prop_speed: -2, duration: 0.125}));
-
-	// Another weird "linear" transition
-	orangePoi.addMove(moves.build.generic({hand_angle: vs.SIX, prop_angle: vs.FOURTHIRTY, hand_radius: 0.3, hand_stretch: 3, prop_speed: -3.5, duration: 0.25}));
-	whitePoi.addMove(moves.build.generic({hand_angle: vs.TWELVE, prop_angle: vs.TENTHIRTY, hand_radius: 0.3, hand_stretch: 3, prop_speed: -3.5, duration: 0.25}));
-
-	// True linear isolations
-	orangePoi.addMove(moves.build.lineariso({direction: vs.CCW, duration: 0.5}));
-	whitePoi.addMove(moves.build.lineariso({direction: vs.CCW, duration: 0.5}));
-
-
-	// Back to "linear" isolations
-	orangePoi.addMove(moves.build.lineariso({ovalness: 0.5, direction: vs.CCW, duration: 0.5}));
-	whitePoi.addMove(moves.build.lineariso({ovalness: 0.5, direction: vs.CCW, duration: 0.5}));
-
-	// Four-petal antispin flowers
-	orangePoi.addMove(moves.build.antispin({duration: 1.5}));
-	whitePoi.addMove(moves.build.antispin({duration: 1.5}));
-
-	// Partial linear isolation back to the center
-	orangePoi.addMove(moves.build.lineariso({direction: vs.CCW, duration: 0.25}));
-	whitePoi.addMove(moves.build.lineariso({direction: vs.CCW, duration: 0.25}));
-
-	// Finish with a spiral wrap
-	orangePoi.addMove(moves.build.spiral({speed: 2, direction: vs.CCW, stretch: -3, duration: 0.5}));
-	whitePoi.addMove(moves.build.spiral({speed: 2, direction: vs.CCW, stretch: -3, duration: 0.5}));
-
-	// Finally, the madness is over!
-	vs.ready();
-}
-
-
-function listenForKey(e) {
-	if (e.keyCode===37) {
-		vs.rewind(12);
-	} else if (e.keyCode===39) {
-		vs.forward(12);
+let renderer, player, orange, white;
+function setup() {
+	renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
+	player = new VS3D.Player();
+	player.rate = 2;
+	let controls = new VS3D.Controls(player);
+	renderer.div.appendChild(controls.div);
+	player.update = function(positions) {
+		renderer.render(this.props, positions);
+		controls.update(this.tick);
 	}
+	orange = player.addProp(new VS3D.Prop(), {color: "orange"});
+	white = player.addProp(new VS3D.Prop(), {color: "white"});
+	const {UP, DOWN, LEFT, RIGHT, SE, SW, NW, NE, FOUR, FIVE, EIGHT} = VS3D;
+	orange.setHandAngle(LEFT);
+	orange.setHeadAngle(LEFT)
+	white.setHeadAngle(LEFT);
+	white.setHandRadius(0);
+	// ***** Drex begins with a pendulum vs. extended pendulum hybrid. *****
+	// ***** Pendulum paths are not true to real-world gravity, because I use a simplified function ****
+	orange.moves.push({hand: {va: 0, a1: DOWN}, head: {va: 0, a1: DOWN}});
+	white.moves.push({head: {va: 0, a1: DOWN}});
+	orange.moves.push({hand: {va1: 0, a1: RIGHT}, head: {va1: 0, a1: RIGHT}});
+	white.moves.push({head: {va1: 0, a1: RIGHT}});
+
+	orange.moves.push({hand: {va: 0, a1: DOWN}, head: {va: 0, a1: DOWN, spin: -1}});
+	white.moves.push({head: {va: 0, a1: DOWN}});
+	orange.moves.push({hand: {va1: 0, a1: LEFT}, head: {va1: 0, a1: LEFT, spin: -1}});
+	white.moves.push({head: {va1: 0, a1: LEFT}});
+
+	orange.moves.push({hand: {va: 0, a1: DOWN}, head: {va: 0, a1: DOWN}});
+	white.moves.push({head: {va: 0, a1: DOWN}});
+	orange.moves.push({hand: {va1: 0, a1: RIGHT}, head: {va1: 0, a1: RIGHT}});
+	white.moves.push({head: {va1: 0, a1: RIGHT}});
+
+	orange.moves.push({hand: {va: 0, a1: DOWN}, head: {va: 0, a1: DOWN, spin: -1}});
+	white.moves.push({head: {va: 0, a1: DOWN}});
+	// ***630*** Transition (see Tech Blog #390)
+	orange.moves.push({pivot: {a1: RIGHT, r1: 0.5}, hand: {va1: 0, a1: LEFT}, head: {va1: 0, a1: RIGHT, spin: -1}});
+	white.moves.push({pivot: {a1: RIGHT, r1: 0.5}, head: {va1: 0, a1: LEFT}});
+	// Static Spin vs. Point Isolation
+	orange.moves.push({beats: 2, hand: {va: 1}, head: {va: 1}});
+	white.moves.push({beats: 2, head: {va: 1}});
+	// ***900*** Isolation vs. Cateye
+	orange.moves.push({beats: 6, pivot: {r: 1}, hand: {r: 0.5, va: 1}, head: {va: -1}});
+	white.moves.push({beats: 6, pivot: {r: 1}, hand: {r: 0.5, a: LEFT, va: 1}, head: {va: 1}});
+	// ***1440*** Static Spin vs. Point Isolation (see Tech Blog #390)
+	orange.moves.push({beats: 3, pivot: {r: 0.5}, hand: {r: 0}, head: {va: -1}});
+	white.moves.push({pivot: {r: 0.5}, hand: {r: 1, va: -1}, head: {va: -1}});
+	white.moves.push({pivot: {r: 0.5}, hand: {r: 1, va: 1}, head: {va: 1}});
+	white.moves.push({pivot: {r: 0.5}, hand: {r: 1, va: -1}, head: {va: -1}});
+	// ***1710*** Oddball transition
+	orange.moves.push({pivot: {r1: 1}, head: {a1: RIGHT}});
+	white.moves.push({pivot: {r1: 1}, hand: {a1: LEFT}, head: {a1: RIGHT}});
+	// ***1790*** Static vs. Extension
+	orange.moves.push({beats: 2, pivot: {r: 0}, hand: {a: RIGHT, r: 1, va: -1}, head: {va: -1}});
+	white.moves.push({beats: 2, pivot: {r: 0}, hand: {r: 0}, head: {va: -1}});
+	// ***1980*** Pendulum vs. Top CAPs (I believe this move was invented by someone called Kate?  There's a tech blog for it.)
+	orange.moves.push({beats: 2, hand: {va: 1}, head: {va: -3}});
+	white.moves.push({head: {va: 0, a1: DOWN}});
+	white.moves.push({head: {va1: 0, a1: RIGHT}});
+
+	orange.moves.push({beats: 2, hand: {va: -1}, head: {va: -1}});
+	white.moves.push({head: {va: 0, a1: DOWN}});
+	white.moves.push({head: {va1: 0, a1: LEFT}});
+
+	orange.moves.push({beats: 2, hand: {va: 1}, head: {va: -3}});
+	white.moves.push({head: {va: 0, a1: DOWN}});
+	white.moves.push({head: {va1: 0, a1: RIGHT}});
+
+	orange.moves.push({beats: 2, hand: {va: -1}, head: {va: -1}});
+	white.moves.push({head: {va: 0, a1: DOWN}});
+	white.moves.push({head: {va1: 0, a1: LEFT}});
+	// ***2700*** Another oddball transition
+	orange.moves.push({hand: {va: 1}, head: {va: -3}});
+	white.moves.push({hand: {a: DOWN, r1: 1}, head: {va: 0, a1: DOWN}});
+	orange.moves.push({hand: {r1: 0.5, va: -1}, head: {va: -3}});
+	white.moves.push({hand: {r1: 0.5, va: -1}, head: {va: -3}});
+	// ***2880*** Linear Isolations
+	orange.moves.push({hand: {r1: 1, va: -1}, head: {va: -3}});
+	white.moves.push({hand: {r1: 1, va: -1}, head: {va: -3}});
+	orange.moves.push({hand: {r1: 0.5, va: -1}, head: {va: -3}});
+	white.moves.push({hand: {r1: 0.5, va: -1}, head: {va: -3}});
+	orange.moves.push({hand: {r1: 1, va: -1}, head: {va: -3}});
+	white.moves.push({hand: {r1: 1, va: -1}, head: {va: -3}});
+	orange.moves.push({hand: {r1: 0.5, va: -1}, head: {va: -3}});
+	white.moves.push({hand: {r1: 0.5, va: -1}, head: {va: -3}});
+	// ***3240*** Odball transition
+	orange.moves.push({pivot: {a: UP, r1: 1}, hand: {va: -1}, head: {va: -1}});
+	white.moves.push({pivot: {a: UP, r1: 1}, hand: {va: -1}, head: {va: -1}});
+	// ***3330*** Antipendulum vs. Triquetra (2.5 loops)
+	orange.moves.push({beats: 10, pivot: {r: 0}, hand: {a: UP, va: 1}, head: {va: -2}});
+	white.moves.push({hand: {va: -1}, head: {va1: 0, a1: SE}});
+	white.moves.push({hand: {va: -1}, head: {va: 0, a1: DOWN}});
+	white.moves.push({hand: {va: -1}, head: {va1: 0, a1: SW}});
+	white.moves.push({hand: {va: -1}, head: {va: 0, a1: DOWN}});
+	white.moves.push({hand: {va: -1}, head: {va1: 0, a1: SE}});
+	white.moves.push({hand: {va: -1}, head: {va: 0, a1: DOWN}});
+	white.moves.push({hand: {va: -1}, head: {va1: 0, a1: SW}});
+	white.moves.push({hand: {va: -1}, head: {va: 0, a1: DOWN}});
+	white.moves.push({hand: {va: -1}, head: {va1: 0, a1: SE}});
+	white.moves.push({hand: {va: -1}, head: {va: 0, a1: DOWN}});
+	// ***4230*** Isolation vs. H. Cateye / Triquetra / v. Cateye
+	orange.moves.push({beats: 8, hand: {va: 1}, head: {va: -1}});
+	orange.moves.push({beats: 6, hand: {va: 1}, head: {va: -2}});
+	orange.moves.push({beats: 7, hand: {va: 1}, head: {va: -1}});
+	white.moves.push({beats: 21, pivot: {r: 0}, hand: {a: UP, va: 1}, head: {va: 1}});
+	// ***6120*** Static Spin vs. Point Isolation (see Tech Blog #390)
+	orange.moves.push({beats: 2, pivot: {r: 0.5, a: LEFT}, hand: {r: 0}, head: {va: -1}});
+	white.moves.push({beats: 2, pivot: {r: 0.5, a: LEFT}, hand: {r: 1, a: RIGHT, va: -1}, head: {a: LEFT, va: -1}});
+	// ***6300*** Crazy transition
+	orange.moves.push({beats: 2, pivot: {r: 1}, hand: {r: 0.5, a: RIGHT, va: -1}, head: {va: -1}});
+	orange.moves.push({helper: {a: UP, r1: 1}, hand: {va: 1}, head: {va: 1}});
+	orange.moves.push({helper: {a: UP, r1: 0}, hand: {va: 1}, head: {va: 1}});
+	orange.moves.push({helper: {a: UP, r1: 1}, hand: {va: 1}, head: {va: -1}});
+	orange.moves.push({helper: {a: UP, r1: 0}, hand: {va: 1}, head: {va: -1}});
+	white.moves.push({beats: 6, pivot: {r: 1, a: LEFT}, hand: {r: 0.5, a: LEFT, va: -1}, head: {va: 1}});
+	// ***6840*** Static Spin vs. Point Isolation (see Tech Blog #390)
+	orange.moves.push({beats: 2, pivot: {r: 0.5}, hand: {r: 1, va: 1}, head: {va: 1}});
+	white.moves.push({beats: 2, pivot: {r: 0.5}, hand: {r: 0}, head: {va: 1}});
+	// ***7020*** Vaguely Cateye / Antipendulum stuff
+
+	orange.moves.push({beats: 6, pivot: {r: 0}, hand: {r: 0.5, a: RIGHT, va: 1}, head: {va: -1}});
+	white.moves.push({beats: 2, pivot: {r: 0}, hand: {r: 0.5, a: LEFT, va: 1}, head: {va: 1}});
+	white.moves.push({helper: {a: UP, r1: 1}, hand: {va: -1}, head: {va: -1}});
+	white.moves.push({helper: {a: UP, r1: 0}, hand: {va: -1}, head: {va: -1}});
+	white.moves.push({helper: {a: UP, r1: 1}, hand: {va: -1}, head: {va: 1}});
+	white.moves.push({helper: {a: UP, r1: 0}, hand: {va: -1}, head: {va: 1}});
+	// ***7660*** Static Spin vs. Point Isolation (see Tech Blog #390)
+	orange.moves.push({beats: 2, pivot: {a: LEFT, r: 0.5}, hand: {r: 0, va: -1}, head: {va: -1}});
+	white.moves.push({beats: 2, pivot: {a: LEFT, r: 0.5}, hand: {r: 1, va: -1}, head: {va: -1}});
+	// ***7740*** Isolation vs. Cateye
+	orange.moves.push({beats: 6, pivot: {r: 1}, hand: {a: RIGHT, r: 0.5, va: -1}, head: {va: -1}});
+	white.moves.push({beats: 6, pivot: {r: 1}, hand: {a: LEFT, r: 0.5, va: -1}, head: {va: 1}});
+	// ***8280*** Weird transition
+	orange.moves.push({pivot: {r1: 0}, hand: {va: -1}, head: {va: -1}});
+	white.moves.push({pivot: {r1: 0}, hand: {va: -1}, head: {va: -1}});
+	orange.moves.push({pivot: {a: RIGHT, r1: 0.5}, hand: {va: -1}, head: {va: -1}});
+	white.moves.push({pivot: {a: RIGHT, r1: 0.5}, hand: {va: -1}, head: {va: -1}});
+	// ***8460*** Isolation vs. Cateye
+	orange.moves.push({beats: 6, hand: {va: 1}, head: {va: -1}});
+	white.moves.push({beats: 6, hand: {va: 1}, head: {va: 1}});
+	// ***9000***
+	orange.moves.push({pivot: {r: 1}, hand: {r: 1, a: LEFT, va: -1}, head: {va: -3}});
+	white.moves.push({pivot: {r: 1}, hand: {r: 0}, head: {va: -1}});
+	orange.moves.push({pivot: {r1: 0}, hand: {r: 1, va: -1}, head: {va: -3}});
+	white.moves.push({pivot: {r1: 0}, hand: {r: 0}, head: {va: -1}});
+	// ***Static Pendulums vs. Inside Stalls
+	orange.moves.push({hand: {r: 1, va: 0, a1: UP}, head: {va: 0, a1: UP, spin: -1}})
+	white.moves.push({head: {va: 0, a1: DOWN}});
+	orange.moves.push({hand: {v1a: 0, a1: LEFT}, head: {va1: 0, a1: RIGHT, spin: -1}})
+	white.moves.push({head: {va1: 0, a1: LEFT}});
+	orange.moves.push({hand: {r: 1, va: 0, a1: UP}, head: {va: 0, a1: UP, spin: +1}})
+	white.moves.push({head: {va: 0, a1: DOWN}});
+	orange.moves.push({hand: {v1a: 0, a1: RIGHT}, head: {va1: 0, a1: LEFT, spin: +1}})
+	white.moves.push({head: {va1: 0, a1: RIGHT}});
+	orange.moves.push({hand: {va: 0, a1: UP}, head: {va: 0, a1: UP, spin: -1}})
+	white.moves.push({head: {va: 0, a1: DOWN}});
+	orange.moves.push({hand: {v1a: 0, a1: LEFT}, head: {va1: 0, a1: RIGHT, spin: -1}})
+	white.moves.push({head: {va1: 0, a1: LEFT}});
+	orange.moves.push({hand: {r: 1, va: 0, a1: UP}, head: {va: 0, a1: UP, spin: +1}})
+	white.moves.push({head: {va: 0, a1: DOWN}});
+	orange.moves.push({hand: {v1a: 0, a1: RIGHT}, head: {va1: 0, a1: LEFT, spin: +1}})
+	white.moves.push({head: {va1: 0, a1: RIGHT}});
+	orange.moves.push({hand: {va: 0, a1: UP}, head: {va: 0, a1: UP, spin: -1}})
+	white.moves.push({head: {va: 0, a1: DOWN}});
+	orange.moves.push({hand: {v1a: 0, a1: LEFT}, head: {va1: 0, a1: RIGHT, spin: -1}})
+	white.moves.push({head: {va1: 0, a1: LEFT}});
+	// ***10080*** Crank Isolations
+	orange.moves.push({beats: 10, pivot: {a: LEFT, r: 0.5}, hand: {r: 0.5, va: -1}, head: {va: -1}});
+	white.moves.push({beats: 9, pivot: {a: LEFT, r: 0.5}, hand: {r: 0.5, a: RIGHT, va: -1}, head: {va: -1}});
+	white.moves.push({hand: {va: -1}, head: {va: -2}});
+	// ***10980*** Static Spin vs. One-Petal Flowers
+	orange.moves.push({beats: 10, pivot: {r: 0}, hand: {r: 0}, head: {va: -1}});
+	white.moves.push({beats: 10, pivot: {r: 0}, hand: {r: 1, va: -1}, head: {va: -2}});
+	orange.moves.push({pivot: {a: DOWN, r1: 0.5}, head: {va: -1}});
+	white.moves.push({pivot: {a: DOWN, r1: 0.5}, hand: {va: -1}, head: {va: -2}});
+	// *** More crank isolations
+	orange.moves.push({beats: 6, pivot: {r: 0}, hand: {a: DOWN, r: 0.5, va: -1}, head: {va: -1}});
+	white.moves.push({beats: 6, pivot: {r: 0}, hand: {a: UP, r: 0.5, va: -1}, head: {va: -1}});
+	// ***12510*** Linear Isolations
+	orange.moves.push({hand: {r1: 1, va: -1}, head: {va: -3}});
+	white.moves.push({hand: {r1: 1, va: -1}, head: {va: -3}});
+	orange.moves.push({hand: {r1: 0.5, va: -1}, head: {va: -3}});
+	white.moves.push({hand: {r1: 0.5, va: -1}, head: {va: -3}});
+		// ***Diagonal Transition
+	orange.moves.push({hand: {va: -1.5}, head: {va: -1.5}});
+	white.moves.push({hand: {va: -1.5}, head: {va: -1.5}});
+		// More linear isolations
+	orange.moves.push({hand: {r1: 1, va: -1}, head: {va: -3}});
+	white.moves.push({hand: {r1: 1, va: -1}, head: {va: -3}});
+	orange.moves.push({hand: {r1: 0.5, va: -1}, head: {va: -3}});
+	white.moves.push({hand: {r1: 0.5, va: -1}, head: {va: -3}});
+	// ***12960*** Really weird timing on this transition
+	orange.moves.push({hand: {r1: 1}, head: {va: -2}});
+	white.moves.push({hand: {r1: 1}, head: {va: -2}});
+	orange.moves.push({hand: {r1: 0.5, va: -0.5}, head: {va: -1}});
+	white.moves.push({hand: {r1: 0.5, va: -0.5}, head: {va: -1}});
+	orange.moves.push({hand: {r1: 1}, head: {va: -4}});
+	white.moves.push({hand: {r1: 1}, head: {va: -4}});
+	orange.moves.push({hand: {r1: 0}, head: {va: -2.5}});
+	white.moves.push({hand: {r1: 0}, head: {va: -2.5}});
+	orange.moves.push({hand: {a: UP, r1: 1}, head: {va: -3}});
+	white.moves.push({hand: {a: DOWN, r1: 1}, head: {va: -3}});
+	orange.moves.push({hand: {r1: 0.5, va: -1}, head: {va: -3}});
+	white.moves.push({hand: {r1: 0.5, va: -1}, head: {va: -3}});
+	orange.moves.push({hand: {r1: 1, va: -1}, head: {va: -3}});
+	white.moves.push({hand: {r1: 1, va: -1}, head: {va: -3}});
+	// ***Four-petal antispin flowers
+	orange.moves.push({beats: 6, hand: {va: 1}, head: {va: -3}});
+	white.moves.push({beats: 6, hand: {va: 1}, head: {va: -3}});
+	orange.moves.push({hand: {r1: 0}, head: {va: -3}});
+	white.moves.push({hand: {r1: 0}, head: {va: -3}});
+	// ***Spiral Wrap***
+	orange.moves.push({beats: 2, head: {r1: 0, va: -1}});
+	white.moves.push({beats: 2, head: {r1: 0, va: -1}});
+
+	player.ready();
+	//player.play();	
 }
-
-
 </script>
 </head>
 <body onload="init();">
@@ -321,15 +258,13 @@ function listenForKey(e) {
 	<h1>Welcome to VisualSpinner3D. </h1>
 	<p>(we have successfully digitized Drex.)</p>
 </header>
-	<section>
-<div id="display">
-</div>
-<div id="vid">
-	<video id="drex" controls="controls" width="400px">
+<div id="grid">
+	<div id="display">
+	</div>
+	<video controls="controls">
 		<source src="comborific.mp4" type="video/mp4">
 		Your browser does not support HTML5 video.
 	</video>
 </div>
-
-</section>
+</grid>
 </body></html>
