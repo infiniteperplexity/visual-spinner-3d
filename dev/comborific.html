@@ -50,26 +50,26 @@ function setup() {
 	white.setHandRadius(0);
 	// ***** Drex begins with a pendulum vs. extended pendulum hybrid. *****
 	// ***** Pendulum paths are not true to real-world gravity, because I use a simplified function ****
-	orange.moves.push({beats: 1, hand: {va: 0, a1: DOWN}, head: {va: 0, a1: DOWN}});
-	white.moves.push({beats: 1, head: {va: 0, a1: DOWN}});
-	orange.moves.push({beats: 1, hand: {va1: 0, a1: RIGHT}, head: {va1: 0, a1: RIGHT}});
-	white.moves.push({beats: 1, head: {va1: 0, a1: RIGHT}});
+	orange.moves.push({hand: {va: 0, a1: DOWN}, head: {va: 0, a1: DOWN}});
+	white.moves.push({head: {va: 0, a1: DOWN}});
+	orange.moves.push({hand: {va1: 0, a1: RIGHT}, head: {va1: 0, a1: RIGHT}});
+	white.moves.push({head: {va1: 0, a1: RIGHT}});
 
-	orange.moves.push({beats: 1, hand: {va: 0, a1: DOWN}, head: {va: 0, a1: DOWN, spin: -1}});
-	white.moves.push({beats: 1, head: {va: 0, a1: DOWN}});
-	orange.moves.push({beats: 1, hand: {va1: 0, a1: LEFT}, head: {va1: 0, a1: LEFT, spin: -1}});
-	white.moves.push({beats: 1, head: {va1: 0, a1: LEFT}});
+	orange.moves.push({hand: {va: 0, a1: DOWN}, head: {va: 0, a1: DOWN, spin: -1}});
+	white.moves.push({head: {va: 0, a1: DOWN}});
+	orange.moves.push({hand: {va1: 0, a1: LEFT}, head: {va1: 0, a1: LEFT, spin: -1}});
+	white.moves.push({head: {va1: 0, a1: LEFT}});
 
-	orange.moves.push({beats: 1, hand: {va: 0, a1: DOWN}, head: {va: 0, a1: DOWN}});
-	white.moves.push({beats: 1, head: {va: 0, a1: DOWN}});
-	orange.moves.push({beats: 1, hand: {va1: 0, a1: RIGHT}, head: {va1: 0, a1: RIGHT}});
-	white.moves.push({beats: 1, head: {va1: 0, a1: RIGHT}});
+	orange.moves.push({hand: {va: 0, a1: DOWN}, head: {va: 0, a1: DOWN}});
+	white.moves.push({head: {va: 0, a1: DOWN}});
+	orange.moves.push({hand: {va1: 0, a1: RIGHT}, head: {va1: 0, a1: RIGHT}});
+	white.moves.push({head: {va1: 0, a1: RIGHT}});
 
-	orange.moves.push({beats: 1, hand: {va: 0, a1: DOWN}, head: {va: 0, a1: DOWN, spin: -1}});
-	white.moves.push({beats: 1, head: {va: 0, a1: DOWN}});
+	orange.moves.push({hand: {va: 0, a1: DOWN}, head: {va: 0, a1: DOWN, spin: -1}});
+	white.moves.push({head: {va: 0, a1: DOWN}});
 	// ***630*** Transition (see Tech Blog #390)
-	orange.moves.push({beats: 1, pivot: {a1: RIGHT, r1: 0.5}, hand: {va1: 0, a1: LEFT}, head: {va1: 0, a1: RIGHT, spin: -1}});
-	white.moves.push({beats: 1, pivot: {a1: RIGHT, r1: 0.5}, head: {va1: 0, a1: LEFT}});
+	orange.moves.push({pivot: {a1: RIGHT, r1: 0.5}, hand: {va1: 0, a1: LEFT}, head: {va1: 0, a1: RIGHT, spin: -1}});
+	white.moves.push({pivot: {a1: RIGHT, r1: 0.5}, head: {va1: 0, a1: LEFT}});
 	// Static Spin vs. Point Isolation
 	orange.moves.push({beats: 2, hand: {va: 1}, head: {va: 1}});
 	white.moves.push({beats: 2, head: {va: 1}});
@@ -78,60 +78,60 @@ function setup() {
 	white.moves.push({beats: 6, pivot: {r: 1}, hand: {r: 0.5, a: LEFT, va: 1}, head: {va: 1}});
 	// ***1440*** Static Spin vs. Point Isolation (see Tech Blog #390)
 	orange.moves.push({beats: 3, pivot: {r: 0.5}, hand: {r: 0}, head: {va: -1}});
-	white.moves.push({beats: 1, pivot: {r: 0.5}, hand: {r: 1, va: -1}, head: {va: -1}});
-	white.moves.push({beats: 1, pivot: {r: 0.5}, hand: {r: 1, va: 1}, head: {va: 1}});
-	white.moves.push({beats: 1, pivot: {r: 0.5}, hand: {r: 1, va: -1}, head: {va: -1}});
+	white.moves.push({pivot: {r: 0.5}, hand: {r: 1, va: -1}, head: {va: -1}});
+	white.moves.push({pivot: {r: 0.5}, hand: {r: 1, va: 1}, head: {va: 1}});
+	white.moves.push({pivot: {r: 0.5}, hand: {r: 1, va: -1}, head: {va: -1}});
 	// ***1710*** Oddball transition
-	orange.moves.push({beats: 1, pivot: {r1: 1}, head: {a1: RIGHT}});
-	white.moves.push({beats: 1, pivot: {r1: 1}, hand: {a1: LEFT}, head: {a1: RIGHT}});
+	orange.moves.push({pivot: {r1: 1}, head: {a1: RIGHT}});
+	white.moves.push({pivot: {r1: 1}, hand: {a1: LEFT}, head: {a1: RIGHT}});
 	// ***1790*** Static vs. Extension
 	orange.moves.push({beats: 2, pivot: {r: 0}, hand: {a: RIGHT, r: 1, va: -1}, head: {va: -1}});
 	white.moves.push({beats: 2, pivot: {r: 0}, hand: {r: 0}, head: {va: -1}});
 	// ***1980*** Pendulum vs. Top CAPs (I believe this move was invented by someone called Kate?  There's a tech blog for it.)
 	orange.moves.push({beats: 2, hand: {va: 1}, head: {va: -3}});
-	white.moves.push({beats: 1, head: {va: 0, a1: DOWN}});
-	white.moves.push({beats: 1, head: {va1: 0, a1: RIGHT}});
+	white.moves.push({head: {va: 0, a1: DOWN}});
+	white.moves.push({head: {va1: 0, a1: RIGHT}});
 
 	orange.moves.push({beats: 2, hand: {va: -1}, head: {va: -1}});
-	white.moves.push({beats: 1, head: {va: 0, a1: DOWN}});
-	white.moves.push({beats: 1, head: {va1: 0, a1: LEFT}});
+	white.moves.push({head: {va: 0, a1: DOWN}});
+	white.moves.push({head: {va1: 0, a1: LEFT}});
 
 	orange.moves.push({beats: 2, hand: {va: 1}, head: {va: -3}});
-	white.moves.push({beats: 1, head: {va: 0, a1: DOWN}});
-	white.moves.push({beats: 1, head: {va1: 0, a1: RIGHT}});
+	white.moves.push({head: {va: 0, a1: DOWN}});
+	white.moves.push({head: {va1: 0, a1: RIGHT}});
 
 	orange.moves.push({beats: 2, hand: {va: -1}, head: {va: -1}});
-	white.moves.push({beats: 1, head: {va: 0, a1: DOWN}});
-	white.moves.push({beats: 1, head: {va1: 0, a1: LEFT}});
+	white.moves.push({head: {va: 0, a1: DOWN}});
+	white.moves.push({head: {va1: 0, a1: LEFT}});
 	// ***2700*** Another oddball transition
-	orange.moves.push({beats: 1, hand: {va: 1}, head: {va: -3}});
-	white.moves.push({beats: 1, hand: {a: DOWN, r1: 1}, head: {va: 0, a1: DOWN}});
-	orange.moves.push({beats: 1, hand: {r1: 0.5, va: -1}, head: {va: -3}});
-	white.moves.push({beats: 1, hand: {r1: 0.5, va: -1}, head: {va: -3}});
+	orange.moves.push({hand: {va: 1}, head: {va: -3}});
+	white.moves.push({hand: {a: DOWN, r1: 1}, head: {va: 0, a1: DOWN}});
+	orange.moves.push({hand: {r1: 0.5, va: -1}, head: {va: -3}});
+	white.moves.push({hand: {r1: 0.5, va: -1}, head: {va: -3}});
 	// ***2880*** Linear Isolations
-	orange.moves.push({beats: 1, hand: {r1: 1, va: -1}, head: {va: -3}});
-	white.moves.push({beats: 1, hand: {r1: 1, va: -1}, head: {va: -3}});
-	orange.moves.push({beats: 1, hand: {r1: 0.5, va: -1}, head: {va: -3}});
-	white.moves.push({beats: 1, hand: {r1: 0.5, va: -1}, head: {va: -3}});
-	orange.moves.push({beats: 1, hand: {r1: 1, va: -1}, head: {va: -3}});
-	white.moves.push({beats: 1, hand: {r1: 1, va: -1}, head: {va: -3}});
-	orange.moves.push({beats: 1, hand: {r1: 0.5, va: -1}, head: {va: -3}});
-	white.moves.push({beats: 1, hand: {r1: 0.5, va: -1}, head: {va: -3}});
+	orange.moves.push({hand: {r1: 1, va: -1}, head: {va: -3}});
+	white.moves.push({hand: {r1: 1, va: -1}, head: {va: -3}});
+	orange.moves.push({hand: {r1: 0.5, va: -1}, head: {va: -3}});
+	white.moves.push({hand: {r1: 0.5, va: -1}, head: {va: -3}});
+	orange.moves.push({hand: {r1: 1, va: -1}, head: {va: -3}});
+	white.moves.push({hand: {r1: 1, va: -1}, head: {va: -3}});
+	orange.moves.push({hand: {r1: 0.5, va: -1}, head: {va: -3}});
+	white.moves.push({hand: {r1: 0.5, va: -1}, head: {va: -3}});
 	// ***3240*** Odball transition
-	orange.moves.push({beats: 1, pivot: {a: UP, r1: 1}, hand: {va: -1}, head: {va: -1}});
-	white.moves.push({beats: 1, pivot: {a: UP, r1: 1}, hand: {va: -1}, head: {va: -1}});
+	orange.moves.push({pivot: {a: UP, r1: 1}, hand: {va: -1}, head: {va: -1}});
+	white.moves.push({pivot: {a: UP, r1: 1}, hand: {va: -1}, head: {va: -1}});
 	// ***3330*** Antipendulum vs. Triquetra (2.5 loops)
 	orange.moves.push({beats: 10, pivot: {r: 0}, hand: {a: UP, va: 1}, head: {va: -2}});
-	white.moves.push({beats: 1, hand: {va: -1}, head: {va1: 0, a1: SE}});
-	white.moves.push({beats: 1, hand: {va: -1}, head: {va: 0, a1: DOWN}});
-	white.moves.push({beats: 1, hand: {va: -1}, head: {va1: 0, a1: SW}});
-	white.moves.push({beats: 1, hand: {va: -1}, head: {va: 0, a1: DOWN}});
-	white.moves.push({beats: 1, hand: {va: -1}, head: {va1: 0, a1: SE}});
-	white.moves.push({beats: 1, hand: {va: -1}, head: {va: 0, a1: DOWN}});
-	white.moves.push({beats: 1, hand: {va: -1}, head: {va1: 0, a1: SW}});
-	white.moves.push({beats: 1, hand: {va: -1}, head: {va: 0, a1: DOWN}});
-	white.moves.push({beats: 1, hand: {va: -1}, head: {va1: 0, a1: SE}});
-	white.moves.push({beats: 1, hand: {va: -1}, head: {va: 0, a1: DOWN}});
+	white.moves.push({hand: {va: -1}, head: {va1: 0, a1: SE}});
+	white.moves.push({hand: {va: -1}, head: {va: 0, a1: DOWN}});
+	white.moves.push({hand: {va: -1}, head: {va1: 0, a1: SW}});
+	white.moves.push({hand: {va: -1}, head: {va: 0, a1: DOWN}});
+	white.moves.push({hand: {va: -1}, head: {va1: 0, a1: SE}});
+	white.moves.push({hand: {va: -1}, head: {va: 0, a1: DOWN}});
+	white.moves.push({hand: {va: -1}, head: {va1: 0, a1: SW}});
+	white.moves.push({hand: {va: -1}, head: {va: 0, a1: DOWN}});
+	white.moves.push({hand: {va: -1}, head: {va1: 0, a1: SE}});
+	white.moves.push({hand: {va: -1}, head: {va: 0, a1: DOWN}});
 	// ***4230*** Isolation vs. H. Cateye / Triquetra / v. Cateye
 	orange.moves.push({beats: 8, hand: {va: 1}, head: {va: -1}});
 	orange.moves.push({beats: 6, hand: {va: 1}, head: {va: -2}});
@@ -142,10 +142,10 @@ function setup() {
 	white.moves.push({beats: 2, pivot: {r: 0.5, a: LEFT}, hand: {r: 1, a: RIGHT, va: -1}, head: {a: LEFT, va: -1}});
 	// ***6300*** Crazy transition
 	orange.moves.push({beats: 2, pivot: {r: 1}, hand: {r: 0.5, a: RIGHT, va: -1}, head: {va: -1}});
-	orange.moves.push({beats: 1, helper: {a: UP, r1: 1}, hand: {va: 1}, head: {va: 1}});
-	orange.moves.push({beats: 1, helper: {a: UP, r1: 0}, hand: {va: 1}, head: {va: 1}});
-	orange.moves.push({beats: 1, helper: {a: UP, r1: 1}, hand: {va: 1}, head: {va: -1}});
-	orange.moves.push({beats: 1, helper: {a: UP, r1: 0}, hand: {va: 1}, head: {va: -1}});
+	orange.moves.push({helper: {a: UP, r1: 1}, hand: {va: 1}, head: {va: 1}});
+	orange.moves.push({helper: {a: UP, r1: 0}, hand: {va: 1}, head: {va: 1}});
+	orange.moves.push({helper: {a: UP, r1: 1}, hand: {va: 1}, head: {va: -1}});
+	orange.moves.push({helper: {a: UP, r1: 0}, hand: {va: 1}, head: {va: -1}});
 	white.moves.push({beats: 6, pivot: {r: 1, a: LEFT}, hand: {r: 0.5, a: LEFT, va: -1}, head: {va: 1}});
 	// ***6840*** Static Spin vs. Point Isolation (see Tech Blog #390)
 	orange.moves.push({beats: 2, pivot: {r: 0.5}, hand: {r: 1, va: 1}, head: {va: 1}});
@@ -154,10 +154,10 @@ function setup() {
 
 	orange.moves.push({beats: 6, pivot: {r: 0}, hand: {r: 0.5, a: RIGHT, va: 1}, head: {va: -1}});
 	white.moves.push({beats: 2, pivot: {r: 0}, hand: {r: 0.5, a: LEFT, va: 1}, head: {va: 1}});
-	white.moves.push({beats: 1, helper: {a: UP, r1: 1}, hand: {va: -1}, head: {va: -1}});
-	white.moves.push({beats: 1, helper: {a: UP, r1: 0}, hand: {va: -1}, head: {va: -1}});
-	white.moves.push({beats: 1, helper: {a: UP, r1: 1}, hand: {va: -1}, head: {va: 1}});
-	white.moves.push({beats: 1, helper: {a: UP, r1: 0}, hand: {va: -1}, head: {va: 1}});
+	white.moves.push({helper: {a: UP, r1: 1}, hand: {va: -1}, head: {va: -1}});
+	white.moves.push({helper: {a: UP, r1: 0}, hand: {va: -1}, head: {va: -1}});
+	white.moves.push({helper: {a: UP, r1: 1}, hand: {va: -1}, head: {va: 1}});
+	white.moves.push({helper: {a: UP, r1: 0}, hand: {va: -1}, head: {va: 1}});
 	// ***7660*** Static Spin vs. Point Isolation (see Tech Blog #390)
 	orange.moves.push({beats: 2, pivot: {a: LEFT, r: 0.5}, hand: {r: 0, va: -1}, head: {va: -1}});
 	white.moves.push({beats: 2, pivot: {a: LEFT, r: 0.5}, hand: {r: 1, va: -1}, head: {va: -1}});
@@ -165,84 +165,84 @@ function setup() {
 	orange.moves.push({beats: 6, pivot: {r: 1}, hand: {a: RIGHT, r: 0.5, va: -1}, head: {va: -1}});
 	white.moves.push({beats: 6, pivot: {r: 1}, hand: {a: LEFT, r: 0.5, va: -1}, head: {va: 1}});
 	// ***8280*** Weird transition
-	orange.moves.push({beats: 1, pivot: {r1: 0}, hand: {va: -1}, head: {va: -1}});
-	white.moves.push({beats: 1, pivot: {r1: 0}, hand: {va: -1}, head: {va: -1}});
-	orange.moves.push({beats: 1, pivot: {a: RIGHT, r1: 0.5}, hand: {va: -1}, head: {va: -1}});
-	white.moves.push({beats: 1, pivot: {a: RIGHT, r1: 0.5}, hand: {va: -1}, head: {va: -1}});
+	orange.moves.push({pivot: {r1: 0}, hand: {va: -1}, head: {va: -1}});
+	white.moves.push({pivot: {r1: 0}, hand: {va: -1}, head: {va: -1}});
+	orange.moves.push({pivot: {a: RIGHT, r1: 0.5}, hand: {va: -1}, head: {va: -1}});
+	white.moves.push({pivot: {a: RIGHT, r1: 0.5}, hand: {va: -1}, head: {va: -1}});
 	// ***8460*** Isolation vs. Cateye
 	orange.moves.push({beats: 6, hand: {va: 1}, head: {va: -1}});
 	white.moves.push({beats: 6, hand: {va: 1}, head: {va: 1}});
 	// ***9000***
-	orange.moves.push({beats: 1, pivot: {r: 1}, hand: {r: 1, a: LEFT, va: -1}, head: {va: -3}});
-	white.moves.push({beats: 1, pivot: {r: 1}, hand: {r: 0}, head: {va: -1}});
-	orange.moves.push({beats: 1, pivot: {r1: 0}, hand: {r: 1, va: -1}, head: {va: -3}});
-	white.moves.push({beats: 1, pivot: {r1: 0}, hand: {r: 0}, head: {va: -1}});
+	orange.moves.push({pivot: {r: 1}, hand: {r: 1, a: LEFT, va: -1}, head: {va: -3}});
+	white.moves.push({pivot: {r: 1}, hand: {r: 0}, head: {va: -1}});
+	orange.moves.push({pivot: {r1: 0}, hand: {r: 1, va: -1}, head: {va: -3}});
+	white.moves.push({pivot: {r1: 0}, hand: {r: 0}, head: {va: -1}});
 	// ***Static Pendulums vs. Inside Stalls
-	orange.moves.push({beats: 1, hand: {r: 1, va: 0, a1: UP}, head: {va: 0, a1: UP, spin: -1}})
-	white.moves.push({beats: 1, head: {va: 0, a1: DOWN}});
-	orange.moves.push({beats: 1, hand: {v1a: 0, a1: LEFT}, head: {va1: 0, a1: RIGHT, spin: -1}})
-	white.moves.push({beats: 1, head: {va1: 0, a1: LEFT}});
-	orange.moves.push({beats: 1, hand: {r: 1, va: 0, a1: UP}, head: {va: 0, a1: UP, spin: +1}})
-	white.moves.push({beats: 1, head: {va: 0, a1: DOWN}});
-	orange.moves.push({beats: 1, hand: {v1a: 0, a1: RIGHT}, head: {va1: 0, a1: LEFT, spin: +1}})
-	white.moves.push({beats: 1, head: {va1: 0, a1: RIGHT}});
-	orange.moves.push({beats: 1, hand: {va: 0, a1: UP}, head: {va: 0, a1: UP, spin: -1}})
-	white.moves.push({beats: 1, head: {va: 0, a1: DOWN}});
-	orange.moves.push({beats: 1, hand: {v1a: 0, a1: LEFT}, head: {va1: 0, a1: RIGHT, spin: -1}})
-	white.moves.push({beats: 1, head: {va1: 0, a1: LEFT}});
-	orange.moves.push({beats: 1, hand: {r: 1, va: 0, a1: UP}, head: {va: 0, a1: UP, spin: +1}})
-	white.moves.push({beats: 1, head: {va: 0, a1: DOWN}});
-	orange.moves.push({beats: 1, hand: {v1a: 0, a1: RIGHT}, head: {va1: 0, a1: LEFT, spin: +1}})
-	white.moves.push({beats: 1, head: {va1: 0, a1: RIGHT}});
-	orange.moves.push({beats: 1, hand: {va: 0, a1: UP}, head: {va: 0, a1: UP, spin: -1}})
-	white.moves.push({beats: 1, head: {va: 0, a1: DOWN}});
-	orange.moves.push({beats: 1, hand: {v1a: 0, a1: LEFT}, head: {va1: 0, a1: RIGHT, spin: -1}})
-	white.moves.push({beats: 1, head: {va1: 0, a1: LEFT}});
+	orange.moves.push({hand: {r: 1, va: 0, a1: UP}, head: {va: 0, a1: UP, spin: -1}})
+	white.moves.push({head: {va: 0, a1: DOWN}});
+	orange.moves.push({hand: {v1a: 0, a1: LEFT}, head: {va1: 0, a1: RIGHT, spin: -1}})
+	white.moves.push({head: {va1: 0, a1: LEFT}});
+	orange.moves.push({hand: {r: 1, va: 0, a1: UP}, head: {va: 0, a1: UP, spin: +1}})
+	white.moves.push({head: {va: 0, a1: DOWN}});
+	orange.moves.push({hand: {v1a: 0, a1: RIGHT}, head: {va1: 0, a1: LEFT, spin: +1}})
+	white.moves.push({head: {va1: 0, a1: RIGHT}});
+	orange.moves.push({hand: {va: 0, a1: UP}, head: {va: 0, a1: UP, spin: -1}})
+	white.moves.push({head: {va: 0, a1: DOWN}});
+	orange.moves.push({hand: {v1a: 0, a1: LEFT}, head: {va1: 0, a1: RIGHT, spin: -1}})
+	white.moves.push({head: {va1: 0, a1: LEFT}});
+	orange.moves.push({hand: {r: 1, va: 0, a1: UP}, head: {va: 0, a1: UP, spin: +1}})
+	white.moves.push({head: {va: 0, a1: DOWN}});
+	orange.moves.push({hand: {v1a: 0, a1: RIGHT}, head: {va1: 0, a1: LEFT, spin: +1}})
+	white.moves.push({head: {va1: 0, a1: RIGHT}});
+	orange.moves.push({hand: {va: 0, a1: UP}, head: {va: 0, a1: UP, spin: -1}})
+	white.moves.push({head: {va: 0, a1: DOWN}});
+	orange.moves.push({hand: {v1a: 0, a1: LEFT}, head: {va1: 0, a1: RIGHT, spin: -1}})
+	white.moves.push({head: {va1: 0, a1: LEFT}});
 	// ***10080*** Crank Isolations
 	orange.moves.push({beats: 10, pivot: {a: LEFT, r: 0.5}, hand: {r: 0.5, va: -1}, head: {va: -1}});
 	white.moves.push({beats: 9, pivot: {a: LEFT, r: 0.5}, hand: {r: 0.5, a: RIGHT, va: -1}, head: {va: -1}});
-	white.moves.push({beats: 1, hand: {va: -1}, head: {va: -2}});
+	white.moves.push({hand: {va: -1}, head: {va: -2}});
 	// ***10980*** Static Spin vs. One-Petal Flowers
 	orange.moves.push({beats: 10, pivot: {r: 0}, hand: {r: 0}, head: {va: -1}});
 	white.moves.push({beats: 10, pivot: {r: 0}, hand: {r: 1, va: -1}, head: {va: -2}});
-	orange.moves.push({beats: 1, pivot: {a: DOWN, r1: 0.5}, head: {va: -1}});
-	white.moves.push({beats: 1, pivot: {a: DOWN, r1: 0.5}, hand: {va: -1}, head: {va: -2}});
+	orange.moves.push({pivot: {a: DOWN, r1: 0.5}, head: {va: -1}});
+	white.moves.push({pivot: {a: DOWN, r1: 0.5}, hand: {va: -1}, head: {va: -2}});
 	// *** More crank isolations
 	orange.moves.push({beats: 6, pivot: {r: 0}, hand: {a: DOWN, r: 0.5, va: -1}, head: {va: -1}});
 	white.moves.push({beats: 6, pivot: {r: 0}, hand: {a: UP, r: 0.5, va: -1}, head: {va: -1}});
 	// ***12510*** Linear Isolations
-	orange.moves.push({beats: 1, hand: {r1: 1, va: -1}, head: {va: -3}});
-	white.moves.push({beats: 1, hand: {r1: 1, va: -1}, head: {va: -3}});
-	orange.moves.push({beats: 1, hand: {r1: 0.5, va: -1}, head: {va: -3}});
-	white.moves.push({beats: 1, hand: {r1: 0.5, va: -1}, head: {va: -3}});
+	orange.moves.push({hand: {r1: 1, va: -1}, head: {va: -3}});
+	white.moves.push({hand: {r1: 1, va: -1}, head: {va: -3}});
+	orange.moves.push({hand: {r1: 0.5, va: -1}, head: {va: -3}});
+	white.moves.push({hand: {r1: 0.5, va: -1}, head: {va: -3}});
 		// ***Diagonal Transition
-	orange.moves.push({beats: 1, hand: {va: -1.5}, head: {va: -1.5}});
-	white.moves.push({beats: 1, hand: {va: -1.5}, head: {va: -1.5}});
+	orange.moves.push({hand: {va: -1.5}, head: {va: -1.5}});
+	white.moves.push({hand: {va: -1.5}, head: {va: -1.5}});
 		// More linear isolations
-	orange.moves.push({beats: 1, hand: {r1: 1, va: -1}, head: {va: -3}});
-	white.moves.push({beats: 1, hand: {r1: 1, va: -1}, head: {va: -3}});
-	orange.moves.push({beats: 1, hand: {r1: 0.5, va: -1}, head: {va: -3}});
-	white.moves.push({beats: 1, hand: {r1: 0.5, va: -1}, head: {va: -3}});
+	orange.moves.push({hand: {r1: 1, va: -1}, head: {va: -3}});
+	white.moves.push({hand: {r1: 1, va: -1}, head: {va: -3}});
+	orange.moves.push({hand: {r1: 0.5, va: -1}, head: {va: -3}});
+	white.moves.push({hand: {r1: 0.5, va: -1}, head: {va: -3}});
 	// ***12960*** Really weird timing on this transition
-	orange.moves.push({beats: 1, hand: {r1: 1}, head: {va: -2}});
-	white.moves.push({beats: 1, hand: {r1: 1}, head: {va: -2}});
-	orange.moves.push({beats: 1, hand: {r1: 0.5, va: -0.5}, head: {va: -1}});
-	white.moves.push({beats: 1, hand: {r1: 0.5, va: -0.5}, head: {va: -1}});
-	orange.moves.push({beats: 1, hand: {r1: 1}, head: {va: -4}});
-	white.moves.push({beats: 1, hand: {r1: 1}, head: {va: -4}});
-	orange.moves.push({beats: 1, hand: {r1: 0}, head: {va: -2.5}});
-	white.moves.push({beats: 1, hand: {r1: 0}, head: {va: -2.5}});
-	orange.moves.push({beats: 1, hand: {a: UP, r1: 1}, head: {va: -3}});
-	white.moves.push({beats: 1, hand: {a: DOWN, r1: 1}, head: {va: -3}});
-	orange.moves.push({beats: 1, hand: {r1: 0.5, va: -1}, head: {va: -3}});
-	white.moves.push({beats: 1, hand: {r1: 0.5, va: -1}, head: {va: -3}});
-	orange.moves.push({beats: 1, hand: {r1: 1, va: -1}, head: {va: -3}});
-	white.moves.push({beats: 1, hand: {r1: 1, va: -1}, head: {va: -3}});
+	orange.moves.push({hand: {r1: 1}, head: {va: -2}});
+	white.moves.push({hand: {r1: 1}, head: {va: -2}});
+	orange.moves.push({hand: {r1: 0.5, va: -0.5}, head: {va: -1}});
+	white.moves.push({hand: {r1: 0.5, va: -0.5}, head: {va: -1}});
+	orange.moves.push({hand: {r1: 1}, head: {va: -4}});
+	white.moves.push({hand: {r1: 1}, head: {va: -4}});
+	orange.moves.push({hand: {r1: 0}, head: {va: -2.5}});
+	white.moves.push({hand: {r1: 0}, head: {va: -2.5}});
+	orange.moves.push({hand: {a: UP, r1: 1}, head: {va: -3}});
+	white.moves.push({hand: {a: DOWN, r1: 1}, head: {va: -3}});
+	orange.moves.push({hand: {r1: 0.5, va: -1}, head: {va: -3}});
+	white.moves.push({hand: {r1: 0.5, va: -1}, head: {va: -3}});
+	orange.moves.push({hand: {r1: 1, va: -1}, head: {va: -3}});
+	white.moves.push({hand: {r1: 1, va: -1}, head: {va: -3}});
 	// ***Four-petal antispin flowers
 	orange.moves.push({beats: 6, hand: {va: 1}, head: {va: -3}});
 	white.moves.push({beats: 6, hand: {va: 1}, head: {va: -3}});
-	orange.moves.push({beats: 1, hand: {r1: 0}, head: {va: -3}});
-	white.moves.push({beats: 1, hand: {r1: 0}, head: {va: -3}});
+	orange.moves.push({hand: {r1: 0}, head: {va: -3}});
+	white.moves.push({hand: {r1: 0}, head: {va: -3}});
 	// ***Spiral Wrap***
 	orange.moves.push({beats: 2, head: {r1: 0, va: -1}});
 	white.moves.push({beats: 2, head: {r1: 0, va: -1}});

@@ -477,7 +477,7 @@ VS3D = function() {
 	function Move(args) {
 		args = args || {};
 		let p = args.p || WALL;
-		let beats = args.beats || 4; // !!!! is this a good default?
+		let beats = args.beats || 1; // !!!! is this a good default?
 		// set default values for node positions
 		let body = merge({r: 0, a: 0}, args.body);
 		let pivot = merge({r: 0, a: 0}, args.pivot);
@@ -585,7 +585,7 @@ VS3D = function() {
 		}
 		let notes = move.notes;
 		let p = move.p || WALL;
-		let b = move.beats || 4;
+		let b = move.beats || 1; // !!!! is this a good default?
 		let mbody = merge({r: 0, a: 0, notes: notes}, move.body);
 		let mpivot = merge({r: 0, a: 0, notes: notes}, move.pivot);
 		let mhelper = merge({r: 0, a: 0, notes: notes}, move.helper);
@@ -633,11 +633,13 @@ VS3D = function() {
 		if (Array.isArray(move)) {
 			let b = 0;
 			for (let m of move) {
-				b+=(beats(m) || 4);
+				b+=(beats(m) || 1); // !!!! is this a good default?
 			}
 			return b;
+		} else if (move.recipe) {
+			return move.beats || 4;
 		} else {
-			return (move.beats || 4);
+			return (move.beats || 1); // !!!! is this a good default?
 		}
 	}	
 
@@ -776,8 +778,7 @@ VS3D = function() {
 			}
 			return socket(move[move.length-1]);
 		}
-		move.beats = move.beats || 4;
-		return spin(move, move.beats*BEAT, "dummy");
+		return spin(move, beats(move)*BEAT, "dummy");
 	}
 
 
