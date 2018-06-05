@@ -34,7 +34,7 @@ let renderer, player, orange, white;
 function setup() {
 	renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
 	player = new VS3D.Player();
-	player.rate = 3;
+	player.rate = 2;
 	let controls = new VS3D.Controls(player);
 	renderer.div.appendChild(controls.div);
 	player.update = function(positions) {

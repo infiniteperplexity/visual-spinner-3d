@@ -102,7 +102,7 @@
 		setupPlayer();
 		setupMenus();
 		setMoves();
-		//play();
+		play();
 
 	}
 
@@ -278,6 +278,7 @@
 			move.p = p;
 			move.direction = dir;
 			prop.moves[0] = move;
+			prop.refit();
 		}
 		try {
 			player.refresh();

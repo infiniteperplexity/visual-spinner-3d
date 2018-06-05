@@ -1145,14 +1145,21 @@ VS3D = function() {
 		this.nudged = args.nudged || 0;
 		this.prop = prop;
 		this.moves = [];
+		this.fitted = null;
 	}
 
+	PropWrapper.prototype.refit = function() {
+		this.fitted = fit(this.prop, this.moves);
+		return this.fitted;
+	}
 	PropWrapper.prototype.spin = function(t) {
 		if (this.moves.length===0) {
 			return this.prop;
 		}
-		let move = fit(this.prop, this.moves);
-		return spin(move, t);
+		if (!this.fitted) {
+			this.refit();
+		}
+		return spin(this.fitted, t);
 	}
 	for (let node of NODES) {
 		let nname = node[0].toUpperCase()+node.slice(1);
