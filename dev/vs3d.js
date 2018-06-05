@@ -834,6 +834,7 @@ VS3D = function() {
 				fitted.head.a = moments.a;
 			}
 			bent = angle(bent);
+			//  !!!! this a problem sometimes because merging happens before solving
 			let extended = {
 				body: merge(moments.body, fitted.body),
 				pivot: merge(moments.pivot, fitted.pivot),

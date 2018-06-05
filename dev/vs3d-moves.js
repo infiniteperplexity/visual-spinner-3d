@@ -214,6 +214,7 @@ VS3D = (function(VS3D) {
 		}
 	);
 
+
 	recipe(
 		"snake",
 		{
@@ -237,6 +238,62 @@ VS3D = (function(VS3D) {
 			if (entry!==undefined) {
 				move = realign(move,(s)=>angle$nearly(s.hand.a,entry,SMALL));
 			}	
+			return move;
+		}
+	);
+
+	// recipe(
+	// 	"snake",
+	// 	{
+	// 		harmonics: 1,
+	// 		ovalness: 0.01	
+	// 	},
+	// 	options => {
+	// 		let {beats, mode, hand, head, harmonics, orient, direction, ovalness, p, entry} = options;
+	// 		// let's say there's no such thing as mode for now
+	// 		let segment = Move(merge(options,{
+	// 			beats: 1,
+	// 			hand: {a: orient, r: hand.r, va: 0, a1: orient+QUARTER*direction, r1: ovalness},
+	// 			head: {a: orient, va: direction*harmonics}
+	// 		}));
+	// 		let move = extend([
+	// 			segment,
+	// 			{hand: {r1: hand.r,  a1: orient+SPLIT, vl1: 0}},
+	// 			{hand: {r1: ovalness, a1: orient-QUARTER*direction}},
+	// 			{hand: {r1: hand.r, vl1: 0, a1: orient}}
+	// 		]);
+	// 		if (entry!==undefined) {
+	// 			move = realign(move,(s)=>angle$nearly(s.hand.a,entry,SMALL));
+	// 		}	
+	// 		return move;
+	// 	}
+	// );
+
+	recipe(
+		"snake1",
+		{
+			harmonics: 1,
+			ovalness: 1-SMALL
+		},
+		options => {
+			let {beats, mode, hand, head, spin, orient, direction, harmonics, p, entry, ovalness} = options;
+			// mode is a "soft default"
+			let hangle = (mode!==undefined) ? orient+mode : orient+head.a-hand.a;
+			let segment = Move(merge(options,{
+				beats: 1,
+				hand: {a: orient, va: direction, r1: 0.5},
+				head: {a: hangle, va: harmonics*spin*direction}
+			}));
+			let move = extend([
+				segment,
+				{r1: 1},
+				{r1: 0.5},
+				{r1: 1}
+			]);
+			console.log(clone(move));
+			if (entry!==undefined) {
+				move = realign(move,(s)=>angle$nearly(s.hand.a,entry));
+			}
 			return move;
 		}
 	);

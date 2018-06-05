@@ -20,6 +20,7 @@ Apps:
 Bugs:
 - TWIST still looks wrong in parts of WHXFL plane.
 - Fan-based toroids flicker in certain spots.
+- In extend, merging happens before solving, which screws up for example when we want to "bounce" back using r and r1.
 
-- Omg...linear isolations look just fine using only angular movements.
-- Would be really nice to just roll with beats: 1 by default...
+Performance:
+- Some kind of cacheing is probably *the* key performance thing here.
