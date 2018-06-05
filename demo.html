@@ -1,0 +1,358 @@
+<!--Distributed under GNU Public License version 3-->
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>VisualSpinner3D Demo, by Glenn Wright</title>
+<style>
+	#grid1 {
+		width: 450px;
+        display: grid;
+        grid-column-gap: 3px;
+        grid-row-gap: 3px;
+        grid-template-rows: 400px auto;
+        grid-template-columns: 400px auto;
+     }
+     #grid2 {
+     	width: 450px;
+        display: grid;
+        grid-template-rows: auto auto auto auto auto auto;
+        grid-template-columns: 48px 88px 88px 88px 88px;
+     }
+</style>
+</head>
+<script src="scripts/vs3d.js"></script>
+<script src="scripts/vs3d-moves.js"></script>
+<script src="scripts/three.min.js"></script>
+<script src="scripts/vs3d-render.js"></script>
+<script>
+	let debug = VS3D.debug;
+	let renderer, player;
+	let defaults = {
+		model: ["poi","poi","poi","poi"],
+		plane: ["WALL","WALL","WALL","WALL"],
+		align: ["UP","UP","UP","UP"],
+		orient: ["UP","UP","UP","UP"],
+		direction: ["CW","CW","CCW","CCW"],
+		move: ["extension","antispin3","extension","antispin3"]
+	};
+
+	let menus = {
+		models: [
+			{txt: "None", value: "none"},
+			{txt: "Poi", value: "poi"},
+			{txt: "Staff", value: "staff"},
+			{txt: "Hoop", value: "hoop"},
+			{txt: "Fan", value: "fan"}
+		],
+		planes: [
+			{txt: "Wall", value: "WALL"},
+			{txt: "Wheel", value: "WHEEL"},
+			{txt: "Floor", value: "FLOOR"}
+		],
+		aligns: [
+			{txt: "Up", value: "UP"},
+			{txt: "Right", value: "RIGHT"},
+			{txt: "Down", value: "DOWN"},
+			{txt: "Left", value: "LEFT"}
+		],
+		orients: [
+			{txt: "Up", value: "UP"},
+			{txt: "Right", value: "RIGHT"},
+			{txt: "Down", value: "DOWN"},
+			{txt: "Left", value: "LEFT"}
+		],
+		directions: [
+			{txt: "Clockwise", value: "CW"},
+			{txt: "Counter", value: "CCW"}
+		],
+		moves: [
+			{txt: "Extension", value: "extension"},
+			{txt: "Point Isolation", value: "pointiso"},
+			{txt: "One-Petal In-Spin Flower", value: "inspin1"},
+			{txt: "Two-Petal In-Spin Flower", value: "inspin2"},
+			{txt: "Four-Petal In-Spin Flower", value: "inspin4"},
+			{txt: "Four-Petal In-Spin Flower (Box)", value: "inspin4b"},
+			{txt: "Two-Petal Anti-Spin Flower", value: "antispin2"},
+			{txt: "Three-Petal Anti-Spin Flower", value: "antispin3"},
+			{txt: "Four-Petal Anti-Spin Flower", value: "antispin4"},
+			{txt: "Four-Petal Anti-Spin Flower (Box)", value: "antispin4b"},
+			{txt: "C-CAP (Inspin First)", value: "capin"},
+			{txt: "C-CAP (Antispin First)", value: "capanti"},
+			{txt: "Isolation", value: "iso"},
+			{txt: "Half Extension", value: "hext"},
+			{txt: "Cat Eye", value: "cateye"},
+			{txt: "Linear Extension", value: "lext"},
+			{txt: "Linear Isolation", value: "liso"},
+			{txt: "Pendulum", value: "pendulum"},
+			{txt: "1.5", value: "1.5"},
+			{txt: "Iso-Bend Toroid", value: "isobend4"},
+			{txt: "Anti-Bend Toroid", value: "antibend4"},
+			{txt: "Pro-Bend Toroid", value: "probend2"},
+			{txt: "Iso-Bend Toroid (Backward)", value: "isobend-4"},
+			{txt: "Anti-Bend Toroid (Backward)", value: "antibend-4"},
+			{txt: "Pro-Bend Toroid (Backward)", value: "probend-2"},
+			{txt: "Iso-Bend Toroid (Box)", value: "isobend4b"},
+			{txt: "Anti-Bend Toroid (Box)", value: "antibend4b"},
+			{txt: "Iso-Bend Toroid (Back Box)", value: "isobend-4b"},
+			{txt: "Anti-Bend Toroid (Back Box)", value: "antibend-4b"}
+		]
+	};
+
+	function init() {
+		//hideDebugger();
+		setupPlayer();
+		setupMenus();
+		setMoves();
+		play();
+
+	}
+
+	function hideDebugger() {
+		document.getElementById("debugger").style.display = "none";
+	}
+
+	function play() {
+		player.play();
+	}
+
+	function setupPlayer() {
+		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
+		player = new VS3D.Player();
+		player.addProp(new VS3D.Prop(), {color: "red", nudged: 0.15});
+		player.addProp(new VS3D.Prop(), {color: "blue", nudged: 0.10});
+		player.addProp(new VS3D.Prop(), {color: "green", nudged: 0.05});
+		player.addProp(new VS3D.Prop(), {color: "yellow", nudged: 0.0});
+		player.update = function(positions) {
+			renderer.render(this.props, positions);
+		}
+		player.reset();
+	}
+
+	function setupMenus() {
+		for (let i=0; i<4; i++) {
+			let prop = player.props[i].prop;
+			for (let title in menus) {
+				let menu = menus[title];
+				let name = title.slice(0,title.length-1);
+				let node = document.getElementById(name+i);
+
+				node.onchange = setMoves;
+				for (let choice of menu) {
+					let o = document.createElement("option");
+					for (let arg in choice) {
+						o[arg] = choice[arg];
+					}
+					if (defaults[name][i]===o.value) {
+						o.selected = true;
+					}
+					let txt = document.createTextNode(choice.txt);
+					o.appendChild(txt);
+					node.appendChild(o);
+				}
+			}
+		}
+	}
+
+	function shuffleMenus() {
+		for (let i=0; i<4; i++) {
+			let prop = player.props[i];
+			for (let title in menus) {
+				if (title==="models") {
+					continue;
+				}
+				let menu = menus[title];
+				let name = title.slice(0,title.length-1);
+				let node = document.getElementById(name+i);
+				// menu is the array
+				let r = Math.floor(Math.random()*menu.length);
+				node.value = menu[r].value;
+				// if (name==="move") {
+				// 	node.value = "pendulum";
+				// }
+			}
+		}
+		setMoves();
+	}
+
+	function setMoves(e) {
+		let chosen = (e) ? e.target.id : "";
+		for (let i=0; i<4; i++) {
+			let model = document.getElementById("model"+i).value;
+			let plane = document.getElementById("plane"+i).value;
+			let align = document.getElementById("align"+i).value;
+			let oriented = document.getElementById("orient"+i).value;
+			let direction = document.getElementById("direction"+i).value;
+			let recipe = document.getElementById("move"+i).value;
+			// special overrides
+			if (chosen==="move"+i && ["pendulum","1.5"].includes(recipe)) {
+				oriented = "DOWN";
+				document.getElementById("orient"+i).value = "DOWN";
+			}
+			let prop = player.props[i];
+			if (prop.model!==model) {
+				prop = new VS3D.PropWrapper(prop.prop, {color: prop.color, model: model, nudged: prop.nudged});
+				player.props[i] = prop;
+			}
+			let move;
+			let dir = VS3D[direction];
+			let angle = VS3D[align];
+			let orient = VS3D[oriented];
+			let p = VS3D[plane];
+			let {SPLIT, BOX, DIAMOND} = VS3D;
+			prop.setHeadAngle(angle, p);
+			prop.setHandAngle(angle, p);
+			if (recipe==="extension") {
+				move = {recipe: "flower", petals: 0};
+			} else if (recipe==="pointiso") {
+				prop.setHeadAngle(angle+SPLIT,p);
+				move = {recipe: "flower", mode: BOX, petals: 0};
+			} else if (recipe==="inspin1") {
+				move = {recipe: "flower", petals: 1};
+			} else if (recipe==="inspin2") {
+				move = {recipe: "flower", petals: 2};
+			} else if (recipe==="inspin4") {
+				move = {recipe: "flower", petals: 4};
+			} else if (recipe==="inspin4b") {
+				move = {recipe: "flower", petals: 4};
+			} else if (recipe==="antispin2") {
+				move = {recipe: "flower", petals: 2, spin: -1};
+			} else if (recipe==="antispin3") {
+				move = {recipe: "flower", petals: 3, spin: -1};
+			} else if (recipe==="antispin4") {
+				move = {recipe: "flower", petals: 4, spin: -1};
+			} else if (recipe==="antispin4b") {
+				move = {recipe: "flower", mode: BOX, petals: 4, spin: -1};
+			} else if (recipe==="capin") {
+				move = {recipe: "ccap"};
+			} else if (recipe==="capanti") {
+				move = {recipe: "ccap", spin: -1};
+			} else if (recipe==="iso") {
+				move = {recipe: "isolation"};
+			} else if (recipe==="cateye") {
+				move = {recipe: "isolation", spin: -1};
+			} else if (recipe==="hext") {
+				move = {recipe: "isolation", mode: DIAMOND};
+			} else if (recipe==="lext") {
+				move = {recipe: "snake"};
+			} else if (recipe==="liso") {
+				move = {recipe: "snake", harmonics: 3, ovalness: 0.5};
+			} else if (recipe==="isobend2") {
+				move = {recipe: "toroid", bend: 1, harmonics: 2};
+			} else if (recipe==="isobend4") {
+				move = {recipe: "toroid", bend: 1, harmonics: 4};
+			} else if (recipe==="isobend4b") {
+				move = {recipe: "toroid", mode: BOX, bend: 1, harmonics: 4};
+			} else if (recipe==="antibend2") {
+				move = {recipe: "toroid", bend: -1, harmonics: 2};
+			} else if (recipe==="antibend4") {
+				move = {recipe: "toroid", bend: -1, harmonics: 4};
+			} else if (recipe==="antibend4b") {
+				move = {recipe: "toroid", mode: BOX, bend: -1, harmonics: 4};
+			} else if (recipe==="probend2") {
+				move = {recipe: "toroid", bend: 3, harmonics: 2};
+			} else if (recipe==="probend4") {
+				move = {recipe: "toroid", bend: 3, harmonics: 4};
+			} else if (recipe==="isobend-2") {
+				move = {recipe: "toroid", bend: 1, harmonics: -2};
+			} else if (recipe==="isobend-4") {
+				move = {recipe: "toroid", bend: 1, harmonics: -4};
+			} else if (recipe==="isobend-4b") {
+				move = {recipe: "toroid", mode: BOX, bend: 1, harmonics: -4};
+			} else if (recipe==="antibend-2") {
+				move = {recipe: "toroid", bend: -1, harmonics: -2};
+			} else if (recipe==="antibend-4") {
+				move = {recipe: "toroid", bend: -1, harmonics: -4};
+			} else if (recipe==="antibend-4b") {
+				move = {recipe: "toroid", mode: BOX, bend: -1, harmonics: -4};
+			} else if (recipe==="probend-2") {
+				move = {recipe: "toroid", bend: 3, harmonics: -2};
+			} else if (recipe==="probend-4") {
+				move = {recipe: "toroid", bend: 3, harmonics: -4};
+			} else if (recipe==="pendulum") {
+				move = {recipe: "pendulum"};
+			} else if (recipe==="1.5") {
+				move = {recipe: "pendulum", onepointfive: true};
+			};
+			move.nofit = true;
+			move.entry = angle;
+			move.orient = orient;
+			move.p = p;
+			move.direction = dir;
+			prop.moves[0] = move;
+			prop.refit();
+		}
+		try {
+			player.refresh();
+		} catch(e) {
+			for (let i=0; i<4; i++) {
+				let model = document.getElementById("model"+i).value;
+				let plane = document.getElementById("plane"+i).value;
+				let align = document.getElementById("align"+i).value;
+				let oriented = document.getElementById("orient"+i).value;
+				let direction = document.getElementById("direction"+i).value;
+				let recipe = document.getElementById("move"+i).value;
+				console.log("prop: "+i);
+				console.log("model: "+model);
+				console.log("plane: "+plane);
+				console.log("align: "+align);
+				console.log("orient: "+oriented);
+				console.log("direction: "+direction);
+				console.log("recipe: "+recipe);
+			}
+			throw e;
+		}
+	}
+
+	function tests() {
+		
+	}
+
+
+</script>
+<body onload="init();">
+<a href="https://github.com/infiniteperplexity/visual-spinner-3d">See more at the VisualSpinner3D main site.</a>
+<div id="grid1">
+	<div id="display"></div>
+	<div>
+		<div id="grid2">
+			<p>Prop:</p>
+			<select id="model0"></select>
+			<select id="model1"></select>
+			<select id="model2"></select>
+			<select id="model3"></select>
+			<p>Plane:</p>
+			<select id="plane0"></select>
+			<select id="plane1"></select>
+			<select id="plane2"></select>
+			<select id="plane3"></select>
+			<p>Entry:</p>
+			<select id="align0"></select>
+			<select id="align1"></select>
+			<select id="align2"></select>
+			<select id="align3"></select>
+			<p>Orient:</p>
+			<select id="orient0"></select>
+			<select id="orient1"></select>
+			<select id="orient2"></select>
+			<select id="orient3"></select>
+			<p>Spin:</p>
+			<select id="direction0"></select>
+			<select id="direction1"></select>
+			<select id="direction2"></select>
+			<select id="direction3"></select>
+			<p>Move:</p>
+			<select id="move0"></select>
+			<select id="move1"></select>
+			<select id="move2"></select>
+			<select id="move3"></select>
+		</div>
+	</div>
+	<div>
+		<p>https://github.com/infiniteperplexity/visual-spinner-3d</p>
+		<p>infinite DOT perplexity AT gmail DOT com</p>
+		<button id="debugger" onclick="shuffleMenus();">debug</button>
+	</div>
+</div>
+</body>
+</html>
