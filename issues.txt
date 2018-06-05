@@ -8,7 +8,7 @@ Dev:
 
 Engine:
 - Allow optional planes per node.
-- Are defaults injected in the right places?
+- Are defaults injected in the right places?  Probably not, given that object spread is the single biggest performance hog.
 - Should extend() wrap around?
 - All breaks in angle$spherify are gone, but are there maybe still cusps?
 

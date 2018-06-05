@@ -129,6 +129,8 @@ VS3D = (function(VS3D) {
 			new THREE.MeshLambertMaterial({color: "white"})
 		);
 		tether.position.y = 0.5;
+		tether.userData.stretchy = "soooo stretchy!";
+		console.log(tether.userData.stretchy);
 		let handle = new THREE.Mesh(
 			new THREE.SphereGeometry(0.075,8,8),
 			new THREE.MeshLambertMaterial({color: this.colors(color)})

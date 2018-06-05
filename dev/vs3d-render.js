@@ -123,8 +123,18 @@ VS3D = (function(VS3D) {
 		shapes.rotation.x = 0;
 		shapes.rotation.y = 0;
 		shapes.rotation.z = 0;
+		for (let shape of shapes.children) {
+			if (shape.userData.stretchy) {
+				shape.scale.set(1,prop.head.r,1);
+			}
+			if (shape.userData.slideish) {
+				shape.position.y = prop.head.r/2;
+			}
+			if (shape.userData.slidey) {
+				shape.position.y = prop.head.r;
+			}
+		}
 		let axis = VS3D.axis(prop);
-		
 		for (let i=VS3D.BODY; i<VS3D.HEAD; i++) {
 			let node = VS3D.NODES[i];
 			shapes.rotateY(-prop[node].b*VS3D.UNIT);
@@ -157,20 +167,19 @@ VS3D = (function(VS3D) {
 			new THREE.SphereGeometry(0.2,16,16),
 			new THREE.MeshLambertMaterial({color: this.colors(color)})
 		);
-		//head.material.depthTest = false;
-		head.position.y = 1;
+		//head.position.y = 1;
+		head.userData.slidey = true;
 		let tether = new THREE.Mesh(
 			new THREE.CylinderGeometry(0.025,0.025,1,4),
 			new THREE.MeshLambertMaterial({color: "white"})
 		);
-		tether.position.y = 0.5;
+		// tether.position.y = 0.5;
+		tether.userData.stretchy = true;
+		tether.userData.slideish = true;
 		let handle = new THREE.Mesh(
 			new THREE.SphereGeometry(0.075,8,8),
 			new THREE.MeshLambertMaterial({color: this.colors(color)})
 		);
-		//handle.material.depthTest = false; 		
-		//tether.renderOrder = -1;
-		//tether.material.depthTest = false;
 		let group = new THREE.Group();
 		group.add(head);
 		group.add(tether);

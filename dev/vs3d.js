@@ -558,7 +558,7 @@ VS3D = function() {
 	// takes a move and a time, returns a prop
 	// dummy is just a convenience to distinguish "real" spinning from sockets and such
 	function spin(move, t, dummy) {
-		move = clone(move);
+		// move = clone(move);
 		if (move.recipe) {
 			console.log("getting here is usually a bad thing");
 			return spin(build(move, new Prop()),t,dummy);
@@ -586,25 +586,25 @@ VS3D = function() {
 		let notes = move.notes;
 		let p = move.p || WALL;
 		let b = move.beats || 4;
-		move.body = merge({r: 0, a: 0, notes: notes}, move.body);
-		move.pivot = merge({r: 0, a: 0, notes: notes}, move.pivot);
-		move.helper = merge({r: 0, a: 0, notes: notes}, move.helper);
-		move.hand = merge({r: 1, a: 0, notes: notes}, move.hand);
-		move.twist = move.twist || 0;
-		move.bent = move.bent || 0;
-		move.vt = move.vt || 0;
-		move.vb = move.vb || 0;
-		move.grip = merge({r: 0, a: 0, notes: notes}, move.grip);
-		move.head = merge({r: 1, a: 0, notes: notes}, move.head);	
-		let body = spin_node({beats: b, p: p, ...move.body}, t);
-		let pivot = spin_node({beats: b, p: p, ...move.pivot}, t);
-		let helper = spin_node({beats: b, p: p, ...move.helper}, t);
+		let mbody = merge({r: 0, a: 0, notes: notes}, move.body);
+		let mpivot = merge({r: 0, a: 0, notes: notes}, move.pivot);
+		let mhelper = merge({r: 0, a: 0, notes: notes}, move.helper);
+		let mhand = merge({r: 1, a: 0, notes: notes}, move.hand);
+		let mtwist = move.twist || 0;
+		let mbent = move.bent || 0;
+		let mvt = move.vt || 0;
+		let mvb = move.vb || 0;
+		let mgrip = merge({r: 0, a: 0, notes: notes}, move.grip);
+		let mhead = merge({r: 1, a: 0, notes: notes}, move.head);	
+		let body = spin_node({beats: b, p: p, ...mbody}, t);
+		let pivot = spin_node({beats: b, p: p, ...mpivot}, t);
+		let helper = spin_node({beats: b, p: p, ...mhelper}, t);
 		// okay, the problem is that it doesn't pass the positions and stuff...
-		let hand = spin_node({beats: b, p: p, ...move.hand}, t);
-		let grip = spin_node({beats: b, p: p, ...move.grip}, t);
-		let head = spin_node({beats: b, p: p, ...move.head}, t);
-		let twist = move.twist + move.vt*t*SPEED;
-		let bent = move.bent + move.vb*t*SPEED;
+		let hand = spin_node({beats: b, p: p, ...mhand}, t);
+		let grip = spin_node({beats: b, p: p, ...mgrip}, t);
+		let head = spin_node({beats: b, p: p, ...mhead}, t);
+		let twist = mtwist + mvt*t*SPEED;
+		let bent = mbent + mvb*t*SPEED;
 		let bearing = head.b;
 		if (bent!==0 || move.vb!==0) {
 			let axis = vector$unitize(sphere$vectorize(head));
@@ -861,11 +861,6 @@ VS3D = function() {
 
 		}
 		let moments = moments_angular(args);
-		// if (!args.notes && args.a1===270) {
-		// 	console.trace();
-		// 	console.log(args);
-		// 	console.log(t);
-		// }
 		return spin_angular({...moments, p: p}, t);
 	}
 
@@ -895,26 +890,27 @@ VS3D = function() {
 		return {...angle$spherify(a, p), r: r};
 	}
 
+	let aliases = {
+		radius: "r",
+		r0: "r",
+		radius0: "r",
+		radius1: "r1",
+		angle: "a",
+		angle0: "a",
+		a0: "a",
+		angle1: "a1",
+		speed: "va",
+		speed0: "va",
+		speed1: "va1",
+		motion: "m",
+		vl0: "vl"
+	}
 	function alias(args) {
-		let aliases = {
-			radius: "r",
-			r0: "r",
-			radius0: "r",
-			radius1: "r1",
-			angle: "a",
-			angle0: "a",
-			a0: "a",
-			angle1: "a1",
-			speed: "va",
-			speed0: "va",
-			speed1: "va1",
-			motion: "m",
-			vl0: "vl"
-		}
-		let vals = ["r","r1","a","a1","va","vr","va1","vr1","c","p","m","beats","vl","al","la","t","spin","notes"];
 		let nargs = {};
-		for (let val of vals) {
-			if (nargs[val]===undefined) {
+		for (let val in args) {
+			if (aliases[val]) {
+				nargs[aliases[val]] = args[val];  
+			} else {
 				nargs[val] = args[val];
 			}
 		}
@@ -1179,7 +1175,7 @@ VS3D = function() {
 		}
 		this.props = [];
 		this.speed = 10;
-		this.rate = 3;
+		this.rate = 1;
 		this.tick = 0;
 	}
 	Player.prototype.addProp = function(prop, args) {
@@ -1270,7 +1266,6 @@ VS3D = function() {
 		input.type = "number";
 		input.className = "vs3d-number-input";
 		input.value = this.tick;
-		//input.min = "0";
 		input.style.width = "80px";
 		input.onchange = (e)=>player.goto(e.target.value);
 		input.oninput = input.onchange;
@@ -1290,7 +1285,6 @@ VS3D = function() {
 		let input = this.div.querySelector(".vs3d-number-input");
 		input.value = t;
 	}
-	// ok...think harder...
 
 	let MoveFactory = {
 		defaults: {

@@ -2,17 +2,20 @@
 <!DOCTYPE html>
 <html><head>
 <style>
-body {margin: 0; padding: 0; background-color: #679}
-h1, h2, header p {text-align: center}
-header {width: 1240px; height: 100px}
-header a {position: absolute; top: 5px; left: 5px}
-#content {width: 1250px; height: 510px;}
-canvas {width: 400px; height: 400px; background-color: #000;}
-section {margin: 0; padding: 0}
-header, section div {vertical-align: top; padding: 2.5px; border: 5px solid gray; margin: -2.5px; display: inline-block;}
-#display {width: 400px; height: 400px; float: left}
-#popimport {height: 240px; width: 400px}
-#frameN {width: 100px}
+body {
+	margin: 0;
+	padding: 0;
+	background-color: #679
+}
+#grid {
+	display: grid;
+	grid-column-gap: 3px;
+	grid-row-gap: 3px;
+	grid-template-columns: 400px auto;
+}
+video {
+	height: 400px;
+}
 </style>
 
 
@@ -31,6 +34,7 @@ let renderer, player, orange, white;
 function setup() {
 	renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
 	player = new VS3D.Player();
+	player.rate = 3;
 	let controls = new VS3D.Controls(player);
 	renderer.div.appendChild(controls.div);
 	player.update = function(positions) {
@@ -39,7 +43,7 @@ function setup() {
 	}
 	orange = player.addProp(new VS3D.Prop(), {color: "orange"});
 	white = player.addProp(new VS3D.Prop(), {color: "white"});
-	const {UP, DOWN, LEFT, RIGHT, SE, SW, FOUR, FIVE, EIGHT} = VS3D;
+	const {UP, DOWN, LEFT, RIGHT, SE, SW, NW, NE, FOUR, FIVE, EIGHT} = VS3D;
 	orange.setHandAngle(LEFT);
 	orange.setHeadAngle(LEFT)
 	white.setHeadAngle(LEFT);
@@ -214,16 +218,34 @@ function setup() {
 		// ***Diagonal Transition
 	orange.moves.push({beats: 1, hand: {va: -1.5}, head: {va: -1.5}});
 	white.moves.push({beats: 1, hand: {va: -1.5}, head: {va: -1.5}});
-		// More linear isolation
+		// More linear isolations
 	orange.moves.push({beats: 1, hand: {r1: 1, va: -1}, head: {va: -3}});
 	white.moves.push({beats: 1, hand: {r1: 1, va: -1}, head: {va: -3}});
 	orange.moves.push({beats: 1, hand: {r1: 0.5, va: -1}, head: {va: -3}});
 	white.moves.push({beats: 1, hand: {r1: 0.5, va: -1}, head: {va: -3}});
-	// *** 12960? a weird thing happens here
-	// orange.moves.push({beats: 1, hand: {r1: 1, va: -1}, head: {va: -3}});
-	// white.moves.push({beats: 1, hand: {r1: 1, va: -1}, head: {va: -3}});
-	// orange.moves.push({beats: 1, hand: {r1: 0.5, va: -1}, head: {va: -3}});
-	// white.moves.push({beats: 1, hand: {r1: 0.5, va: -1}, head: {va: -3}});
+	// ***12960*** Really weird timing on this transition
+	orange.moves.push({beats: 1, hand: {r1: 1}, head: {va: -2}});
+	white.moves.push({beats: 1, hand: {r1: 1}, head: {va: -2}});
+	orange.moves.push({beats: 1, hand: {r1: 0.5, va: -0.5}, head: {va: -1}});
+	white.moves.push({beats: 1, hand: {r1: 0.5, va: -0.5}, head: {va: -1}});
+	orange.moves.push({beats: 1, hand: {r1: 1}, head: {va: -4}});
+	white.moves.push({beats: 1, hand: {r1: 1}, head: {va: -4}});
+	orange.moves.push({beats: 1, hand: {r1: 0}, head: {va: -2.5}});
+	white.moves.push({beats: 1, hand: {r1: 0}, head: {va: -2.5}});
+	orange.moves.push({beats: 1, hand: {a: UP, r1: 1}, head: {va: -3}});
+	white.moves.push({beats: 1, hand: {a: DOWN, r1: 1}, head: {va: -3}});
+	orange.moves.push({beats: 1, hand: {r1: 0.5, va: -1}, head: {va: -3}});
+	white.moves.push({beats: 1, hand: {r1: 0.5, va: -1}, head: {va: -3}});
+	orange.moves.push({beats: 1, hand: {r1: 1, va: -1}, head: {va: -3}});
+	white.moves.push({beats: 1, hand: {r1: 1, va: -1}, head: {va: -3}});
+	// ***Four-petal antispin flowers
+	orange.moves.push({beats: 6, hand: {va: 1}, head: {va: -3}});
+	white.moves.push({beats: 6, hand: {va: 1}, head: {va: -3}});
+	orange.moves.push({beats: 1, hand: {r1: 0}, head: {va: -3}});
+	white.moves.push({beats: 1, hand: {r1: 0}, head: {va: -3}});
+	// ***Spiral Wrap***
+	orange.moves.push({beats: 2, head: {r1: 0, va: -1}});
+	white.moves.push({beats: 2, head: {r1: 0, va: -1}});
 
 	player.ready();
 	//player.play();	
@@ -236,9 +258,13 @@ function setup() {
 	<h1>Welcome to VisualSpinner3D. </h1>
 	<p>(we have successfully digitized Drex.)</p>
 </header>
-	<section>
-<div id="display">
+<div id="grid">
+	<div id="display">
+	</div>
+	<video controls="controls">
+		<source src="comborific.mp4" type="video/mp4">
+		Your browser does not support HTML5 video.
+	</video>
 </div>
-
-</section>
+</grid>
 </body></html>
