@@ -886,11 +886,12 @@ VS3D = function() {
 		} else {
 			if (move.recipe) {
 				let built = build(move, prop);
-				if (move.nofit) {
-					return built;
-				}
-				let aligned = realign(built, (s)=>fits(prop,s))
-				return aligned;
+				return built;
+				// if (move.nofit) {
+				// 	return built;
+				// }
+				// let aligned = realign(built, (s)=>fits(prop,s))
+				// return aligned;
 			}
 			if (move.nofit || fits(prop, move)) {
 				return move;
@@ -1084,7 +1085,7 @@ VS3D = function() {
 			head: {r: 1}
 		}
 	}
-	function build(recipe, prop) {
+	function build_old(recipe, prop) {
 		prop = prop || new Prop();
 		// if the move has a plane, we keep that; otherwise, we use the wall plane.
 		let plane = recipe.p || WALL;
@@ -1109,6 +1110,50 @@ VS3D = function() {
 		let args = merge(aligned, recipe);
 		let m = MoveFactory[args.recipe](args);
 		return m;
+	}
+
+	function build(recipe, prop) {
+		let bs = recipe.beats || 4;
+		if (!prop) {
+			let single = MoveFactory[recipe.recipe](recipe);
+			let built = single;
+			while (beats(built)<bs) {
+				built = built.concat(single);
+			}
+			// this assumes every segment is one beat long...// this assumes every segment is one beat long...
+			return built.slice(0,bs);
+		}
+		// if the move has a plane, we keep that; otherwise, we use the wall plane.
+		let plane = recipe.p || WALL;
+		let {body, pivot, helper, hand, twist, grip, head} = prop;
+		body = {r: body.r, a: sphere$planify(body, plane), p: plane};
+		pivot = {r: pivot.r, a: sphere$planify(pivot, plane), p: plane};
+		helper = {r: helper.r, a: sphere$planify(helper, plane), p: plane};
+		hand = {r: hand.r, a: sphere$planify(hand, plane), p: plane};
+		// at least for how we currently handle TWIST
+		bent = recipe.bent || 0;
+		// bent will almost always be zero, but later we can try to handle this
+		grip = {r: grip.r, a: sphere$planify(grip, plane), p: plane};
+		head = {r: head.r, a: sphere$planify(head, plane), p: plane};
+		let aligned = {
+			body: body,
+			pivot: pivot,
+			helper: helper,
+			hand: hand,
+			grip: grip,
+			head: head,
+		}
+		let args = merge(aligned, recipe);
+		let single = MoveFactory[args.recipe](args);
+		if (!recipe.nofit) {
+			single = realign(single, (s)=>fits(prop,s));
+		}
+		let built = single;
+		while (beats(built)<bs) {
+			built = built.concat(single);
+		}
+		// this assumes every segment is one beat long...
+		return built.slice(0,bs);
 	}
 
 	function recipe(name, defs, f) {
@@ -1252,7 +1297,7 @@ function Player(renderer) {
 		this.model = args.model || "poi";
 		this.color = args.color || "red";
 		this.fire = args.fire || false;
-		this.nudged = args.nudged || 0;
+		this.nudge = args.nudge || 0;
 		this.prop = prop;
 		this.moves = [];
 		this.fitted = null;
@@ -1349,6 +1394,51 @@ function Player(renderer) {
 		let input = this.div.querySelector(".vs3d-number-input");
 		input.value = t;
 	}
+
+	function Overlay(txt,args) {
+		txt = txt || [];
+		// should be an array of objects that have 
+		this.content = txt;
+		args = args || {};
+		args.style = args.style || {};
+		this.div = document.createElement("div");
+		this.div.className = "vs3d-overlay";
+		this.div.textContent = "";
+		this.div.style.color = "yellow";
+		this.div.style.position = "absolute";
+		this.div.style.width = "100%";
+		this.div.style.top = "25px";
+		this.div.style.textAlign = "center";
+		for (let arg in args) {
+			this.div[arg] = args[arg];
+		}
+		for (let arg in args.style) {
+			this.div.style[arg] = args[arg];
+		}
+	}
+	Overlay.prototype.get = function(t) {
+		let txt = this.content;
+		if (Array.isArray(txt)) {
+			if (txt.length===0) {
+				return "";
+			}
+			let past = 0;
+			let i = 0;
+			while (past<=t) {
+				let ticks = beats(txt[i])*BEAT || 1*BEAT;
+				if (past+ticks>=t) {
+					return txt[i];
+				} else {
+					past+=ticks;
+					i=(i+1)%txt.length;
+				}
+			}
+			return "";
+		} else if (typeof(txt)==="string") {
+			return txt;
+		}
+	}
+
 
 // ****************************************************************************
 // ********************** Serialization Methods *******************************

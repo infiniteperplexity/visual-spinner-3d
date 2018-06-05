@@ -1,0 +1,71 @@
+<!--Distributed under GNU Public License version 3-->
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>VisualSpinner3D v. 3.0, by Glenn Wright</title>
+<script src="scripts/vs3d.js"></script>
+<script src="scripts/vs3d-moves.js"></script>
+<script src="scripts/three.min.js"></script>
+<script src="scripts/vs3d-render.js"></script>
+<script>
+let renderer, player, red, blue, green;
+function init() {
+	const {UP, DOWN, RIGHT, LEFT} = VS3D;
+	renderer = new VS3D.ThreeRenderer(document.getElementById("vs-div"),400,600,60);
+	renderer.fov =
+	player = new VS3D.Player();
+	let controls = new VS3D.Controls(player);
+	renderer.div.appendChild(controls.div);
+	player.update = function(positions) {
+		renderer.render(this.props, positions);
+		controls.update(this.tick);
+	}
+	red = player.addProp(new VS3D.Prop(), {color: "red", nudge: 0.20});
+	blue = player.addProp(new VS3D.Prop(), {color: "blue", nudge: 0.10});
+	green = player.addProp(new VS3D.Prop(), {color: "green", nudge: 0.00});
+	red.setHandAngle(RIGHT);
+	red.setHeadAngle(RIGHT);
+	blue.setHandAngle(LEFT);
+	blue.setHeadAngle(LEFT);
+	green.setHandAngle(RIGHT);
+	green.setHeadAngle(RIGHT);
+
+	red.moves.push({beats: 1, head: {va: 2}});
+	blue.moves.push({beats: 3, head: {va: -2}});
+	green.moves.push({beats: 5, head: {va: 2}});
+
+	red.moves.push({beats: 1.5, pivot: {a: LEFT, r: 0, r1: 1}, helper: {a: UP, r: 0, r1: 2, vr1: 0}, head: {va: 4/3}});
+	red.moves.push({beats: 1.5, pivot: {r1: 2}, helper: {r1: 0, vr: 0}, head: {va: 4/3}});
+
+	blue.moves.push({beats: 1.5, pivot: {a: RIGHT, r: 0, r1: 1}, helper: {a: UP, r: 0, r1: 2, vr1: 0}, head: {va: -4/3}});
+	blue.moves.push({beats: 1.5, pivot: {r1: 2}, helper: {r1: 0, vr: 0}, head: {va: -4/3}});
+
+	red.moves.push({beats: 3, pivot: {r: 0}, hand: {a: LEFT}, head: {va: -2}});
+
+	green.moves.push({beats: 1.5, pivot: {a: LEFT, r: 0, r1: 1}, helper: {a: UP, r: 0, r1: 2, vr1: 0}, head: {va: 4/3}});
+	green.moves.push({beats: 1.5, pivot: {r1: 2}, helper: {r1: 0, vr: 0}, head: {va: 4/3}});
+
+	blue.moves.push({beats: 3, pivot: {r: 0}, hand: {a: RIGHT}, head: {va: 2}});
+
+	red.moves.push({beats: 1.5, pivot: {a: RIGHT, r: 0, r1: 1}, helper: {a: UP, r: 0, r1: 2, vr1: 0}, head: {va: -4/3}});
+	red.moves.push({beats: 1.5, pivot: {r1: 2}, helper: {r1: 0, vr: 0}, head: {va: -4/3}});
+
+	green.moves.push({beats: 3, pivot: {r: 0}, hand: {a: LEFT}, head: {va: -2}});
+
+	blue.moves.push({beats: 1.5, pivot: {a: LEFT, r: 0, r1: 1}, helper: {a: UP, r: 0, r1: 2, vr1: 0}, head: {va: 4/3}});
+	blue.moves.push({beats: 1.5, pivot: {r1: 2}, helper: {r1: 0, vr: 0}, head: {va: 4/3}});
+
+	red.moves.push({beats: 4, pivot: {r: 0}, hand: {a: RIGHT}, head: {va: 2}});
+
+	green.moves.push({beats: 1.5, pivot: {a: RIGHT, r: 0, r1: 1}, helper: {a: UP, r: 0, r1: 2, vr1: 0}, head: {va: -4/3}});
+	green.moves.push({beats: 1.5, pivot: {r1: 2}, helper: {r1: 0, vr: 0}, head: {va: -4/3}});
+
+	blue.moves.push({beats: 2, pivot: {r: 0}, hand: {a: LEFT}, head: {va: -2}});
+
+	player.play();
+}
+</script>
+<body onload="init();">
+<a href='http://infiniteperplexity.github.io/visual-spinner-3d/'>See more at the VisualSpinner3D main site.</a>
+<div id="vs-div">
+</div>
+</body></html>

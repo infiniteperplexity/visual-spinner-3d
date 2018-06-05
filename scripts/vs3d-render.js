@@ -35,16 +35,6 @@ VS3D = (function(VS3D) {
 		this.registry = [];
 		this.models = [];
 		this.tick = 0;
-		// set up a text overlay with nice default
-		this.overlay = document.createElement("div");
-		this.overlay.class = "vs3d-overlay";
-		this.overlay.appendChild(document.createTextNode(""));
-		this.overlay.style.color = "yellow";
-		this.overlay.style.position = "absolute";
-		this.overlay.style.width = "100%";
-		this.overlay.style.top = "25px";
-		this.overlay.style.textAlign = "center";
-		this.div.appendChild(this.overlay);
 	}
 
 	ThreeRenderer.prototype.setCameraPosition = function(x,y,z) {
@@ -109,17 +99,17 @@ VS3D = (function(VS3D) {
 		// update all prop locations
 		for (let i=0; i<wrappers.length; i++) {
 			let idx = this.registry.indexOf(wrappers[i]);
-			this.update(this.models[idx], positions[i], wrappers[i].nudged);
+			this.update(this.models[idx], positions[i], wrappers[i].nudge);
 		}
 		this.renderer.render(this.scene, this.camera);
 	}
 
 
-	ThreeRenderer.prototype.update = function(shapes, prop, nudged) {
-		nudged = nudged || 0;
-		shapes.position.x = Math.sign(this.camera.position.x)*nudged;
-		shapes.position.y = Math.sign(this.camera.position.y)*nudged;
-		shapes.position.z = Math.sign(this.camera.position.z)*nudged;
+	ThreeRenderer.prototype.update = function(shapes, prop, nudge) {
+		nudge = nudge || 0;
+		shapes.position.x = Math.sign(this.camera.position.x)*nudge;
+		shapes.position.y = Math.sign(this.camera.position.y)*nudge;
+		shapes.position.z = Math.sign(this.camera.position.z)*nudge;
 		shapes.rotation.x = 0;
 		shapes.rotation.y = 0;
 		shapes.rotation.z = 0;

@@ -119,10 +119,10 @@
 	function setupPlayer() {
 		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
 		player = new VS3D.Player();
-		player.addProp(new VS3D.Prop(), {color: "red", nudged: 0.15});
-		player.addProp(new VS3D.Prop(), {color: "blue", nudged: 0.10});
-		player.addProp(new VS3D.Prop(), {color: "green", nudged: 0.05});
-		player.addProp(new VS3D.Prop(), {color: "yellow", nudged: 0.0});
+		player.addProp(new VS3D.Prop(), {color: "red", nudge: 0.15});
+		player.addProp(new VS3D.Prop(), {color: "blue", nudge: 0.10});
+		player.addProp(new VS3D.Prop(), {color: "green", nudge: 0.05});
+		player.addProp(new VS3D.Prop(), {color: "yellow", nudge: 0.0});
 		player.update = function(positions) {
 			renderer.render(this.props, positions);
 		}
@@ -191,7 +191,7 @@
 			}
 			let prop = player.props[i];
 			if (prop.model!==model) {
-				prop = new VS3D.PropWrapper(prop.prop, {color: prop.color, model: model, nudged: prop.nudged});
+				prop = new VS3D.PropWrapper(prop.prop, {color: prop.color, model: model, nudge: prop.nudge});
 				player.props[i] = prop;
 			}
 			let move;

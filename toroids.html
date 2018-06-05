@@ -44,18 +44,13 @@ function setup() {
 		renderer2.overlay.innerHTML = this.tick;
 		controls.update(this.tick);
 	}
-	red = player.addProp(new VS3D.Prop(), {color: "red", nudged: 0.05});
-	blue = player.addProp(new VS3D.Prop(), {color: "blue", nudged: -0.05});
+	red = player.addProp(new VS3D.Prop(), {color: "red", nudge: 0.05});
+	blue = player.addProp(new VS3D.Prop(), {color: "blue", nudge: -0.05});
 	const {UP, DOWN, LEFT, RIGHT, ISOBEND, ANTIBEND, PROBEND} = VS3D;
 	blue.setHandAngle(DOWN);
 	blue.setHeadAngle(DOWN);
 
 	player.ready();
-	// red.moves.push({recipe: "flower"});
-	// blue.moves.push({recipe: "flower"});
-	// red.moves.push({recipe: "flower", spin: -1});
-	// blue.moves.push({recipe: "flower", spin: -1});
-
 
 	red.moves.push({recipe: "toroid"});
 	blue.moves.push({recipe: "toroid"});
@@ -66,6 +61,105 @@ function setup() {
 	blue.moves.push({recipe: "toroid", bend: PROBEND, harmonics: 2});
 	player.ready();
 	//console.log(VS3D.socket(red.moves[0][1]));
+
+// function init() {
+// 	var vs = VS3D.VisualSpinnerWidget();
+// 	vs.embedById("vs-div");
+// 	var one = vs.addProp();
+// 	var two = vs.addProp();
+// 	one.propType = "fan";
+// 	two.propType = "fan";
+// 	one.color = "red";
+// 	two.color = "blue";
+// 	one.twist = vs.QUARTER;
+// 	two.twist = vs.QUARTER;
+// 	one.hand.radius = 1;
+// 	two.hand.radius = 1;
+// 	one.setHandAngle(vs.NINE);
+// 	one.setPropAngle(vs.NINE);
+// 	two.setPropAngle(vs.THREE);
+// 	two.setHandAngle(vs.THREE);
+// 	one.nudge(0,0,0.1);
+// 	two.nudge(0,0,-0.1);
+// 	var vs2 = VS3D.VisualSpinnerWidget();
+// 	var vs3 = VS3D.VisualSpinnerWidget();
+// 	vs2.embedById("vs-div2");
+// 	vs3.embedById("vs-div3");
+
+// 	one.addMove(vs.Moves.build.toroid({bend: 0, harmonics: 0}).modify({twist: vs.QUARTER}));
+// 	two.addMove(vs.Moves.build.toroid({bend: 0, harmonics: 0}).modify({twist: vs.QUARTER}));
+// 	vs.addText("Bends: 0, Harmonics: 0",0.5);
+// 	vs.addText("Lame, and unfeasible with tension props.",0.5);
+// 	one.addMove(vs.Moves.build.toroid({bend: 0, harmonics: 1, duration: 2}).modify({twist: vs.QUARTER}));
+// 	two.addMove(vs.Moves.build.toroid({bend: 0, harmonics: 1, duration: 2}).modify({twist: vs.QUARTER}));
+// 	vs.addText("Bends: 0, Harmonics: 1");
+// 	vs.addText("We could call this a 'helical extension.'");
+// 	one.addMove(vs.Moves.build.toroid({bend: 0, harmonics: 2, duration: 2}).modify({twist: vs.QUARTER}));
+// 	two.addMove(vs.Moves.build.toroid({bend: 0, harmonics: 2, duration: 2}).modify({twist: vs.QUARTER}));
+// 	vs.addText("Bends: 0, Harmonics: 2");
+// 	vs.addText("A 'helical, one-petal flower.'");
+// 	one.addMove(vs.Moves.build.toroid({bend: 0, harmonics: 3, duration: 2}).modify({twist: vs.QUARTER}));
+// 	two.addMove(vs.Moves.build.toroid({bend: 0, harmonics: 3, duration: 2}).modify({twist: vs.QUARTER}));
+// 	vs.addText("Bends: 0, Harmonics: 3");
+// 	vs.addText("A 'helical, two-petal flower.'");
+// 	one.addMove(vs.Moves.build.toroid({bend: 1, harmonics: 0}).modify({twist: vs.QUARTER}));
+// 	two.addMove(vs.Moves.build.toroid({bend: 1, harmonics: 0}).modify({twist: vs.QUARTER}));
+// 	vs.addText("Bends: 1, Harmonics: 0",0.5);
+// 	vs.addText("A simple extension.",0.5);
+// 	one.addMove(vs.Moves.build.toroid({bend: 1, harmonics: 4, duration: 2}).modify({twist: vs.QUARTER}));
+// 	two.addMove(vs.Moves.build.toroid({bend: 1, harmonics: 4, duration: 2}).modify({twist: vs.QUARTER}));
+// 	vs.addText("Bends: 1, Harmonics: 4");
+// 	vs.addText("An 'iso-bend toroid.'");
+// 	one.addMove(vs.Moves.build.toroid({bend: 2, harmonics: 0}).modify({twist: vs.QUARTER}));
+// 	two.addMove(vs.Moves.build.toroid({bend: 2, harmonics: 0}).modify({twist: vs.QUARTER}));
+// 	vs.addText("Bends: 2, Harmonics: 0",0.5);
+// 	vs.addText("A one-petal flower.",0.5);
+// 	one.addMove(vs.Moves.build.toroid({bend: 2, harmonics: 1, duration: 2}).modify({twist: vs.QUARTER}));
+// 	two.addMove(vs.Moves.build.toroid({bend: 2, harmonics: 1, duration: 2}).modify({twist: vs.QUARTER}));
+// 	vs.addText("Bends: 2, Harmonics: 1");
+// 	vs.addText("Pro-bend toroid (two-lobe?)");
+// 	one.addMove(vs.Moves.build.toroid({bend: 2, harmonics: 2, duration: 2}).modify({twist: vs.QUARTER}));
+// 	two.addMove(vs.Moves.build.toroid({bend: 2, harmonics: 2, duration: 2}).modify({twist: vs.QUARTER}));
+// 	vs.addText("Bends: 2, Harmonics: 2");
+// 	vs.addText("Pro-bend toroid (three-lobe?)");
+// 	one.addMove(vs.Moves.build.toroid({bend: 2, harmonics: 3}).modify({twist: vs.QUARTER}));
+// 	two.addMove(vs.Moves.build.toroid({bend: 2, harmonics: 3}).modify({twist: vs.QUARTER}));
+// 	vs.addText("Bends: 2, Harmonics: 3",0.5);
+// 	vs.addText("(I think the 'lobe' terminology is a dead end.)",0.5);
+// 	one.addMove(vs.Moves.build.toroid({bend: 3, harmonics: 0}).modify({twist: vs.QUARTER}));
+// 	two.addMove(vs.Moves.build.toroid({bend: 3, harmonics: 0}).modify({twist: vs.QUARTER}));
+// 	vs.addText("Bends: 3, Harmonics: 0",0.5);
+// 	vs.addText("A two-petal flower.",0.5);
+// 	one.addMove(vs.Moves.build.toroid({bend: 3, harmonics: 1, duration: 2}).modify({twist: vs.QUARTER}));
+// 	two.addMove(vs.Moves.build.toroid({bend: 3, harmonics: 1, duration: 2}).modify({twist: vs.QUARTER}));
+// 	vs.addText("Bends: 3, Harmonics: 1");
+// 	vs.addText("Some random pro-bend toroid.");
+// 	one.addMove(vs.Moves.build.toroid({bend: 3, harmonics: 2, duration: 2}).modify({twist: vs.QUARTER}));
+// 	two.addMove(vs.Moves.build.toroid({bend: 3, harmonics: 2, duration: 2}).modify({twist: vs.QUARTER}));
+// 	vs.addText("Bends: 3, Harmonics: 2");
+// 	vs.addText("a.k.a. 'the one Drex makes out of a pipe cleaner.'");
+// 	one.addMove(vs.Moves.build.toroid({bend: 3, harmonics: 3}).modify({twist: vs.QUARTER}));
+// 	two.addMove(vs.Moves.build.toroid({bend: 3, harmonics: 3}).modify({twist: vs.QUARTER}));
+// 	vs.addText("Bends: 3, Harmonics: 3",0.5);
+// 	vs.addText("(No one will ever spin this shit.)",0.5);
+// 	one.addMove(vs.Moves.build.tapedeck({duration: 2}).modify({twist: vs.QUARTER}));
+// 	two.addMove(vs.Moves.build.tapedeck({duration: 2}).modify({twist: vs.QUARTER}));
+// 	vs.addText("A stylized pro-bend toroid; a.k.a. 'tapedeck'");
+// 	vs.addText("(The human eye can actually follow this!)",0.5);
+
+// 	vs.addControls("play","pause","rewind","frame","forward","reset","2d3d");
+// 	vs2.addControls("play","pause","rewind","frame","forward","reset","2d3d");
+// 	vs3.addControls("play","pause","rewind","frame","forward","reset","2d3d");
+// 	vs.ready();
+// 	vs2.ready();
+// 	vs3.ready();
+// 	vs2.swapScene(vs.scene);
+// 	vs3.swapScene(vs.scene);
+// 	vs.camera(0,1,10);
+// 	vs2.camera(10,1,0);
+// 	vs3.camera(1,10,0);
+// 	vs.play();
+// 	vs.pause();
 }
 </script>
 </head>
@@ -76,3 +170,5 @@ function setup() {
 	<div id="top"><p class="header">Top</p></div>
 </div>
 </body></html>
+
+

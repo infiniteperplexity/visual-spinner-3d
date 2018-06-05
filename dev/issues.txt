@@ -1,7 +1,4 @@
 Dev:
-- Allow truncated moves.  "beats" is the way to do this...I dunno about like, entry though.
-	- We essentially don't need realign if we use ENTRY.
-	- Could also just maybe hack it into fit().
 - Wow, the fan toroids actually look good in the old engine.
 - That exhibit is a useful thing.
 - Overlay should maybe have its own methods.

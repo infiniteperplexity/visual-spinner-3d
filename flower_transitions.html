@@ -17,40 +17,35 @@ function init() {
 		renderer.render(this.props, positions);
 	}
 
-	let red = player.addProp(new VS3D.Prop(), {color: "red", nudged: 0.05});
-	let blue = player.addProp(new VS3D.Prop(), {color: "blue", nudged: 0.0});
-	let green = player.addProp(new VS3D.Prop(), {color: "green", nudged: 0.05});
-	let yellow = player.addProp(new VS3D.Prop(), {color: "yellow", nudged: 0.0});
+	let red = player.addProp(new VS3D.Prop(), {color: "red", nudge: 0.05});
+	let blue = player.addProp(new VS3D.Prop(), {color: "blue", nudge: 0.0});
+	let green = player.addProp(new VS3D.Prop(), {color: "green", nudge: 0.05});
+	let yellow = player.addProp(new VS3D.Prop(), {color: "yellow", nudge: 0.0});
 	red.setBodyRadius(3);
 	red.setBodyAngle(LEFT);
 	blue.setBodyRadius(3);
 	blue.setBodyAngle(LEFT);
-	red.setHandAngle(LEFT);
-	red.setHeadAngle(LEFT);
+	red.setHandAngle(RIGHT);
+	red.setHeadAngle(RIGHT);
 	blue.setHandAngle(RIGHT);
 	blue.setHeadAngle(RIGHT);
 	green.setBodyRadius(3);
 	green.setBodyAngle(RIGHT);
 	yellow.setBodyRadius(3);
 	yellow.setBodyAngle(RIGHT);
-	green.setHandAngle(LEFT);
-	green.setHeadAngle(LEFT);
+	green.setHandAngle(RIGHT);
+	green.setHeadAngle(RIGHT);
 	yellow.setHandAngle(RIGHT);
 	yellow.setHeadAngle(RIGHT);
 
-	// for (var i = 0; i<8; i++) {
-	// 	propOne.addMove(moves.build.flower({direction: vs.CLOCKWISE, spin: vs.ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
-	// 	propTwo.addMove(moves.build.flower({direction: 1-(i%2)*2, spin: vs.ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
-	// 	propThree.addMove(moves.build.flower({direction: vs.COUNTERCLOCKWISE, spin: vs.ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
-	// 	propFour.addMove(moves.build.flower({direction: (i%2)*2-1, spin: vs.ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
-	// }
-	// propOne.addMove(moves.build.flower({direction: vs.CLOCKWISE, spin: vs.ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
-	// propTwo.addMove(moves.build.flower({direction: 1-(i%2)*2, spin: vs.ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
-	// propThree.addMove(moves.build.flower({direction: vs.COUNTERCLOCKWISE, spin: vs.ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
-	// propFour.addMove(moves.build.flower({direction: (i%2)*2-1, spin: vs.ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
-	// vs.ready();
-	// vs.play();
-	player.reset();
+	for (let i=0; i<8; i++) {
+		let antispin = {recipe: "flower", spin: -1, beats: ((i===4) ? 4 : 5)};
+		red.moves.push({...antispin, direction: 1});
+		blue.moves.push({...antispin, direction: 1-(i%2)*2});
+		green.moves.push({...antispin, direction: -1});
+		yellow.moves.push({...antispin, direction: (i%2)*2-1});
+	}
+	player.play();
 }
 </script>
 </head><body onload="init();">
@@ -58,20 +53,13 @@ function init() {
 <div id="player"></div>
 <p>Using the VisualSpinner Engine, someone with basic programming knowledge can easily create complex patterns.</p>
 <p>Here is the code that drives the entire pattern:</p>
-<p></p>
-<p>for (var i = 0; i&lt;8; i++) {</p>
-<p>&nbsp;&nbsp;&nbsp;&nbsp;propOne.addMove(moves.build.flower({direction:
-CLOCKWISE, entry: propOne.socket().hand.angle, spin: vs.ANTISPIN, duration:
-  (i==4) ? 1 : 1.25}));</p>
-<p>&nbsp;&nbsp;&nbsp;&nbsp;propTwo.addMove(moves.build.flower({direction:
-1-(i%2)*2, entry: propTwo.socket().hand.angle, spin: vs.ANTISPIN, duration:
-  (i==4) ? 1 : 1.25}));</p>
-<p>&nbsp;&nbsp;&nbsp;&nbsp;propThree.addMove(moves.build.flower({direction:
-COUNTERCLOCKWISE, entry: propThree.socket().hand.angle, spin: vs.ANTISPIN,
-duration:  (i==4) ? 1 : 1.25}));</p>
-<p>&nbsp;&nbsp;&nbsp;&nbsp;propFour.addMove(moves.build.flower({direction:
-(i%2)*2-1, entry: propFour.socket().hand.angle, spin: vs.ANTISPIN,
-duration:  (i==4) ? 1 : 1.25}));</p>
-<p>}</p>
-
+<code>
+for (let i=0; i&lt;8; i++) {<br>
+&nbsp;&nbsp;let antispin = {recipe: "flower", spin: -1, beats: ((i===4) ? 4 : 5)};<br>
+&nbsp;&nbsp;red.moves.push({...antispin, direction: 1});<br>
+&nbsp;&nbsp;blue.moves.push({...antispin, direction: 1-(i%2)*2});<br>
+&nbsp;&nbsp;green.moves.push({...antispin, direction: -1});<br>
+&nbsp;&nbsp;yellow.moves.push({...antispin, direction: (i%2)*2-1});<br>
+}
+</code>
 </body></html>
