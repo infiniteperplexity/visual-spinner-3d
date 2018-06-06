@@ -1395,19 +1395,21 @@ function Player(renderer) {
 		input.value = t;
 	}
 
-	let overStyles = ".vs3d-overlay {color:yellow;position:absolute;width:100%;top:25px;text-align:center;}"
-	let css = document.createElement("style");
-	css.type = "text/css";
-	if (css.styleSheet) {
-		css.styleSheet.cssText = overStyles;
-	} else {
-		css.appendChild(document.createTextNode(overStyles));
-	}
-	window.addEventListener("load",()=>{
-		document.head.insertAdjacentElement("afterbegin",css);
-	});
-
+	let stylesInserted = false;
 	function Overlay(contents) {
+		if (stylesInserted===false) {
+			let overStyles = ".vs3d-overlay {color:yellow;position:absolute;width:100%;top:25px;text-align:center;}";
+			let css = document.createElement("style");
+			css.type = "text/css";
+			if (css.styleSheet) {
+				css.styleSheet.cssText = overStyles;
+			} else {
+				css.appendChild(document.createTextNode(overStyles));
+			}
+			console.log("Note: Overlay style element into header.");
+			document.head.insertAdjacentElement("afterbegin",css);
+			stylesInserted = true;
+		}
 		contents = contents || [];
 		if (typeof(contents)==="string") {
 			this.contents = [{html: contents, beats: 1, style: ""}];
