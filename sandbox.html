@@ -21,8 +21,8 @@
 
 	//let p = VS3D.WAXFL;
 	// Now that I've fixed the -y issue, FLOOR is correct in the 1st half and wrong in the second.
-
 	let move = {recipe: "flower", beats: 3};
+	let overlay;
 	function init() {	
 		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
 		player = new VS3D.Player();
@@ -38,13 +38,15 @@
 			renderer.render(this.props, positions);
 			controls.update(this.tick);
 		}
+		overlay = new VS3D.Overlay();
+		renderer.div.appendChild(overlay.div);
 		player.reset();
 		//player.goto(89);
-		player.play();
+		//player.play();
 
 	}
 
-	let u = VS3D.UNIT;
+	
 
 	// console.log(Math.cos(0)**2);
 	// console.log(Math.cos(90*u)**2);

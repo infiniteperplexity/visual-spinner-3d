@@ -1395,47 +1395,64 @@ function Player(renderer) {
 		input.value = t;
 	}
 
-	function Overlay(txt,args) {
-		txt = txt || [];
-		// should be an array of objects that have 
-		this.content = txt;
-		args = args || {};
-		args.style = args.style || {};
+	let overStyles = ".vs3d-overlay {color:yellow;position:absolute;width:100%;top:25px;text-align:center;}"
+	let css = document.createElement("style");
+	css.type = "text/css";
+	if (css.styleSheet) {
+		css.styleSheet.cssText = overStyles;
+	} else {
+		css.appendChild(document.createTextNode(overStyles));
+	}
+	window.addEventListener("load",()=>{
+		document.head.insertAdjacentElement("afterbegin",css);
+	});
+
+	function Overlay(contents) {
+		contents = contents || [];
+		if (typeof(contents)==="string") {
+			this.contents = [{html: contents, beats: 1, style: ""}];
+		} else if (contents.html!==undefined) {
+			this.contents = [contents];
+		} else if (Array.isArray(contents)) {
+			this.contents = contents;
+		}
+		this.style = "";
 		this.div = document.createElement("div");
 		this.div.className = "vs3d-overlay";
-		this.div.textContent = "";
-		this.div.style.color = "yellow";
-		this.div.style.position = "absolute";
-		this.div.style.width = "100%";
-		this.div.style.top = "25px";
-		this.div.style.textAlign = "center";
-		for (let arg in args) {
-			this.div[arg] = args[arg];
-		}
-		for (let arg in args.style) {
-			this.div.style[arg] = args[arg];
-		}
+		this.div.innerHTML = "";
+		this._htmlCache = "";
+		this._styleCache = "";
 	}
-	Overlay.prototype.get = function(t) {
-		let txt = this.content;
-		if (Array.isArray(txt)) {
-			if (txt.length===0) {
-				return "";
+	Overlay.prototype.update = function(t) {
+		let contents = this.contents;
+		let content;
+		if (Array.isArray(contents)) {
+			if (contents.length===0) {
+				return;
 			}
 			let past = 0;
 			let i = 0;
-			while (past<=t) {
-				let ticks = beats(txt[i])*BEAT || 1*BEAT;
-				if (past+ticks>=t) {
-					return txt[i];
-				} else {
-					past+=ticks;
-					i=(i+1)%txt.length;
-				}
+			let ticks = beats(contents[i])*BEAT || 1*BEAT;
+			let TRIES = 100;
+			let tries = 0;
+			while (past<=t && tries<TRIES) {
+				tries+=1;
+			 	let ticks = beats(contents[i])*BEAT || 1*BEAT;
+			 	if (past+ticks>=t) {
+			 		content = contents[i];
+			 		break;
+			 	} else {
+			 		past+=ticks;
+			 		i=(i+1)%contents.length;
+			 	}
 			}
-			return "";
-		} else if (typeof(txt)==="string") {
-			return txt;
+		}
+		if (content.html!==undefined && content.html!==this._htmlCache) {
+			this.div.innerHTML = content.html || "";
+			this._htmlCache = content.html || "";
+		} 
+		if (content.style!==undefined && content.style!==this._styleCache) {	
+			this.div.cssText = content.style || this.style;
 		}
 	}
 
@@ -1469,6 +1486,9 @@ function Player(renderer) {
 			}
 		});
 	}
+
+
+
 
 // ****************************************************************************
 // ********************** Module Exports **************************************
@@ -1531,6 +1551,7 @@ function Player(renderer) {
 	VS3D.PropWrapper = PropWrapper;
 	VS3D.Player = Player;
 	VS3D.Controls = Controls;
+	VS3D.Overlay = Overlay;
 	VS3D.stringify = stringify;
 	VS3D.parse = parse;
 	return VS3D;

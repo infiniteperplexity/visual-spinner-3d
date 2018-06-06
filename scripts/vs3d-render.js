@@ -18,8 +18,9 @@ VS3D = (function(VS3D) {
 
 	function ThreeRenderer(el,width,height,fov) {
 		this.div = document.createElement("div");
-		this.div.class = "vs3d-renderer";
+		this.div.className = "vs3d-renderer";
 		this.div.style.position = "relative";
+		this.div.style.width = "400px";
 		el.appendChild(this.div);
 		// or could maybe throw this in its own div, with relative positioning?
 		this.width = width || 400;

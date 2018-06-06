@@ -25,6 +25,7 @@ function init() {
 }
 
 let renderer1, renderer2, renderer3, player, red, blue;
+let overlays = {contents: []};
 function setup() {
 	renderer1 = new VS3D.ThreeRenderer(document.getElementById("side"));
 	renderer2 = new VS3D.ThreeRenderer(document.getElementById("front"));
@@ -33,15 +34,20 @@ function setup() {
 	renderer3.setCameraPosition(0,8,0);
 	player = new VS3D.Player();
 	let controls = new VS3D.Controls(player);
+	let overlay1 = new VS3D.Overlay(overlays.contents);
+	let overlay2 = new VS3D.Overlay(overlays.contents);
+	let overlay3 = new VS3D.Overlay(overlays.contents);
+	renderer1.div.appendChild(overlay1.div);
 	renderer2.div.appendChild(controls.div);
+	renderer2.div.appendChild(overlay2.div);
+	renderer3.div.appendChild(overlay3.div);
 	player.update = function(positions) {
 		renderer1.render(this.props, positions);
 		renderer2.render(this.props, positions);
 		renderer3.render(this.props, positions);
-		// so...we could try to snap up "notes" from moves...
-		// or "caption"...
-		// we'd need a "moveAt" function
-		renderer2.overlay.innerHTML = this.tick;
+		overlay1.update(this.tick);
+		overlay2.update(this.tick);
+		overlay3.update(this.tick);
 		controls.update(this.tick);
 	}
 	red = player.addProp(new VS3D.Prop(), {color: "red", nudge: 0.05});
@@ -54,11 +60,16 @@ function setup() {
 
 	red.moves.push({recipe: "toroid"});
 	blue.moves.push({recipe: "toroid"});
+	overlays.contents.push({html: "iso-bend toroid", beats: 4});
 
 	red.moves.push({recipe: "toroid", bend: ANTIBEND});
 	blue.moves.push({recipe: "toroid", bend: ANTIBEND});
+	overlays.contents.push({html: "anti-bend toroid", beats: 4});
+
 	red.moves.push({recipe: "toroid", bend: PROBEND, harmonics: 2});
 	blue.moves.push({recipe: "toroid", bend: PROBEND, harmonics: 2});
+	overlays.contents.push({html: "pro-bend toroid", beats: 4});
+
 	player.ready();
 	//console.log(VS3D.socket(red.moves[0][1]));
 
