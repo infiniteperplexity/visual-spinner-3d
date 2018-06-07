@@ -3,122 +3,113 @@
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <style>
 body {background-color: #99CCFF}
+#main {
+	width: 500;
+	margin-top: 30;
+	margin-left: 30;
+}
 </style>
 <title>VisualSpinner3D, by Glenn Wright</title>
-<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
-<script src="scripts/archive/three.min.js"></script>
-<script src="scripts/archive/gl-matrix-min.js"></script>
-<script src="scripts/archive/phoria-min.js"></script>
-<script src="scripts/archive/visual-spinner-engine.js"></script>
-<script src="scripts/archive/visual-spinner-moves.js"></script>
-<script src="scripts/archive/visual-spinner-ui.js"></script>
+<script src="scripts/vs3d.js"></script>
+<script src="scripts/vs3d-moves.js"></script>
+<script src="scripts/three.min.js"></script>
+<script src="scripts/vs3d-render.js"></script>
 <script>
+let player, renderer, red, blue;
 function init() {
-	var vs = VS3D.VisualSpinnerWidget();
-	vs.embedById("vs-div");
-	var propOne = vs.addProp();
-	var propTwo = vs.addProp();
-	propOne.color = "red";
-	propTwo.color = "blue";
-	propOne.hand.radius = 1;
-	propTwo.hand.radius = 1;
-	propOne.nudge(0,0,0.25);
-	propTwo.nudge(0,0,-0.25);
-	for (var i = 0; i<8; i++) {
-		propOne.addMove(vs.Moves.build.flower({direction: vs.CLOCKWISE, entry: propOne.socket().hand.angle, spin: vs.ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
-		propTwo.addMove(vs.Moves.build.flower({direction: 1-(i%2)*2, entry: propTwo.socket().hand.angle, spin: vs.ANTISPIN, duration:  (i==4) ? 1 : 1.25}));
+	player = new VS3D.Player();
+	renderer = new VS3D.ThreeRenderer(document.getElementById("vs-div"), 500, 500, 40);
+	red = player.addProp(new VS3D.Prop(), {color: "red", nudge: 0.5});
+	blue = player.addProp(new VS3D.Prop(), {color: "blue"});
+	// let controls = new VS3D.Controls(player);
+	player.update = function(positions) {
+		renderer.render(this.props, positions);
+		// controls.update(this.tick);
 	}
-	propOne.addMove(vs.Moves.build.flower({direction: vs.CLOCKWISE, entry: propOne.socket().hand.angle, spin: vs.ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
-	propTwo.addMove(vs.Moves.build.flower({direction: 1-(i%2)*2, entry: propTwo.socket().hand.angle, spin: vs.ANTISPIN, duration:  (i==4) ? 1 : 0.25}));
-
-	vs.addControls("play","pause","rewind","frame","forward","reset","2d3d");
-	vs.ready();
-	vs.play();
+	// renderer.div.appendChild(controls.div);
+	for (let i=0; i<8; i++) {
+		red.moves.push({recipe: "flower", spin: -1, beats: (i===4) ? 4 : 5});
+		blue.moves.push({recipe: "flower", direction: 1-(i%2)*2, spin: -1, beats: (i===4) ? 4 : 5});
+	}
+	red.moves.push({recipe: "flower", spin: -1, beats: 1});
+	blue.moves.push({recipe: "flower", spin: -1, beats: 1});
+	player.play();
 }
 </script>
 </head><body onload="init();">
+<div id="main">
 <h1>
-Welcome to the home page for the VisualSpinner3D project!
+Welcome to VisualSpinner3D!
 </h1>
-<h2 style="color: purple">
-!!!Note: I am currently converting the engine to a new version.  Some links on this page are dead, for the moment.!!!
-</h2>
-<br>
 <p>
-Q: What is VisualSpinner3D?
+<strong>Q: </strong> What is VisualSpinner3D?
 </p>
 <p>
-A: VisualSpinner3D is a prop-spinning simulator, written in JavaScript, that can visualize almost any sequence of moves - flowers, pendulums, hybrids, and so on - for any number of props.
+<strong>A: </strong>VisualSpinner3D is a prop-spinning simulator, written in JavaScript, that can visualize almost any sequence of moves - flowers, pendulums, hybrids, and so on - for any number of props - poi, staves, hoops, fans, and so on.
 </p>
-<br>
+<p>~</p>
 <p>
-Q: Where can I see the simulator in action?
+<strong>Q: </strong> Where can I see the simulator in action?
 </p>
 <p>
-A: The short answer is, right here!
+<strong>A: </strong>The short answer is, right here!
 </p>
 <div id="vs-div"></div>
 <p>
-The long answer is trickier.  The simulator is a JavaScript engine that can simulate almost any combination or sequence of moves.  But, with so many possibilities, it's hard to design one set of buttons and menus that allows users access to the full power of the simulator in an intuitive way.  For that reason, I have written a number of demo pages that show off the engine's possibilities:
+The long answer is trickier.  The simulator is a JavaScript engine that can simulate almost any combination or sequence of moves.  But with so many possibilities, it's hard to design one set of buttons and menus that allows users access to the full power of the simulator in an intuitive way.  For that reason, I have written a number of demo pages that show off the engine's possibilities:
 </p>
 <ul>
-<li><a href="http://infiniteperplexity.github.io/visual-spinner-3d/demo.html"><b>This page</b></a> is probably the easiest interface for a new user to play around with.  A set of menus lets you pick prop types, moves, spin directions, starting positions, planes, and the like.</li>
-<li><a href="http://infiniteperplexity.github.io/visual-spinner-3d/spinmorepoi.html">This page</a> is a variation on the page above, formatted for Willow Solow's <a href="http://www.spinmorepoi.com/theory/">Spin More Poi</a> site.  It also happens to fit quite well on an iPhone screen.  If you're at a spin jam and you just want to show someone what a triquetra looks like on your phone, this is a good place to start.</li>
-<li><a href="http://infiniteperplexity.github.io/visual-spinner-3d/comborific.html">This page</a> models Ben Drexler's mind-blowing <a href="https://www.facebook.com/video.php?v=10152242151401537">"Comborific" video</a>, slowing down things so you can understand every move and transition.</li>
+<li><a href="http://infiniteperplexity.github.io/visual-spinner-3d/demo.html"><b>The VisualSpinner3D demo</b></a> is probably the easiest interface for a new user to play around with.  A set of menus lets you pick prop types, moves, spin directions, starting positions, planes, and the like.</li>
+<li>An alternate version of the demo, formatted for Willow Solow's <a href="http://www.spinmorepoi.com/theory/">Spin More Poi</a> site.  It also happens to fit quite well on an iPhone screen.  If you're at a spin jam and you just want to show someone what a triquetra looks like on your phone, this is a good place to start.</li>
+<li>A model of <a href="http://infiniteperplexity.github.io/visual-spinner-3d/comborific.html">Ben Drexler's mind-blowing "Comborific" video</a> - but now you can pause, rewind, and examine every movement and transition.</li>
 <li><a href="http://infiniteperplexity.github.io/visual-spinner-3d/juggling.html">Confused by the timing and direction of poi juggling?</a>  So am I.</li>
-<li><a href="http://infiniteperplexity.github.io/visual-spinner-3d/four_poi.html">This page</a> shows off the new "annotations" functionality.</li>
-<li><a href="http://infiniteperplexity.github.io/visual-spinner-3d/multi_view.html">This page</a> shows off multiple viewing angles on the same scene.</li>
-<li><a href="http://infiniteperplexity.github.io/visual-spinner-3d/draggable.html">Another interface idea,</a> with rotation and zooming.</li>
-<li><a href="http://infiniteperplexity.github.io/visual-spinner-3d/composer.html">This page</a> is the most powerful interface I have built so far, but it's also a bit more complex than the other pages.  You can drag and drop moves from a list, modify them, arrange them in sequences, and even export a text file that you can reload the next time you visit the page.  Confused?  Try <a href="https://www.youtube.com/watch?feature=youtu.be&v=k3TzJOSmVBY&app=desktop">this tutorial.</a></li>
-<li><a href="http://infiniteperplexity.github.io/visual-spinner-3d/exhibit.html?file:///C:/Users/Glenn/Documents/GitHub/visual-spinner-3d/exhibit.html?url=http://infiniteperplexity.github.io/visual-spinner-3d/json/qt3d.json">This page</a> is new; it can directly load JSON files stored online, referenced by a URL parameter.</li>
-<li><a href="http://infiniteperplexity.github.io/visual-spinner-3d/jsontester.html">Another new page</a>, for direct JSON input.</li>
+<li>A tool for exploring <a href="http://infiniteperplexity.github.io/visual-spinner-3d/toroids.html">poi toroids and helixes.</a>.</li>
+<li>My first steps toward a <a href="http://infiniteperplexity.github.io/visual-spinner-3d/react-vs3d.html">drag-and-drop interface for building sequence of poi movements.</a></li>
 </ul>
-<br>
+<p>~</p>
 <p>
-Q: Can I incorporate VisualSpinner3D in my own web site?
+<strong>Q: </strong> Can I incorporate VisualSpinner3D in my own web site?
 </p>
 <p>
-A: Yes!  <a href="http://infiniteperplexity.github.io/visual-spinner-3d/widgetdemo.html">This page</a> shows how easy it is to embed a VisualSpinner3D player.  Note that VisualSpinner3D is currently released under the GNU General Public License, which means you cannot charge money for a program that incorporates the VisualSpinner3D engine.  However, I am planning to change the licensing so that the engine can be incorporated in commercial software, so long as the engine itself remains free.
+<strong>A: </strong>Yes.  Feel free to look at the source code for this and other demo pages; I'm planning a video tutorial to explain in more detail.  Note that VisualSpinner3D is currently released under the GNU General Public License, which means you cannot charge money for a program that incorporates the VisualSpinner3D engine.  However, I am planning to change the licensing so that the engine can be incorporated in commercial software, so long as the engine itself remains free.
 </p>
-<br>
+<p>~</p>
 <p>
-Q: Is the code open source?
-</p>
-<p>
-A: Yes, and it is available on <a href="https://github.com/infiniteperplexity/visual-spinner-3d">my Github site.</a>  (If you poke around there, you can also find some Arduino code for LED flow props.)
+<strong>Q: </strong> Is the code open source?
 </p>
 <p>
-The code for the engine itself is basically finished, but there is a whole world of possibilities for improved graphics and interface design.  For example, the only reason the simulator currently doesn't do fire fans is that they're too hard for me to draw.  If you're good at this sort of thing, then contact me and let's fix that!
-</p>
-<br>
-<p>
-Q: I am a poi theory and/or programming nerd and I want to know how the simulator works.
+<strong>A: </strong>Yes, and it is available on <a href="https://github.com/infiniteperplexity/visual-spinner-3d">my Github site.</a>  (If you poke around there, you can also find some Arduino code for LED flow props.)
 </p>
 <p>
-A: I'm working on an explanation  <a href="http://infiniteperplexity.github.io/visual-spinner-3d/details.html">here.</a>
+The code for the engine itself is basically finished, but there is a whole world of possibilities for improved graphics and interface design.  For example, this engine could easily render buugengs, but I don't have a 3D mesh to base them on.  If you're good at that sort of thing, contact me and let's fix that!
 </p>
-<br>
+<p>~</p>
 <p>
-Q: Are there any known bugs?
-</p>
-<p>
-A: Yes, unfortunately.  They are listed at the bottom of the <a href="http://infiniteperplexity.github.io/visual-spinner-3d/details.html">details essay.</a>
-</p>
-<br>
-<p>
-Q: Why does your page look terrible?
+<strong>Q: </strong> I am a poi theory and/or programming nerd and I want to know how the simulator works.
 </p>
 <p>
-A: Because web design is not my strong suit.  This is another area where I appreciate the suggestions and charity of others.
+<strong>A: </strong>I'm working on an explanation  <a href="http://infiniteperplexity.github.io/visual-spinner-3d/details.html">here.</a>
 </p>
-<br>
+<p>~</p>
 <p>
-Q: Who are you?
+<strong>Q: </strong> Are there any known bugs?
 </p>
 <p>
-A: My name is Glenn Wright.  I'm a fire spinner and a programmer, and I live in Oakland, California.  You can contact me at infinite D0T perplexity AT gmail D0T com.
+<strong>A: </strong>Yes, unfortunately.  Plane-bent moves, such a toroids, spun with props that have a flat plane of symmetry, such as hoops and fans, render correctly in some orientations and incorrectly in others.  This fix is a high priority for me, because I think toroids are an underexplored frontier for fan tech.
 </p>
-<br>
-<br>
-<br>
+<p>~</p>
+<p>
+<strong>Q: </strong> Why does your page look terrible?
+</p>
+<p>
+<strong>A: </strong>Because web design is not my strong suit.  This is another area where I appreciate the suggestions and charity of others.
+</p>
+<p>~</p>
+<p>
+<strong>Q: </strong> Who are you?
+</p>
+<p>
+<strong>A: </strong>My name is Glenn Wright.  I'm a fire spinner and a programmer, and I live in Oakland, California.  You can contact me at infinite D0T perplexity AT gmail D0T com.
+</p>
+</div>
 </body></html>

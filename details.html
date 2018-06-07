@@ -3,61 +3,60 @@
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <style>
 body {background-color: #99CCFF}
+#main {
+	width: 500;
+	margin-top: 30;
+	margin-left: 30;
+}
 </style>
-<title>VisualSpinner3D, by Glenn Wright</title>
+<title>VisualSpinner3D "under the hood."</title>
 </head><body>
+<div id="main">
 <a href='http://infiniteperplexity.github.io/visual-spinner-3d/'>Return to the VisualSpinner3D main site.</a>
 <br>
-<h2>VisualSpinner3D "Under the Hood."</h2>
-The VisualSpinner3D engine is a complex beast.  This page &ndash; hopefully an evolving essay &ndash; aims to explain what's going on under the hood, in technical detail that may be of interest to both tech spinners and programmers.  Note that my model should probably be considered an extension or modification of Charlie Cushing's <a href="https://www.youtube.com/playlist?list=PL45D3844B85CB8D80">QFT</a> model, and was also influenced by videos and articles from <a href=" https://docs.google.com/document/d/11DVxKtISpmnmcHcKp9wDW_ysLeKluF2iESnhm7EqF2E/edit?pli=1
+<h2>VisualSpinner3D "under the hood."</h2>
+The VisualSpinner3D engine is a complicated beast.  This page &ndash; hopefully an evolving essay &ndash; aims to explain what's going on under the hood, in technical detail that may be of interest to both tech spinners and programmers.  This model should probably be considered an extension or modification of Charlie Cushing's <a href="https://www.youtube.com/playlist?list=PL45D3844B85CB8D80">QFT</a> model, and was also influenced by videos and articles from <a href=" https://docs.google.com/document/d/11DVxKtISpmnmcHcKp9wDW_ysLeKluF2iESnhm7EqF2E/edit?pli=1
 ">Ben Drexler.</a>
 </p>
 <p>
 <p>
-The universe of VisualSpinner3D consists of two types of things: <b>props</b> and <b>moves.</b>
+The heart of VisualSpinner3D consists of two types of things: <b>props</b> and <b>moves.</b>
 </p>
-<br>
 <h3>Props:</h3>
-<p>
-The model treats all props &ndash; be they poi, staves, hoops, et cetera &ndash; as identical, except for how they look.  The most important thing we need to know about a prop is where it is.  How do we model that?  A poi has a handle, a head, and a tether that connects the handle to the head.  Many other props, even ones that don't have "heads" per se, can be thought of in the same way.  For example, a hoop's "handle" might be the place where you grip it, and its "head" might be the opposite end.
+<p>The VS3D model treats all props &ndash; be they poi, staves, hoops, et cetera &ndash; as identical, except for how they look.  The most important thing we need to know about a prop is where it is.  How do we model that?  A poi has a handle, a head, and a tether that connects the handle to the head.  Many other props, even ones that don't have "heads" per se, can be thought of in the same way.  For example, a hoop's "handle" might be the place where you grip it, and its "head" might be the opposite end.
 </p>
 <p>
-So if we want to know where a prop is, we need to know where its handle is and where its head is.  To model that in three dimensions, we could use familiar <a href=http://en.wikipedia.org/wiki/Cartesian_coordinate_system#Three_dimensions>X, Y, and Z coordinates.</a>  For VisualSpinner3D, however, I chose to use <a href=" http://en.wikipedia.org/wiki/Spherical_coordinate_system">spherical coordinates</a> instead.  Why?  Because spherical coordinates work very smoothly for modeling things that tend to travel in circular paths, like planets or, in this case, props.
+So if we want to know where a prop is, we need to know where its handle is and where its head is.  To model that in three dimensions, we could use familiar <a href=http://en.wikipedia.org/wiki/Cartesian_coordinate_system#Three_dimensions>X, Y, and Z coordinates.</a>  For VisualSpinner3D, however, I chose to use a system related to <a href=" http://en.wikipedia.org/wiki/Spherical_coordinate_system">spherical</a> or <a href="https://en.wikipedia.org/wiki/Horizontal_coordinate_system">horizontal</a> coordinates instead.  Why?  Because these coordinate systems work very smoothly for modeling things that tend to travel in circular paths, like planets or, in this case, props.
 </p>
 <p>
 Usually, when a prop moves, both the handle and the head move.  We can avoid some extra hassle by measuring the head's position relative to the handle &ndash; that is, we measure the handle's angle and distance from the origin, and then we measure the head's angle and distance away from the handle.  That way, when the handle moves, the head will always move along with it.  And instead of modeling a flower as a complicated, trigonometric <a href="http://en.wikipedia.org/wiki/Cycloid">cycloid</a>, we can think of it in a more intuitive way &ndash; a circular hand path combined with a circular prop path.
 </p>
 <p>
-We could stop there, but in many cases, it's helpful to have more coordinates.  For example, if we want to model someone walking while they spin a prop, do we want to model the hand path as a cycloid?  Or, what if we want to model a move pivoted slightly to one side &ndash; wouldn't it be easier to think of this as pivoting in a straight line followed by spinning in a circle, rather than a complicated equation for a displaced circle?  In general, it's going to be easier and more intuitive to split these complicated motions into a larger number of simple parts, rather than trying to tie everything together into one, huge equation.
+We could stop there &ndash; any prop could be defined strictly in terms of a hand position and a head position &ndash; but in many cases, it's helpful to have more coordinates.  For example, if we want to model someone walking while they spin a prop, do we want to model the hand path as a cycloid?  Or, what if we want to model a move pivoted slightly to one side &ndash; wouldn't it be easier to think of this as pivoting in a straight line followed by spinning in a circle, rather than a complicated equation for a displaced circle?  In general, it's going to be easier and more intuitive to split these complicated motions into a larger number of simple parts, rather than trying to tie everything together into one, huge equation.
 </p>
 <p>
-Through trial and error, I found that it's most convenient to model a prop as consisting of five "elements":
+Through trial and error, I found that it's most convenient to model a prop as consisting of no more than six "nodes":
 </p>
-<p>
-&rarr;"home"
+&rarr;<em>body</em>: shall we imagine that the spinner is walking around?
 <br>
-&nbsp;&nbsp;&rarr;"pivot"
+&nbsp;&nbsp;&rarr;<em>pivot</em>: shall we imagine that the spinner is shifting from side to side?
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&rarr;"helper"
+&nbsp;&nbsp;&nbsp;&nbsp;&rarr;<em>helper</em>: used for adjusting the move in complex ways.  
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&rarr;"handle"
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&rarr;<em>hand</em>: where is the handle of the prop?
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&rarr;"head"
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&rarr;<em>grip</em>: at what angle does the spinner hold the prop?
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&rarr;<em>head</em>: the head of a poi, or the designated end of a staff.
 </p>
 <p>
-...where the head is positioned relative to the handle, the handle relative to the helper, the helper relative to the pivot, and the pivot relative to home.
+The head is positioned relative to the grip, which is positioned relative to the handle; the handle relative to the helper, the helper relative to the pivot, and the pivot relative to body; which is itself relative to the origin.
 </p>
 <p>
-<b>Handle</b> and <b>head</b> we know.  <b>Home</b> roughly corresponds to the overall position of the human that is spinning the prop.  <b>Pivot</b> can model how someone might shift a move off to the side, or up or down. <b>Helper</b> is the oddball of the bunch, and is rarely needed, but it comes in handy for modeling certain very complex movements, such as fractal flowers or elliptical hand paths.
+Using these "recursive spherical coordinates," it is possible to model almost any prop movement as a simple combination of linear and circular motions.
 </p>
 <p>
-Using these "quintuple spherical coordinates," it is possible to model almost any prop movement as a simple combination of linear and circular motions.
-</p>
-<p>
-We can make the model even more flexible by adding a few "extra" coordinates: "grip", "choke", "twist", and "bend."  <b>Grip</b>, <b>choke</b>, and <b>twist</b> all relate to various ways of holding a prop.  "Grip" is an angle between zero and 2&Pi; radians (360 degrees), which could represent any hand position along the circumference of a hoop.  Similarly, an angle of &Pi; radians (180 degrees) can represent holding a poi by the head instead of the handle, allowing us to convert any move into a contact move simply by changing one parameter.  "Choke" is a linear value representing how far up the "tether" the prop is held; this parameter allows us to model poi gunslingers, or different grips on a staff.  "Twist" represents rotating the prop around its own axis &ndash; irrelevant for poi or staff, but visually interesting for hoops and fans.  Finally, <b>bend</b> rotates the prop away from its own axis of motion.  This makes modeling plane-bent movements, such as toroids and weaves, much cleaner.
-</p>
-<p>
-Strictly speaking, we could model absolutely any movement using only "head", "handle", and "twist."  But adding the additional, "unnecessary" parameters makes it possible to model even absolutely ridiculous movements &ndash; pirouetting in a circle while grip-shifting through pivoted toroids &ndash; by breaking them down into simple lines and circles.
+We can make the model even more flexible by adding a few "extra" coordinates: <b>bent</b> and <b>twist</b>.  "Twist" represents rotating the prop around its own axis &ndash; irrelevant for poi or staff, but visually interesting for hoops and fans.  <b>Bent</b> rotates the prop away from its own axis of motion.  This makes modeling plane-bent movements, such as toroids and weaves, much cleaner.
 </p>
 <p>
 Note a few limitations of this model:
@@ -76,7 +75,6 @@ The engine does not model the human body, so even though you can model the prop 
 <p>
 Also note that this is not the only way prop movements can be formally modeled.  You may have seen <a href="http://www.drexfactor.com/weirdscience/2014/05/07/mathematical_approach_classifying_poi_patterns_modeling_flowers_and_third_or">Ben Drexler</a>, among others, model props using trigonometric functions parameterized with respect to time, using Cartesian coordinates.  That approach is mathematically elegant for modeling flowers and certain other moves, but I found that it becomes unwieldy when modeling more general prop movements.
 </p>
-<br>
 <h3>
 Moves:
 </h3>
@@ -92,7 +90,6 @@ In computer science, this property is called <a href="http://en.wikipedia.org/wi
 <p>
 In VisualSpinner3D, the "leaves"  called <b>MoveLinks</b>  contain simple instructions for the position, speed, and acceleration of the coordinates: home, pivot, helper, hand, prop, grip, choke, twist, and bend.  The "branches" are called <b>MoveChains</b>, and each MoveChain has a list of its contents, which could be any combination of MoveLinks or shorter MoveChains.
 </p>
-<br>
 <h3>
 Recipes:
 </h3>
@@ -252,4 +249,5 @@ Known Bugs:
 I haven't done much testing of moves with <code>duration</code> longer than 2.  There may be some issues in that range.
 </li>
 </ul>
+</div>
 </body></html>

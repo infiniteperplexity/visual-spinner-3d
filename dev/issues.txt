@@ -1,23 +1,17 @@
-Dev:
-- Wow, the fan toroids actually look good in the old engine.
-- That exhibit is a useful thing.
-- Overlay should maybe have its own methods.
-
 Engine:
-- Allow optional planes per node.
-- Are defaults injected in the right places?  Probably not, given that object spread is the single biggest performance hog.
+- Allow optional planes per node, upon the first time I need it.
+- Might want to make units more readable for vl and vr.
+- Are defaults injected in the right places?  Probably not, given that object spread is the single biggest performance hog.  Much less of a problem now that I cache the fitted moes.
 - Should extend() wrap around?
-- All breaks in angle$spherify are gone, but are there maybe still cusps?
+
 
 Apps:
 - Integrate it with React.
-- Do more with overlays.
-- Finish the other apps.
+- Add the exhibit in once I first need it.
 
 Bugs:
 - TWIST still looks wrong in parts of WHXFL plane.
 - Fan-based toroids flicker in certain spots.
-- Might want to make units more readable for vl and vr.
+- All breaks in angle$spherify are gone, but are there maybe still cusps?
 
-
-- Should reorganize the engine code
+- It seems like prop.toXYZ and move.toXYZ might be good things, 

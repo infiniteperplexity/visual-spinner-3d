@@ -1398,7 +1398,7 @@ function Player(renderer) {
 	let styleInserted = false;
 	function Overlay(contents, suppressStyleInsertion) {
 		if (styleInserted===false && !suppressStyleInsertion) {
-			let overStyles = ".vs3d-overlay {color:yellow;position:absolute;width:100%;top:25px;text-align:center;}";
+			let overStyles = ".vs3d-overlay {color:yellow;position:absolute;width:100%;top:25px;text-align:center;} .vs3d-overlay a {color: orange} .vs3d-overlay a:visited {color: cyan}";
 			let css = document.createElement("style");
 			css.type = "text/css";
 			if (css.styleSheet) {

@@ -14,6 +14,9 @@
 	.header {
 		text-align: center;
 	}
+	input {
+		width: 30px;
+	}
 </style>
 <script src="scripts/vs3d.js"></script>
 <script src="scripts/vs3d-moves.js"></script>
@@ -23,24 +26,23 @@
 function init() {
 	setup();
 }
-
+const {UP, DOWN, LEFT, RIGHT, ISOBEND, ANTIBEND, PROBEND} = VS3D;
 let renderer1, renderer2, renderer3, player, red, blue;
-let overlays = {contents: []};
+let overlays = [{beats: 4}];
 function setup() {
 	renderer1 = new VS3D.ThreeRenderer(document.getElementById("side"));
 	renderer2 = new VS3D.ThreeRenderer(document.getElementById("front"));
 	renderer3 = new VS3D.ThreeRenderer(document.getElementById("top"));
 	renderer1.setCameraPosition(8,0,0);
 	renderer3.setCameraPosition(0,8,0);
-	player = new VS3D.Player();
-	let controls = new VS3D.Controls(player);
-	let overlay1 = new VS3D.Overlay(overlays.contents);
-	let overlay2 = new VS3D.Overlay(overlays.contents);
-	let overlay3 = new VS3D.Overlay(overlays.contents);
+	renderer2.div.appendChild(document.getElementById("controls"));
+	let overlay1 = new VS3D.Overlay(overlays);
+	let overlay2 = new VS3D.Overlay(overlays);
+	let overlay3 = new VS3D.Overlay(overlays);
 	renderer1.div.appendChild(overlay1.div);
-	renderer2.div.appendChild(controls.div);
 	renderer2.div.appendChild(overlay2.div);
 	renderer3.div.appendChild(overlay3.div);
+	player = new VS3D.Player();
 	player.update = function(positions) {
 		renderer1.render(this.props, positions);
 		renderer2.render(this.props, positions);
@@ -48,130 +50,75 @@ function setup() {
 		overlay1.update(this.tick);
 		overlay2.update(this.tick);
 		overlay3.update(this.tick);
-		controls.update(this.tick);
 	}
-	red = player.addProp(new VS3D.Prop(), {color: "red", nudge: 0.05});
-	blue = player.addProp(new VS3D.Prop(), {color: "blue", nudge: -0.05});
-	const {UP, DOWN, LEFT, RIGHT, ISOBEND, ANTIBEND, PROBEND} = VS3D;
-	blue.setHandAngle(DOWN);
-	blue.setHeadAngle(DOWN);
+	red = player.addProp(new VS3D.Prop({hand: {a: LEFT}, head: {a: LEFT}}), {color: "red", nudge: 0.1});
+	blue = player.addProp(new VS3D.Prop({hand: {a: RIGHT}, head: {a: RIGHT}}), {color: "blue", nudge: 0.05});
 
-	player.ready();
-
-	red.moves.push({recipe: "toroid"});
-	blue.moves.push({recipe: "toroid"});
-	overlays.contents.push({html: "iso-bend toroid", beats: 4});
-
-	red.moves.push({recipe: "toroid", bend: ANTIBEND});
-	blue.moves.push({recipe: "toroid", bend: ANTIBEND});
-	overlays.contents.push({html: "anti-bend toroid", beats: 4});
-
-	red.moves.push({recipe: "toroid", bend: PROBEND, harmonics: 2});
-	blue.moves.push({recipe: "toroid", bend: PROBEND, harmonics: 2});
-	overlays.contents.push({html: "pro-bend toroid", beats: 4});
-
-	player.ready();
-	//console.log(VS3D.socket(red.moves[0][1]));
-
-// function init() {
-// 	var vs = VS3D.VisualSpinnerWidget();
-// 	vs.embedById("vs-div");
-// 	var one = vs.addProp();
-// 	var two = vs.addProp();
-// 	one.propType = "fan";
-// 	two.propType = "fan";
-// 	one.color = "red";
-// 	two.color = "blue";
-// 	one.twist = vs.QUARTER;
-// 	two.twist = vs.QUARTER;
-// 	one.hand.radius = 1;
-// 	two.hand.radius = 1;
-// 	one.setHandAngle(vs.NINE);
-// 	one.setPropAngle(vs.NINE);
-// 	two.setPropAngle(vs.THREE);
-// 	two.setHandAngle(vs.THREE);
-// 	one.nudge(0,0,0.1);
-// 	two.nudge(0,0,-0.1);
-// 	var vs2 = VS3D.VisualSpinnerWidget();
-// 	var vs3 = VS3D.VisualSpinnerWidget();
-// 	vs2.embedById("vs-div2");
-// 	vs3.embedById("vs-div3");
-
-// 	one.addMove(vs.Moves.build.toroid({bend: 0, harmonics: 0}).modify({twist: vs.QUARTER}));
-// 	two.addMove(vs.Moves.build.toroid({bend: 0, harmonics: 0}).modify({twist: vs.QUARTER}));
-// 	vs.addText("Bends: 0, Harmonics: 0",0.5);
-// 	vs.addText("Lame, and unfeasible with tension props.",0.5);
-// 	one.addMove(vs.Moves.build.toroid({bend: 0, harmonics: 1, duration: 2}).modify({twist: vs.QUARTER}));
-// 	two.addMove(vs.Moves.build.toroid({bend: 0, harmonics: 1, duration: 2}).modify({twist: vs.QUARTER}));
-// 	vs.addText("Bends: 0, Harmonics: 1");
-// 	vs.addText("We could call this a 'helical extension.'");
-// 	one.addMove(vs.Moves.build.toroid({bend: 0, harmonics: 2, duration: 2}).modify({twist: vs.QUARTER}));
-// 	two.addMove(vs.Moves.build.toroid({bend: 0, harmonics: 2, duration: 2}).modify({twist: vs.QUARTER}));
-// 	vs.addText("Bends: 0, Harmonics: 2");
-// 	vs.addText("A 'helical, one-petal flower.'");
-// 	one.addMove(vs.Moves.build.toroid({bend: 0, harmonics: 3, duration: 2}).modify({twist: vs.QUARTER}));
-// 	two.addMove(vs.Moves.build.toroid({bend: 0, harmonics: 3, duration: 2}).modify({twist: vs.QUARTER}));
-// 	vs.addText("Bends: 0, Harmonics: 3");
-// 	vs.addText("A 'helical, two-petal flower.'");
-// 	one.addMove(vs.Moves.build.toroid({bend: 1, harmonics: 0}).modify({twist: vs.QUARTER}));
-// 	two.addMove(vs.Moves.build.toroid({bend: 1, harmonics: 0}).modify({twist: vs.QUARTER}));
-// 	vs.addText("Bends: 1, Harmonics: 0",0.5);
-// 	vs.addText("A simple extension.",0.5);
-// 	one.addMove(vs.Moves.build.toroid({bend: 1, harmonics: 4, duration: 2}).modify({twist: vs.QUARTER}));
-// 	two.addMove(vs.Moves.build.toroid({bend: 1, harmonics: 4, duration: 2}).modify({twist: vs.QUARTER}));
-// 	vs.addText("Bends: 1, Harmonics: 4");
-// 	vs.addText("An 'iso-bend toroid.'");
-// 	one.addMove(vs.Moves.build.toroid({bend: 2, harmonics: 0}).modify({twist: vs.QUARTER}));
-// 	two.addMove(vs.Moves.build.toroid({bend: 2, harmonics: 0}).modify({twist: vs.QUARTER}));
-// 	vs.addText("Bends: 2, Harmonics: 0",0.5);
-// 	vs.addText("A one-petal flower.",0.5);
-// 	one.addMove(vs.Moves.build.toroid({bend: 2, harmonics: 1, duration: 2}).modify({twist: vs.QUARTER}));
-// 	two.addMove(vs.Moves.build.toroid({bend: 2, harmonics: 1, duration: 2}).modify({twist: vs.QUARTER}));
-// 	vs.addText("Bends: 2, Harmonics: 1");
-// 	vs.addText("Pro-bend toroid (two-lobe?)");
-// 	one.addMove(vs.Moves.build.toroid({bend: 2, harmonics: 2, duration: 2}).modify({twist: vs.QUARTER}));
-// 	two.addMove(vs.Moves.build.toroid({bend: 2, harmonics: 2, duration: 2}).modify({twist: vs.QUARTER}));
-// 	vs.addText("Bends: 2, Harmonics: 2");
-// 	vs.addText("Pro-bend toroid (three-lobe?)");
-// 	one.addMove(vs.Moves.build.toroid({bend: 2, harmonics: 3}).modify({twist: vs.QUARTER}));
-// 	two.addMove(vs.Moves.build.toroid({bend: 2, harmonics: 3}).modify({twist: vs.QUARTER}));
-// 	vs.addText("Bends: 2, Harmonics: 3",0.5);
-// 	vs.addText("(I think the 'lobe' terminology is a dead end.)",0.5);
-// 	one.addMove(vs.Moves.build.toroid({bend: 3, harmonics: 0}).modify({twist: vs.QUARTER}));
-// 	two.addMove(vs.Moves.build.toroid({bend: 3, harmonics: 0}).modify({twist: vs.QUARTER}));
-// 	vs.addText("Bends: 3, Harmonics: 0",0.5);
-// 	vs.addText("A two-petal flower.",0.5);
-// 	one.addMove(vs.Moves.build.toroid({bend: 3, harmonics: 1, duration: 2}).modify({twist: vs.QUARTER}));
-// 	two.addMove(vs.Moves.build.toroid({bend: 3, harmonics: 1, duration: 2}).modify({twist: vs.QUARTER}));
-// 	vs.addText("Bends: 3, Harmonics: 1");
-// 	vs.addText("Some random pro-bend toroid.");
-// 	one.addMove(vs.Moves.build.toroid({bend: 3, harmonics: 2, duration: 2}).modify({twist: vs.QUARTER}));
-// 	two.addMove(vs.Moves.build.toroid({bend: 3, harmonics: 2, duration: 2}).modify({twist: vs.QUARTER}));
-// 	vs.addText("Bends: 3, Harmonics: 2");
-// 	vs.addText("a.k.a. 'the one Drex makes out of a pipe cleaner.'");
-// 	one.addMove(vs.Moves.build.toroid({bend: 3, harmonics: 3}).modify({twist: vs.QUARTER}));
-// 	two.addMove(vs.Moves.build.toroid({bend: 3, harmonics: 3}).modify({twist: vs.QUARTER}));
-// 	vs.addText("Bends: 3, Harmonics: 3",0.5);
-// 	vs.addText("(No one will ever spin this shit.)",0.5);
-// 	one.addMove(vs.Moves.build.tapedeck({duration: 2}).modify({twist: vs.QUARTER}));
-// 	two.addMove(vs.Moves.build.tapedeck({duration: 2}).modify({twist: vs.QUARTER}));
-// 	vs.addText("A stylized pro-bend toroid; a.k.a. 'tapedeck'");
-// 	vs.addText("(The human eye can actually follow this!)",0.5);
-
-// 	vs.addControls("play","pause","rewind","frame","forward","reset","2d3d");
-// 	vs2.addControls("play","pause","rewind","frame","forward","reset","2d3d");
-// 	vs3.addControls("play","pause","rewind","frame","forward","reset","2d3d");
-// 	vs.ready();
-// 	vs2.ready();
-// 	vs3.ready();
-// 	vs2.swapScene(vs.scene);
-// 	vs3.swapScene(vs.scene);
-// 	vs.camera(0,1,10);
-// 	vs2.camera(10,1,0);
-// 	vs3.camera(1,10,0);
-// 	vs.play();
-// 	vs.pause();
+	update();
+	player.play();
 }
+
+let captions = {
+	b0l0: "Static Extension (infeasible)",
+	b0l1: "Helical Extension",
+	b0l2: "Two-Lobe Helix",
+	b0l3: "Three-Lobe Helix",
+	b0l4: "Four-Lobe Helix",
+	b0l5: "Five-Lobe Helix",
+	b1l0: "Extension",
+	b2l0: "One-Petal Inspin Flower",
+	b3l0: "Two-Petal Inspin Flower",
+	b4l0: "Three-Petal Inspin Flower",
+	b5l0: "Four-Petal Inspin Flower",
+	b1l1: "One-lobe Isobend Toroid",
+	b1l2: "Two-lobe Isobend Toroid",
+	b1l3: "Three-Lobe Isobend Toroid",
+	b1l4: "Iso-Bend Toroid",
+	b_1l0: "Anti-Spin (infeasible)",
+	b_2l0: "Three-Petal Antispin Flower (Triquetra)",
+	b_3l0: "Four-Petal Antispin Flower",
+	b_1l1: "One-Lobe Antibend Toroid",
+	b_1l2: "Two-Lobe Antibend Toroid",
+	b_1l3: "Three-Lobe Antibend Toroid",
+	b_1l4: "Four-Lobe Antibend Toroid",
+	b2l1: "1bend Toroid?",
+	b2l2: "1bend Toroid?",
+	b2l3: "1bend Toroid?",
+	b2l4: "1bend Toroid?",
+	b3l1: "One-Lobe Probend Toroid",
+	b3l2: 'Pro-Bend Toroid <a href="https://www.youtube.com/watch?v=x7sTraHbIGI">(DrexFactor #325)</a>',
+	b3l3: "Three-Lobe Probend Toroid",
+	b3l4: "Four-Lobe Probend Toroid",
+	b4l1: "3bend Toroid?",
+	b4l2: "3bend Toroid?",
+	b4l3: "3bend Toroid?",
+	b4l4: "3bend Toroid?",
+	b5l1: "4bend Toroid?",
+	b5l2: "4bend Toroid?",
+	b5l3: "4bend Toroid?",
+	b5l4: "4bend Toroid?",
+	b_2l1: "-3bend Toroid?",
+	b_2l2: "-3bend Toroid?",
+	b_2l3: "-3bend Toroid?",
+	b_2l4: "-3bend Toroid?",
+	b_3l1: "-4bend Toroid?",
+	b_3l2: "-4bend Toroid?",
+	b_3l3: "-4bend Toroid?",
+	b_3l4: "-4bend Toroid?"
+}
+function update() {
+	let bends = parseInt(document.getElementById("bends").value);
+	let lobes = parseInt(document.getElementById("lobes").value);
+	red.moves[0] = {recipe: "toroid", bend: bends, harmonics: lobes, orient: LEFT};
+	blue.moves[0] = {recipe: "toroid", bend: bends, harmonics: lobes, orient: RIGHT};
+	red.refit();
+	blue.refit();
+	let bsign = bends<0 ? "_" : "";
+	let idx = "b"+bsign+Math.abs(bends)+"l"+Math.abs(lobes);
+	let caption = captions[idx] || " ";
+	overlays[0].html = caption;
+}
+
 </script>
 </head>
 <body onload="init();">
@@ -179,6 +126,10 @@ function setup() {
 	<div id="side"><p class="header">Side</p></div>
 	<div id="front"><p class="header">Front</div>
 	<div id="top"><p class="header">Top</p></div>
+	<div id="controls">
+		Bend: <input type="number" id="bends" value="1" min="-3" max="5" onChange="update();"></input>
+		Lobes: <input type="number" id="lobes" value="4" min="-4" max="4" onChange="update();"></input>
+	</div>
 </div>
 </body></html>
 
