@@ -2,6 +2,9 @@
 <html><head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>VisualSpinner3D v. 3.0, by Glenn Wright</title>
+<style>
+body {background-color: #99CCFF}
+</style>
 <script src="scripts/vs3d.js"></script>
 <script src="scripts/vs3d-moves.js"></script>
 <script src="scripts/three.min.js"></script>
@@ -10,7 +13,7 @@
 let renderer, player, red, blue, green;
 function init() {
 	const {UP, DOWN, RIGHT, LEFT} = VS3D;
-	renderer = new VS3D.ThreeRenderer(document.getElementById("vs-div"),400,600,60);
+	renderer = new VS3D.ThreeRenderer(document.getElementById("vs-div"),400,500,50);
 	renderer.fov =
 	player = new VS3D.Player();
 	let controls = new VS3D.Controls(player);
