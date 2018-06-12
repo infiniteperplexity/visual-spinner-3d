@@ -446,40 +446,16 @@ VS3D = function() {
 	// create a new, default prop
 	function Prop(args) {
 		args = args || {};
-		args.body = args.body || {r: 0, a: 0, b: 0};
-		args.pivot = args.pivot || {r: 0, a: 0, b: 0};
-		args.helper = args.helper || {r: 0, a: 0, b: 0};
-		args.hand = args.hand || {r: 1, a: 0, b: 0};
-		args.grip = args.grip || {r: 0, a: 0, b: 0};
-		args.head = args.head || {r: 1, a: 0, b: 0};
-		args.body.r = args.body.r || args.body.radius || 0;
-		args.body.a = args.body.a || args.body.angle|| 0;
-		args.body.b = args.body.b || args.body.bearing || 0;
-		args.pivot.r = args.pivot.r || args.pivot.radius || 0;
-		args.pivot.a = args.pivot.a || args.pivot.angle|| 0;
-		args.pivot.b = args.pivot.b || args.pivot.bearing || 0;
-		args.helper.r = args.helper.r || args.helper.radius || 0;
-		args.helper.a = args.helper.a || args.helper.angle|| 0;
-		args.helper.b = args.helper.b || args.helper.bearing || 0;
-		args.hand.r = args.hand.r || args.hand.radius || 1;
-		args.hand.a = args.hand.a || args.hand.angle|| 0;
-		args.hand.b = args.hand.b || args.hand.bearing || 0;
-		args.twist = args.twist || 0;
-		args.grip.r = args.grip.r || args.grip.radius || 0;
-		args.grip.a = args.grip.a || args.grip.angle|| 0;
-		args.grip.b = args.grip.b || args.grip.bearing || 0;
-		args.head.r = args.head.r || args.head.radius || 1;
-		args.head.a = args.head.a || args.head.angle|| 0;
-		args.head.b = args.head.b || args.head.bearing || 0;
-		return {
-			body: args.body,
-			pivot: args.pivot,
-			helper: args.helper,
-			hand: args.hand,
-			twist: args.twist,
-			grip: args.grip,
-			head: args.head
-		}
+		let defaults = {
+			body: {r: 0, a: 0, b: 0},
+			pivot: {r: 0, a: 0, b: 0},
+			helper: {r: 0, a: 0, b: 0},
+			hand: {r: 1, a: 0, b: 0},
+			grip: {r: 0, a: 0, b: 0},
+			head: {r: 1, a: 0, b: 0},
+			twist: 0
+		};
+		return merge(defaults, args);
 	}
 
 	function Move(args) {

@@ -15,3 +15,8 @@ Bugs:
 - All breaks in angle$spherify are gone, but are there maybe still cusps?
 
 - It seems like prop.toXYZ and move.toXYZ might be good things, 
+
+React:
+	- need rounding that snaps to grid.
+	- coordinate system is upside down.
+	

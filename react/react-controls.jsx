@@ -19,5 +19,3 @@ class PropControls extends React.Component {
     );
   }
 }
-
-VS3D.MoveLink();
