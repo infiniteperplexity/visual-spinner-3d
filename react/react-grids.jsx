@@ -22,10 +22,14 @@ class App extends React.Component {
     return (
       <div className="app">
         <div className="track frame">
-          <p>track-based view of prop movement sequences</p>
+          <div className="frame">
+            <MoveQueue prop="orange" {...props}/>
+          </div>
+          <div className="frame">
+            <MoveQueue prop="white" {...props}/>
+          </div>
         </div>
         <div className="frame" id="display">
-          <p>VS3D view goes here</p>
         </div>
         <div className="frame">
           <Grid dragID="WALL" {...props} />

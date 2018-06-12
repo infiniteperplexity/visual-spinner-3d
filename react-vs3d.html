@@ -5,6 +5,9 @@
      <style>
       .track {
         grid-column-end: span 3;
+        display: grid;
+        grid-template-columns: 450px 450px;
+        grid-template-rows: 400px;
       }
       .frame {
         border-style: solid;
@@ -15,7 +18,7 @@
         height: 720px;
         grid-column-gap: 3px;
         grid-row-gap: 3px;
-        grid-template-rows: auto 300px;
+        grid-template-rows: 400px 300px;
         grid-template-columns: 300px 300px 300px auto;
       }
     </style>
@@ -30,6 +33,7 @@
     <script src="scripts/vs3d-moves.js"></script>
     <script src="scripts/three.min.js"></script>
     <script src="scripts/vs3d-render.js"></script>
+    <script src="comborific.js"></script>
     <script src="react/data-model.js"></script>
   </head>
   <body>

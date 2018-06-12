@@ -1440,7 +1440,6 @@ function Player(renderer) {
 // ****************************************************************************
 	function stringify(thing) {
 		return JSON.stringify(thing, function(key, value) {
-			console.log(key,value);
 			if (["a","b","bent","twist","a1","la"].includes(key)) {
 				return Math.round(value);
 			} else if (["x","y","z"].includes(key)) {
@@ -1465,7 +1464,12 @@ function Player(renderer) {
 		});
 	}
 
-
+	function save(obj) {
+		let txt = (typeof(obj)==="string") ? obj : stringify(obj); 
+		let blob = new Blob([txt], {type : 'application/json'});
+		let url = window.URL.createObjectURL(blob);
+		window.open(url);
+	}
 
 
 // ****************************************************************************
@@ -1532,5 +1536,6 @@ function Player(renderer) {
 	VS3D.Overlay = Overlay;
 	VS3D.stringify = stringify;
 	VS3D.parse = parse;
+	VS3D.save = save;
 	return VS3D;
 }();

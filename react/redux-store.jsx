@@ -3,6 +3,7 @@
 let AppComponent = ReactRedux.connect(
   (state)=>({
     props: state.props,
+    moves: state.moves,
     order: state.order,
     frame: state.frame
   }),
@@ -10,7 +11,8 @@ let AppComponent = ReactRedux.connect(
       updateEngine: ()=>dispatch({type: "renderEngine"}),
       setNode: (args)=>dispatch({type: "setNode", ...args}),
       setTop: (top)=>dispatch({type: "setTop", top: top}),
-      gotoFrame: (n)=>dispatch({type: "gotoFrame", n: n})
+      gotoFrame: (n)=>dispatch({type: "gotoFrame", n: n}),
+      gotoMove: (prop, i)=>dispatch({type: "gotoMove", prop: prop, i: i})
   })
 )(App);
 
@@ -28,11 +30,12 @@ function reducer(state, action) {
   if (state === undefined) {
     return {
       props: reactProps,
+      moves: reactMoves,
       order: ["orange","white"],
       frame: 0
     };
   }
-  let props;
+  let props, prop, node;
   switch (action.type) {
     case "renderEngine":
       // we need better order here...
@@ -41,7 +44,9 @@ function reducer(state, action) {
       return {...state};
     case "setNode":
       // this is much easier to handle if we have a wrapper on things...
-      let {prop, node, x, y} = action;
+      let {x, y} = action;
+      prop = action.prop;
+      node = action.node;
       let z = 0;
       props = clone(state.props);
       let s = vector$spherify({x: x, y: y, z: z});
@@ -56,6 +61,14 @@ function reducer(state, action) {
       return {...state, order};
     case "gotoFrame":
       return {...state};
+    case "gotoMove":
+      prop = action.prop;
+      let i = action.i;
+      let move = state.moves[prop][i];
+      props = {...state.props};
+      // this part is wrong but it's a decent placeholder
+      props[prop] = socket(move, prop);
+      return {...state, props: props};
     default:
       return state;
   }
