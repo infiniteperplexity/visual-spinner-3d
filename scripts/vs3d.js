@@ -1,24 +1,22 @@
 VS3D = function() {
-	let VS3D = {};
-// ****************************************************************************
-// ********************** Constants *******************************************
-// ****************************************************************************
-	const SMALL = VS3D.SMALL = 0.001;
-	const TINY = VS3D.TINY = 0.0001;
+let VS3D = {}; //
+// ********************** Constants
+const SMALL = VS3D.SMALL = 0.001;
+    const TINY = VS3D.TINY = 0.0001;
 	const NUDGE = VS3D.NUDGE = 0.1;
 	const DIAG = VS3D.DIAG = Math.sqrt(2)/2;
 	const UNIT = VS3D.UNIT = 2*Math.PI/360;
 	const BODY = VS3D.BODY = 0;
 	const PIVOT = VS3D.PIVOT = 1;
-	const HELPER = VS3D.HELPER =2;
+	const HELPER = VS3D.HELPER = 2;
 	const HAND = VS3D.HAND = 3;
 	const GRIP = VS3D.GRIP = 4;
 	const HEAD = VS3D.HEAD = 5;
-	const NODES = VS3D.NODES = ["body","pivot","helper","hand","grip","head"];
-	const WALL = VS3D.WALL = plane(0,0,-1);
-	const WHEEL = VS3D.WHEEL = plane(1,0,0);
-	const FLOOR = VS3D.FLOOR = plane(0,-1,0);
-	const XAXIS = VS3D.XAXIS = vector(1,0,0);
+    const NODES = VS3D.NODES = ["body","pivot","helper","hand","grip","head"];
+    const WALL = VS3D.WALL = plane(0,0,-1);
+    const WHEEL = VS3D.WHEEL = plane(1,0,0);
+    const FLOOR = VS3D.FLOOR = plane(0,-1,0);
+    const XAXIS = VS3D.XAXIS = vector(1,0,0);
 	const YAXIS = VS3D.YAXIS = vector(0,1,0);
 	const ZAXIS = VS3D.ZAXIS = vector(0,0,-1);
 	const MEASURE = VS3D.MEASURE = 4;
@@ -1273,6 +1271,7 @@ function Player(renderer) {
 		this.model = args.model || "poi";
 		this.color = args.color || "red";
 		this.fire = args.fire || false;
+		this.alpha = args.alpha || 1;
 		this.nudge = args.nudge || 0;
 		this.prop = prop;
 		this.moves = [];

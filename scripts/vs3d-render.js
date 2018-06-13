@@ -61,14 +61,10 @@ VS3D = (function(VS3D) {
 		this.light = light;
 		let gcolor = 0x202020;
 		let grid = new THREE.GridHelper(20, 20, gcolor, gcolor);
-		grid.material.tranparent = true;
-		grid.material.opacity = 0.2;
 		grid.rotateOnAxis(VS3D.vector(Math.sign(z),Math.sign(y),Math.sign(x)),Math.PI/2);
 		this.scene.add(grid);
 		this.grid = grid;
 		let polar = new THREE.PolarGridHelper(10, 8, 20, 64, gcolor, gcolor);
-		polar.material.tranparent = true;
-		polar.material.opacity = 0.2;
 		polar.rotateOnAxis(VS3D.vector(Math.sign(z),Math.sign(y),Math.sign(x)),Math.PI/2);
 		this.polar = polar;
 		this.scene.add(polar);
@@ -92,7 +88,7 @@ VS3D = (function(VS3D) {
 		for (let prop of wrappers) {
 			if (!this.registry.includes(prop)) {
 				this.registry.push(prop);
-				let shapes = this.builder[prop.model](prop.color);
+				let shapes = this.builder[prop.model](prop);
 				this.models.push(shapes);
 				this.scene.add(shapes);
 			}
@@ -153,24 +149,31 @@ VS3D = (function(VS3D) {
 		return (colors[c] || c);
 	}
 
-	ThreeRenderer.prototype.builder.poi = function(color) {
+	ThreeRenderer.prototype.builder.poi = function(prop) {
+		let {color, alpha} = prop;
 		let head = new THREE.Mesh(
 			new THREE.SphereGeometry(0.2,16,16),
 			new THREE.MeshLambertMaterial({color: this.colors(color)})
 		);
-		//head.position.y = 1;
 		head.userData.slidey = true;
 		let tether = new THREE.Mesh(
 			new THREE.CylinderGeometry(0.025,0.025,1,4),
 			new THREE.MeshLambertMaterial({color: "white"})
 		);
-		// tether.position.y = 0.5;
 		tether.userData.stretchy = true;
 		tether.userData.slideish = true;
 		let handle = new THREE.Mesh(
 			new THREE.SphereGeometry(0.075,8,8),
 			new THREE.MeshLambertMaterial({color: this.colors(color)})
 		);
+		if (alpha<1) {
+			head.material.transparent = true;
+			head.material.opacity = alpha;
+			tether.material.transparent = true;
+			tether.material.opacity = alpha;
+			handle.material.transparent = true;
+			handle.material.opacity = alpha;
+		}
 		let group = new THREE.Group();
 		group.add(head);
 		group.add(tether);
@@ -178,7 +181,8 @@ VS3D = (function(VS3D) {
 		return group;
 	}
 
-	ThreeRenderer.prototype.builder.staff = function(color) {
+	ThreeRenderer.prototype.builder.staff = function(prop) {
+		let {color, alpha} = prop;
 		let shaft = new THREE.Mesh(
 			new THREE.CylinderGeometry(0.05,0.05,2,8),
 			new THREE.MeshLambertMaterial({color: this.colors(color)})
@@ -198,6 +202,16 @@ VS3D = (function(VS3D) {
 		);
 		tail.position.y = -1;
 		let group = new THREE.Group();
+		if (alpha<1) {
+			shaft.material.transparent = true;
+			shaft.material.opacity = alpha;
+			handle.material.transparent = true;
+			handle.material.opacity = alpha;
+			head.material.transparent = true;
+			head.material.opacity = alpha;
+			tail.material.transparent = true;
+			tail.material.opacity = alpha;
+		}
 		group.add(shaft);
 		group.add(handle);
 		group.add(head);
@@ -205,7 +219,8 @@ VS3D = (function(VS3D) {
 		return group;
 	}
 
-	ThreeRenderer.prototype.builder.hoop = function(color) {
+	ThreeRenderer.prototype.builder.hoop = function(prop) {
+		let {color, alpha} = prop;
 		let ring = new THREE.Mesh(
 			new THREE.TorusGeometry(0.8,0.05,8,32),
 			new THREE.MeshLambertMaterial({color: this.colors(color)})
@@ -217,12 +232,19 @@ VS3D = (function(VS3D) {
 		//rotateX?
 		handle.translateOnAxis(THREEY,-0.8);
 		let group = new THREE.Group();
+		if (alpha<1) {
+			ring.material.transparent = true;
+			ring.material.opacity = alpha;
+			handle.material.transparent = true;
+			handle.material.opacity = alpha;
+		}
 		group.add(ring);
 		group.add(handle);
 		return group;
 	}
 
-	ThreeRenderer.prototype.builder.fan = function(color) {
+	ThreeRenderer.prototype.builder.fan = function(prop) {
+		let {color, alpha} = prop;
 		let ring = new THREE.Mesh(
 			new THREE.TorusGeometry(0.2,0.05,6,16),
 			new THREE.MeshLambertMaterial({color: this.colors(color)})
@@ -241,6 +263,12 @@ VS3D = (function(VS3D) {
 			tine.rotateZ(-angle+i*angle);
 			tine.translateOnAxis(THREEY,0.6);
 		 	group.add(tine);
+		}
+		if (alpha<1) {
+			for (let child in group.children) {
+				child.material.transparent = true;
+				child.material.opacity = alpha;
+			}
 		}
 		return group;
 	}

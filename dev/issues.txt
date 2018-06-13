@@ -11,12 +11,21 @@ Apps:
 
 Bugs:
 - TWIST still looks wrong in parts of WHXFL plane.
-- Fan-based toroids flicker in certain spots.
+- Fan-based toroids flicker in certain spots, which may be related to the above.
 - All breaks in angle$spherify are gone, but are there maybe still cusps?
 
 - It seems like prop.toXYZ and move.toXYZ might be good things, 
 
 React:
-	- need rounding that snaps to grid.
-	- coordinate system is upside down.
+	- Begin and end position for each prop/move (i.e. "shadow" props)
+		- Well planned-out system for tracking props and moves...give props IDs or something?
+	- Start with nothing and build from there.
+		- Modification panel.
+	- "Back" to undo.
+	- sync the two move lists.
+		- Not sure whether to synch beginning or end?  Oh...you know, we should synch such that only one is selected, and the other snaps to position for it.
+	- Some sort of visual representation on the move list.
+		- Height of move list items proportional to length.
+	- Figure out good UI system for dealing with so many nodes.
+		- I think we assume it's hand, head, and pivot unless you specify.
 	

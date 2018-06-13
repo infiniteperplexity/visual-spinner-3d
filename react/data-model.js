@@ -12,8 +12,8 @@ const {
 let combo = parse(json);
 
 let	player = new VS3D.Player();
-let	orange = player.addProp(new VS3D.Prop({hand: {a: LEFT}, head: {a: LEFT}}), {color: "orange"});
-let	white = player.addProp(new VS3D.Prop({hand: {r: 0}, head: {a: LEFT}}), {color: "white"});
+let	orange = player.addProp(new VS3D.Prop({hand: {a: LEFT}, head: {a: LEFT}}), {color: "orange", alpha: 0.6, nudged: 0.1});
+let	white = player.addProp(new VS3D.Prop({hand: {r: 0}, head: {a: LEFT}}), {color: "white", alpha: 0.6});
 
 let reactProps = {
 	"orange": clone(player.props[0].prop),
