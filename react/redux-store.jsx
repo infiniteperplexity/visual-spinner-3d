@@ -31,7 +31,7 @@ function reducer(state, action) {
     return {
       props: reactProps,
       moves: reactMoves,
-      order: ["orange","white"],
+      order: [0,1],
       frame: 0
     };
   }

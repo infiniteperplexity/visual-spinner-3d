@@ -23,10 +23,10 @@ class App extends React.Component {
       <div className="app">
         <div className="track frame">
           <div className="frame">
-            <MoveQueue prop="orange" {...props}/>
+            <MoveQueue prop="0" {...props}/>
           </div>
           <div className="frame">
-            <MoveQueue prop="white" {...props}/>
+            <MoveQueue prop="1" {...props}/>
           </div>
         </div>
         <div className="frame" id="display">
@@ -61,7 +61,7 @@ function Grid(props, context) {
   }
   let registry = [];
   for (let key of props.order) {
-    registry.push(<PropNode key={key} prop={key} color={key} {...props} />);
+    registry.push(<PropNode key={key} prop={key} color={COLORS[key]} {...props} />);
   }
   return (
     <DragSVG width={UNIT*UNITS} height={UNIT*UNITS} {...props}>
