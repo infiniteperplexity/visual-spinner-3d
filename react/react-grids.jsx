@@ -1,5 +1,11 @@
 let destination = document.querySelector("#container");
 
+const UNIT = 60;
+const UNITS = 5;
+const HALF = UNIT/2;
+let X0 = HALF*UNITS;
+let Y0 = HALF*UNITS;
+
 // prevent recursive handling of double-clicks
 let doubleClickHandled = false;
 function handleDoubleClick() {
@@ -7,30 +13,40 @@ function handleDoubleClick() {
   setInterval(()=>(doubleClickHandled=false),0);
 }
 
-function App(props, context) {
-  return (
-    <div className="app">
-      <div className="track frame">
-        <p>track-based view of prop movement sequences</p>
+class App extends React.Component {
+  componentDidMount() {
+    afterReactMounts();
+  }
+  render() {
+    let props = this.props;
+    return (
+      <div className="app">
+        <div className="track frame">
+          <div className="frame">
+            <MoveQueue prop="orange" {...props}/>
+          </div>
+          <div className="frame">
+            <MoveQueue prop="white" {...props}/>
+          </div>
+        </div>
+        <div className="frame" id="display">
+        </div>
+        <div className="frame">
+          <Grid dragID="WALL" {...props} />
+        </div>
+        <div className="frame">
+          <Grid dragID="WHEEL" {...props} />
+        </div>
+        <div className="frame">
+        <Grid dragID="FLOOR" {...props} />
+        </div>
+        <div className="frame">
+          <PropControls {...props} />
+          <p>edit attributes of selected prop here</p>
+        </div>
       </div>
-      <div className="frame" id="display">
-        <p>VS3D view goes here</p>
-      </div>
-      <div className="frame">
-        <Grid dragID="WALL" {...props} />
-      </div>
-      <div className="frame">
-        <Grid dragID="WHEEL" {...props} />
-      </div>
-      <div className="frame">
-      <Grid dragID="FLOOR" {...props} />
-      </div>
-      <div className="frame">
-        <PropControls {...props} />
-        <p>edit attributes of selected prop here</p>
-      </div>
-    </div>
-  );
+    );
+  }
 }
 
 function Grid(props, context) {

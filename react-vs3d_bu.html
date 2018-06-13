@@ -5,9 +5,6 @@
      <style>
       .track {
         grid-column-end: span 3;
-        display: grid;
-        grid-template-columns: 450px 450px;
-        grid-template-rows: 400px;
       }
       .frame {
         border-style: solid;
@@ -18,7 +15,7 @@
         height: 720px;
         grid-column-gap: 3px;
         grid-row-gap: 3px;
-        grid-template-rows: 400px 300px;
+        grid-template-rows: auto 300px;
         grid-template-columns: 300px 300px 300px auto;
       }
     </style>
@@ -29,20 +26,22 @@
     <script src="https://unpkg.com/redux@latest/dist/redux.js"></script>
     <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
     <script src="https://unpkg.com/react-redux@5.0.6/dist/react-redux.js"></script>
-    <script src="scripts/vs3d.js"></script>
-    <script src="scripts/vs3d-moves.js"></script>
-    <script src="scripts/three.min.js"></script>
-    <script src="scripts/vs3d-render.js"></script>
-    <script src="comborific.js"></script>
-    <script src="react/data-model.js"></script>
+    <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <script src="archive/scripts/gl-matrix-min.js"></script>
+    <script src="archive/scripts/phoria-min.js"></script>
+    <script src="archive/scripts/visual-spinner-engine.js"></script>
+    <script src="archive/scripts/visual-spinner-moves.js"></script>
+    <script src="archive/scripts/visual-spinner-ui.js"></script>
   </head>
   <body>
     <div id="container">
+      <script type="text/babel" src="react/data-model.jsx"></script>
       <script type="text/babel" src="react/draggable-svg.jsx"></script>
       <script type="text/babel" src="react/prop-node.jsx"></script>
       <script type="text/babel" src="react/react-grids.jsx"></script>
       <script type="text/babel" src="react/react-controls.jsx"></script>
       <script type="text/babel" src="react/redux-store.jsx"></script>
+      <script type="text/babel" src="react/solver.js"></script>
     </div>
   </body>
 </html>

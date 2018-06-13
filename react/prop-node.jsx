@@ -38,7 +38,11 @@ class PropNode extends React.Component {
     this.info.point.x = event.clientX;
     this.info.point.y = event.clientY;
     let p = this.info.point.matrixTransform(this.info.matrix);
-    let {x, y} = this.props.props[this.info.prop][this.info.node];
+    let node = this.props.props[this.info.prop][NODES[this.info.node]];
+    // this will vary depending on plane
+    let v = sphere$vectorize(node);
+    let x = v.x * UNIT;
+    let y = v.y * UNIT;
     this.info.xoffset = p.x - x;
     this.info.yoffset = p.y - y;
     this.props.setTop(this.info.prop);
@@ -47,7 +51,7 @@ class PropNode extends React.Component {
     event.preventDefault();
     this.info.beingDragged = false;
     Draggables[this.info.dragID].info.dragging = null;
-    reactToVS3D();
+    this.props.updateEngine();
   }
   handleMouseLeave = (event) => {
   }
@@ -56,13 +60,25 @@ class PropNode extends React.Component {
     // note: harmless violation of React state management practices
     this.info.point.x = event.clientX;
     this.info.point.y = event.clientY;
+
     if (this.info.beingDragged) {
       let p = this.info.point.matrixTransform(this.info.matrix);
+      // this whole business is y-flipped...
+      let x = (p.x-this.info.xoffset)/UNIT;
+      let y = (-p.y+this.info.yoffset)/UNIT;
+      let {r, a, b} = vector$spherify({x: x, y: y, z: 0});
+      r = round(r, 0.5);
+      let rounding = round(Math.PI/(12*VS3D.UNIT),1);
+      a = round(a, rounding);
+      b = round(b, rounding);
+      let v = sphere$vectorize({r: r, a: a, b: b});
+      x = v.x;
+      y = v.y;
       this.props.setNode({
         prop: this.info.prop,
         node: this.info.node,
-        x: round(p.x-this.info.xoffset, HALF),
-        y: round(p.y-this.info.yoffset, HALF)
+        x: x,
+        y: y,
       });
     }
   }
@@ -74,7 +90,11 @@ class PropNode extends React.Component {
     }
   }
   render() {
-    let {x, y} = this.props.props[this.info.prop][this.info.node];
+    let node = this.props.props[this.info.prop][NODES[this.info.node]];
+    // this will vary depending on plane
+    let v = sphere$vectorize(node);
+    let x = v.x * UNIT;
+    let y = -v.y * UNIT;
     let r = UNIT/18;
     if (this.info.node===HAND) {
       r = UNIT/12;
@@ -86,7 +106,10 @@ class PropNode extends React.Component {
     let tether = null;
     let child = null;
     if (this.info.node<NODES.length-1) {
-      let {x: x2, y: y2} = this.props.props[this.info.prop][this.info.node+1];
+      let node2 = this.props.props[this.info.prop][NODES[this.info.node+1]];
+      let v2 = sphere$vectorize(node2);
+      let x2 = v2.x * UNIT;
+      let y2 =  -v2.y * UNIT;
       let style = {stroke: "gray"};
       if (this.info.node===HAND) {
         style.strokeWidth = 3;

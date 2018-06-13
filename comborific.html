@@ -28,6 +28,7 @@ function init() {
 
 let renderer, player, orange, white;
 function setup() {
+	const {UP, DOWN, LEFT, RIGHT, SE, SW, NW, NE, FOUR, FIVE, EIGHT} = VS3D;
 	renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
 	player = new VS3D.Player();
 	player.rate = 2;
@@ -38,12 +39,12 @@ function setup() {
 		controls.update(this.tick);
 	}
 	orange = player.addProp(new VS3D.Prop(), {color: "orange"});
-	white = player.addProp(new VS3D.Prop(), {color: "white"});
-	const {UP, DOWN, LEFT, RIGHT, SE, SW, NW, NE, FOUR, FIVE, EIGHT} = VS3D;
+	white = player.addProp(new VS3D.Prop({hand: {r: 0}, head: {a: LEFT}}), {color: "white"});
+	
 	orange.setHandAngle(LEFT);
 	orange.setHeadAngle(LEFT)
-	white.setHeadAngle(LEFT);
-	white.setHandRadius(0);
+	// white.setHeadAngle(LEFT);
+	// white.setHandRadius(0);
 	// ***** Drex begins with a pendulum vs. extended pendulum hybrid. *****
 	// ***** Pendulum paths are not true to real-world gravity, because I use a simplified function ****
 	orange.moves.push({hand: {va: 0, a1: DOWN}, head: {va: 0, a1: DOWN}});
