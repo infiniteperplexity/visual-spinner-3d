@@ -107,6 +107,9 @@ const SMALL = VS3D.SMALL = 0.001;
 // ****************************************************************************
 	function clone(obj) {
 		let nobj;
+		if (typeof(obj)!=="object" || obj===null) {
+			return obj;
+		}
 		if (Array.isArray(obj)) {
 			nobj = [...obj];
 			for (let i=0; i<nobj.length; i++) {
@@ -117,7 +120,7 @@ const SMALL = VS3D.SMALL = 0.001;
 		nobj = {...obj};
 		for (let prop in nobj) {
 		    if (typeof(nobj[prop])==="object") {
-		      	nobj[prop] = {...clone(nobj[prop])};
+		      	nobj[prop] = clone(nobj[prop]);
 		    }
 		}
 		return nobj;
@@ -698,6 +701,7 @@ const SMALL = VS3D.SMALL = 0.001;
 			alert("solving method unimplemented");
 			throw new Error("solving method unimplemented.");
 		}
+
 		return {x0: x0, x1: x1, v0: v0, v1: v1, a: a, t: t};
 	}
 
@@ -837,6 +841,44 @@ const SMALL = VS3D.SMALL = 0.001;
 		a1 = Math.atan2(y1,x1)/UNIT;
 		// now all moments should be guaranteed
 		return {a0: a0, a1: a1, r0: r0, r1: r1, la: la, vl0: vl0/BEAT, vl1: vl1/BEAT, al: al/(BEAT*BEAT), t: t};
+	}
+
+	// moves?  or just node?
+	function resolve(moves) {
+		if (Array.isArray(moves)) {
+			return moves.map(m=>resolve(m));
+		}
+		let nodes = {
+			body: {r: 0, a: 0},
+			pivot: {r: 0, a: 0},
+			helper: {r: 0, a: 0},
+			hand: {r: 1, a: 0},
+			grip: {r: 0, a: 0},
+			head: {r: 1, a: 0},
+			beats: beats(moves),
+			p: moves.p || WALL,
+			bent: moves.bent || 0,
+			vb: moves.vb || 0,
+			twist: moves.twist || 0,
+			vt: moves.vt || 0
+		};
+		for (let node of NODES) {
+			let args = moves[node] || nodes[node];
+			args = alias(args);
+			args.beats = nodes.beats;
+			if (args.m==="linear" || args.la!==undefined || args.vl!==undefined || args.vl1!==undefined || args.al!==undefined) {
+				nodes[node] = {...moments_linear(args), p: args.p};
+
+			} else {
+				nodes[node] = {...moments_angular(args), p: args.p};
+			}
+			for (let prop in nodes[node]) {
+				if (zeroish(nodes[node][prop],0.01)) {
+					nodes[node][prop] = 0;
+				}
+			}
+		}
+		return nodes;
 	}
 
 
@@ -1544,6 +1586,8 @@ function Player(renderer) {
 	VS3D.alias = alias;
 	VS3D.solve = solve;
 	VS3D.solve_angle = solve_angle;
+	VS3D.solve_linear = solve_linear;
+	VS3D.resolve = resolve;
 	VS3D.PropWrapper = PropWrapper;
 	VS3D.Player = Player;
 	VS3D.Controls = Controls;

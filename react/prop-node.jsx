@@ -4,7 +4,7 @@ class PropNode extends React.Component {
     super(props, context);
     // this stuff is not really "state" in the sense Redux cares about
     this.info = {
-      prop: props.prop,
+      propid: props.propid,
       node: props.node || 0,
       color: props.color,
       dragID: props.dragID,
@@ -38,19 +38,20 @@ class PropNode extends React.Component {
     this.info.point.x = event.clientX;
     this.info.point.y = event.clientY;
     let p = this.info.point.matrixTransform(this.info.matrix);
-    let node = this.props.props[this.info.prop][NODES[this.info.node]];
+    let node = this.props.props[this.info.propid][NODES[this.info.node]];
     // this will vary depending on plane
     let v = sphere$vectorize(node);
     let x = v.x * UNIT;
     let y = v.y * UNIT;
     this.info.xoffset = p.x - x;
-    this.info.yoffset = p.y - y;
-    this.props.setTop(this.info.prop);
+    this.info.yoffset = p.y + y;
+    this.props.setTop(this.info.propid);
   }
   handleMouseUp = (event) => {
     event.preventDefault();
     this.info.beingDragged = false;
     Draggables[this.info.dragID].info.dragging = null;
+    this.props.pushState();
     this.props.updateEngine();
   }
   handleMouseLeave = (event) => {
@@ -75,7 +76,7 @@ class PropNode extends React.Component {
       x = v.x;
       y = v.y;
       this.props.setNode({
-        prop: this.info.prop,
+        propid: this.info.propid,
         node: this.info.node,
         x: x,
         y: y,
@@ -90,7 +91,7 @@ class PropNode extends React.Component {
     }
   }
   render() {
-    let node = this.props.props[this.info.prop][NODES[this.info.node]];
+    let node = this.props.props[this.info.propid][NODES[this.info.node]];
     // this will vary depending on plane
     let v = sphere$vectorize(node);
     let x = v.x * UNIT;
@@ -106,12 +107,12 @@ class PropNode extends React.Component {
     let tether = null;
     let child = null;
     if (this.info.node<NODES.length-1) {
-      let node2 = this.props.props[this.info.prop][NODES[this.info.node+1]];
+      let node2 = this.props.props[this.info.propid][NODES[this.info.node+1]];
       let v2 = sphere$vectorize(node2);
       let x2 = v2.x * UNIT;
       let y2 =  -v2.y * UNIT;
       let style = {stroke: "gray"};
-      if (this.info.node===HAND) {
+      if (this.info.node===GRIP) {
         style.strokeWidth = 3;
       } else {
         style.strokeDasharray="5,5";

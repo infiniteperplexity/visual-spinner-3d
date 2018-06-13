@@ -11,10 +11,12 @@ let AppComponent = ReactRedux.connect(
       updateEngine: ()=>dispatch({type: "renderEngine"}),
       setNode: (args)=>dispatch({type: "setNode", ...args}),
       setTop: (top)=>dispatch({type: "setTop", top: top}),
-      gotoTick: (prop, tick)=>dispatch({type: "gotoTick", prop: prop, tick: tick})
+      gotoTick: (tick)=>dispatch({type: "gotoTick", tick: tick}),
+      pushState: ()=>dispatch({type: "pushState"}),
+      restoreState: (state)=>({type: "restoreState", state: state})
   })
 )(App);
-
+let frame = 0;
 //a reducer function for a Redux store
 function reducer(state, action) {
   if (state === undefined) {
@@ -47,7 +49,7 @@ function reducer(state, action) {
     case "setNode":
       // move an ending node of a move
       let {x, y} = action;
-      prop = action.prop;
+      prop = action.propid;
       node = action.node;
       let z = 0;
       props = clone(state.props);
@@ -62,9 +64,8 @@ function reducer(state, action) {
       let order = [...state.order];
       order.push(order.splice(order.indexOf(action.top),1)[0]);
       return {...state, order};
-    case "gotoTick": // kind of misleading...actually moves to the move that begins at that tick for that prop
+    case "gotoTick":
       // advance SVG to the end of the selected move
-      prop = action.prop;
       let t = action.tick;
       props = [...state.props];
       let moves = [...state.moves];
@@ -73,6 +74,13 @@ function reducer(state, action) {
         props[i] = spin(move, tick+beats(move)*BEAT);
       }
       return {...state, tick: t, props: props};
+    case "pushState":
+      frame+=1;
+      window.history.pushState({storeState: clone(state)}, "emptyTitle");
+      return state;
+    case "restoreState":
+      frame = action.frame;
+      return action.state;
     default:
       return state;
   }
@@ -86,3 +94,13 @@ ReactDOM.render(
   </ReactRedux.Provider>,
   destination
 );
+
+
+
+window.onpopstate = function(event) {
+    if (event.state) {
+      store.dispatch({type: "restoreState", frame: event.state.frame, state: event.state.storeState});
+    }
+};
+
+window.history.replaceState({frame: frame, storeState: store.getState()}, "emptyTitle", window.location);

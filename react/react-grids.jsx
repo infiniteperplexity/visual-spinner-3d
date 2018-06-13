@@ -23,10 +23,10 @@ class App extends React.Component {
       <div className="app">
         <div className="track frame">
           <div className="frame">
-            <MoveQueue prop="0" {...props}/>
+            <MoveQueue propid="0" {...props}/>
           </div>
           <div className="frame">
-            <MoveQueue prop="1" {...props}/>
+            <MoveQueue propid="1" {...props}/>
           </div>
         </div>
         <div className="frame" id="display">
@@ -41,8 +41,7 @@ class App extends React.Component {
         <Grid dragID="FLOOR" {...props} />
         </div>
         <div className="frame">
-          <PropControls {...props} />
-          <p>edit attributes of selected prop here</p>
+          <MovePanel {...props} />
         </div>
       </div>
     );
@@ -61,7 +60,7 @@ function Grid(props, context) {
   }
   let registry = [];
   for (let key of props.order) {
-    registry.push(<PropNode key={key} prop={key} color={COLORS[key]} {...props} />);
+    registry.push(<PropNode key={key} propid={key} color={COLORS[key]} {...props} />);
   }
   return (
     <DragSVG width={UNIT*UNITS} height={UNIT*UNITS} {...props}>

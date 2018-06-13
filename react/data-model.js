@@ -9,7 +9,8 @@ const {
 	LEFT,
 	NODES, HEAD, GRIP, HAND, PIVOT, HELPER, BODY,
 	parse, stringify,
-	flatten, submove, beats, spin
+	flatten, submove, beats, spin, resolve,
+	Prop, Move
 } = VS3D;
 let combo = parse(json);
 
@@ -37,4 +38,8 @@ function afterReactMounts() {
 	}
 	store.dispatch({type: "gotoTick", tick: 0});
 	store.dispatch({type: "renderEngine"});
+	let controls = new VS3D.Controls(player);
+	//renderer.div.appendChild(controls.div);
 }
+
+
