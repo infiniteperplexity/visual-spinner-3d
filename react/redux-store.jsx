@@ -5,13 +5,12 @@ let AppComponent = ReactRedux.connect(
     props: state.props,
     moves: state.moves,
     order: state.order,
-    frame: state.frame
+    tick: state.tick
   }),
   (dispatch)=>({
       updateEngine: ()=>dispatch({type: "renderEngine"}),
       setNode: (args)=>dispatch({type: "setNode", ...args}),
       setTop: (top)=>dispatch({type: "setTop", top: top}),
-      gotoFrame: (n)=>dispatch({type: "gotoFrame", n: n}),
       gotoTick: (prop, tick)=>dispatch({type: "gotoTick", prop: prop, tick: tick})
   })
 )(App);
@@ -22,33 +21,31 @@ function reducer(state, action) {
     return {
       props: clone(player.props.map(p=>p.prop)),
       moves: clone(player.props.map(p=>p.moves)),
-      active: [0,0],
-      order: player.props.map((_,i)=>i),
-      frame: 0
+      tick: 0,
+      order: player.props.map((_,i)=>i)
     };
   }
-  let props, prop, node;
+  let props, prop, node, moves;
   switch (action.type) {
     case "renderEngine":
-      // we need better order here...
-      props = Object.values(state.props);
-
-      // let shadows = clone(props);
-      // placeholder...
-      let shadows = clone(player.props.map(p=>p.prop));
-      props = props.concat(shadows);
+      //  update the view of the engine
+      props = [...state.props];
+      moves = [...state.moves];
+      let begins = [];
+      for (let i=0; i<props.length; i++) {
+        begins.push(spin(moves[i], state.tick));
+      }
+      props = props.concat(begins);
       let wrappers = clone(player.props);
       wrappers.map(w=>{
         w.nudge = -w.nudge;
         w.alpha = 0.6;
       });
-      // placeholder...
       wrappers = wrappers.concat(player.props);
-      //wrappers = clone(player.props).concat(wrappers);
       renderer.render(wrappers, props);
       return {...state};
     case "setNode":
-      // this is much easier to handle if we have a wrapper on things...
+      // move an ending node of a move
       let {x, y} = action;
       prop = action.prop;
       node = action.node;
@@ -61,23 +58,21 @@ function reducer(state, action) {
       props[prop] = p;
       return {...state, props: props};
     case "setTop":
+      // change the order of a prop (thus far only in the SVG)
       let order = [...state.order];
       order.push(order.splice(order.indexOf(action.top),1)[0]);
       return {...state, order};
-    case "gotoFrame":
-      return {...state};
-    case "gotoTick":
+    case "gotoTick": // kind of misleading...actually moves to the move that begins at that tick for that prop
+      // advance SVG to the end of the selected move
       prop = action.prop;
       let t = action.tick;
-      let active = [prop, t];
       props = [...state.props];
       let moves = [...state.moves];
       for (let i=0; i<props.length; i++) {
         let {move, tick} = submove(moves[i], t);
-        // this just spins to the beginning, though, right?
         props[i] = spin(move, tick+beats(move)*BEAT);
       }
-      return {...state, active: active, props: props};
+      return {...state, tick: t, props: props};
     default:
       return state;
   }

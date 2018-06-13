@@ -10,7 +10,7 @@ class MoveQueue extends React.Component {
     let moves = this.props.moves[this.info.prop];
     let ticks = 0;
     for (let i=0; i<moves.length; i++) {
-      list.push(<MoveItem key={i} prop={this.info.prop} ticks={ticks} {...this.props}>{stringify(moves[i])}</MoveItem>);
+      list.push(<MoveItem key={i} prop={this.info.prop} ticks={ticks} move={moves[i]} {...this.props}></MoveItem>);
       ticks += beats(moves[i])*BEAT;
     }
     return (
@@ -32,7 +32,8 @@ class MoveItem extends React.Component {
     super(props, context);
     this.info = {
       prop: props.prop,
-      ticks: props.ticks
+      ticks: props.ticks,
+      move: props.move
     };
   }
   handleMouseEnter = (e)=>{
@@ -46,35 +47,24 @@ class MoveItem extends React.Component {
     this.props.updateEngine();
   }
   render() {
+    const HEIGHT = 24;
     return (
       <li
         onMouseEnter={(e)=>this.handleMouseEnter(e)}
         onMouseLeave={(e)=>this.handleMouseLeave(e)}
         onMouseDown={(e)=>this.handleMouseDown(e)}
-        style={{whiteSpace: "nowrap"}}
-      >{this.props.children}</li>
+        style={{whiteSpace: "nowrap", height: HEIGHT*beats(this.info.move)}}
+      >{stringify(this.info.move)}</li>
     );
   }
 }
 
 
 class PropControls extends React.Component {
-  backFrame = () => {
-    let frame = this.props.frame;
-    frame-=1;
-    this.props.gotoFrame(frame);
-  }
-  forwardFrame = () => {
-    let frame = this.props.frame;
-    frame+=1;
-    this.props.gotoFrame(frame);
-  }
   render() {
     return (
       <div>
-        <button onClick={this.backFrame}> {"\u2190"} </button>
-        <input type="number" readOnly style={{width: 50}} value={this.props.frame} />
-        <button onClick={this.forwardFrame}> {"\u2192"} </button>
+        <input type="number" readOnly style={{width: 50}} value={this.props.tick} />
       </div>
     );
   }

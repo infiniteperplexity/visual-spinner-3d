@@ -20,11 +20,12 @@ React:
 	- Start with nothing and build from there.
 		- Modification panel.
 	- "Back" to undo.
-	- sync the two move lists.
-		- Not sure whether to synch beginning or end?  Oh...you know, we should synch such that only one is selected, and the other snaps to position for it.
 	- Some sort of visual representation on the move list.
-		- Height of move list items proportional to length.
+	- Highlight selected move(s).
 	- Figure out good UI system for dealing with so many nodes.
 		- I think we assume it's hand, head, and pivot unless you specify.
 	- Clarify things by using "propid" rather than "prop"?
+	- Use menus to select planes, colors, et cetera.
+	- Add the player controls.
+	- Make both queues scroll at once
 	
