@@ -8,8 +8,10 @@ class MoveQueue extends React.Component {
   render() {
     let list = [];
     let moves = this.props.moves[this.info.prop];
+    let ticks = 0;
     for (let i=0; i<moves.length; i++) {
-      list.push(<MoveItem key={i} prop={this.info.prop} move={i} {...this.props}>{stringify(moves[i])}</MoveItem>)
+      list.push(<MoveItem key={i} prop={this.info.prop} ticks={ticks} {...this.props}>{stringify(moves[i])}</MoveItem>);
+      ticks += beats(moves[i])*BEAT;
     }
     return (
       <ul style={{
@@ -30,7 +32,7 @@ class MoveItem extends React.Component {
     super(props, context);
     this.info = {
       prop: props.prop,
-      move: props.move
+      ticks: props.ticks
     };
   }
   handleMouseEnter = (e)=>{
@@ -40,8 +42,7 @@ class MoveItem extends React.Component {
     e.target.style.backgroundColor = "white";
   }
   handleMouseDown = (e)=>{
-    console.log(this.info);
-    this.props.gotoMove(this.info.prop, this.info.move);
+    this.props.gotoTick(this.info.prop, this.info.ticks);
     this.props.updateEngine();
   }
   render() {

@@ -26,4 +26,5 @@ React:
 		- Height of move list items proportional to length.
 	- Figure out good UI system for dealing with so many nodes.
 		- I think we assume it's hand, head, and pivot unless you specify.
+	- Clarify things by using "propid" rather than "prop"?
 	

@@ -1044,6 +1044,45 @@ const SMALL = VS3D.SMALL = 0.001;
 		return vector$unitize(sphere$vectorize(prop.head));
 	}
 
+	function flatten(arr) {
+		let rtn = [];
+		for (let i=0; i<arr.length; i++) {
+			if (Array.isArray(arr[i])) {
+				rtn = rtn.concat(flatten(arr[i]));
+			} else {
+				// preserves object identity
+				rtn.push(arr[i]);
+			}
+		}
+		return rtn;
+	}
+
+	function submove(moves, t) {
+		// avoiding infinite loops
+		let t1 = parseInt(t);
+		if (isNaN(t1)) {
+			console.log(t);
+			throw new Error("non-integer passed as t");
+		} else {
+			t = t1;
+		}
+		if (Array.isArray(moves)) {
+			let past = 0;
+			let i = 0;
+			while (past<=t) {
+				let ticks = beats(moves[i])*BEAT || BEAT;
+				if (past+ticks>=t) {
+					// if I wanted a recursive version, this is where I would do it
+					return {move: moves[i], tick: t-past};
+				} else {
+					past+=ticks;
+					i=(i+1)%moves.length;
+				}
+			}
+		} else {
+			return {move: moves, tick: t};
+		}
+	}
 	
 // ****************************************************************************
 // ********************** Tools for building prefab moves *********************
@@ -1058,32 +1097,6 @@ const SMALL = VS3D.SMALL = 0.001;
 			hand: {r: 1},
 			head: {r: 1}
 		}
-	}
-	function build_old(recipe, prop) {
-		prop = prop || new Prop();
-		// if the move has a plane, we keep that; otherwise, we use the wall plane.
-		let plane = recipe.p || WALL;
-		let {body, pivot, helper, hand, twist, grip, head} = prop;
-		body = {r: body.r, a: sphere$planify(body, plane), p: plane};
-		pivot = {r: pivot.r, a: sphere$planify(pivot, plane), p: plane};
-		helper = {r: helper.r, a: sphere$planify(helper, plane), p: plane};
-		hand = {r: hand.r, a: sphere$planify(hand, plane), p: plane};
-		// at least for how we currently handle TWIST
-		bent = recipe.bent || 0;
-		// bent will almost always be zero, but later we can try to handle this
-		grip = {r: grip.r, a: sphere$planify(grip, plane), p: plane};
-		head = {r: head.r, a: sphere$planify(head, plane), p: plane};
-		let aligned = {
-			body: body,
-			pivot: pivot,
-			helper: helper,
-			hand: hand,
-			grip: grip,
-			head: head,
-		}
-		let args = merge(aligned, recipe);
-		let m = MoveFactory[args.recipe](args);
-		return m;
 	}
 
 	function build(recipe, prop) {
@@ -1511,6 +1524,8 @@ function Player(renderer) {
 	VS3D.Move = Move;
 	VS3D.spin = spin;
 	VS3D.beats = beats;
+	VS3D.flatten = flatten;
+	VS3D.submove = submove;
 	VS3D.fits = fits;
 	VS3D.fit = fit;
 	VS3D.sum_nodes = sum_nodes;

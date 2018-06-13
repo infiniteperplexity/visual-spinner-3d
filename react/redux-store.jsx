@@ -12,18 +12,9 @@ let AppComponent = ReactRedux.connect(
       setNode: (args)=>dispatch({type: "setNode", ...args}),
       setTop: (top)=>dispatch({type: "setTop", top: top}),
       gotoFrame: (n)=>dispatch({type: "gotoFrame", n: n}),
-      gotoMove: (prop, i)=>dispatch({type: "gotoMove", prop: prop, i: i})
+      gotoTick: (prop, tick)=>dispatch({type: "gotoTick", prop: prop, tick: tick})
   })
 )(App);
-
-/*
-Alright.  There are now several issues here.
-
-- We still actually probably to separate VS3D state from React state, because we don't want to constantly update VS3D while we're dragging.
-  - We can still represent React state using VS3D data structures; we'll just copy to the engine.
-- We no longer store props in an array.
-
-*/
 
 //a reducer function for a Redux store
 function reducer(state, action) {
@@ -31,6 +22,7 @@ function reducer(state, action) {
     return {
       props: clone(player.props.map(p=>p.prop)),
       moves: clone(player.props.map(p=>p.moves)),
+      active: [0,0],
       order: player.props.map((_,i)=>i),
       frame: 0
     };
@@ -51,7 +43,8 @@ function reducer(state, action) {
         w.alpha = 0.6;
       });
       // placeholder...
-      wrappers = clone(player.props).concat(wrappers);
+      wrappers = wrappers.concat(player.props);
+      //wrappers = clone(player.props).concat(wrappers);
       renderer.render(wrappers, props);
       return {...state};
     case "setNode":
@@ -73,20 +66,24 @@ function reducer(state, action) {
       return {...state, order};
     case "gotoFrame":
       return {...state};
-    case "gotoMove":
+    case "gotoTick":
       prop = action.prop;
-      let i = action.i;
-      let move = state.moves[prop][i];
-      props = {...state.props};
-      // this part is wrong but it's a decent placeholder
-      props[prop] = socket(move, prop);
-      return {...state, props: props};
+      let t = action.tick;
+      let active = [prop, t];
+      props = [...state.props];
+      let moves = [...state.moves];
+      for (let i=0; i<props.length; i++) {
+        let {move, tick} = submove(moves[i], t);
+        // this just spins to the beginning, though, right?
+        props[i] = spin(move, tick+beats(move)*BEAT);
+      }
+      return {...state, active: active, props: props};
     default:
       return state;
   }
 }
 
-let store = Redux.createStore(reducer);
+store = Redux.createStore(reducer);
 
 ReactDOM.render(
   <ReactRedux.Provider store={store}>

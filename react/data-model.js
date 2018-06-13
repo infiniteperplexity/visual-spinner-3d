@@ -1,13 +1,15 @@
-let renderer;
+let renderer, store;
 const {
 	snapto,
 	socket,
 	vector$spherify, sphere$vectorize,
 	clone,
 	round,
+	BEAT,
 	LEFT,
 	NODES, HEAD, GRIP, HAND, PIVOT, HELPER, BODY,
-	parse, stringify
+	parse, stringify,
+	flatten, submove, beats, spin
 } = VS3D;
 let combo = parse(json);
 
@@ -33,5 +35,6 @@ function afterReactMounts() {
 	player.update = function(positions) {
 		renderer.render(this.props, positions);
 	}
-	player.reset();
+	store.dispatch({type: "gotoTick", tick: 0});
+	store.dispatch({type: "renderEngine"});
 }
