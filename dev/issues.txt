@@ -17,8 +17,6 @@ Bugs:
 - It seems like prop.toXYZ and move.toXYZ might be good things, 
 
 React:
-	- Begin and end position for each prop/move (i.e. "shadow" props)
-		- Well planned-out system for tracking props and moves...give props IDs or something?
 	- Start with nothing and build from there.
 		- Modification panel.
 	- "Back" to undo.

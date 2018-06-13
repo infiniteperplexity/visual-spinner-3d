@@ -40,6 +40,7 @@ class MoveItem extends React.Component {
     e.target.style.backgroundColor = "white";
   }
   handleMouseDown = (e)=>{
+    console.log(this.info);
     this.props.gotoMove(this.info.prop, this.info.move);
     this.props.updateEngine();
   }

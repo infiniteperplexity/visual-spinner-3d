@@ -29,9 +29,9 @@ Alright.  There are now several issues here.
 function reducer(state, action) {
   if (state === undefined) {
     return {
-      props: reactProps,
-      moves: reactMoves,
-      order: [0,1],
+      props: clone(player.props.map(p=>p.prop)),
+      moves: clone(player.props.map(p=>p.moves)),
+      order: player.props.map((_,i)=>i),
       frame: 0
     };
   }
@@ -39,8 +39,20 @@ function reducer(state, action) {
   switch (action.type) {
     case "renderEngine":
       // we need better order here...
-      props = Object.values(state.props); 
-      renderer.render(player.props, props);
+      props = Object.values(state.props);
+
+      // let shadows = clone(props);
+      // placeholder...
+      let shadows = clone(player.props.map(p=>p.prop));
+      props = props.concat(shadows);
+      let wrappers = clone(player.props);
+      wrappers.map(w=>{
+        w.nudge = -w.nudge;
+        w.alpha = 0.6;
+      });
+      // placeholder...
+      wrappers = clone(player.props).concat(wrappers);
+      renderer.render(wrappers, props);
       return {...state};
     case "setNode":
       // this is much easier to handle if we have a wrapper on things...
@@ -57,7 +69,7 @@ function reducer(state, action) {
       return {...state, props: props};
     case "setTop":
       let order = [...state.order];
-      // order.push(order.splice(order.indexOf(action.top),1)[0]);
+      order.push(order.splice(order.indexOf(action.top),1)[0]);
       return {...state, order};
     case "gotoFrame":
       return {...state};
