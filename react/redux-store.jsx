@@ -29,8 +29,9 @@ Alright.  There are now several issues here.
 function reducer(state, action) {
   if (state === undefined) {
     return {
-      props: clone(player.props),
-      order: player.props.map((_,i)=>i),
+      props: reactProps,
+      moves: reactMoves,
+      order: ["orange","white"],
       frame: 0
     };
   }
@@ -38,7 +39,7 @@ function reducer(state, action) {
   switch (action.type) {
     case "renderEngine":
       // we need better order here...
-      props = Object.values(state.props.props); 
+      props = Object.values(state.props); 
       renderer.render(player.props, props);
       return {...state};
     case "setNode":

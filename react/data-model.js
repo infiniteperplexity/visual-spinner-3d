@@ -12,23 +12,21 @@ const {
 let combo = parse(json);
 
 let	player = new VS3D.Player();
-const NPROPS = 2;
-const colors = ["orange","white"];
-for (let i=0; i<NPROPS; i++) {
-	player.addProp(new VS3D.Prop(), {color: colors[i], nudge: i*0.75});
-}
-player.props[0].setHandAngle(LEFT);
-player.props[0].setHeadAngle(LEFT);
-player.props[1].setHandRadius(0);
-player.props[1].setHeadAngle(LEFT);
+let	orange = player.addProp(new VS3D.Prop({hand: {a: LEFT}, head: {a: LEFT}}), {color: "orange"});
+let	white = player.addProp(new VS3D.Prop({hand: {r: 0}, head: {a: LEFT}}), {color: "white"});
 
+let reactProps = {
+	"orange": clone(player.props[0].prop),
+	"white": clone(player.props[1].prop)
+};
+
+let reactMoves = {
+	"orange": combo[0].moves,
+	"white": combo[1].moves
+}
 
 function afterReactMounts() {
 	renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
-	for (let i=0; i<NPROPS; i++) {
-		let wrap = clone(player.props[i]);
-		player.addProp(wrap.prop, {color: wrap.color, nudge: -wrap.nudge, alpha: 0.6};
-	}
 	player.update = function(positions) {
 		renderer.render(this.props, positions);
 	}
