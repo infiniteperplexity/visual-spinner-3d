@@ -16,10 +16,10 @@ class MoveQueue extends React.Component {
     return (
       <ul style={{
         listStyleType: "none",
-        overflowY: "hidden",
-        padding: "0",
+        overflowX: "hidden",
         borderStyle: "solid",
-        border: "1px"
+        border: "0px",
+        borderRight: "1px"
       }}>
         {list}
       </ul>
@@ -178,5 +178,26 @@ class MovePanel extends React.Component {
           </div>
         </div>
     )
+  }
+}
+
+class PlaneMenu extends React.Component {
+  constructor(props, context) {
+    super(props, context);
+    this.info = {
+      plane: props.selected
+    }
+  }
+  handleChange = (e)=>{
+
+  }
+  render() {
+    return (
+      <select defaultValue={this.info.plane}>
+        <option value="WALL">Wall (Front)</option>
+        <option value="WHEEL">Wheel (Left)</option>
+        <option value="FLOOR">Floor (Top)</option>
+      </select>
+    );
   }
 }

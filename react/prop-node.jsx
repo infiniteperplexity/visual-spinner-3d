@@ -1,3 +1,9 @@
+let _rebounces = {};
+function rebounce(callback, timeout) {
+  timeout = timeout || "_rebounce";
+  clearTimeout(_rebounces.timeout);
+  _rebounces.timeout = setTimeout(callback,0);
+}
 
 class PropNode extends React.Component {
   constructor(props, context) {
@@ -5,7 +11,7 @@ class PropNode extends React.Component {
     // this stuff is not really "state" in the sense Redux cares about
     this.info = {
       propid: props.propid,
-      node: props.node || 0,
+      node: props.node || BODY, //!!! eventually make this flexible
       color: props.color,
       dragID: props.dragID,
       beingDragged: false,
@@ -51,8 +57,10 @@ class PropNode extends React.Component {
     event.preventDefault();
     this.info.beingDragged = false;
     Draggables[this.info.dragID].info.dragging = null;
-    this.props.pushState();
-    this.props.updateEngine();
+    rebounce(()=>{
+      this.props.pushState();
+      this.props.updateEngine();
+    });
   }
   handleMouseLeave = (event) => {
   }
@@ -68,7 +76,11 @@ class PropNode extends React.Component {
       let x = (p.x-this.info.xoffset)/UNIT;
       let y = (-p.y+this.info.yoffset)/UNIT;
       let {r, a, b} = vector$spherify({x: x, y: y, z: 0});
-      r = round(r, 0.5);
+      if (this.info.node===HEAD && this.props.locks.head) {
+        r = 1;
+      } else {
+        r = round(r, 0.5);
+      }
       let rounding = round(Math.PI/(12*VS3D.UNIT),1);
       a = round(a, rounding);
       b = round(b, rounding);
@@ -80,6 +92,7 @@ class PropNode extends React.Component {
         node: this.info.node,
         x: x,
         y: y,
+        plane: "WALL"
       });
     }
   }
@@ -94,8 +107,19 @@ class PropNode extends React.Component {
     let node = this.props.props[this.info.propid][NODES[this.info.node]];
     // this will vary depending on plane
     let v = sphere$vectorize(node);
-    let x = v.x * UNIT;
-    let y = -v.y * UNIT;
+    let x, y;
+    // !!!figure out how to vary this
+    let plane = "WALL";
+    if (plane==="WALL") {
+      x = v.x * UNIT;
+      y = -v.y * UNIT;
+    } else if (plane==="WHEEL") {
+      x = v.z * UNIT;
+      y = -v.y * UNIT;
+    } else if (plane==="FLOOR") {
+      x = v.x * UNIT;
+      y = -v.z * UNIT;
+    }
     let r = UNIT/18;
     if (this.info.node===HAND) {
       r = UNIT/12;
@@ -107,18 +131,33 @@ class PropNode extends React.Component {
     let tether = null;
     let child = null;
     if (this.info.node<NODES.length-1) {
-      let node2 = this.props.props[this.info.propid][NODES[this.info.node+1]];
+      let n = this.info.node+1;
+      if (n===HELPER && this.props.locks.helper) {
+        n+=1;
+      } else if (n===GRIP && this.props.locks.grip) {
+        n+=1;
+      }
+      let node2 = this.props.props[this.info.propid][NODES[n]];
       let v2 = sphere$vectorize(node2);
-      let x2 = v2.x * UNIT;
-      let y2 =  -v2.y * UNIT;
+      let x2, y2;
+      if (plane==="WALL") {
+        x2 = v2.x * UNIT;
+        y2 = -v2.y * UNIT;
+      } else if (plane==="WHEEL") {
+        x2 = v2.z * UNIT;
+        y2 = -v2.y * UNIT;
+      } else if (plane==="FLOOR") {
+        x2 = v2.x * UNIT;
+        y2 = -v2.z * UNIT;
+      }
       let style = {stroke: "gray"};
-      if (this.info.node===GRIP) {
+      if (n===HEAD) {
         style.strokeWidth = 3;
       } else {
         style.strokeDasharray="5,5";
       }
       tether = <line x1={X0} y1={Y0} x2={X0+x2} y2={Y0+y2} style={style} />
-      child = <PropNode {...this.props} node={this.info.node+1} />;
+      child = <PropNode {...this.props} node={n} />;
     }
     return (
       <g 

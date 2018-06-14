@@ -1,11 +1,12 @@
-// A Higher-Order Component made using ReactRedux.connect
+  // A Higher-Order Component made using ReactRedux.connect
   // attaches properties to the "wrapped" component
 let AppComponent = ReactRedux.connect(
   (state)=>({
     props: state.props,
     moves: state.moves,
     order: state.order,
-    tick: state.tick
+    tick: state.tick,
+    locks: state.locks
   }),
   (dispatch)=>({
       updateEngine: ()=>dispatch({type: "renderEngine"}),
@@ -24,7 +25,12 @@ function reducer(state, action) {
       props: clone(player.props.map(p=>p.prop)),
       moves: clone(player.props.map(p=>p.moves)),
       tick: 0,
-      order: player.props.map((_,i)=>i)
+      order: player.props.map((_,i)=>i),
+      locks: {
+        helper: true,
+        grip: true,
+        head: true
+      } // mean slightly different things
     };
   }
   let props, prop, node, moves;
@@ -48,12 +54,19 @@ function reducer(state, action) {
       return {...state};
     case "setNode":
       // move an ending node of a move
-      let {x, y} = action;
+      let {x, y, plane} = action;
       prop = action.propid;
       node = action.node;
       let z = 0;
       props = clone(state.props);
-      let s = vector$spherify({x: x, y: y, z: z});
+      let s;
+      if (plane==="WALL") {
+        s = vector$spherify({x: x, y: y, z: z});
+      } else if (plane==="WHEEL") {
+        s = vector$spherify({x: z, y: y, z: x});
+      } else if (plane==="FLOOR") {
+        s = vector$spherify({x: x, y: z, z: y});
+      }
       let args = {};
       args[NODES[node]] = s;
       let p = snapto(args, props[prop]);
@@ -82,6 +95,7 @@ function reducer(state, action) {
       frame = action.frame;
       return action.state;
     default:
+      throw new Error("wrong kind of action");
       return state;
   }
 }
@@ -100,6 +114,7 @@ ReactDOM.render(
 window.onpopstate = function(event) {
     if (event.state) {
       store.dispatch({type: "restoreState", frame: event.state.frame, state: event.state.storeState});
+      store.dispatch({type: "renderEngine"});
     }
 };
 

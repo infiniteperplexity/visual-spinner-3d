@@ -20,13 +20,19 @@ Bugs:
 React:
 	- Start with nothing and build from there.
 		- Modification panel.
-	- "Back" to undo.
 	- Some sort of visual representation on the move list.
-	- Figure out good UI system for dealing with so many nodes.
-		- I think we assume it's hand, head, and pivot unless you specify.
-		- In order to implement this we need to be able to freeze various nodes.
-		- Would also like to assume that head radius doesn't move.
-	- Use menus to select planes, colors, et cetera.
 	- Add the player controls.
-	- We call the "setNode" thing six time or something every time you move the HEAD, which causes problems.
-	
+		- Should block / alter use of some / most other controls?
+			- Might need to override / wrap existing onclicks;
+			- Should it start at current tick?
+	- Plane menus
+		- Actually propagate the state
+	- Color menus
+		- Change color of props
+		- Toggle other color menus
+	- Want more area on the SVG grids.
+	- Make locking and unlocking manual.
+
+	- Maybe make the different nodes look different
+	- Get icons from noun project for viewing angle.
+	- Kiss your girlfriend for being brilliant.
