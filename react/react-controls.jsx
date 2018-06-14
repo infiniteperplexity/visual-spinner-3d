@@ -45,10 +45,16 @@ class MoveItem extends React.Component {
   handleMouseDown = (e)=>{
     this.props.setTop(this.info.propid);
     this.props.gotoTick(this.info.ticks);
-    this.props.updateEngine();
+    this.props.renderEngine();
   }
   render() {
     const HEIGHT = 24;
+    let move = this.info.move;
+    let repr = {
+      hand: {a0:move.hand.a, a1: move.hand.a1},
+      head: {a0: move.head.a, a1: move.head.a1}
+    };
+
     return (
       <li
         onMouseEnter={(e)=>this.handleMouseEnter(e)}
@@ -59,7 +65,7 @@ class MoveItem extends React.Component {
           height: HEIGHT*beats(this.info.move),
           backgroundColor: (this.props.tick===this.info.ticks) ? "cyan" : "white"
         }}
-      >{stringify(this.info.move)}</li>
+      >{stringify(repr)}</li>
     );
   }
 }
@@ -183,11 +189,11 @@ class MovePanel extends React.Component {
 
 class PlaneMenu extends React.Component {
   handleChange = (e)=>{
-    this.props.setPlane(parseInt(this.props.gridid), e.target.value);
+    this.props.setPlane(e.target.value);
   }
   render() {
     return (
-      <select value={this.props.planes[this.props.gridid]} onChange={this.handleChange}>
+      <select value={this.props.plane} onChange={this.handleChange}>
         <option value="WALL">Wall (Front)</option>
         <option value="WHEEL">Wheel (Left)</option>
         <option value="FLOOR">Floor (Top)</option>

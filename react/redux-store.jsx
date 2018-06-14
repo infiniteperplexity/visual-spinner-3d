@@ -2,21 +2,23 @@
   // attaches properties to the "wrapped" component
 let AppComponent = ReactRedux.connect(
   (state)=>({
-    props: state.props,
-    moves: state.moves,
-    order: state.order,
-    tick: state.tick,
-    planes: state.planes,
-    locks: state.locks
+    // props: state.props,
+    // moves: state.moves,
+    // order: state.order,
+    // tick: state.tick,
+    // planes: state.planes,
+    // locks: state.locks
+    ...state
   }),
   (dispatch)=>({
-      updateEngine: ()=>dispatch({type: "renderEngine"}),
+      renderEngine: ()=>dispatch({type: "renderEngine"}),
+      updateMove: (propid, gridid)=>dispatch({type: "updateMove", propid: propid, gridid: gridid}),
       setNode: (args)=>dispatch({type: "setNode", ...args}),
       setTop: (top)=>dispatch({type: "setTop", top: top}),
       gotoTick: (tick)=>dispatch({type: "gotoTick", tick: tick}),
       pushState: ()=>dispatch({type: "pushState"}),
       restoreState: (state)=>dispatch({type: "restoreState", state: state}),
-      setPlane: (id, plane)=>dispatch({type: "setPlane", gridid: id, plane: plane})
+      setPlane: (plane)=>dispatch({type: "setPlane", plane: plane})
   })
 )(App);
 let frame = 0;
@@ -27,8 +29,8 @@ function reducer(state, action) {
       props: clone(player.props.map(p=>p.prop)),
       moves: clone(player.props.map(p=>p.moves)),
       tick: 0,
-      order: player.props.map((_,i)=>i),
-      planes: ["WALL","WHEEL"],
+      order: player.props.map((_,i)=>(player.props.length-i-1)),
+      plane: "WALL",
       locks: {
         helper: true,
         grip: true,
@@ -36,7 +38,7 @@ function reducer(state, action) {
       } // mean slightly different things
     };
   }
-  let props, prop, node, moves, swap;
+  let props, prop, node, moves, swap, plane;
   switch (action.type) {
     case "renderEngine":
       //  update the view of the engine
@@ -55,8 +57,24 @@ function reducer(state, action) {
       wrappers = wrappers.concat(player.props);
       renderer.render(wrappers, props);
       return {...state};
+    case "updateMove":
+      // update the current move for the active prop
+      moves = [...state.moves];
+      let {move} = submove(moves[action.propid], state.tick);
+      let idx = moves.indexOf(move);
+      move = {...move};
+      plane = state.plane;
+      prop = state.props[action.propid];
+      for (let i=0; i<NODES.length; i++) {
+        move[NODES[i]].r1 = prop[NODES[i]].r;
+        move[NODES[i]].a1 = sphere$planify(prop[NODES[i]], VS3D[plane]);
+      }
+      move.p = VS3D[plane];
+      move = resolve(move);
+      moves[action.propid][idx] = move;
+      return {...state, moves: moves};
     case "setNode":
-      // move an ending node of a move
+      // update an ending node of a move
       let {x, y, z} = action;
       prop = action.propid;
       node = action.node;
@@ -70,34 +88,26 @@ function reducer(state, action) {
       order.push(order.splice(order.indexOf(action.top),1)[0]);
       return {...state, order};
     case "gotoTick":
-      // advance SVG to the end of the selected move
+      // advance SVG state to the end of the selected move
       let t = action.tick;
       props = [...state.props];
-      let moves = [...state.moves];
+      moves = [...state.moves];
       for (let i=0; i<props.length; i++) {
         let {move, tick} = submove(moves[i], t);
         props[i] = spin(move, tick+beats(move)*BEAT);
       }
       return {...state, tick: t, props: props};
     case "pushState":
+      // modify the browser history
       frame+=1;
       window.history.pushState({storeState: clone(state)}, "emptyTitle");
       return state;
     case "restoreState":
+      // restore the browser history
       frame = action.frame;
       return action.state;
     case "setPlane":
-      let {gridid} = action;
-      let planes = [...state.planes];
-      swap = planes[gridid];
-      for (let i=0; i<planes.length; i++) {
-        if (i===gridid) {
-          planes[i] = action.plane;
-        } else if (planes[i]===action.plane) {
-          planes[i] = swap;
-        }
-      }
-      return {...state, planes: planes};
+      return {...state, plane: action.plane};
     default:
       throw new Error("wrong kind of action");
       return state;

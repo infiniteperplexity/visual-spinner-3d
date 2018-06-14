@@ -8,6 +8,7 @@ Engine:
 Apps:
 - Integrate it with React.
 - Add the exhibit in once I first need it.
+- Would be nice if we could export this stuff in a way that's actually kind of spinnable.
 
 Bugs:
 - TWIST still looks wrong in parts of WHXFL plane.
@@ -30,6 +31,7 @@ React:
 		- Toggle other color menus
 	- Want more area on the SVG grids.
 	- Make locking and unlocking manual.
+	- Some of the planes might be backwards.
 
 	- Maybe make the different nodes look different
 	- Get icons from noun project for viewing angle.

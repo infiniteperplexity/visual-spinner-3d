@@ -32,12 +32,8 @@ class App extends React.Component {
         <div className="frame" id="display">
         </div>
         <div className="frame">
-          <Grid dragID="SVG1" gridid="0" {...props} />
-          <PlaneMenu selected="WALL" gridid="0" {...props} />
-        </div>
-        <div className="frame">
-          <Grid dragID="SVG2" gridid="1" {...props} />
-          <PlaneMenu selected="WHEEL" gridid="1" {...props} />
+          <Grid dragID="SVG" {...props} />
+          <PlaneMenu selected="WALL" {...props} />
         </div>
         <div className="frame">
           <MovePanel {...props} />

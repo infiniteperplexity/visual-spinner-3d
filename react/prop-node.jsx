@@ -58,7 +58,8 @@ class PropNode extends React.Component {
     Draggables[this.info.dragID].info.dragging = null;
     rebounce(()=>{
       this.props.pushState();
-      this.props.updateEngine();
+      this.props.updateMove(this.info.propid);
+      this.props.renderEngine();
     });
   }
   handleMouseLeave = (event) => {
@@ -72,7 +73,7 @@ class PropNode extends React.Component {
     if (this.info.beingDragged) {
       let p = this.info.point.matrixTransform(this.info.matrix);
       let x, y, z;
-      let plane = this.props.planes[this.props.gridid];
+      let plane = this.props.plane;
       if (plane==="WALL") {
         x = (p.x-this.info.xoffset)/UNIT;
         y = (-p.y+this.info.yoffset)/UNIT;
@@ -104,7 +105,8 @@ class PropNode extends React.Component {
         node: this.info.node,
         x: x,
         y: y,
-        z: z
+        z: z,
+        plane: plane
       });
     }
   }
@@ -119,7 +121,7 @@ class PropNode extends React.Component {
     let node = this.props.props[this.info.propid][NODES[this.info.node]];
     let v = sphere$vectorize(node);
     let x, y;
-    let plane = this.props.planes[this.props.gridid];
+    let plane = this.props.plane;
     if (plane==="WALL") {
       x = v.x * UNIT;
       y = -v.y * UNIT;
