@@ -19,8 +19,8 @@ Bugs:
 - It seems like prop.toXYZ and move.toXYZ might be good things, 
 
 React:
-	- Start with nothing and build from there.
-		- Modification panel.
+	- Modification panel.
+		- Activate it.
 	- Some sort of visual representation on the move list.
 	- Add the player controls.
 		- Should block / alter use of some / most other controls?
@@ -36,3 +36,11 @@ React:
 	- Maybe make the different nodes look different
 	- Get icons from noun project for viewing angle.
 	- Would be nice if SVGs rendered according to depth.
+
+
+	- Need to propagate stuff down the chain
+
+	***General rules:
+		1) New moves conform 0s and 1s
+		2) Existing moves conform 0s but keep 1s
+		3) Active move updates first. 

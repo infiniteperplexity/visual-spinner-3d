@@ -55,7 +55,7 @@ function Grid(props, context) {
   }
   let registry = [];
   for (let key of props.order) {
-    registry.push(<PropNode key={key} propid={key} gridid={props.gridid} color={COLORS[key]} {...props} />);
+    registry.push(<PropNode key={key} propid={key} node={BODY} color={COLORS[key]} {...props} />);
   }
   return (
     <DragSVG width={UNIT*UNITS} height={UNIT*UNITS} {...props}>

@@ -8,16 +8,11 @@ function rebounce(callback, timeout) {
 class PropNode extends React.Component {
   constructor(props, context) {
     super(props, context);
-    // this stuff is not really "state" in the sense Redux cares about
-    this.info = {
-      propid: props.propid,
-      node: props.node || BODY,
-      color: props.color,
-      dragID: props.dragID,
+    // this stuff is technically "state" but it will never force re-rendering
+    this.localState = {
       beingDragged: false,
       xoffset: 0,
       yoffset: 0,
-      svg: props.svg,
       point: null,
       matrix: null
     }
@@ -31,34 +26,34 @@ class PropNode extends React.Component {
       }
     }
     // matrix transformation stuff
-    this.info.point = e.createSVGPoint();
-    this.info.matrix = this.element.getScreenCTM().inverse();
+    this.localState.point = e.createSVGPoint();
+    this.localState.matrix = this.element.getScreenCTM().inverse();
   }
   handleMouseDown = (event) => {
     event.preventDefault();
-    if (Draggables[this.info.dragID].info.dragging === null) { 
-      this.info.beingDragged = true;
-      Draggables[this.info.dragID].info.dragging = this;
+    if (Draggables[this.props.dragID].localState.dragging === null) { 
+      this.localState.beingDragged = true;
+      Draggables[this.props.dragID].localState.dragging = this;
     }
     // note: harmless violation of React state management practices
-    this.info.point.x = event.clientX;
-    this.info.point.y = event.clientY;
-    let p = this.info.point.matrixTransform(this.info.matrix);
-    let node = this.props.props[this.info.propid][NODES[this.info.node]];
+    this.localState.point.x = event.clientX;
+    this.localState.point.y = event.clientY;
+    let p = this.localState.point.matrixTransform(this.localState.matrix);
+    let node = this.props.props[this.props.propid][NODES[this.props.node]];
     let v = sphere$vectorize(node);
     let x = v.x * UNIT;
     let y = v.y * UNIT;
-    this.info.xoffset = p.x - x;
-    this.info.yoffset = p.y + y;
-    this.props.setTop(this.info.propid);
+    this.localState.xoffset = p.x - x;
+    this.localState.yoffset = p.y + y;
+    this.props.setTop(this.props.propid);
   }
   handleMouseUp = (event) => {
     event.preventDefault();
-    this.info.beingDragged = false;
-    Draggables[this.info.dragID].info.dragging = null;
+    this.localState.beingDragged = false;
+    Draggables[this.props.dragID].localState.dragging = null;
     rebounce(()=>{
       this.props.pushState();
-      this.props.updateMove(this.info.propid);
+      this.props.updateMove(this.props.propid);
       this.props.renderEngine();
     });
   }
@@ -67,28 +62,28 @@ class PropNode extends React.Component {
   handleMouseMove = (event) => {
     event.preventDefault();
     // note: harmless violation of React state management practices
-    this.info.point.x = event.clientX;
-    this.info.point.y = event.clientY;
+    this.localState.point.x = event.clientX;
+    this.localState.point.y = event.clientY;
 
-    if (this.info.beingDragged) {
-      let p = this.info.point.matrixTransform(this.info.matrix);
+    if (this.localState.beingDragged) {
+      let p = this.localState.point.matrixTransform(this.localState.matrix);
       let x, y, z;
       let plane = this.props.plane;
       if (plane==="WALL") {
-        x = (p.x-this.info.xoffset)/UNIT;
-        y = (-p.y+this.info.yoffset)/UNIT;
+        x = (p.x-this.localState.xoffset)/UNIT;
+        y = (-p.y+this.localState.yoffset)/UNIT;
         z = 0;
       } else if (plane==="WHEEL") {
         x = 0;
-        y = (-p.y+this.info.yoffset)/UNIT;
-        z = (-p.x+this.info.xoffset)/UNIT;
+        y = (-p.y+this.localState.yoffset)/UNIT;
+        z = (-p.x+this.localState.xoffset)/UNIT;
       } else if (plane==="FLOOR") {
-        x = (p.x-this.info.xoffset)/UNIT;
+        x = (p.x-this.localState.xoffset)/UNIT;
         y = 0;
-        z = (-p.y+this.info.yoffset)/UNIT;
+        z = (-p.y+this.localState.yoffset)/UNIT;
       }
       let {r, a, b} = vector$spherify({x: x, y: y, z: z});
-      if (this.info.node===HEAD && this.props.locks.head) {
+      if (this.props.node===HEAD && this.props.locks.head) {
         r = 1;
       } else {
         r = round(r, 0.5);
@@ -101,8 +96,8 @@ class PropNode extends React.Component {
       y = v.y;
       z = v.z;
       this.props.setNode({
-        propid: this.info.propid,
-        node: this.info.node,
+        propid: this.props.propid,
+        node: this.props.node,
         x: x,
         y: y,
         z: z,
@@ -118,7 +113,7 @@ class PropNode extends React.Component {
     }
   }
   render() {
-    let node = this.props.props[this.info.propid][NODES[this.info.node]];
+    let node = this.props.props[this.props.propid][NODES[this.props.node]];
     let v = sphere$vectorize(node);
     let x, y;
     let plane = this.props.plane;
@@ -133,23 +128,23 @@ class PropNode extends React.Component {
       y = -v.z * UNIT;
     }
     let r = UNIT/18;
-    if (this.info.node===HAND) {
+    if (this.props.node===HAND) {
       r = UNIT/12;
-    } else if (this.info.node===HEAD) {
+    } else if (this.props.node===HEAD) {
       r = UNIT/6;
     }
-    let fill = ([HEAD,HAND].includes(this.info.node)) ? this.info.color : "gray";
-    let stroke = ([HEAD,HAND].includes(this.info.node)) ? "gray" : this.info.color;
+    let fill = ([HEAD,HAND].includes(this.props.node)) ? this.props.color : "gray";
+    let stroke = ([HEAD,HAND].includes(this.props.node)) ? "gray" : this.props.color;
     let tether = null;
     let child = null;
-    if (this.info.node<NODES.length-1) {
-      let n = this.info.node+1;
+    if (this.props.node<NODES.length-1) {
+      let n = this.props.node+1;
       if (n===HELPER && this.props.locks.helper) {
         n+=1;
       } else if (n===GRIP && this.props.locks.grip) {
         n+=1;
       }
-      let node2 = this.props.props[this.info.propid][NODES[n]];
+      let node2 = this.props.props[this.props.propid][NODES[n]];
       let v2 = sphere$vectorize(node2);
       let x2, y2;
       if (plane==="WALL") {

@@ -509,7 +509,8 @@ const SMALL = VS3D.SMALL = 0.001;
 			let i = 0;
 			while (past<=t) {
 				let ticks = beats(move[i])*BEAT || 1*BEAT;
-				if (past+ticks>=t) {
+				// if (past+ticks>=t) {
+				if (past+ticks>t) {
 					return spin(move[i], t-past, dummy);
 				} else {
 					past+=ticks;
@@ -1099,6 +1100,7 @@ const SMALL = VS3D.SMALL = 0.001;
 		return rtn;
 	}
 
+	// returns the original, not a copy
 	function submove(moves, t) {
 		// avoiding infinite loops
 		let t1 = parseInt(t);
@@ -1113,7 +1115,7 @@ const SMALL = VS3D.SMALL = 0.001;
 			let i = 0;
 			while (past<=t) {
 				let ticks = beats(moves[i])*BEAT || BEAT;
-				if (past+ticks>=t) {
+				if (past+ticks>t) {
 					// if I wanted a recursive version, this is where I would do it
 					return {move: moves[i], tick: t-past};
 				} else {

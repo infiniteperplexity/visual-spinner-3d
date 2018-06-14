@@ -1,18 +1,13 @@
 class MoveQueue extends React.Component {
-  constructor(props, context) {
-    super(props, context);
-    this.info = {
-      propid: parseInt(props.propid)
-    }
-  }
   render() {
     let list = [];
-    let moves = this.props.moves[this.info.propid];
+    let moves = this.props.moves[this.props.propid];
     let ticks = 0;
     for (let i=0; i<moves.length; i++) {
-      list.push(<MoveItem key={i} propid={this.info.propid} ticks={ticks} move={moves[i]} {...this.props}></MoveItem>);
+      list.push(<MoveItem key={i} ticks={ticks} move={moves[i]} {...this.props}></MoveItem>);
       ticks += beats(moves[i])*BEAT;
     }
+    list.push(<NewMove key={list.length} {...this.props}/>);
     return (
       <ul style={{
         listStyleType: "none",
@@ -27,29 +22,33 @@ class MoveQueue extends React.Component {
   }
 }
 
-class MoveItem extends React.Component {
-  constructor(props, context) {
-    super(props, context);
-    this.info = {
-      propid: parseInt(props.propid),
-      ticks: props.ticks,
-      move: props.move
-    };
+class NewMove extends React.Component {
+  handleClick = (e)=> {
+    let ticks = beats(this.props.moves[this.props.propid])*BEAT;
+    this.props.addMove(this.props.propid);
+    this.props.setTop(this.props.propid);
+    this.props.gotoTick(ticks);
   }
+  render() {
+    return <button onClick={this.handleClick}>+</button>
+  }
+}
+
+class MoveItem extends React.Component {
   handleMouseEnter = (e)=>{
-    e.target.style.backgroundColor = (this.props.tick===this.info.ticks) ? "cyan" : "lightcyan";
+    e.target.style.backgroundColor = (this.props.tick===this.props.ticks) ? "cyan" : "lightcyan";
   }
   handleMouseLeave = (e)=>{
-    e.target.style.backgroundColor = (this.props.tick===this.info.ticks) ? "cyan" : "white";
+    e.target.style.backgroundColor = (this.props.tick===this.props.ticks) ? "cyan" : "white";
   }
   handleMouseDown = (e)=>{
-    this.props.setTop(this.info.propid);
-    this.props.gotoTick(this.info.ticks);
+    this.props.setTop(this.props.propid);
+    this.props.gotoTick(this.props.ticks);
     this.props.renderEngine();
   }
   render() {
     const HEIGHT = 24;
-    let move = this.info.move;
+    let move = this.props.move;
     let repr = {
       hand: {a0:move.hand.a, a1: move.hand.a1},
       head: {a0: move.head.a, a1: move.head.a1}
@@ -62,125 +61,73 @@ class MoveItem extends React.Component {
         onMouseDown={(e)=>this.handleMouseDown(e)}
         style={{
           whiteSpace: "nowrap",
-          height: HEIGHT*beats(this.info.move),
-          backgroundColor: (this.props.tick===this.info.ticks) ? "cyan" : "white"
+          height: HEIGHT*beats(this.props.move),
+          backgroundColor: (this.props.tick===this.props.ticks) ? "cyan" : "white"
         }}
       >{stringify(repr)}</li>
     );
   }
 }
 
-function NumberPanel(props, context) {
-  return <input type="number" readOnly style={{width: 50, fontFamily: "monospace"}} value={props.value} />
+function FrozenNumber(props, context) {
+  return <input type="text" readOnly style={{width: 50, fontFamily: "monospace"}} value={props.value} />
 }
-
-class PropControls extends React.Component {
+class NumberPanel extends React.Component {
+  handleChange = (e)=>{
+    // !!!might need to change state.locks
+    this.props.modifyMove({...this.prop.vals, value: e.target.value});
+    this.props.pushState();
+    this.props.renderEngine();
+  }
   render() {
-    return (
-      <div>
-        <NumberPanel value={this.props.tick} />
-      </div>
-    );
+    return <input type="number" onChange={this.handleChange} style={{width: 50, fontFamily: "monospace"}} defaultValue={this.props.value} />
   }
 }
 
 class MovePanel extends React.Component {
   // the last item on order is the active one
   render() {
-    let prop = this.props.props[this.props.order[NPROPS-1]];
-    // console.log(this.props.tick);
-    let {move} = submove(this.props.moves[this.props.order[NPROPS-1]], this.props.tick);
+    let propid = [this.props.order[this.props.order.length-1]];
+    let {move} = submove(this.props.moves[propid], this.props.tick);
     try {
       move = resolve(move);
     } catch(e) {
       move = Move(move);
     }
+    let list = [];
+    for (let i=0; i<NODES.length; i++) {
+      let node = NODES[i];
+      list.push(
+        <div key={i}>
+          {node}&nbsp;&nbsp;angle{"\u2080"}&nbsp; <FrozenNumber value={move[node].a} />
+          &nbsp;angle{"\u2081"}&nbsp; <NumberPanel vals={{propid: propid, node: i, moment: "a1"}} value={move[node].a1} />
+          &nbsp;{"\u0394"}{"\u2080"} <NumberPanel vals={{propid: propid, node: i, moment: "va"}} value={move[node].va} />
+          &nbsp;{"\u0394"}{"\u2081"} <NumberPanel vals={{propid: propid, node: i, moment: "va1"}} value={move[node].va1} />
+          <br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;radius{"\u2080"} <FrozenNumber value={move[node].r} />
+          &nbsp;radius{"\u2081"} <NumberPanel vals={{propid: propid, node: i, moment: "r1"}} value={move[node].r1} />
+          &nbsp;{"\u0394"}{"\u2080"} <NumberPanel vals={{propid: propid, node: i, moment: "vr"}} value={move[node].vr} />
+          &nbsp;{"\u0394"}{"\u2081"} <NumberPanel vals={{propid: propid, node: i, moment: "vr1"}} value={move[node].vr1} />
+        </div>
+      );
+    }
     return (
       <div style={{fontFamily: "monospace"}}>
         @tick: <NumberPanel value={this.props.tick} />
         &nbsp;note: <input type="text" style={{width: 50}} readOnly value={move.notes}></input>
-        &nbsp;ticks: <NumberPanel value={move.beats*BEAT} />
-        &nbsp;plane<sub>x</sub>
-          <NumberPanel value={-move.p.x} />
-          <sub>y</sub><NumberPanel value={move.p.y} />
-          <sub>z</sub><NumberPanel value={-move.p.z} />
-        <br />
-          <div>
-          body&nbsp;&nbsp;angle{"\u2080"}&nbsp; <NumberPanel value={move.body.a} />
-          &nbsp;angle{"\u2081"}&nbsp; <NumberPanel value={move.body.a1} />
-          &nbsp;{"\u0394"}{"\u2080"} <NumberPanel value={move.body.va} />
-          &nbsp;{"\u0394"}{"\u2081"} <NumberPanel value={move.body.va1} />
-          <br />
-          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;radius{"\u2080"} <NumberPanel value={move.body.r} />
-          &nbsp;radius{"\u2081"} <NumberPanel value={move.body.r1} />
-          &nbsp;{"\u0394"}{"\u2080"} <NumberPanel value={move.body.vr} />
-          &nbsp;{"\u0394"}{"\u2081"} <NumberPanel value={move.body.vr1} />
-          </div>
-        <div>
-          pivot&nbsp;angle{"\u2080"}&nbsp; <NumberPanel value={move.pivot.a} />
-          &nbsp;angle{"\u2081"}&nbsp; <NumberPanel value={move.pivot.a1} />
-          &nbsp;{"\u0394"}{"\u2080"} <NumberPanel value={move.pivot.va} />
-          &nbsp;{"\u0394"}{"\u2081"} <NumberPanel value={move.pivot.va1} />
-          <br />
-          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;radius{"\u2080"} <NumberPanel value={move.pivot.r} />
-          &nbsp;radius{"\u2081"} <NumberPanel value={move.pivot.r1} />
-          &nbsp;{"\u0394"}{"\u2080"} <NumberPanel value={move.pivot.vr} />
-          &nbsp;{"\u0394"}{"\u2081"} <NumberPanel value={move.pivot.vr1} />
-          </div>
-        <div>
-          help&nbsp;&nbsp;angle{"\u2080"}&nbsp; <NumberPanel value={move.helper.a} />
-          &nbsp;angle{"\u2081"}&nbsp; <NumberPanel value={move.helper.a1} />
-          &nbsp;{"\u0394"}{"\u2080"} <NumberPanel value={move.helper.va} />
-          &nbsp;{"\u0394"}{"\u2081"} <NumberPanel value={move.helper.va1} />
-          <br />
-          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;radius{"\u2080"} <NumberPanel value={move.helper.r} />
-          &nbsp;radius{"\u2081"} <NumberPanel value={move.helper.r1} />
-          &nbsp;{"\u0394"}{"\u2080"} <NumberPanel value={move.helper.vr} />
-          &nbsp;{"\u0394"}{"\u2081"} <NumberPanel value={move.helper.vr1} />
-          </div>
-        <div>
-          hand&nbsp;&nbsp;angle{"\u2080"}&nbsp; <NumberPanel value={move.hand.a} />
-          &nbsp;angle{"\u2081"}&nbsp; <NumberPanel value={move.hand.a1} />
-          &nbsp;{"\u0394"}{"\u2080"} <NumberPanel value={move.hand.va} />
-          &nbsp;{"\u0394"}{"\u2081"} <NumberPanel value={move.hand.va1} />
-          <br />
-          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;radius{"\u2080"} <NumberPanel value={move.hand.r} />
-          &nbsp;radius{"\u2081"} <NumberPanel value={move.hand.r1} />
-          &nbsp;{"\u0394"}{"\u2080"} <NumberPanel value={move.hand.vr} />
-          &nbsp;{"\u0394"}{"\u2081"} <NumberPanel value={move.hand.vr1} />
-          </div>
-        <div>
-          grip&nbsp;&nbsp;angle{"\u2080"}&nbsp; <NumberPanel value={move.grip.a} />
-          &nbsp;angle{"\u2081"}&nbsp; <NumberPanel value={move.grip.a1} />
-          &nbsp;{"\u0394"}{"\u2080"} <NumberPanel value={move.grip.va} />
-          &nbsp;{"\u0394"}{"\u2081"} <NumberPanel value={move.grip.va1} />
-          <br />
-          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;radius{"\u2080"} <NumberPanel value={move.grip.r} />
-          &nbsp;radius{"\u2081"} <NumberPanel value={move.grip.r1} />
-          &nbsp;{"\u0394"}{"\u2080"} <NumberPanel value={move.grip.vr} />
-          &nbsp;{"\u0394"}{"\u2081"} <NumberPanel value={move.grip.vr1} />
-          </div>
-          <div>
-          head&nbsp;&nbsp;angle{"\u2080"}&nbsp; <NumberPanel value={move.head.a} />
-          &nbsp;angle{"\u2081"}&nbsp; <NumberPanel value={move.head.a1} />
-          &nbsp;{"\u0394"}{"\u2080"} <NumberPanel value={move.head.va} />
-          &nbsp;{"\u0394"}{"\u2081"} <NumberPanel value={move.head.va1} />
-          <br />
-          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;radius{"\u2080"} <NumberPanel value={move.head.r} />
-          &nbsp;radius{"\u2081"} <NumberPanel value={move.head.r1} />
-          &nbsp;{"\u0394"}{"\u2080"} <NumberPanel value={move.head.vr} />
-          &nbsp;{"\u0394"}{"\u2081"} <NumberPanel value={move.head.vr1} />
-          </div> 
+        &nbsp;ticks: <NumberPanel  vals={{propid: propid, node: null, moment: "ticks"}} value={move.beats*BEAT} />
+        &nbsp;plane: {this.props.plane}
+          {list}
           <div>
             bend:
-              <NumberPanel value={move.bent} />
+              <NumberPanel vals={{propid: propid, node: null, moment: "bent"}} value={move.bent} />
             &nbsp;{"\u0394"}:
-              <NumberPanel value={move.vb} />
+              <NumberPanel vals={{propid: propid, node: null, moment: "vb"}} value={move.vb} />
             &nbsp;&nbsp;
             twist:
-              <NumberPanel value={move.twist} />
+              <NumberPanel vals={{propid: propid, node: null, moment: "twist"}} value={move.twist} />
             &nbsp;{"\u0394"}:
-              <NumberPanel value={move.vt} />
+              <NumberPanel vals={{propid: propid, node: null, moment: "vt"}} value={move.vt} />
           </div>
         </div>
     )

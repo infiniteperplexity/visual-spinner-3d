@@ -3,27 +3,26 @@ class DragSVG extends React.Component {
   constructor(props, context) {
     super(props, context);
     Draggables[props.dragID] = this;
-    this.info = {
-      dragging: null,
-      dragID: props.dragID
+    this.localState = {
+      dragging: null
     }
   }
   handleMouseMove = (event) => {
-    if (this.info.dragging) {
+    if (this.localState.dragging) {
       event.preventDefault();
-      this.info.dragging.handleMouseMove.call(this.info.dragging, event);
+      this.localState.dragging.handleMouseMove.call(this.localState.dragging, event);
     }
   }
   handleMouseUp = (event) => {
-    if (this.info.dragging) {
+    if (this.localState.dragging) {
       event.preventDefault();
-      this.info.dragging.handleMouseUp.call(this.info.dragging, event);
+      this.localState.dragging.handleMouseUp.call(this.localState.dragging, event);
     }
   }
   handleMouseLeave = (event) => {
-    if (this.info.dragging) {
+    if (this.localState.dragging) {
       event.preventDefault();
-      this.info.dragging.handleMouseUp.call(this.info.dragging, event);
+      this.localState.dragging.handleMouseUp.call(this.localState.dragging, event);
     }
   }
   render() {
