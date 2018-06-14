@@ -11,7 +11,7 @@ class PropNode extends React.Component {
     // this stuff is not really "state" in the sense Redux cares about
     this.info = {
       propid: props.propid,
-      node: props.node || BODY, //!!! eventually make this flexible
+      node: props.node || BODY,
       color: props.color,
       dragID: props.dragID,
       beingDragged: false,
@@ -45,7 +45,6 @@ class PropNode extends React.Component {
     this.info.point.y = event.clientY;
     let p = this.info.point.matrixTransform(this.info.matrix);
     let node = this.props.props[this.info.propid][NODES[this.info.node]];
-    // this will vary depending on plane
     let v = sphere$vectorize(node);
     let x = v.x * UNIT;
     let y = v.y * UNIT;
@@ -72,10 +71,22 @@ class PropNode extends React.Component {
 
     if (this.info.beingDragged) {
       let p = this.info.point.matrixTransform(this.info.matrix);
-      // this whole business is y-flipped...
-      let x = (p.x-this.info.xoffset)/UNIT;
-      let y = (-p.y+this.info.yoffset)/UNIT;
-      let {r, a, b} = vector$spherify({x: x, y: y, z: 0});
+      let x, y, z;
+      let plane = this.props.planes[this.props.gridid];
+      if (plane==="WALL") {
+        x = (p.x-this.info.xoffset)/UNIT;
+        y = (-p.y+this.info.yoffset)/UNIT;
+        z = 0;
+      } else if (plane==="WHEEL") {
+        x = 0;
+        y = (-p.y+this.info.yoffset)/UNIT;
+        z = (-p.x+this.info.xoffset)/UNIT;
+      } else if (plane==="FLOOR") {
+        x = (p.x-this.info.xoffset)/UNIT;
+        y = 0;
+        z = (-p.y+this.info.yoffset)/UNIT;
+      }
+      let {r, a, b} = vector$spherify({x: x, y: y, z: z});
       if (this.info.node===HEAD && this.props.locks.head) {
         r = 1;
       } else {
@@ -87,12 +98,13 @@ class PropNode extends React.Component {
       let v = sphere$vectorize({r: r, a: a, b: b});
       x = v.x;
       y = v.y;
+      z = v.z;
       this.props.setNode({
         propid: this.info.propid,
         node: this.info.node,
         x: x,
         y: y,
-        plane: "WALL"
+        z: z
       });
     }
   }
@@ -105,16 +117,14 @@ class PropNode extends React.Component {
   }
   render() {
     let node = this.props.props[this.info.propid][NODES[this.info.node]];
-    // this will vary depending on plane
     let v = sphere$vectorize(node);
     let x, y;
-    // !!!figure out how to vary this
-    let plane = "WALL";
+    let plane = this.props.planes[this.props.gridid];
     if (plane==="WALL") {
       x = v.x * UNIT;
       y = -v.y * UNIT;
     } else if (plane==="WHEEL") {
-      x = v.z * UNIT;
+      x = -v.z * UNIT;
       y = -v.y * UNIT;
     } else if (plane==="FLOOR") {
       x = v.x * UNIT;
@@ -144,7 +154,7 @@ class PropNode extends React.Component {
         x2 = v2.x * UNIT;
         y2 = -v2.y * UNIT;
       } else if (plane==="WHEEL") {
-        x2 = v2.z * UNIT;
+        x2 = -v2.z * UNIT;
         y2 = -v2.y * UNIT;
       } else if (plane==="FLOOR") {
         x2 = v2.x * UNIT;

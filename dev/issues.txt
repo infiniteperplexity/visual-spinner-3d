@@ -25,8 +25,6 @@ React:
 		- Should block / alter use of some / most other controls?
 			- Might need to override / wrap existing onclicks;
 			- Should it start at current tick?
-	- Plane menus
-		- Actually propagate the state
 	- Color menus
 		- Change color of props
 		- Toggle other color menus
@@ -35,4 +33,4 @@ React:
 
 	- Maybe make the different nodes look different
 	- Get icons from noun project for viewing angle.
-	- Kiss your girlfriend for being brilliant.
+	- Would be nice if SVGs rendered according to depth.

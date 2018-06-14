@@ -6,6 +6,7 @@ let AppComponent = ReactRedux.connect(
     moves: state.moves,
     order: state.order,
     tick: state.tick,
+    planes: state.planes,
     locks: state.locks
   }),
   (dispatch)=>({
@@ -14,7 +15,8 @@ let AppComponent = ReactRedux.connect(
       setTop: (top)=>dispatch({type: "setTop", top: top}),
       gotoTick: (tick)=>dispatch({type: "gotoTick", tick: tick}),
       pushState: ()=>dispatch({type: "pushState"}),
-      restoreState: (state)=>({type: "restoreState", state: state})
+      restoreState: (state)=>dispatch({type: "restoreState", state: state}),
+      setPlane: (id, plane)=>dispatch({type: "setPlane", gridid: id, plane: plane})
   })
 )(App);
 let frame = 0;
@@ -26,6 +28,7 @@ function reducer(state, action) {
       moves: clone(player.props.map(p=>p.moves)),
       tick: 0,
       order: player.props.map((_,i)=>i),
+      planes: ["WALL","WHEEL"],
       locks: {
         helper: true,
         grip: true,
@@ -33,7 +36,7 @@ function reducer(state, action) {
       } // mean slightly different things
     };
   }
-  let props, prop, node, moves;
+  let props, prop, node, moves, swap;
   switch (action.type) {
     case "renderEngine":
       //  update the view of the engine
@@ -54,23 +57,12 @@ function reducer(state, action) {
       return {...state};
     case "setNode":
       // move an ending node of a move
-      let {x, y, plane} = action;
+      let {x, y, z} = action;
       prop = action.propid;
       node = action.node;
-      let z = 0;
       props = clone(state.props);
-      let s;
-      if (plane==="WALL") {
-        s = vector$spherify({x: x, y: y, z: z});
-      } else if (plane==="WHEEL") {
-        s = vector$spherify({x: z, y: y, z: x});
-      } else if (plane==="FLOOR") {
-        s = vector$spherify({x: x, y: z, z: y});
-      }
-      let args = {};
-      args[NODES[node]] = s;
-      let p = snapto(args, props[prop]);
-      props[prop] = p;
+      let s = vector$spherify({x: x, y: y, z: z});
+      props[prop][NODES[node]] = s;
       return {...state, props: props};
     case "setTop":
       // change the order of a prop (thus far only in the SVG)
@@ -94,6 +86,18 @@ function reducer(state, action) {
     case "restoreState":
       frame = action.frame;
       return action.state;
+    case "setPlane":
+      let {gridid} = action;
+      let planes = [...state.planes];
+      swap = planes[gridid];
+      for (let i=0; i<planes.length; i++) {
+        if (i===gridid) {
+          planes[i] = action.plane;
+        } else if (planes[i]===action.plane) {
+          planes[i] = swap;
+        }
+      }
+      return {...state, planes: planes};
     default:
       throw new Error("wrong kind of action");
       return state;

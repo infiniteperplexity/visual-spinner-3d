@@ -182,18 +182,12 @@ class MovePanel extends React.Component {
 }
 
 class PlaneMenu extends React.Component {
-  constructor(props, context) {
-    super(props, context);
-    this.info = {
-      plane: props.selected
-    }
-  }
   handleChange = (e)=>{
-
+    this.props.setPlane(parseInt(this.props.gridid), e.target.value);
   }
   render() {
     return (
-      <select defaultValue={this.info.plane}>
+      <select value={this.props.planes[this.props.gridid]} onChange={this.handleChange}>
         <option value="WALL">Wall (Front)</option>
         <option value="WHEEL">Wheel (Left)</option>
         <option value="FLOOR">Floor (Top)</option>

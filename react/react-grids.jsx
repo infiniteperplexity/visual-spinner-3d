@@ -32,12 +32,12 @@ class App extends React.Component {
         <div className="frame" id="display">
         </div>
         <div className="frame">
-          <Grid dragID="SVG1" {...props} />
-          <PlaneMenu selected="WALL" {...props} />
+          <Grid dragID="SVG1" gridid="0" {...props} />
+          <PlaneMenu selected="WALL" gridid="0" {...props} />
         </div>
         <div className="frame">
-          <Grid dragID="SVG2" {...props} />
-          <PlaneMenu selected="WHEEL" {...props} />
+          <Grid dragID="SVG2" gridid="1" {...props} />
+          <PlaneMenu selected="WHEEL" gridid="1" {...props} />
         </div>
         <div className="frame">
           <MovePanel {...props} />
@@ -59,7 +59,7 @@ function Grid(props, context) {
   }
   let registry = [];
   for (let key of props.order) {
-    registry.push(<PropNode key={key} propid={key} color={COLORS[key]} {...props} />);
+    registry.push(<PropNode key={key} propid={key} gridid={props.gridid} color={COLORS[key]} {...props} />);
   }
   return (
     <DragSVG width={UNIT*UNITS} height={UNIT*UNITS} {...props}>
