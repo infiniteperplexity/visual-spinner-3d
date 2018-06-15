@@ -462,7 +462,7 @@ const SMALL = VS3D.SMALL = 0.001;
 	function Move(args) {
 		args = args || {};
 		let p = args.p || WALL;
-		let beats = args.beats || 1;
+		let beats = (args.beats!==undefined) ? args.beats : 1;
 		let body = merge({r: 0, a: 0}, args.body);
 		let pivot = merge({r: 0, a: 0}, args.pivot);
 		let helper = merge({r: 0, a: 0}, args.helper);
@@ -508,7 +508,7 @@ const SMALL = VS3D.SMALL = 0.001;
 			let past = 0;
 			let i = 0;
 			while (past<=t) {
-				let ticks = beats(move[i])*BEAT || 1*BEAT;
+				let ticks = beats(move[i])*BEAT;
 				// if (past+ticks>=t) {
 				if (past+ticks>t) {
 					return spin(move[i], t-past, dummy);
@@ -521,7 +521,7 @@ const SMALL = VS3D.SMALL = 0.001;
 		}
 		let notes = move.notes;
 		let p = move.p || WALL;
-		let b = move.beats || 1;
+		let b = (move.beats!==undefined) ? move.beats : 1;
 		let mbody = merge({r: 0, a: 0, notes: notes}, move.body);
 		let mpivot = merge({r: 0, a: 0, notes: notes}, move.pivot);
 		let mhelper = merge({r: 0, a: 0, notes: notes}, move.helper);
@@ -661,7 +661,22 @@ const SMALL = VS3D.SMALL = 0.001;
 				known[arg] = true;
 			}
 		}
+		if (known.t && t===0) {
+			if (known.x0) {
+				x1 = x0;
+			} else if (known.x1) {
+				x0 = x1;
+			} else {
+				x0 = 0;
+				x1 = 0;
+			}
+			v0 = 0;
+			v1 = 0;
+			a = 0;
+			return {x0: x0, x1: x1, v0: v0, v1: v1, a: a, t: t};
+		}
 		// solve for acceleration given starting and ending position
+		// this condition will also catch cases where *everything* is known
 		if (known.x0 && known.x1 && known.v0 && known.t) {
 			if (!known.a) {
 				a = 2*((x1-x0)/(t*t)-v0/t);
@@ -1092,13 +1107,13 @@ const SMALL = VS3D.SMALL = 0.001;
 		if (Array.isArray(move)) {
 			let b = 0;
 			for (let m of move) {
-				b+=(beats(m) || 1); // !!!! is this a good default?
+				b+=beats(m);
 			}
 			return b;
 		} else if (move.recipe) {
-			return move.beats || 4;
+			return (move.beats!==undefined) ? move.beats : 4;
 		} else {
-			return (move.beats || 1); // !!!! is this a good default?
+			return (move.beats!==undefined) ? move.beats : 1;
 		}
 	}	
 

@@ -1,10 +1,3 @@
-let _rebounces = {};
-function rebounce(callback, timeout) {
-  timeout = timeout || "_rebounce";
-  clearTimeout(_rebounces.timeout);
-  _rebounces.timeout = setTimeout(callback,0);
-}
-
 class PropNode extends React.Component {
   constructor(props, context) {
     super(props, context);
@@ -49,13 +42,27 @@ class PropNode extends React.Component {
   }
   handleMouseUp = (event) => {
     event.preventDefault();
+    if (this.localState.beingDragged) {
+      this.props.pushState();
+      // this.props.updateMove(this.props.propid);
+      let node = this.props.props[this.props.propid][NODES[this.props.node]];
+      let plane = this.props.plane;
+      let a = sphere$planify(node, VS3D[plane]);
+      let nodes = {plane: VS3D[plane]};
+      nodes[NODES[this.props.node]] = {r1: node.r, a1: a};
+      this.props.modifyMove({
+        propid: this.props.propid,
+        tick: this.props.tick,
+        nodes: nodes
+      });
+      this.props.resolveMove({
+        propid: this.props.propid,
+        tick: this.props.tick
+      });
+      this.props.renderEngine();
+    }
     this.localState.beingDragged = false;
     Draggables[this.props.dragID].localState.dragging = null;
-    rebounce(()=>{
-      this.props.pushState();
-      this.props.updateMove(this.props.propid);
-      this.props.renderEngine();
-    });
   }
   handleMouseLeave = (event) => {
   }

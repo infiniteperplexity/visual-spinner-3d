@@ -1,10 +1,12 @@
 class MoveQueue extends React.Component {
   render() {
-    let list = [];
+    
     let moves = this.props.moves[this.props.propid];
     let ticks = 0;
+    // let list = [];
+    let list = [<MoveItem key={-1} ticks={-1} move={this.props.starters[this.props.propid]} {...this.props}/>];
     for (let i=0; i<moves.length; i++) {
-      list.push(<MoveItem key={i} ticks={ticks} move={moves[i]} {...this.props}></MoveItem>);
+      list.push(<MoveItem key={i} ticks={ticks} move={moves[i]} {...this.props}/>);
       ticks += beats(moves[i])*BEAT;
     }
     list.push(<NewMove key={list.length} {...this.props}/>);
@@ -24,8 +26,22 @@ class MoveQueue extends React.Component {
 
 class NewMove extends React.Component {
   handleClick = (e)=> {
-    let ticks = beats(this.props.moves[this.props.propid])*BEAT;
-    this.props.addMove(this.props.propid);
+    let ticks;
+    if (this.props.moves[this.props.propid].length===0) {
+      ticks = 0;
+    } else {
+      ticks = beats(this.props.moves[this.props.propid])*BEAT;
+    }
+    // this.props.addMove(this.props.propid);
+    this.props.insertMove({
+      propid: this.props.propid,
+      tick: ticks,
+      move: {}
+    });
+    this.props.resolveMove({
+      propid: this.props.propid,
+      tick: ticks
+    });
     this.props.setTop(this.props.propid);
     this.props.gotoTick(ticks);
   }
@@ -49,11 +65,18 @@ class MoveItem extends React.Component {
   render() {
     const HEIGHT = 24;
     let move = this.props.move;
-    let repr = {
-      hand: {a0:move.hand.a, a1: move.hand.a1},
-      head: {a0: move.head.a, a1: move.head.a1}
-    };
-
+    let repr = (this.props.ticks>=0) ? 
+      {
+        hand: {a0:move.hand.a, a1: move.hand.a1},
+        head: {a0: move.head.a, a1: move.head.a1}
+      } :
+      {
+        // so in this case we need to store the starting position elsewhere....
+        hand: {a: move.hand.a1},
+        head: {a: move.head.a1}
+      };
+    let height = HEIGHT*beats(this.props.move);
+    height = height || HEIGHT;
     return (
       <li
         onMouseEnter={(e)=>this.handleMouseEnter(e)}
@@ -61,7 +84,7 @@ class MoveItem extends React.Component {
         onMouseDown={(e)=>this.handleMouseDown(e)}
         style={{
           whiteSpace: "nowrap",
-          height: HEIGHT*beats(this.props.move),
+          height: height,
           backgroundColor: (this.props.tick===this.props.ticks) ? "cyan" : "white"
         }}
       >{stringify(repr)}</li>
@@ -75,12 +98,12 @@ function FrozenNumber(props, context) {
 class NumberPanel extends React.Component {
   handleChange = (e)=>{
     // !!!might need to change state.locks
-    this.props.modifyMove({...this.prop.vals, value: e.target.value});
+    // this.props.modifyMove({...this.prop.vals, value: e.target.value});
     this.props.pushState();
     this.props.renderEngine();
   }
   render() {
-    return <input type="number" onChange={this.handleChange} style={{width: 50, fontFamily: "monospace"}} defaultValue={this.props.value} />
+    return <input type="number" onChange={this.handleChange} style={{width: 50, fontFamily: "monospace"}} value={this.props.value} />
   }
 }
 
@@ -88,11 +111,13 @@ class MovePanel extends React.Component {
   // the last item on order is the active one
   render() {
     let propid = [this.props.order[this.props.order.length-1]];
-    let {move} = submove(this.props.moves[propid], this.props.tick);
-    try {
-      move = resolve(move);
-    } catch(e) {
-      move = Move(move);
+    let move;
+    if (this.props.tick===-1) {
+      move = this.props.starters[propid];
+    } else if (this.props.moves[propid].length===0) {
+      return null;
+    } else {
+      move = submove(this.props.moves[propid], this.props.tick).move;
     }
     let list = [];
     for (let i=0; i<NODES.length; i++) {

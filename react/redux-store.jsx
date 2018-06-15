@@ -12,26 +12,26 @@ let AppComponent = ReactRedux.connect(
   }),
   (dispatch)=>({
       renderEngine: ()=>dispatch({type: "renderEngine"}),
-      updateMove: (propid, gridid)=>dispatch({type: "updateMove", propid: propid, gridid: gridid}),
       setNode: (args)=>dispatch({type: "setNode", ...args}),
       setTop: (top)=>dispatch({type: "setTop", top: top}),
       gotoTick: (tick)=>dispatch({type: "gotoTick", tick: tick}),
       pushState: ()=>dispatch({type: "pushState"}),
       restoreState: (state)=>dispatch({type: "restoreState", state: state}),
       setPlane: (plane)=>dispatch({type: "setPlane", plane: plane}),
-      addMove: (propid)=>dispatch({type: "addMove", propid: propid}),
+      insertMove: (args)=>dispatch({type: "insertMove", ...args}),
+      resolveMove: (args)=>dispatch({type: "resolveMove", ...args}),
       modifyMove: (args)=>dispatch({type: "modifyMove", ...args}),
   })
 )(App);
 
 
-let buildMove;
 //a reducer function for a Redux store
 function reducer(state, action) {
   if (state === undefined) {
     return {
       props: clone(player.props.map(p=>p.prop)),
       moves: clone(player.props.map(p=>p.moves)),
+      starters: player.props.map(p=>resolve(fit(p.prop, new Move({beats: 0})))),
       tick: 0,
       order: player.props.map((_,i)=>(player.props.length-i-1)),
       plane: "WALL",
@@ -42,20 +42,19 @@ function reducer(state, action) {
       } // mean slightly different things
     };
   }
-  if (!buildMove) {
-    buildMove = (tick)=>{
-      let moves = [...state.moves];
-      let propid = parseInt(action.propid);
-      let move = submove(state.moves[propid], tick).move;
-      let idx = moves[propid].indexOf(move);
-      return {moves: moves, propid: propid, move: move, idx: idx};
-    }
+  if (action.type!=="setNode") {
+    console.log("store action:");
+    console.log(clone(action));
   }
   if (action.type==="renderEngine") {
     //  update the view of the engine
     let props = [...state.props];
     let moves = [...state.moves];
     let begins = [];
+    if (state.tick===-1) {
+      renderer.render(player.props,props);
+      return state;
+    }
     for (let i=0; i<props.length; i++) {
       begins.push(spin(moves[i], state.tick));
     }
@@ -67,67 +66,124 @@ function reducer(state, action) {
     });
     wrappers = wrappers.concat(player.props);
     renderer.render(wrappers, props);
-    return {...state};
-  } else if (action.type==="addMove") {
+    return state;
+  } else if (action.type==="insertMove") { 
+    let {propid, tick} = action;
+    propid = parseInt(propid);
     let moves = [...state.moves];
-    let propid = parseInt(action.propid);
-    let move = moves[propid][moves[propid].length-1];
-    let m = {};
-    let plane = state.plane;
+    if (moves[propid].length===0) {
+      moves[propid] = [action.move];
+      return {...state, moves: moves};
+    }
+    let idx;
+    if (tick>=beats(moves[propid])*BEAT) {
+      // ready to add new move on the end
+      idx = moves[propid].length;
+    } else {
+      // ready to replace a move in the middle
+      let {move} = submove(moves[propid], tick);
+      idx = moves[propid].indexOf(move);
+    }
+    moves[action.propid].splice(idx,0,action.move);
+    return {...state, moves: moves};
+  } else if (action.type==="resolveMove") {
+    let {propid, tick} = action;
+    propid = parseInt(propid);
+    let moves = [...state.moves];
+    let idx, prev, move;
+    if (tick===-1) {
+      idx = 0;
+      move = {...state.starters[propid]};
+      prev = {...state.starters[propid]};
+    } else if (moves[propid].length===0) {
+      console.log("I don't think this ever happens.");
+    } else {
+      move = submove(moves[propid], tick).move;
+      idx = moves[propid].indexOf(move);
+
+      prev = (idx>0) ? moves[propid][idx-1] : state.starters[propid];
+    }
     for (let i=0; i<NODES.length; i++) {
       // keep a0 and r0 from the move, recalculate a1 and r1
       let node = {};
-      node.r = move[NODES[i]].r1;
-      node.a = move[NODES[i]].a1;
-      node.r1 = move[NODES[i]].r1;
-      node.a1 = move[NODES[i]].a1;
-      m[NODES[i]] = node;
+      let mnode = move[NODES[i]] || {};
+      node.r = prev[NODES[i]].r1;
+      node.a = prev[NODES[i]].a1;
+      node.a1 = mnode.a1;
+      node.r1 = mnode.r1;
+      // !!! probably need to do some other properties as well
+      move[NODES[i]] = node;
     }
-    m.p = VS3D[plane];
-    m.twist = move.twist;
-    m.vt = 0;
-    m.bent = move.bent;
-    m.vb = 0;
-    m = resolve(m);
-    moves[propid].push(m);
-    return {...state, moves: moves};
-  } else if (action.type==="updateMove") {
+    // need to propagate exactly once.
+    if (tick===-1) {
+      let starters = [...state.starters];
+      starters[propid] = resolve(move);
+      if (moves[propid].length>0) {
+        console.log("need to propagate");
+      }
+      return {...state, starters: starters}
+    } else {
+      moves[propid][idx] = resolve(move);
+      if (idx<moves[propid].length-1) {
+        console.log("need to propagate");
+      }
+      return {...state, moves: moves};
+    }
+  } else if (action.type==="deleteMove") { 
+    // don't let 'em delete the first one
+    let {propid, tick} = action;
+    propid = parseInt(propid);
     let moves = [...state.moves];
-    let propid = parseInt(action.propid);
-    let {move} = submove(moves[propid], state.tick);
+    let {move} = submove(moves[propid], tick);
     let idx = moves[propid].indexOf(move);
-    move = {...move};
-    let plane = state.plane;
-    let prop = state.props[propid];
-    for (let i=0; i<NODES.length; i++) {
-      move[NODES[i]].r1 = prop[NODES[i]].r;
-      move[NODES[i]].a1 = sphere$planify(prop[NODES[i]], VS3D[plane]);
-    }
-    move.p = VS3D[plane];
-    move = resolve(move);
-    // !!!need to propagate things down the chain
-    moves[action.propid][idx] = move;
+    moves[action.propid].splice(idx,1);
     return {...state, moves: moves};
   } else if (action.type==="modifyMove") {
-    // update the current move for the active prop
+    let {propid, tick} = action;
+    propid = parseInt(propid);
     let moves = [...state.moves];
-    let propid = parseInt(action.propid);
-    let move = submove(moves[propid], state.tick).move;
-    let idx = moves[propid].indexOf(move);
-    let m = clone(move);
-    if (action.node===null) {
-      if (action.moment==="ticks") {
-        action.moment = "beats";
-        action.value/=BEAT;
-      }
-      m[action.moment] = action.value;
+    let move;
+    if (tick===-1) {
+      move = state.starters[propid];
     } else {
-      m[action.node][action.moment] = action.value;
+      move = submove(moves[propid], tick).move;
     }
-    // might we still need "spins" here?
-    m = resolve(m);
-    // !!!need to propagate things down the chain
-    moves[propid][idx] = m;
+    let nodes = action.nodes;
+    for (let i=0; i<NODES.length; i++) {
+      let node0 = move[NODES[i]];
+      let node1 = nodes[NODES[i]];
+      if (!node1) {
+        continue;
+      }
+      if (node1.a1!==undefined) {
+        node0.a1 = node1.a1;
+        node0.va = node1.va;
+        node0.va1 = node1.va1;
+        node0.aa = node1.aa;
+      } else if (node1.va!==undefined) {
+        node0.va = node1.va;
+        node0.va1 = node1.va1;
+        node0.aa = node1.aa;
+      } else if (node1.va1!==undefined) {
+        node0.va1 = node1.va1;
+        node0.va = node1.va;
+        node0.aa = node1.aa;
+      }
+      if (node1.r1!==undefined) {
+        node0.r1 = node1.r1;
+        node0.vr = node1.vr;
+        node0.vr1 = node1.vr1;
+        node0.ar = node1.ar;
+      } else if (node1.vr!==undefined) {
+        node0.vr = node1.vr;
+        node0.vr1 = node1.vr1;
+        node0.ar = node1.ar;
+      } else if (node1.vr1!==undefined) {
+        node0.vr1 = node1.vr1;
+        node0.vr = node1.vr;
+        node0.ar = node1.ar;
+      }
+    }
     return {...state, moves: moves};
   } else if (action.type==="setNode") {
     // update an ending node of a move
@@ -150,8 +206,12 @@ function reducer(state, action) {
     let props = [...state.props];
     let moves = [...state.moves];
     for (let i=0; i<props.length; i++) {
-      let {move, tick} = submove(moves[i], t);
-      props[i] = spin(move, tick+beats(move)*BEAT);
+      if (t===-1) {
+        props[i] = spin(state.starters[i], 0);
+      } else {
+        let {move, tick} = submove(moves[i], t);
+        props[i] = spin(move, tick+beats(move)*BEAT);
+      }
     }
     return {...state, tick: t, props: props};
   } else if (action.type==="pushState") {

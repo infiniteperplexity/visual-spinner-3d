@@ -25,7 +25,7 @@ for (let i=0; i<NPROPS; i++) {
 	prop.setHeadAngle(ANGLES[i]);
 	prop.setHandAngle(ANGLES[i]);
 	// player.props[i].moves = combo[i].moves;
-	prop.moves = [resolve(fit(prop.prop, new Move()))]
+	prop.moves = [resolve(fit(prop.prop, new Move()))];
 }
 
 // let	orange = player.props[0];
@@ -40,8 +40,8 @@ function afterReactMounts() {
 	player.update = function(positions) {
 		renderer.render(this.props, positions);
 	}
-	store.dispatch({type: "gotoTick", tick: 0});
-	store.dispatch({type: "renderEngine"});
+	store.dispatch({type: "gotoTick", tick: -1});
+	//store.dispatch({type: "renderEngine"});
 	let controls = new VS3D.Controls(player);
 	//renderer.div.appendChild(controls.div);
 }
