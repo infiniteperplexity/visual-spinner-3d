@@ -22,10 +22,10 @@ React:
 	- Modification panel.
 		- Activate it.
 	- Some sort of visual representation on the move list.
-	- Add the player controls.
+	- Make better player controls.
 		- Should block / alter use of some / most other controls?
-			- Might need to override / wrap existing onclicks;
-			- Should it start at current tick?
+		- Might need to override / wrap existing onclicks;
+		- Should it start at current tick?
 	- Color menus
 		- Change color of props
 		- Toggle other color menus
@@ -33,17 +33,12 @@ React:
 	- Make locking and unlocking manual.
 	- Some of the planes might be backwards.
 
-	- Maybe make the different nodes look different
+	- Maybe make the different nodes look different.
 	- Get icons from noun project for viewing angle.
 	- Would be nice if SVGs rendered according to depth.
-	- Roll several store actions up into "insertMove".
-		- insertMove inserts the move, then resolves it and the next move.
-		- addMove is simple enough...just a new move built from the previous.
 	- conforming 0s is sometimes the wrong approach; should check fit first.
 
-	- Need to propagate stuff...just to next move.
+	- Probably want to add moves two at a time.
+	- Things get weird when you have selected the "wrong" prop for starter moves? (error not reproduced)
 
-	***General rules:
-		1) New moves conform 0s and 1s
-		2) Existing moves conform 0s but keep 1s
-		3) Active move updates first. 
+	- Okay.  So, the layout is total garbage, and that's maybe the next thing to fix.

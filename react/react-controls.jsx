@@ -1,3 +1,12 @@
+class PlayButton extends React.Component {
+  handleClick = (e)=>{
+    this.props.playEngine();
+  }
+  render() {
+    return (<button onClick={this.handleClick}>Play</button>);
+  }
+}
+
 class MoveQueue extends React.Component {
   render() {
     

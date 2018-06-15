@@ -41,7 +41,7 @@ function afterReactMounts() {
 		renderer.render(this.props, positions);
 	}
 	store.dispatch({type: "gotoTick", tick: -1});
-	//store.dispatch({type: "renderEngine"});
+	store.dispatch({type: "renderEngine"});
 	let controls = new VS3D.Controls(player);
 	//renderer.div.appendChild(controls.div);
 }

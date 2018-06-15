@@ -21,6 +21,7 @@ let AppComponent = ReactRedux.connect(
       insertMove: (args)=>dispatch({type: "insertMove", ...args}),
       resolveMove: (args)=>dispatch({type: "resolveMove", ...args}),
       modifyMove: (args)=>dispatch({type: "modifyMove", ...args}),
+      playEngine: (args)=>dispatch({type: "playEngine"})
   })
 )(App);
 
@@ -42,10 +43,10 @@ function reducer(state, action) {
       } // mean slightly different things
     };
   }
-  if (!["setNode","setTop"].includes(action.type)) {
-    console.log("store action:");
-    console.log(clone(action));
-  }
+  // if (!["setNode","setTop"].includes(action.type)) {
+  //   console.log("store action:");
+  //   console.log(clone(action));
+  // }
   if (action.type==="renderEngine") {
     //  update the view of the engine
     let props = [...state.props];
@@ -67,6 +68,13 @@ function reducer(state, action) {
     wrappers = wrappers.concat(player.props);
     renderer.render(wrappers, props);
     return state;
+  } else if (action.type==="playEngine") {
+    for (let i=0; i<state.moves.length; i++) {
+      player.props[i].prop = socket(state.starters[i]);
+      player.props[i].moves = clone(state.moves[i]);
+    }
+    player.play();
+    return state;
   } else if (action.type==="insertMove") { 
     let {propid, tick} = action;
     propid = parseInt(propid);
@@ -86,6 +94,7 @@ function reducer(state, action) {
     }
     moves[action.propid].splice(idx,0,action.move);
     return {...state, moves: moves};
+  // re-solve the move after a change
   } else if (action.type==="resolveMove") {
     let {propid, tick} = action;
     propid = parseInt(propid);
@@ -96,7 +105,7 @@ function reducer(state, action) {
       move = {...state.starters[propid]};
       prev = {...state.starters[propid]};
     } else if (moves[propid].length===0) {
-      console.log("I don't think this ever happens.");
+      throw new Error("This should never happen!");
     } else {
       move = submove(moves[propid], tick).move;
       idx = moves[propid].indexOf(move);

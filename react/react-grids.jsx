@@ -38,6 +38,9 @@ class App extends React.Component {
         <div className="frame">
           <MovePanel {...props} />
         </div>
+        <div>
+          <PlayButton {...props} />
+        </div>
       </div>
     );
   }
