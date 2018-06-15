@@ -755,6 +755,7 @@ const SMALL = VS3D.SMALL = 0.001;
 		}
 		if (known.x0 && known.x1) {
 			if (known.v0 && known.v1 && nearly(v0, v1) && !known.a) {
+				// skip out on "spin" if we totally don't need it
 				args.a = 0;
 			} else if (!known.spin) {
 				let trend = 0;

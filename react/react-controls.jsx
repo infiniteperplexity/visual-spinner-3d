@@ -108,6 +108,20 @@ class NumberPanel extends React.Component {
   handleChange = (e)=>{
     // !!!might need to change state.locks
     // this.props.modifyMove({...this.prop.vals, value: e.target.value});
+    let nodes = {};
+    console.log(this.props.vals);
+    let node = {};
+    node[this.props.vals.moment] = parseFloat(e.target.value);
+    nodes[NODES[this.props.vals.node]] = node;
+    this.props.modifyMove({
+      propid: this.props.vals.propid,
+      tick: this.props.tick,
+      nodes: nodes
+    });
+    this.props.resolveMove({
+      propid: this.props.vals.propid,
+      tick: this.props.tick
+    });
     this.props.pushState();
     this.props.renderEngine();
   }
@@ -119,7 +133,7 @@ class NumberPanel extends React.Component {
 class MovePanel extends React.Component {
   // the last item on order is the active one
   render() {
-    let propid = [this.props.order[this.props.order.length-1]];
+    let propid = this.props.order[this.props.order.length-1];
     let move;
     if (this.props.tick===-1) {
       move = this.props.starters[propid];
@@ -134,14 +148,14 @@ class MovePanel extends React.Component {
       list.push(
         <div key={i}>
           {node}&nbsp;&nbsp;angle{"\u2080"}&nbsp; <FrozenNumber value={move[node].a} />
-          &nbsp;angle{"\u2081"}&nbsp; <NumberPanel vals={{propid: propid, node: i, moment: "a1"}} value={move[node].a1} />
-          &nbsp;{"\u0394"}{"\u2080"} <NumberPanel vals={{propid: propid, node: i, moment: "va"}} value={move[node].va} />
-          &nbsp;{"\u0394"}{"\u2081"} <NumberPanel vals={{propid: propid, node: i, moment: "va1"}} value={move[node].va1} />
+          &nbsp;angle{"\u2081"}&nbsp; <NumberPanel vals={{propid: propid, node: i, moment: "a1"}} value={move[node].a1} {...this.props}/>
+          &nbsp;{"\u0394"}{"\u2080"} <NumberPanel vals={{propid: propid, node: i, moment: "va"}} value={move[node].va} {...this.props}/>
+          &nbsp;{"\u0394"}{"\u2081"} <NumberPanel vals={{propid: propid, node: i, moment: "va1"}} value={move[node].va1} {...this.props}/>
           <br />
           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;radius{"\u2080"} <FrozenNumber value={move[node].r} />
-          &nbsp;radius{"\u2081"} <NumberPanel vals={{propid: propid, node: i, moment: "r1"}} value={move[node].r1} />
-          &nbsp;{"\u0394"}{"\u2080"} <NumberPanel vals={{propid: propid, node: i, moment: "vr"}} value={move[node].vr} />
-          &nbsp;{"\u0394"}{"\u2081"} <NumberPanel vals={{propid: propid, node: i, moment: "vr1"}} value={move[node].vr1} />
+          &nbsp;radius{"\u2081"} <NumberPanel vals={{propid: propid, node: i, moment: "r1"}} value={move[node].r1} {...this.props}/>
+          &nbsp;{"\u0394"}{"\u2080"} <NumberPanel vals={{propid: propid, node: i, moment: "vr"}} value={move[node].vr} {...this.props}/>
+          &nbsp;{"\u0394"}{"\u2081"} <NumberPanel vals={{propid: propid, node: i, moment: "vr1"}} value={move[node].vr1} {...this.props}/>
         </div>
       );
     }

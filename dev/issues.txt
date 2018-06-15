@@ -39,6 +39,8 @@ React:
 	- conforming 0s is sometimes the wrong approach; should check fit first.
 
 	- Probably want to add moves two at a time.
+	- And maybe start with none of them?
 	- Things get weird when you have selected the "wrong" prop for starter moves? (error not reproduced)
 
 	- Okay.  So, the layout is total garbage, and that's maybe the next thing to fix.
+	- Or, I could make it so the modification panel works.

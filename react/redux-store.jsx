@@ -94,69 +94,6 @@ function reducer(state, action) {
     }
     moves[action.propid].splice(idx,0,action.move);
     return {...state, moves: moves};
-  // re-solve the move after a change
-  } else if (action.type==="resolveMove") {
-    let {propid, tick} = action;
-    propid = parseInt(propid);
-    let moves = [...state.moves];
-    let idx, prev, move;
-    if (tick===-1) {
-      idx = 0;
-      move = {...state.starters[propid]};
-      prev = {...state.starters[propid]};
-    } else if (moves[propid].length===0) {
-      throw new Error("This should never happen!");
-    } else {
-      move = submove(moves[propid], tick).move;
-      idx = moves[propid].indexOf(move);
-
-      prev = (idx>0) ? moves[propid][idx-1] : state.starters[propid];
-    }
-    for (let i=0; i<NODES.length; i++) {
-      // keep a0 and r0 from the move, recalculate a1 and r1
-      let node = {};
-      let mnode = move[NODES[i]] || {};
-      node.r = prev[NODES[i]].r1;
-      node.a = prev[NODES[i]].a1;
-      node.a1 = mnode.a1;
-      node.r1 = mnode.r1;
-      // !!! probably need to do some other properties as well
-      move[NODES[i]] = node;
-    }
-    move = resolve(move);
-    // need to propagate either zero or one times
-    if ((tick===-1 && moves[propid].length>0) || (tick>=0 && idx<moves[propid].length-1)) {
-      let next;
-      if (tick===-1) {
-        next = moves[propid][0]
-      } else {
-        next = moves[propid][idx+1];
-      }
-      for (let i=0; i<NODES.length; i++) {
-        // keep a1 and r1 from the move, conform a0 and r0
-        let node = {};
-        node.r = move[NODES[i]].r1;
-        node.a = move[NODES[i]].a1;
-        node.a1 = next[NODES[i]].a1;
-        node.r1 = next[NODES[i]].r1;
-        // !!! probably need to do some other properties as well
-        next[NODES[i]] = node;
-      }
-      next = resolve(next);
-      if (tick===-1) {
-        moves[propid][0] = next;
-      } else {
-        moves[propid][idx+1] = next;
-      }
-    }
-    if (tick===-1) {
-      let starters = [...state.starters];
-      starters[propid] = move;
-      return {...state, starters: starters, moves: moves};
-    } else {
-      moves[propid][idx] = move;
-      return {...state, moves: moves};
-    }
   } else if (action.type==="deleteMove") { 
     // don't let 'em delete the first one
     let {propid, tick} = action;
@@ -213,6 +150,74 @@ function reducer(state, action) {
       }
     }
     return {...state, moves: moves};
+  // re-solve move after a change or insertion
+  } else if (action.type==="resolveMove") {
+    let {propid, tick} = action;
+    propid = parseInt(propid);
+    let moves = [...state.moves];
+    let idx, prev, move;
+    if (tick===-1) {
+      idx = 0;
+      move = {...state.starters[propid]};
+      prev = {...state.starters[propid]};
+    } else if (moves[propid].length===0) {
+      throw new Error("This should never happen!");
+    } else {
+      move = submove(moves[propid], tick).move;
+      idx = moves[propid].indexOf(move);
+
+      prev = (idx>0) ? moves[propid][idx-1] : state.starters[propid];
+    }
+    for (let i=0; i<NODES.length; i++) {
+      // keep a0 and r0 from the move, recalculate a1 and r1
+      let node = {};
+      let mnode = move[NODES[i]] || {};
+      node.r = prev[NODES[i]].r1;
+      node.a = prev[NODES[i]].a1;
+      node.a1 = mnode.a1;
+      node.r1 = mnode.r1;
+      node.va = mnode.va;
+      node.va1 = mnode.va1;
+      node.aa = mnode.aa;
+      node.vr = mnode.vr;
+      node.vr1 = mnode.vr1;
+      node.ar = mnode.ar;
+      move[NODES[i]] = node;
+    }
+    move = resolve(move);
+    // need to propagate either zero or one times
+    if ((tick===-1 && moves[propid].length>0) || (tick>=0 && idx<moves[propid].length-1)) {
+      let next;
+      if (tick===-1) {
+        next = moves[propid][0]
+      } else {
+        next = moves[propid][idx+1];
+      }
+      for (let i=0; i<NODES.length; i++) {
+        // keep a1 and r1 from the move, conform a0 and r0
+        let node = {};
+        node.r = move[NODES[i]].r1;
+        node.a = move[NODES[i]].a1;
+        node.a1 = next[NODES[i]].a1;
+        node.r1 = next[NODES[i]].r1;
+        // !!! probably need to do some other properties as well
+        next[NODES[i]] = node;
+      }
+      next = resolve(next);
+      if (tick===-1) {
+        moves[propid][0] = next;
+      } else {
+        moves[propid][idx+1] = next;
+      }
+    }
+    if (tick===-1) {
+      let starters = [...state.starters];
+      starters[propid] = move;
+      return {...state, starters: starters, moves: moves};
+    } else {
+      moves[propid][idx] = move;
+      return {...state, moves: moves};
+    }
   } else if (action.type==="setNode") {
     // update an ending node of a move
     let {x, y, z} = action;
