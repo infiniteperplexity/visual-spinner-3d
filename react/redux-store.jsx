@@ -42,7 +42,7 @@ function reducer(state, action) {
       } // mean slightly different things
     };
   }
-  if (action.type!=="setNode") {
+  if (!["setNode","setTop"].includes(action.type)) {
     console.log("store action:");
     console.log(clone(action));
   }
@@ -114,19 +114,38 @@ function reducer(state, action) {
       // !!! probably need to do some other properties as well
       move[NODES[i]] = node;
     }
-    // need to propagate exactly once.
+    move = resolve(move);
+    // need to propagate either zero or one times
+    if ((tick===-1 && moves[propid].length>0) || (tick>=0 && idx<moves[propid].length-1)) {
+      let next;
+      if (tick===-1) {
+        next = moves[propid][0]
+      } else {
+        next = moves[propid][idx+1];
+      }
+      for (let i=0; i<NODES.length; i++) {
+        // keep a1 and r1 from the move, conform a0 and r0
+        let node = {};
+        node.r = move[NODES[i]].r1;
+        node.a = move[NODES[i]].a1;
+        node.a1 = next[NODES[i]].a1;
+        node.r1 = next[NODES[i]].r1;
+        // !!! probably need to do some other properties as well
+        next[NODES[i]] = node;
+      }
+      next = resolve(next);
+      if (tick===-1) {
+        moves[propid][0] = next;
+      } else {
+        moves[propid][idx+1] = next;
+      }
+    }
     if (tick===-1) {
       let starters = [...state.starters];
-      starters[propid] = resolve(move);
-      if (moves[propid].length>0) {
-        console.log("need to propagate");
-      }
-      return {...state, starters: starters}
+      starters[propid] = move;
+      return {...state, starters: starters, moves: moves};
     } else {
-      moves[propid][idx] = resolve(move);
-      if (idx<moves[propid].length-1) {
-        console.log("need to propagate");
-      }
+      moves[propid][idx] = move;
       return {...state, moves: moves};
     }
   } else if (action.type==="deleteMove") { 
