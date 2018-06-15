@@ -663,20 +663,36 @@ const SMALL = VS3D.SMALL = 0.001;
 		}
 		// solve for acceleration given starting and ending position
 		if (known.x0 && known.x1 && known.v0 && known.t) {
-			a = 2*((x1-x0)/(t*t)-v0/t);
-			v1 = v0+a*t;
+			if (!known.a) {
+				a = 2*((x1-x0)/(t*t)-v0/t);
+			}
+			if (!known.v1) {
+				v1 = v0+a*t;
+			}
 		// solve for end position given acceleration
 		} else if (known.x0 && known.v0 && known.a && known.t) {
-			x1 = x0+v0*t+a*t*t/2;
-			v1 = v0+a*t;
+			if (!known.x1) {
+				x1 = x0+v0*t+a*t*t/2;
+			}
+			if (!known.v1) {
+				v1 = v0+a*t;
+			}
 		// solve for end position and acceleration given final position
 		} else if (known.x0 && known.v0 && known.v1 && known.t) {
-			a = (v1-v0)/t;
-			x1 = x0+v0*t+a*t*t/2;
+			if (!known.a) {
+				a = (v1-v0)/t;
+			}
+			if (!known.x1) {
+				x1 = x0+v0*t+a*t*t/2;
+			}
 		// solve for beginning speed and acceleration given both positions and final speed
 		} else if (known.x0 && known.x1 && known.v1 && known.t) {
-			a = 2*(v1/t-(x1-x0)/(t*t));
-			v0 = v1-a*t;
+			if (!known.a) {
+				a = 2*(v1/t-(x1-x0)/(t*t));
+			}
+			if (!known.v0) {
+				v0 = v1-a*t;
+			}
 		// impute acceleration to zero
 		} else if (known.x0 && known.v0 && !known.a && !known.v1 && !known.x1) {
 			a = 0;
@@ -723,7 +739,9 @@ const SMALL = VS3D.SMALL = 0.001;
 			args.x1 = angle(args.x1);
 		}
 		if (known.x0 && known.x1) {
-			if (!known.spin) {
+			if (known.v0 && known.v1 && nearly(v0, v1) && !known.a) {
+				args.a = 0;
+			} else if (!known.spin) {
 				let trend = 0;
 				if (known.v0) {
 					trend+=(zeroish(v0) ? 0 : Math.sign(v0));
@@ -757,14 +775,16 @@ const SMALL = VS3D.SMALL = 0.001;
 				known.spin = true;	
 			}
 			// de-normalize final position based on spin argument
-			if (x1>x0 && spin>0) {
-				x1+=(2*Math.PI/UNIT)*(spin-1);
-			} else if (x0>x1 && spin<0) {
-				x1+=(2*Math.PI/UNIT)*(spin+1);
-			} else {
-				x1+=(2*Math.PI/UNIT)*spin;
+			if (known.spin) {
+				if (x1>x0 && spin>0) {
+					x1+=(2*Math.PI/UNIT)*(spin-1);
+				} else if (x0>x1 && spin<0) {
+					x1+=(2*Math.PI/UNIT)*(spin+1);
+				} else {
+					x1+=(2*Math.PI/UNIT)*spin;
+				}
+				args.x1 = x1;
 			}
-			args.x1 = x1;
 		}
 		let solved = solve(args);
 		solved.x1 = angle(solved.x1);

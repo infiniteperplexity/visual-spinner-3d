@@ -36,9 +36,12 @@ React:
 	- Maybe make the different nodes look different
 	- Get icons from noun project for viewing angle.
 	- Would be nice if SVGs rendered according to depth.
+	- Roll several store actions up into "insertMove".
+		- insertMove inserts the move, then resolves it and the next move.
+		- addMove is simple enough...just a new move built from the previous.
+	- conforming 0s is sometimes the wrong approach; should check fit first.
 
-
-	- Need to propagate stuff down the chain
+	- Need to propagate stuff...just to next move.
 
 	***General rules:
 		1) New moves conform 0s and 1s

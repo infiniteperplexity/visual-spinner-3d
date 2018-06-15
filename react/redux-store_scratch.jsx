@@ -24,6 +24,39 @@ let AppComponent = ReactRedux.connect(
   })
 )(App);
 
+/*
+  add to end
+  insert in middle
+  modify multiple nodes in the middle using drag n drop
+  modify a single node in the middle using inputs
+
+  - you're always supplying a propid.
+
+  * you're sometimes supplying a move.
+    - this could be decomposed into two steps, insertion
+      - needs propid and tick
+    - and resolution.
+      - needs propid and tick
+
+  - you could supply ticks, or use the current value.
+  - the 0s always conform.
+
+  * this is the part that varies a lot.
+    -A1/R1 changed
+      -resolve using only A0 and A1
+    -drag n drop
+      -treat as both A1 and R1 changed, and sets node.
+    -V0 changed.
+      - Solve for V1 and A
+    -V1 changed.
+      - solve for v0 and A
+    -VT or VB changed.
+      - everything's cool, only propagate
+
+  - If there is a next move, its 1st always conform.
+
+
+*/
 
 let buildMove;
 //a reducer function for a Redux store
