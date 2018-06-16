@@ -36,21 +36,31 @@ class MoveQueue extends React.Component {
 class NewMove extends React.Component {
   handleClick = (e)=> {
     let ticks;
+    let allTicks = [];
     if (this.props.moves[this.props.propid].length===0) {
       ticks = 0;
     } else {
       ticks = beats(this.props.moves[this.props.propid])*BEAT;
     }
-    // this.props.addMove(this.props.propid);
-    this.props.insertMove({
-      propid: this.props.propid,
-      tick: ticks,
-      move: {}
-    });
-    this.props.resolveMove({
-      propid: this.props.propid,
-      tick: ticks
-    });
+    // add a new move to any prop that has equal or fewer ticks
+    for (let i=0; i<this.props.moves.length; i++) {
+      if (this.props.moves[i].length===0) {
+        allTicks[i] = 0;
+      } else {
+        allTicks[i] = beats(this.props.moves[i])*BEAT;
+      }
+      if (allTicks[i]<=ticks) {
+        this.props.insertMove({
+          propid: i,
+          tick: allTicks[i],
+          move: {}
+        });
+        this.props.resolveMove({
+          propid: i,
+          tick: allTicks[i]
+        });
+      }
+    }
     this.props.setTop(this.props.propid);
     this.props.gotoTick(ticks);
   }
@@ -80,7 +90,6 @@ class MoveItem extends React.Component {
         head: {a0: move.head.a, a1: move.head.a1}
       } :
       {
-        // so in this case we need to store the starting position elsewhere....
         hand: {a: move.hand.a1},
         head: {a: move.head.a1}
       };

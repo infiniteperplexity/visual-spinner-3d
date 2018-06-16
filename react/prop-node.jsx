@@ -44,7 +44,6 @@ class PropNode extends React.Component {
     event.preventDefault();
     if (this.localState.beingDragged) {
       this.props.pushState();
-      // this.props.updateMove(this.props.propid);
       let node = this.props.props[this.props.propid][NODES[this.props.node]];
       let plane = this.props.plane;
       let a = sphere$planify(node, VS3D[plane]);

@@ -18,29 +18,26 @@ Bugs:
 
 - It seems like prop.toXYZ and move.toXYZ might be good things, 
 
-React:
-	- Modification panel.
-		- Activate it.
-	- Some sort of visual representation on the move list.
-	- Make better player controls.
+
+React App:
+	Core:
+	? The layout is total garbage.
+	- Might want to propagate starting angular speed by default (easy enough, only for new moves added to end.)
+	- The conform-vs-fits issue is actually a really thorny one.
+	- Might want to use tickboxes for unlocking and locking elements.
+	- 
+
+	Nice:
+	- Make sure all panel elements work.
+	- Make sure you can't modify the first move.
+	- Visual representation on move queue.
+	- Better player controls.
 		- Should block / alter use of some / most other controls?
 		- Might need to override / wrap existing onclicks;
 		- Should it start at current tick?
-	- Color menus
-		- Change color of props
-		- Toggle other color menus
-	- Want more area on the SVG grids.
-	- Make locking and unlocking manual.
-	- Some of the planes might be backwards.
-
+	- Make it so you can change prop colors.
+	- More area on SVG grids.
+	- A few planes are backwards.
 	- Maybe make the different nodes look different.
 	- Get icons from noun project for viewing angle.
 	- Would be nice if SVGs rendered according to depth.
-	- conforming 0s is sometimes the wrong approach; should check fit first.
-
-	- Probably want to add moves two at a time.
-	- And maybe start with none of them?
-	- Things get weird when you have selected the "wrong" prop for starter moves? (error not reproduced)
-
-	- Okay.  So, the layout is total garbage, and that's maybe the next thing to fix.
-	- Or, I could make it so the modification panel works.
