@@ -23,7 +23,7 @@ React App:
 	Core:
 	- Might want to propagate starting angular speed by default (easy enough, only for new moves added to end.)
 	- The conform-vs-fits issue is actually a really thorny one.
-	- Might want to use tickboxes for unlocking and locking elements.
+	- Why aren't checkboxes updating?
 
 	Nice:
 	- Make sure all panel elements work.
@@ -41,7 +41,6 @@ React App:
 	- Would be nice if SVGs rendered according to depth.
 	- Might want to remove default properties when exporting.
 	- Have the import do resolving and validating.
-	- Make it so import and export are React-ier.
 
 
 	Solving the node-sum problem:

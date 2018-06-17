@@ -1,11 +1,3 @@
-class PlayButton extends React.Component {
-  handleClick = (e)=>{
-    this.props.playEngine();
-  }
-  render() {
-    return (<button onClick={this.handleClick}>Play</button>);
-  }
-}
 
 class MoveQueue extends React.Component {
   render() {
@@ -149,6 +141,20 @@ class NumberPanel extends React.Component {
   }
 }
 
+class LockBox extends React.Component {
+  handleChange = (e) => {
+    e.preventDefault();
+    this.props.setLock(this.props.node, e.target.checked);
+  }
+  render() {
+    return (
+      <span>
+        <input onChange={this.handleChange} onInput={this.handleChange} type="checkbox" checked={this.props.locks[this.props.node]}/>{this.props.children}
+      </span>
+    );
+  }
+}
+
 class MovePanel extends React.Component {
   // the last item on order is the active one
   render() {
@@ -176,9 +182,11 @@ class MovePanel extends React.Component {
         <div key={i} style={{color: color}}>
           {(node==="helper") ? "help" : node}{spacer}v<sub>angle0</sub>&nbsp;<NumberPanel vals={{propid: propid, node: i, moment: "va"}} value={move[node].va} {...this.props}/>
           &nbsp;v<sub>angle1</sub>&nbsp;<NumberPanel vals={{propid: propid, node: i, moment: "va1"}} value={move[node].va1} {...this.props}/>
+          {(["grip","helper","body"].includes(node)) ? <LockBox node={node} {...this.props}>lock {node}</LockBox>: null}
           <br />
           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v<sub>radius0</sub><NumberPanel vals={{propid: propid, node: i, moment: "vr"}} value={move[node].vr} {...this.props}/>
           &nbsp;v<sub>radius1</sub><NumberPanel vals={{propid: propid, node: i, moment: "vr1"}} value={move[node].vr1} {...this.props}/>
+          {(node==="head") ? <LockBox node={node} {...this.props}>lock tether</LockBox>: null}
         </div>
       );
     }

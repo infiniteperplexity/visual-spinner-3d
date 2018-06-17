@@ -28,13 +28,10 @@ class App extends React.Component {
             <Grid dragID="SVG" {...props} />
             <div id="display"/>
             <div>
-            <button onClick={()=>{
-              let state = store.getState();
-              for (let i=0; i<state.moves.length; i++) {
-                player.props[i].prop = socket(state.starters[i]);
-                player.props[i].moves = clone(state.moves[i]);
-                save(player.props);
-              }
+            <button onClick={(e)=>{
+              e.preventDefault();
+              props.updateEngine();
+              save(player.props);
             }}>Export</button>
             <button onClick={(e)=>{
               e.preventDefault();
@@ -42,7 +39,10 @@ class App extends React.Component {
             }}>Import</button>
             </div>
             <PlaneMenu {...props}/>
-            <PlayButton />
+            <button onClick={(e)=>{
+              props.updateEngine();
+              player.play();
+            }}>Play</button>
         </div>
         <div className="grid bottom">
         <MoveQueue propid="0" {...props}/>

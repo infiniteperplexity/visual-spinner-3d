@@ -21,7 +21,8 @@ let AppComponent = ReactRedux.connect(
       insertMove: (args)=>dispatch({type: "insertMove", ...args}),
       resolveMove: (args)=>dispatch({type: "resolveMove", ...args}),
       modifyMove: (args)=>dispatch({type: "modifyMove", ...args}),
-      playEngine: (args)=>dispatch({type: "playEngine"}),
+      updateEngine: (args)=>dispatch({type: "updateEngine"}),
+      setLock: (node, arg)=>dispatch({type: "setLock", node: node, value: arg}),
       setPopup: (arg)=>dispatch({type: "setPopup", value: arg})
   })
 )(App);
@@ -71,12 +72,11 @@ function reducer(state, action) {
     wrappers = wrappers.concat(player.props);
     renderer.render(wrappers, props);
     return state;
-  } else if (action.type==="playEngine") {
+  } else if (action.type==="updateEngine") {
     for (let i=0; i<state.moves.length; i++) {
       player.props[i].prop = socket(state.starters[i]);
       player.props[i].moves = clone(state.moves[i]);
     }
-    player.play();
     return state;
   } else if (action.type==="insertMove") { 
     let {propid, tick} = action;
@@ -255,6 +255,11 @@ function reducer(state, action) {
     return {...state, tick: t, props: props};
   } else if (action.type==="setPopup") {
     return {...state, popup: action.value};
+  } else if (action.type==="setLock") {
+    let locks = {...state.locks};
+    locks[action.node] = action.value;
+    console.log("doing it");
+    return {...state, locks: locks};
   } else if (action.type==="pushState") {
     // modify the browser history
     window.history.pushState({storeState: clone(state)}, "emptyTitle");
