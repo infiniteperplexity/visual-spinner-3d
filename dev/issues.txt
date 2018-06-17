@@ -24,7 +24,6 @@ React App:
 	- Might want to propagate starting angular speed by default (easy enough, only for new moves added to end.)
 	- The conform-vs-fits issue is actually a really thorny one.
 	- Might want to use tickboxes for unlocking and locking elements.
-	- Add import/export functionality.
 
 	Nice:
 	- Make sure all panel elements work.
@@ -40,6 +39,9 @@ React App:
 	- Maybe make the different nodes look different.
 	- Get icons from noun project for viewing angle.
 	- Would be nice if SVGs rendered according to depth.
+	- Might want to remove default properties when exporting.
+	- Have the import do resolving and validating.
+	- Make it so import can be done using popup.
 
 
 	Solving the node-sum problem:

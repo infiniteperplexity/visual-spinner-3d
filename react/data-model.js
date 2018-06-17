@@ -8,7 +8,7 @@ const {
 	BEAT,
 	LEFT, RIGHT,
 	NODES, HEAD, GRIP, HAND, PIVOT, HELPER, BODY,
-	parse, stringify,
+	parse, stringify, save,
 	flatten, submove, beats, spin, resolve,
 	Prop, Move
 } = VS3D;

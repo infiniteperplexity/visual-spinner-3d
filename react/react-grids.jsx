@@ -26,11 +26,37 @@ class App extends React.Component {
         <div className="grid top">
             <MovePanel className="frame" {...props} />
             <Grid dragID="SVG" {...props} />
-            {/*<PlaneMenu selected="WALL" {...props} />*/}
             <div id="display"/>
             <div>
-            <button>Export</button>
-            <button>Import</button>
+            <button onClick={()=>{
+              let state = store.getState();
+              for (let i=0; i<state.moves.length; i++) {
+                player.props[i].prop = socket(state.starters[i]);
+                player.props[i].moves = clone(state.moves[i]);
+                save(player.props);
+              }
+            }}>Export</button>
+            <button onClick={()=>{
+              let props = parse(json);
+              player.props = props;
+              let state = {
+                props: clone(player.props.map(p=>p.prop)),
+                moves: clone(player.props.map(p=>p.moves)),
+                starters: player.props.map(p=>resolve(fit(p.prop, new Move({beats: 0})))),
+                tick: -1,
+                order: player.props.map((_,i)=>(player.props.length-i-1)),
+                plane: "WALL",
+                locks: {
+                  body: true,
+                  helper: true,
+                  grip: true,
+                  head: true,
+                }
+              };
+              store.dispatch({type: "restoreState", state: state});
+              store.dispatch({type: "gotoTick", tick: -1});
+              store.dispatch({type: "renderEngine"});
+            }}>Import</button>
             </div>
             <PlaneMenu {...props}/>
             <PlayButton />

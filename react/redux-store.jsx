@@ -37,9 +37,10 @@ function reducer(state, action) {
       order: player.props.map((_,i)=>(player.props.length-i-1)),
       plane: "WALL",
       locks: {
+        body: true,
         helper: true,
         grip: true,
-        head: true
+        head: true,
       } // mean slightly different things
     };
   }
