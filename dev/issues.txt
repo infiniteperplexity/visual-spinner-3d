@@ -42,6 +42,7 @@ React App:
 	- Might want to remove default properties when exporting.
 	- Have the import do resolving and validating.
 	- Make it so import can be done using popup.
+	- Make it so import and export are React-ier.
 
 
 	Solving the node-sum problem:

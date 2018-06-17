@@ -36,26 +36,9 @@ class App extends React.Component {
                 save(player.props);
               }
             }}>Export</button>
-            <button onClick={()=>{
-              let props = parse(json);
-              player.props = props;
-              let state = {
-                props: clone(player.props.map(p=>p.prop)),
-                moves: clone(player.props.map(p=>p.moves)),
-                starters: player.props.map(p=>resolve(fit(p.prop, new Move({beats: 0})))),
-                tick: -1,
-                order: player.props.map((_,i)=>(player.props.length-i-1)),
-                plane: "WALL",
-                locks: {
-                  body: true,
-                  helper: true,
-                  grip: true,
-                  head: true,
-                }
-              };
-              store.dispatch({type: "restoreState", state: state});
-              store.dispatch({type: "gotoTick", tick: -1});
-              store.dispatch({type: "renderEngine"});
+            <button onClick={(e)=>{
+              e.preventDefault();
+              props.setPopup(true);
             }}>Import</button>
             </div>
             <PlaneMenu {...props}/>
@@ -67,6 +50,7 @@ class App extends React.Component {
         <MoveQueue propid="2" {...props}/>
         <MoveQueue propid="3" {...props}/>
         </div>
+        <PopUp {...props}/>
       </div>
       
     );

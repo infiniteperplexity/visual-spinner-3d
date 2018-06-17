@@ -21,7 +21,8 @@ let AppComponent = ReactRedux.connect(
       insertMove: (args)=>dispatch({type: "insertMove", ...args}),
       resolveMove: (args)=>dispatch({type: "resolveMove", ...args}),
       modifyMove: (args)=>dispatch({type: "modifyMove", ...args}),
-      playEngine: (args)=>dispatch({type: "playEngine"})
+      playEngine: (args)=>dispatch({type: "playEngine"}),
+      setPopup: (arg)=>dispatch({type: "setPopup", value: arg})
   })
 )(App);
 
@@ -36,6 +37,7 @@ function reducer(state, action) {
       tick: 0,
       order: player.props.map((_,i)=>(player.props.length-i-1)),
       plane: "WALL",
+      popup: false,
       locks: {
         body: true,
         helper: true,
@@ -249,6 +251,8 @@ function reducer(state, action) {
       }
     }
     return {...state, tick: t, props: props};
+  } else if (action.type==="setPopup") {
+    return {...state, popup: action.value};
   } else if (action.type==="pushState") {
     // modify the browser history
     window.history.pushState({storeState: clone(state)}, "emptyTitle");

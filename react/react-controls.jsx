@@ -218,3 +218,56 @@ class PlaneMenu extends React.Component {
     );
   }
 }
+
+class PopUp extends React.Component {
+  handleSubmit = (e)=> {
+    e.preventDefault();
+    let json = e.target.value;
+    if (json) {
+      let props = parse(json);
+      player.props = props;
+      let state = {
+        props: clone(player.props.map(p=>p.prop)),
+        moves: clone(player.props.map(p=>p.moves)),
+        starters: player.props.map(p=>resolve(fit(p.prop, new Move({beats: 0})))),
+        tick: -1,
+        order: player.props.map((_,i)=>(player.props.length-i-1)),
+        plane: "WALL",
+        locks: {
+          body: true,
+          helper: true,
+          grip: true,
+          head: true,
+        } 
+      };
+      this.props.pushState();
+      this.props.gotoTick(-1);
+      this.props.renderEngine();
+    }
+    this.props.setPopup(false);
+  }
+  handleCancel= (e)=> {
+    e.preventDefault();
+    this.props.setPopup(false);
+  }
+  render() {
+    if (this.props.popup===false) {
+      return null;
+    }
+    return (
+      <div style={{
+        position: "absolute"
+      }}>
+        <textarea>
+
+        </textarea>
+        <button onClick={this.handleSubmit}>
+          Submit
+        </button>
+        <button onClick={this.handleCancel}>
+          Cancel
+        </button>
+      </div>
+    );
+  }
+}
