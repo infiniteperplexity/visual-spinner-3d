@@ -196,22 +196,24 @@ function reducer(state, action) {
       } else {
         next = moves[propid][idx+1];
       }
-      // !!!at this point, we should test fits() and possibly break out
-      for (let i=0; i<NODES.length; i++) {
-        // keep a1 and r1 from the move, conform a0 and r0
-        let node = {};
-        node.r = move[NODES[i]].r1;
-        node.a = move[NODES[i]].a1;
-        node.a1 = next[NODES[i]].a1;
-        node.r1 = next[NODES[i]].r1;
-        // !!! probably need to do some other properties as well
-        next[NODES[i]] = node;
-      }
-      next = resolve(next);
-      if (tick===-1) {
-        moves[propid][0] = next;
-      } else {
-        moves[propid][idx+1] = next;
+      // if it doesn't fit, then propagate
+      if (!fits(socket(move), next)) {
+        for (let i=0; i<NODES.length; i++) {
+          // keep a1 and r1 from the move, conform a0 and r0
+          let node = {};
+          node.r = move[NODES[i]].r1;
+          node.a = move[NODES[i]].a1;
+          node.a1 = next[NODES[i]].a1;
+          node.r1 = next[NODES[i]].r1;
+          // !!! probably need to do some other properties as well
+          next[NODES[i]] = node;
+        }
+        next = resolve(next);
+        if (tick===-1) {
+          moves[propid][0] = next;
+        } else {
+          moves[propid][idx+1] = next;
+        }
       }
     }
     if (tick===-1) {

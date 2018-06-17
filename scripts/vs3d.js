@@ -1540,6 +1540,8 @@ function Player(renderer) {
 				return round(value,0.01);
 			} else if (["va","va1","vr","vr1","aa","ar","vl","vl2","al"].includes(key)) {
 				return round(value,0.0001);
+			} else if (key==="fitted") {
+				return undefined;
 			} else {
 				return value;
 			}

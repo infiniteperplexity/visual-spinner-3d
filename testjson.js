@@ -123,8 +123,7 @@ let json = `[
         "twist": 0,
         "vt": 0
       }
-    ],
-    "fitted": null
+    ]
   },
   {
     "model": "poi",
@@ -250,7 +249,6 @@ let json = `[
         "twist": 0,
         "vt": 0
       }
-    ],
-    "fitted": null
+    ]
   }
 ]`

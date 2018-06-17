@@ -222,7 +222,7 @@ class PlaneMenu extends React.Component {
 class PopUp extends React.Component {
   handleSubmit = (e)=> {
     e.preventDefault();
-    let json = e.target.value;
+    let json = this.txt.value;
     if (json) {
       let props = parse(json);
       player.props = props;
@@ -240,6 +240,7 @@ class PopUp extends React.Component {
           head: true,
         } 
       };
+      this.props.restoreState(state);
       this.props.pushState();
       this.props.gotoTick(-1);
       this.props.renderEngine();
@@ -258,9 +259,10 @@ class PopUp extends React.Component {
       <div style={{
         position: "absolute"
       }}>
-        <textarea>
+        <textarea ref={txt=>this.txt=txt} cols="50" rows="12">
 
         </textarea>
+        <br />
         <button onClick={this.handleSubmit}>
           Submit
         </button>
