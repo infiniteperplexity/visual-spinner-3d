@@ -1,7 +1,7 @@
 let renderer, store;
 const {
 	snapto,
-	socket, fit,
+	socket, fit, fits,
 	vector$spherify, sphere$vectorize, sphere$planify,
 	clone,
 	round,
@@ -26,7 +26,7 @@ for (let i=0; i<NPROPS; i++) {
 }
 
 function afterReactMounts() {
-	renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
+	renderer = new VS3D.ThreeRenderer(document.getElementById("display"), 350, 350);
 	player.update = function(positions) {
 		renderer.render(this.props, positions);
 	}

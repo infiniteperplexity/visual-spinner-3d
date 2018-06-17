@@ -21,11 +21,10 @@ Bugs:
 
 React App:
 	Core:
-	? The layout is total garbage.
 	- Might want to propagate starting angular speed by default (easy enough, only for new moves added to end.)
 	- The conform-vs-fits issue is actually a really thorny one.
 	- Might want to use tickboxes for unlocking and locking elements.
-	- 
+	- Add import/export functionality.
 
 	Nice:
 	- Make sure all panel elements work.
@@ -41,3 +40,13 @@ React App:
 	- Maybe make the different nodes look different.
 	- Get icons from noun project for viewing angle.
 	- Would be nice if SVGs rendered according to depth.
+
+
+	Solving the node-sum problem:
+	- Toggleable manipulation of beginning nodes.
+		- Head and hand stay frozen...does that work?
+	- Smart defaults, auto-back-propagating?
+		- Algorithm
+			- Try extending the ending non-zero abstract nodes backwards.
+			- Try zeroing out combinations of other abstract nodes in some order to find fits()
+				- Doesn't guarantee a solution, but might usually.

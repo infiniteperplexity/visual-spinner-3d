@@ -9,7 +9,9 @@ class PlayButton extends React.Component {
 
 class MoveQueue extends React.Component {
   render() {
-    
+    if (parseInt(this.props.propid)>=this.props.props.length) {
+      return null;
+    }
     let moves = this.props.moves[this.props.propid];
     let ticks = 0;
     // let list = [];
@@ -22,9 +24,12 @@ class MoveQueue extends React.Component {
     return (
       <ul style={{
         listStyleType: "none",
-        overflowX: "hidden",
+        whiteSpace: "nowrap",
+        overflow: "hidden",
         borderStyle: "solid",
         border: "0px",
+        padding: "0px",
+        margin: "0px",
         borderRight: "1px"
       }}>
         {list}
@@ -65,7 +70,12 @@ class NewMove extends React.Component {
     this.props.gotoTick(ticks);
   }
   render() {
-    return <button onClick={this.handleClick}>+</button>
+    return <button onClick={this.handleClick}
+      style={{
+        display: "inline-block",
+        verticalAlign: "top"
+      }}
+      >+</button>
   }
 }
 
@@ -82,7 +92,7 @@ class MoveItem extends React.Component {
     this.props.renderEngine();
   }
   render() {
-    const HEIGHT = 24;
+    const WIDTH = 120;
     let move = this.props.move;
     let repr = (this.props.ticks>=0) ? 
       {
@@ -93,16 +103,20 @@ class MoveItem extends React.Component {
         hand: {a: move.hand.a1},
         head: {a: move.head.a1}
       };
-    let height = HEIGHT*beats(this.props.move);
-    height = height || HEIGHT;
+    let width = WIDTH*beats(this.props.move);
+    width = width || WIDTH;
     return (
       <li
         onMouseEnter={(e)=>this.handleMouseEnter(e)}
         onMouseLeave={(e)=>this.handleMouseLeave(e)}
         onMouseDown={(e)=>this.handleMouseDown(e)}
         style={{
-          whiteSpace: "nowrap",
-          height: height,
+          borderStyle: "solid",
+          borderWidth: "1px",
+          display: "inline-block",
+          overflowX: "hidden",
+          height: "95%",
+          width: width,
           backgroundColor: (this.props.tick===this.props.ticks) ? "cyan" : "white"
         }}
       >{stringify(repr)}</li>
@@ -110,15 +124,11 @@ class MoveItem extends React.Component {
   }
 }
 
-function FrozenNumber(props, context) {
-  return <input type="text" readOnly style={{width: 50, fontFamily: "monospace"}} value={props.value} />
-}
 class NumberPanel extends React.Component {
   handleChange = (e)=>{
     // !!!might need to change state.locks
     // this.props.modifyMove({...this.prop.vals, value: e.target.value});
     let nodes = {};
-    console.log(this.props.vals);
     let node = {};
     node[this.props.vals.moment] = parseFloat(e.target.value);
     nodes[NODES[this.props.vals.node]] = node;
@@ -152,39 +162,42 @@ class MovePanel extends React.Component {
       move = submove(this.props.moves[propid], this.props.tick).move;
     }
     let list = [];
-    for (let i=0; i<NODES.length; i++) {
+    for (let i=NODES.length-1; i>=0; i--) {
       let node = NODES[i];
+      let spacer = (node==="pivot") ? <span>&nbsp;</span> : <span>&nbsp;&nbsp;</span>;
+      let color = "black";
+      if (["grip","helper","body"].includes(node) && this.props.locks[node]) {
+        color = "gray";
+      }
+      if (this.props.tick===-1) {
+        color = "gray";
+      }
       list.push(
-        <div key={i}>
-          {node}&nbsp;&nbsp;angle{"\u2080"}&nbsp; <FrozenNumber value={move[node].a} />
-          &nbsp;angle{"\u2081"}&nbsp; <NumberPanel vals={{propid: propid, node: i, moment: "a1"}} value={move[node].a1} {...this.props}/>
-          &nbsp;{"\u0394"}{"\u2080"} <NumberPanel vals={{propid: propid, node: i, moment: "va"}} value={move[node].va} {...this.props}/>
-          &nbsp;{"\u0394"}{"\u2081"} <NumberPanel vals={{propid: propid, node: i, moment: "va1"}} value={move[node].va1} {...this.props}/>
+        <div key={i} style={{color: color}}>
+          {(node==="helper") ? "help" : node}{spacer}v<sub>angle0</sub>&nbsp;<NumberPanel vals={{propid: propid, node: i, moment: "va"}} value={move[node].va} {...this.props}/>
+          &nbsp;v<sub>angle1</sub>&nbsp;<NumberPanel vals={{propid: propid, node: i, moment: "va1"}} value={move[node].va1} {...this.props}/>
           <br />
-          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;radius{"\u2080"} <FrozenNumber value={move[node].r} />
-          &nbsp;radius{"\u2081"} <NumberPanel vals={{propid: propid, node: i, moment: "r1"}} value={move[node].r1} {...this.props}/>
-          &nbsp;{"\u0394"}{"\u2080"} <NumberPanel vals={{propid: propid, node: i, moment: "vr"}} value={move[node].vr} {...this.props}/>
-          &nbsp;{"\u0394"}{"\u2081"} <NumberPanel vals={{propid: propid, node: i, moment: "vr1"}} value={move[node].vr1} {...this.props}/>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v<sub>radius0</sub><NumberPanel vals={{propid: propid, node: i, moment: "vr"}} value={move[node].vr} {...this.props}/>
+          &nbsp;v<sub>radius1</sub><NumberPanel vals={{propid: propid, node: i, moment: "vr1"}} value={move[node].vr1} {...this.props}/>
         </div>
       );
     }
     return (
       <div style={{fontFamily: "monospace"}}>
-        @tick: <NumberPanel value={this.props.tick} />
-        &nbsp;note: <input type="text" style={{width: 50}} readOnly value={move.notes}></input>
-        &nbsp;ticks: <NumberPanel  vals={{propid: propid, node: null, moment: "ticks"}} value={move.beats*BEAT} />
-        &nbsp;plane: {this.props.plane}
+        @tick  <input type="text" size="5" readOnly value={this.props.tick} />
+        &nbsp;ticks <NumberPanel  vals={{propid: propid, node: null, moment: "ticks"}} step={90} value={move.beats*BEAT} {...this.props}/>
           {list}
           <div>
-            bend:
-              <NumberPanel vals={{propid: propid, node: null, moment: "bent"}} value={move.bent} />
-            &nbsp;{"\u0394"}:
-              <NumberPanel vals={{propid: propid, node: null, moment: "vb"}} value={move.vb} />
-            &nbsp;&nbsp;
-            twist:
-              <NumberPanel vals={{propid: propid, node: null, moment: "twist"}} value={move.twist} />
-            &nbsp;{"\u0394"}:
-              <NumberPanel vals={{propid: propid, node: null, moment: "vt"}} value={move.vt} />
+            plane <input type="text" size="5" readOnly value={this.props.plane} />
+            <br />
+            bend<sub>0</sub>&nbsp;
+              <NumberPanel vals={{propid: propid, node: null, moment: "bent"}} value={move.bent} {...this.props} />
+            &nbsp;v<sub>bend</sub>&nbsp;
+              <NumberPanel vals={{propid: propid, node: null, moment: "vb"}} value={move.vb} {...this.props} />
+            &nbsp;twist<sub>0</sub>&nbsp;
+            <NumberPanel vals={{propid: propid, node: null, moment: "twist"}} value={move.twist} {...this.props}/>
+            &nbsp;v<sub>twist</sub>&nbsp;
+              <NumberPanel vals={{propid: propid, node: null, moment: "vt"}} value={move.vt} {...this.props}/>
           </div>
         </div>
     )

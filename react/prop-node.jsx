@@ -133,11 +133,11 @@ class PropNode extends React.Component {
       x = v.x * UNIT;
       y = -v.z * UNIT;
     }
-    let r = UNIT/18;
+    let r = UNIT/12;
     if (this.props.node===HAND) {
-      r = UNIT/12;
+      r = UNIT/8;
     } else if (this.props.node===HEAD) {
-      r = UNIT/6;
+      r = UNIT/4;
     }
     let fill = ([HEAD,HAND].includes(this.props.node)) ? this.props.color : "gray";
     let stroke = ([HEAD,HAND].includes(this.props.node)) ? "gray" : this.props.color;

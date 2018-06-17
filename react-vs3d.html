@@ -3,25 +3,21 @@
   <head>
     <meta charset="utf-8">
      <style>
-      .track {
-        grid-column-end: span 3;
+      .grid {
         display: grid;
-        grid-template-columns: 450px 450px;
-        grid-template-rows: 400px;
-        overflow-y: scroll;
-        overflow-x: hidden;
-      }
-      .frame {
-        border-style: solid;
-        border-width: 1px;
-      }
-      .app {
-        display: grid;
-        height: 720px;
         grid-column-gap: 3px;
         grid-row-gap: 3px;
-        grid-template-rows: 400px 303px;
-        grid-template-columns: 300px 300px 300px auto;
+      }
+      .app {
+        grid-template-rows: 385px 350px;
+      }
+      .top {
+        grid-template-columns: auto 350px 350px;
+        grid-template-rows: auto auto;
+      }
+      .bottom {
+        grid-template-rows: auto auto auto auto;
+        overflow: auto;
       }
     </style>
     <link rel="stylesheet" type="text/css" href="todo.css" />

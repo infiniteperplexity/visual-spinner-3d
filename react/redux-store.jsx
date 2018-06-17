@@ -193,6 +193,7 @@ function reducer(state, action) {
       } else {
         next = moves[propid][idx+1];
       }
+      // !!!at this point, we should test fits() and possibly break out
       for (let i=0; i<NODES.length; i++) {
         // keep a1 and r1 from the move, conform a0 and r0
         let node = {};

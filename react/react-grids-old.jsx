@@ -1,9 +1,7 @@
-
-
 let destination = document.querySelector("#container");
 
-const UNIT = 50;
-const UNITS = 7;
+const UNIT = 60;
+const UNITS = 5;
 const HALF = UNIT/2;
 let X0 = HALF*UNITS;
 let Y0 = HALF*UNITS;
@@ -22,27 +20,28 @@ class App extends React.Component {
   render() {
     let props = this.props;
     return (
-      <div className="grid app" style={{height: "720px"}}>
-        <div className="grid top">
-            <MovePanel className="frame" {...props} />
-            <Grid dragID="SVG" {...props} />
-            {/*<PlaneMenu selected="WALL" {...props} />*/}
-            <div id="display"/>
-            <div>
-            <button>Export</button>
-            <button>Import</button>
-            </div>
-            <PlaneMenu {...props}/>
-            <PlayButton />
+      <div className="app">
+        <div className="track frame">
+          <div className="frame">
+            <MoveQueue propid="0" {...props}/>
+          </div>
+          <div className="frame">
+            <MoveQueue propid="1" {...props}/>
+          </div>
         </div>
-        <div className="grid bottom">
-        <MoveQueue propid="0" {...props}/>
-        <MoveQueue propid="1" {...props}/>
-        <MoveQueue propid="2" {...props}/>
-        <MoveQueue propid="3" {...props}/>
+        <div className="frame" id="display">
+        </div>
+        <div className="frame">
+          <Grid dragID="SVG" {...props} />
+          <PlaneMenu selected="WALL" {...props} />
+        </div>
+        <div className="frame">
+          <MovePanel {...props} />
+        </div>
+        <div>
+          <PlayButton {...props} />
         </div>
       </div>
-      
     );
   }
 }
