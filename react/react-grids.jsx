@@ -39,10 +39,19 @@ class App extends React.Component {
             }}>Import</button>
             </div>
             <PlaneMenu {...props}/>
-            <button onClick={(e)=>{
-              props.updateEngine();
-              player.play();
-            }}>Play</button>
+            <div>
+              <button onClick={(e)=>{
+                e.preventDefault();
+                props.setFrozen(true);
+                props.updateEngine();
+                player.play();
+              }}>Play</button>
+              <button onClick={(e)=>{
+                e.preventDefault();
+                props.setFrozen(false);
+                player.reset();
+              }}>Stop</button>
+            </div>
         </div>
         <div className="grid bottom">
         <MoveQueue propid="0" {...props}/>

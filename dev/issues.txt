@@ -21,14 +21,16 @@ Bugs:
 
 React App:
 	Core:
-	- Might want to propagate starting angular speed by default (easy enough, only for new moves added to end.)
+	- Might want to propagate starting angular speed by default (easy enough, only for new moves added to end.)  Actually, this is a little bit annoying.  I have to resolve beforehand?  I dunno.
 	- The conform-vs-fits issue is actually a really thorny one.
 	- Why aren't checkboxes updating?
+	- +s to add props.  -s?
+	- Add color changing?
+		- Could do via right-click?
 
 	Nice:
 	- Make sure all panel elements work.
 	- Make sure you can't modify the first move.
-	- Visual representation on move queue.
 	- Better player controls.
 		- Should block / alter use of some / most other controls?
 		- Might need to override / wrap existing onclicks;

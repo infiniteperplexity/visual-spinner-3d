@@ -23,6 +23,7 @@ let AppComponent = ReactRedux.connect(
       modifyMove: (args)=>dispatch({type: "modifyMove", ...args}),
       updateEngine: (args)=>dispatch({type: "updateEngine"}),
       setLock: (node, arg)=>dispatch({type: "setLock", node: node, value: arg}),
+      setFrozen: (arg)=>dispatch({type: "setFrozen", value: arg}),
       setPopup: (arg)=>dispatch({type: "setPopup", value: arg})
   })
 )(App);
@@ -39,6 +40,7 @@ function reducer(state, action) {
       order: player.props.map((_,i)=>(player.props.length-i-1)),
       plane: "WALL",
       popup: false,
+      frozen: false,
       locks: {
         body: true,
         helper: true,
@@ -51,6 +53,10 @@ function reducer(state, action) {
   //   console.log("store action:");
   //   console.log(clone(action));
   // }
+
+  if (state.frozen && ["insertMove","modifyMove","resolveMove","deleteMove"].includes(action.type)) {
+    return state;
+  }
   if (action.type==="renderEngine") {
     //  update the view of the engine
     let props = [...state.props];
@@ -258,8 +264,9 @@ function reducer(state, action) {
   } else if (action.type==="setLock") {
     let locks = {...state.locks};
     locks[action.node] = action.value;
-    console.log("doing it");
     return {...state, locks: locks};
+  } else if (action.type==="setFrozen") {
+    return {...state, frozen: action.value};
   } else if (action.type==="pushState") {
     // modify the browser history
     window.history.pushState({storeState: clone(state)}, "emptyTitle");

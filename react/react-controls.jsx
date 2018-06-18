@@ -72,33 +72,68 @@ class NewMove extends React.Component {
 }
 
 class MoveItem extends React.Component {
+  constructor(props, context) {
+    super(props, context);
+    this.WIDTH = 120;
+    this.ARM = 24;
+    this.TETHER = 24;
+    this.HEAD = 6;
+    this.HAND = 3;
+  }
   handleMouseEnter = (e)=>{
-    e.target.style.backgroundColor = (this.props.tick===this.props.ticks) ? "cyan" : "lightcyan";
+    this.renderContext("lightcyan");
   }
   handleMouseLeave = (e)=>{
-    e.target.style.backgroundColor = (this.props.tick===this.props.ticks) ? "cyan" : "white";
+    this.renderContext("white");
   }
   handleMouseDown = (e)=>{
     this.props.setTop(this.props.propid);
     this.props.gotoTick(this.props.ticks);
     this.props.renderEngine();
   }
+  componentDidMount() {
+    this.renderContext();
+  }
+  componentDidUpdate() {
+    this.renderContext();
+  }
+  renderContext = (bg)=>{
+    bg = bg || "white";
+    let width = this.canvas.width;
+    let height = this.canvas.height;
+    let color = COLORS[this.props.propid];
+    let ctx = this.canvas.getContext("2d");
+    let hand = this.props.move.hand;
+    let head = this.props.move.head;
+    let x0 = Math.cos(hand.a1*VS3D.UNIT-Math.PI/2)*hand.r1*this.ARM;
+    let y0 = Math.sin(hand.a1*VS3D.UNIT-Math.PI/2)*hand.r1*this.ARM;
+    let x1 = Math.cos(head.a1*VS3D.UNIT-Math.PI/2)*head.r1*this.TETHER;
+    let y1 = Math.sin(head.a1*VS3D.UNIT-Math.PI/2)*head.r1*this.TETHER;
+    ctx.fillStyle = (this.props.tick===this.props.ticks) ? "cyan" : bg;
+    ctx.fillRect(0,0,height,width);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(width/2+x0,height/2+y0);
+    ctx.lineTo(width/2+x0+x1,height/2+y0+y1);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(width/2+x0,height/2+y0,this.HAND,0,2*Math.PI);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(width/2+x0+x1,height/2+y0+y1,this.HEAD,0,2*Math.PI);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.fill();
+  }
   render() {
-    const WIDTH = 120;
     let move = this.props.move;
-    let repr = (this.props.ticks>=0) ? 
-      {
-        hand: {a0:move.hand.a, a1: move.hand.a1},
-        head: {a0: move.head.a, a1: move.head.a1}
-      } :
-      {
-        hand: {a: move.hand.a1},
-        head: {a: move.head.a1}
-      };
-    let width = WIDTH*beats(this.props.move);
-    width = width || WIDTH;
-    return (
-      <li
+    let width = this.WIDTH*beats(this.props.move);
+    width = width || this.WIDTH;
+    let canv = (
+      <canvas ref={c=>this.canvas=c} height={this.WIDTH} width={width}
         onMouseEnter={(e)=>this.handleMouseEnter(e)}
         onMouseLeave={(e)=>this.handleMouseLeave(e)}
         onMouseDown={(e)=>this.handleMouseDown(e)}
@@ -107,12 +142,11 @@ class MoveItem extends React.Component {
           borderWidth: "1px",
           display: "inline-block",
           overflowX: "hidden",
-          height: "95%",
-          width: width,
           backgroundColor: (this.props.tick===this.props.ticks) ? "cyan" : "white"
         }}
-      >{stringify(repr)}</li>
+      />
     );
+    return canv;
   }
 }
 
