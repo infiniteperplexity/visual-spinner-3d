@@ -3,7 +3,9 @@ Engine:
 - Might want to make units more readable for vl and vr.
 - Are defaults injected in the right places?  Probably not, given that object spread is the single biggest performance hog.  Much less of a problem now that I cache the fitted moes.
 - Should extend() wrap around?
-
+- Try to move all the "tinify" logic to very temporary places.
+	- I removed all tinification except for angle$spherify...do things work now?
+	- I left it in there for sphere$vectorize as well.  Vectors are rarely displayed directly, except as planes, so it shouldn't be much distraction.
 
 Apps:
 - Integrate it with React.
@@ -23,10 +25,10 @@ React App:
 	Core:
 	- Might want to propagate starting angular speed by default (easy enough, only for new moves added to end.)  Actually, this is a little bit annoying.  I have to resolve beforehand?  I dunno.
 	- The conform-vs-fits issue is actually a really thorny one.
-	- Why aren't checkboxes updating?
 	- +s to add props.  -s?
 	- Add color changing?
 		- Could do via right-click?
+	- locks shouldn't be allowed when r is not zero.
 
 	Nice:
 	- Make sure all panel elements work.
@@ -53,3 +55,9 @@ React App:
 			- Try extending the ending non-zero abstract nodes backwards.
 			- Try zeroing out combinations of other abstract nodes in some order to find fits()
 				- Doesn't guarantee a solution, but might usually.
+
+	- Okay, finally we managed to produce the problem!  We verified that the approach I was using doesn't work.
+	- So what's next?  I feel like the algorithm is the only great idea I have right now.
+		- Need to write and test the algorithm.
+		- The inverse propnode approach doesn't really work here, does it?
+			- So you've got it set up right, then you move something, and move it back.  Does the inverse propnode survive?  No, not unless you're using the algorithm.

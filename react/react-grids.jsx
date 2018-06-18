@@ -39,19 +39,7 @@ class App extends React.Component {
             }}>Import</button>
             </div>
             <PlaneMenu {...props}/>
-            <div>
-              <button onClick={(e)=>{
-                e.preventDefault();
-                props.setFrozen(true);
-                props.updateEngine();
-                player.play();
-              }}>Play</button>
-              <button onClick={(e)=>{
-                e.preventDefault();
-                props.setFrozen(false);
-                player.reset();
-              }}>Stop</button>
-            </div>
+            <ControlPanel {...props} />
         </div>
         <div className="grid bottom">
         <MoveQueue propid="0" {...props}/>
@@ -98,3 +86,62 @@ function UnitCircle(props, context) {
     <circle key={1.0} cx={x} cy={y} r={UNIT} fill="none" stroke="" />
   ];
 }
+
+class ControlPanel extends React.Component {
+  constructor(props, context) {
+    super(props, context);
+    this.RATE = 15;
+  }
+  handlePlay = (e)=>{
+    e.preventDefault();
+    this.props.setFrozen(true);
+    this.props.updateEngine();
+    player.play();
+  }
+  handlePause = (e)=>{
+    e.preventDefault();
+    this.props.setFrozen(false);
+    // probably want to gotoTick...
+    player.stop();
+  }
+  handleRewind = (e)=>{
+    e.preventDefault();
+    this.props.setFrozen(false);
+    this.props.updateEngine();
+    player.stop();
+    player.goto(player.tick-this.RATE);
+  }
+  handleFrame = (e)=>{
+    this.props.setFrozen(false);
+    this.props.updateEngine();
+    player.stop();
+    player.goto(e.target.value)
+  }
+  handleForward = (e)=>{
+    e.preventDefault();
+    this.props.setFrozen(false);
+    this.props.updateEngine();
+    player.stop();
+    player.goto(player.tick+this.RATE);
+  }
+  handleReset = (e)=>{
+    e.preventDefault();
+    this.props.setFrozen(false);
+    player.reset();
+  }
+  render() {
+    // need to figure out how to handle ticks.
+    return (
+      <div>
+        <button onClick={this.handlePlay}>Play</button>
+        <button onClick={this.handlePause}>Pause</button>
+        <button onClick={this.handleRewind}>-</button>
+        <input type="number" style={{width:"80px"}} onChange={this.handleFrame} onInput={this.handleFrame} value={0}/>
+        <button onClick={this.handleForward}>+</button>
+        <button onClick={this.handleReset}>Reset</button>
+      </div>
+    );
+  }
+}
+
+              

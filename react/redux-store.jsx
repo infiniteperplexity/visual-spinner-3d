@@ -49,10 +49,10 @@ function reducer(state, action) {
       } // mean slightly different things
     };
   }
-  // if (!["setNode","setTop"].includes(action.type)) {
-  //   console.log("store action:");
-  //   console.log(clone(action));
-  // }
+  if (!["setNode", "setTop"].includes(action.type)) {
+    console.log("store action:");
+    console.log(clone(action));
+  }
 
   if (state.frozen && ["insertMove","modifyMove","resolveMove","deleteMove"].includes(action.type)) {
     return state;
@@ -82,6 +82,9 @@ function reducer(state, action) {
     for (let i=0; i<state.moves.length; i++) {
       player.props[i].prop = socket(state.starters[i]);
       player.props[i].moves = clone(state.moves[i]);
+      // this prevents the player from trying to refit the moves itself.
+      // the fact that that's not a good idea says there's something wrong with fitting, right?
+      player.props[i].fitted = player.props[i].moves;
     }
     return state;
   } else if (action.type==="insertMove") { 
@@ -174,7 +177,6 @@ function reducer(state, action) {
     } else {
       move = submove(moves[propid], tick).move;
       idx = moves[propid].indexOf(move);
-
       prev = (idx>0) ? moves[propid][idx-1] : state.starters[propid];
     }
     for (let i=0; i<NODES.length; i++) {
@@ -203,7 +205,8 @@ function reducer(state, action) {
         next = moves[propid][idx+1];
       }
       // if it doesn't fit, then propagate
-      if (!fits(socket(move), next)) {
+      // !!!This whole check is a farce; any fitting move will probably go through a non-fitting intermediate state
+      // if (!fits(socket(move), next)) {
         for (let i=0; i<NODES.length; i++) {
           // keep a1 and r1 from the move, conform a0 and r0
           let node = {};
@@ -220,7 +223,7 @@ function reducer(state, action) {
         } else {
           moves[propid][idx+1] = next;
         }
-      }
+      // }
     }
     if (tick===-1) {
       let starters = [...state.starters];

@@ -94,7 +94,9 @@ class PropNode extends React.Component {
       } else {
         r = round(r, 0.5);
       }
-      let rounding = round(Math.PI/(12*VS3D.UNIT),1);
+      // how fine-grained is the rounding on angles?
+      const FRACTION = 4;
+      let rounding = round(Math.PI/(FRACTION*VS3D.UNIT),1);
       a = round(a, rounding);
       b = round(b, rounding);
       let v = sphere$vectorize({r: r, a: a, b: b});

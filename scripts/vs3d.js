@@ -1,7 +1,9 @@
 VS3D = function() {
 let VS3D = {}; //
 // ********************** Constants
-const SMALL = VS3D.SMALL = 0.001;
+	// const SMALL = VS3D.SMALL = 0.001;
+ //    const TINY = VS3D.TINY = 0.0001;
+	const SMALL = VS3D.SMALL = 0.001;
     const TINY = VS3D.TINY = 0.0001;
 	const NUDGE = VS3D.NUDGE = 0.1;
 	const DIAG = VS3D.DIAG = Math.sqrt(2)/2;
@@ -225,7 +227,9 @@ const SMALL = VS3D.SMALL = 0.001;
 	// convert a vector to intuitive-spherical coordinates
 	function vector$spherify(vec) {
 		let {x, y, z} = vec;
-		let r = Math.sqrt(x*x+y*y+z*z) || TINY;
+		// !!!TINIFY
+		// let r = Math.sqrt(x*x+y*y+z*z) || TINY;
+		let r = Math.sqrt(x*x+y*y+z*z);
 		let a = Math.acos(arcbounds(y/r))/UNIT;
 		let b = Math.atan2(z,x)/UNIT;
 		if (Math.abs(b)>(0.5*Math.PI/UNIT)) {
@@ -286,16 +290,16 @@ const SMALL = VS3D.SMALL = 0.001;
 		let z = vz-d*az;
 		return vector(x,y,z);
 	}
-	function vector$tinify(vec) {
-		let {x, y, z} = vec;
-		x = x || TINY;
-		y = y || TINY;
-		z = z || TINY;
-		return vector(x,y,z);
-	}
-	function sphere$tinify(s) {
-		return sphere(s.r || TINY, s.a ,s.b);
-	}
+	// function vector$tinify(vec) {
+	// 	let {x, y, z} = vec;
+	// 	x = x || TINY;
+	// 	y = y || TINY;
+	// 	z = z || TINY;
+	// 	return vector(x,y,z);
+	// }
+	// function sphere$tinify(s) {
+	// 	return sphere(s.r || TINY, s.a ,s.b);
+	// }
 	// calculate the angle between two vectors
 	function vector$between(v1, v2) {
 		let dot = vector$dot(v1, v2);
@@ -332,6 +336,8 @@ const SMALL = VS3D.SMALL = 0.001;
 	// convert a spherical coordinate into a vector
 	function sphere$vectorize(s) {
 		let {r, a, b} = s;
+		// !!!TINIFY
+		// verified that this one is occasionally necessary???
 		r = r || TINY;
 		let x = r*Math.sin(UNIT*a)*Math.cos(UNIT*b);
 		let z = r*Math.sin(UNIT*a)*Math.sin(UNIT*b);
@@ -381,9 +387,11 @@ const SMALL = VS3D.SMALL = 0.001;
 	function angle$spherify(ang, p) {
 		ang = angle(ang);
 		// spherifying an angle to exactly zero tends to cause rounding issues
+		// I have verified that these are a thing that really happens
 		if (angle$nearly(ang,0,SMALL)) {
-			ang = TINY;
-			//ang = SMALL;
+			// !!!TINIFY
+			// ang = TINY;
+			ang = 0;
 		}
 		let v = angle$vectorize(ang, p);
 		let s = vector$spherify(v);
@@ -413,7 +421,8 @@ const SMALL = VS3D.SMALL = 0.001;
 		if (angle$zeroish(ang, SMALL)) {
 			return sphere(r, a, b);
 		}
-		r = r || TINY;
+		// !!!TINIFY
+		// r = r || TINY;
 		let projected = vector$project(sphere$vectorize(s),p);
 		let v = vector$unitize(vector$rotate(projected, ang, p));
 		s = vector$spherify(v);
@@ -547,6 +556,7 @@ const SMALL = VS3D.SMALL = 0.001;
 			headv = sphere$vectorize(head); 
 			head = vector$spherify(vector$rotate(headv,bent,tangent));
 			// fix bearing...toroids still flicker
+			// !!!TINIFY
 			let rotate = t*move.vb/2 || SMALL;
 			let bentp = vector$rotate(p,rotate,tangent);
 			bearing = angle$spherify(sphere$planify(head,bentp),bentp).b;
@@ -585,7 +595,11 @@ const SMALL = VS3D.SMALL = 0.001;
 		let r = args.r + args.vr*t + args.ar*t*t/2;
 		let a = args.a + args.va*t*SPEED + args.aa*t*t*SPEED*SPEED/2;
 		let p = args.p;
-		return {...angle$spherify(a, p), r: r};
+		let s = {...angle$spherify(a, p), r: r};
+		// if (zeroish(s.r)) {
+		// 	s.r = 0;
+		// }
+		return s;
 	}
 
 	function spin_linear(args, t) {
@@ -599,7 +613,11 @@ const SMALL = VS3D.SMALL = 0.001;
 		let y1 = y0 + args.vl*dy*t + args.al*dy*t*t/2;
 		let {r, a} = vector$spherify(vector(x1,y1,0));
 		let p = args.p;
-		return {...angle$spherify(a, p), r: r};
+		let s = {...angle$spherify(a, p), r: r};
+		// if (zeroish(s.r)) {
+		// 	s.r = 0;
+		// }
+		return s;
 	}
 
 	// *** Used to easily convert parameter names ***
@@ -997,6 +1015,98 @@ const SMALL = VS3D.SMALL = 0.001;
 				return aligned;
 			}
 		}
+	}
+
+
+
+	// treat an array as if it were a collection of digits
+	function incindex(arr, max, i) {
+		i = i || 0;
+		if (i>=arr.length) {
+			return null;
+		}
+		arr = [...arr];
+		if (arr[i]+1<max) {
+			arr[i]+=1;
+			return arr;
+		} else {
+			for (let j=0; j<=i; j++) {
+				arr[j] = 0;
+			}
+			return incindex(arr, max, i+1);
+		}
+	}
+	function fitsums(prop, move) {
+		// skip all the recursive and recipe stuff for now
+		if (fits(prop, move)) {
+			return move;
+		}
+		let plane = move.p || WALL;
+		let {body, pivot, helper, hand, twist, bend, grip, head} = prop;
+
+		let body1 = {r: body.r, a: sphere$planify(body, plane)};
+		let pivot1 = {r: pivot.r, a: sphere$planify(pivot, plane)};
+		let helper1 = {r: helper.r, a: sphere$planify(helper, plane)};
+		let hand1 = {r: hand.r, a: sphere$planify(hand, plane)};
+		twist = twist || 0;
+		let grip1 = {r: grip.r, a: sphere$planify(grip, plane)};
+		let head1 = {r: head.r, a: sphere$planify(head, plane)};
+
+		move = new Move(move);
+		let body2 = move.body;
+		let pivot2 = move.pivot;
+		let helper2 = move.helper;
+		let hand2 = move.hand;
+		let grip2 = move.grip;
+		let head2 = move.head;
+
+		
+		let bodyd = (!nearly(body1.r, body2.r));
+		let pivotd = (!nearly(pivot1.r, pivot2.r));
+		let helperd = (!nearly(helper1.r, helper2.r));
+		let handd = (!nearly(hand1.r, hand2.r));
+		let handdiff = bodyd+pivotd+helperd+handd;
+		// the algorithm only tries if there are at least two nodes<=HAND with different radii
+		if (handdiff>=2) {
+		// in which case it tries spinning all the new radii to see if anything fits the old handsum
+			
+			let nodes = [];
+			if (handd && !zeroish(hand2.r)) {
+				nodes.push(HAND);
+			}
+			if (helperd && !zeroish(helper2.r)) {
+				nodes.push(HELPER);
+			}
+			if (pivotd && !zeroish(pivot2.r)) {
+				nodes.push(PIVOT);
+			}
+			if (bodyd && !zeroish(body2.r)) {
+				nodes.push(BODY);
+			}
+			let combos = [];
+			for (let node of nodes) {
+				combos.push(0);
+			}
+			// okay, now we have our array of angles to try.
+			let k = 0;
+			let ANGLES = 8;
+			let ANGLE = UNIT*(2*Math.PI)/ANGLES;
+			let aligned = clone(move);
+			while (combos!==null) {	
+				for (let i=0; i<combos.length; i++) {
+					aligned[NODES[nodes[i]]].a = angle(move[NODES[nodes[i]]].a+ANGLE*combos[i]);
+				}
+				let m = spin(aligned, 0, "dummy");
+				if (sphere$nearly(sum_nodes(prop, HAND),sum_nodes(m, HAND), SMALL)) {
+					break;
+				} else {
+					combos = incindex(combos, ANGLES);
+				}
+			}
+		}
+		let headdiff ;
+		headdiff += (!nearly(grip1.r, grip2.r));
+		headdiff += (!nearly(head1.r, head2.r));
 	}
 
 	// check whether the hand and head positions match
@@ -1551,7 +1661,8 @@ function Player(renderer) {
 	function parse(thing) {
 		return JSON.parse(thing, function(key, value) {
 			if (["r","r1"].includes(key)) {
-				return (value || SMALL);
+				// return (value || TINY);
+				return value;
 			} else {
 				return value;
 			}
@@ -1580,7 +1691,7 @@ function Player(renderer) {
 	VS3D.vector = vector;
 	VS3D.vector$nearly = vector$nearly;
 	VS3D.vector$zeroish = vector$zeroish;
-	VS3D.vector$tinify = vector$tinify;
+	// VS3D.vector$tinify = vector$tinify;
 	VS3D.vector$unitize = vector$unitize;
 	VS3D.vector$magnitude = vector$magnitude;
 	VS3D.vector$spherify = vector$spherify;
@@ -1594,7 +1705,7 @@ function Player(renderer) {
 	VS3D.sphere$vectorize = sphere$vectorize;
 	VS3D.sphere$nearly = sphere$nearly;
 	VS3D.sphere$zeroish = sphere$zeroish;
-	VS3D.sphere$tinify = sphere$tinify;
+	// VS3D.sphere$tinify = sphere$tinify;
 	VS3D.sphere$planify = sphere$planify;
 	VS3D.plane = plane;
 	VS3D.plane$reference = plane$reference;
