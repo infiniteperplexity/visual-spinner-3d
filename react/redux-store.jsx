@@ -95,16 +95,27 @@ function reducer(state, action) {
       moves[propid] = [action.move];
       return {...state, moves: moves};
     }
-    let idx;
+    let idx, move;
     if (tick>=beats(moves[propid])*BEAT) {
       // ready to add new move on the end
       idx = moves[propid].length;
+      move = action.move;
+      let prev = moves[propid][idx-1];
+      // propagate angular speed
+      for (let i=0; i<NODES.length; i++) {
+        move[NODES[i]] = {};
+        move[NODES[i]].a1 = prev[NODES[i]].a1 + prev[NODES[i]].va1;
+        console.log("let's list some angles here.");
+        console.log(clone(prev[NODES[i]]));
+        console.log(clone(move[NODES[i]]));
+      }
     } else {
       // ready to replace a move in the middle
       let {move} = submove(moves[propid], tick);
       idx = moves[propid].indexOf(move);
+      move = action.move;
     }
-    moves[action.propid].splice(idx,0,action.move);
+    moves[action.propid].splice(idx,0, move);
     return {...state, moves: moves};
   } else if (action.type==="deleteMove") { 
     // don't let 'em delete the first one

@@ -1065,12 +1065,16 @@ let VS3D = {}; //
 		let pivotd = (!nearly(pivot1.r, pivot2.r));
 		let helperd = (!nearly(helper1.r, helper2.r));
 		let handd = (!nearly(hand1.r, hand2.r));
+		let gripd = (!nearly(grip1.r, grip2.r));
 		let handdiff = bodyd+pivotd+helperd+handd;
 		// the algorithm only tries if there are at least two nodes<=HAND with different radii
 		if (handdiff>=2) {
 		// in which case it tries spinning all the new radii to see if anything fits the old handsum
 			
 			let nodes = [];
+			if (gripd && !zeroish(grip2.r)) {
+				nodes.push(GRIP);
+			}
 			if (handd && !zeroish(hand2.r)) {
 				nodes.push(HAND);
 			}
@@ -1104,9 +1108,6 @@ let VS3D = {}; //
 				}
 			}
 		}
-		let headdiff ;
-		headdiff += (!nearly(grip1.r, grip2.r));
-		headdiff += (!nearly(head1.r, head2.r));
 	}
 
 	// check whether the hand and head positions match
@@ -1115,8 +1116,7 @@ let VS3D = {}; //
 			return fits(prop, move[0]);
 		}
 		let m = spin(move, 0, "dummy");
-		// may need to account for grip, eventually
-		return (	sphere$nearly(sum_nodes(prop, HAND),sum_nodes(m, HAND), SMALL)
+		return (	sphere$nearly(sum_nodes(prop, GRIP),sum_nodes(m, GRIP), SMALL)
 					&& sphere$nearly(sum_nodes(prop, HEAD),sum_nodes(m, HEAD), SMALL));
 	}
 

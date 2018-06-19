@@ -38,7 +38,6 @@ React App:
 		- Might need to override / wrap existing onclicks;
 		- Should it start at current tick?
 	- Make it so you can change prop colors.
-	- More area on SVG grids.
 	- A few planes are backwards.
 	- Maybe make the different nodes look different.
 	- Get icons from noun project for viewing angle.
@@ -61,3 +60,6 @@ React App:
 		- Need to write and test the algorithm.
 		- The inverse propnode approach doesn't really work here, does it?
 			- So you've got it set up right, then you move something, and move it back.  Does the inverse propnode survive?  No, not unless you're using the algorithm.
+
+- Let's see if we can't propagate speed.  So there are two places to do it:
+	- When creating the move and passing it.  At which point it's a little hard to get to the 
