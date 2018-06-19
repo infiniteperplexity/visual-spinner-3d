@@ -23,7 +23,6 @@ Bugs:
 
 React App:
 	Core:
-	- Might want to propagate starting angular speed by default (easy enough, only for new moves added to end.)  Actually, this is a little bit annoying.  I have to resolve beforehand?  I dunno.
 	- The conform-vs-fits issue is actually a really thorny one.
 	- +s to add props.  -s?
 	- Add color changing?
@@ -60,6 +59,3 @@ React App:
 		- Need to write and test the algorithm.
 		- The inverse propnode approach doesn't really work here, does it?
 			- So you've got it set up right, then you move something, and move it back.  Does the inverse propnode survive?  No, not unless you're using the algorithm.
-
-- Let's see if we can't propagate speed.  So there are two places to do it:
-	- When creating the move and passing it.  At which point it's a little hard to get to the 

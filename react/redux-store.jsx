@@ -104,10 +104,7 @@ function reducer(state, action) {
       // propagate angular speed
       for (let i=0; i<NODES.length; i++) {
         move[NODES[i]] = {};
-        move[NODES[i]].a1 = prev[NODES[i]].a1 + prev[NODES[i]].va1;
-        console.log("let's list some angles here.");
-        console.log(clone(prev[NODES[i]]));
-        console.log(clone(move[NODES[i]]));
+        move[NODES[i]].a1 = prev[NODES[i]].a1 + prev[NODES[i]].va1*BEAT;
       }
     } else {
       // ready to replace a move in the middle

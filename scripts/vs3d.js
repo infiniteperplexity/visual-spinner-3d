@@ -1019,21 +1019,22 @@ let VS3D = {}; //
 
 
 
-	// treat an array as if it were a collection of digits
-	function incindex(arr, max, i) {
+	function incindex(arr, base, i) {
 		i = i || 0;
 		if (i>=arr.length) {
 			return null;
 		}
 		arr = [...arr];
-		if (arr[i]+1<max) {
+		// the check
+		if (arr[i]+1<base) {
+			// the operation
 			arr[i]+=1;
 			return arr;
 		} else {
 			for (let j=0; j<=i; j++) {
 				arr[j] = 0;
 			}
-			return incindex(arr, max, i+1);
+			return incindex(arr, base, i+1);
 		}
 	}
 	function fitsums(prop, move) {
@@ -1092,17 +1093,16 @@ let VS3D = {}; //
 				combos.push(0);
 			}
 			// okay, now we have our array of angles to try.
-			let k = 0;
 			let ANGLES = 8;
-			let ANGLE = UNIT*(2*Math.PI)/ANGLES;
+			let ANGLE = (2*Math.PI)/(UNIT*ANGLES);
 			let aligned = clone(move);
 			while (combos!==null) {	
 				for (let i=0; i<combos.length; i++) {
 					aligned[NODES[nodes[i]]].a = angle(move[NODES[nodes[i]]].a+ANGLE*combos[i]);
 				}
 				let m = spin(aligned, 0, "dummy");
-				if (sphere$nearly(sum_nodes(prop, HAND),sum_nodes(m, HAND), SMALL)) {
-					break;
+				if (sphere$nearly(sum_nodes(prop, GRIP),sum_nodes(m, GRIP), SMALL)) {
+					return (aligned);
 				} else {
 					combos = incindex(combos, ANGLES);
 				}
