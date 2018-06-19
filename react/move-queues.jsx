@@ -13,6 +13,7 @@ class MoveQueue extends React.Component {
       ticks += beats(moves[i])*BEAT;
     }
     list.push(<NewMove key={list.length} {...this.props}/>);
+    list.push(<ColorPicker key={list.length+1} {...this.props}/>);
     return (
       <ul style={{
         listStyleType: "none",
@@ -101,7 +102,7 @@ class MoveItem extends React.Component {
     bg = bg || "white";
     let width = this.canvas.width;
     let height = this.canvas.height;
-    let color = COLORS[this.props.propid];
+    let color =this.props.colors[this.props.propid];
     let ctx = this.canvas.getContext("2d");
     let hand = this.props.move.hand;
     let head = this.props.move.head;
@@ -147,5 +148,32 @@ class MoveItem extends React.Component {
       />
     );
     return canv;
+  }
+}
+
+
+
+class ColorPicker extends React.Component {
+  handleChange = (e)=> {
+    let colors = [...this.props.colors];
+    colors[this.props.propid] = e.target.value;
+    this.props.setColors(colors);
+    this.props.renderEngine();
+  }
+  render() {
+    return (
+      <select style={{
+        display: "inline-block"
+      }} onChange={this.handleChange} value={this.props.colors[this.props.propid]}>
+        
+        <option value="red">Red</option>
+        <option value="orange">Orange</option>
+        <option value="yellow">Yellow</option>
+        <option value="green">Green</option>
+        <option value="blue">Blue</option>
+        <option value="purple">Purple</option>
+        <option value="white">White</option>
+      </select>
+    );
   }
 }

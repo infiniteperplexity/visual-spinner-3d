@@ -66,15 +66,32 @@ function Grid(props, context) {
   }
   let registry = [];
   for (let key of props.order) {
-    registry.push(<PropNode key={key} propid={key} node={BODY} color={COLORS[key]} {...props} />);
+    registry.push(<PropNode key={key} propid={key} node={BODY} color={props.colors[key]} {...props} />);
   }
+  let top = "UP";
+  let bottom = "DOWN";
+  let right = "RIGHT";
+  let left = "LEFT";
+  if (props.plane==="WHEEL") {
+    right = "BACK";
+    left = "FRONT";
+  } else if (props.plane==="FLOOR") {
+    top = "FRONT";
+    bottom = "BACK";
+  }
+  let tweak = -3;
   return (
     <DragSVG width={UNIT*UNITS} height={UNIT*UNITS} {...props}>
+
       <rect width={UNIT*UNITS} height={UNIT*UNITS} fill="black"/>
       {grid} 
       <UnitCircle x={X0} y={Y0} />
       <circle cx={X0} cy={Y0} r={2*UNIT} fill="none" stroke="gray" />
       {registry}
+      <text x={X0} y={0.75*UNIT+tweak} textAnchor="middle" stroke="gray" fill="gray" style={{fontFamily: "monospace"}}>{top}</text>
+      <text x={UNIT*(UNITS-0.5)} y={Y0+tweak} textAnchor="middle" stroke="gray" fill="gray" style={{fontFamily: "monospace"}}>{right}</text>
+      <text x={X0} y={UNIT*(UNITS-0.5)+tweak} textAnchor="middle" stroke="gray" fill="gray" style={{fontFamily: "monospace"}}>{bottom}</text>
+      <text x={HALF} y={Y0+tweak} textAnchor="middle" stroke="gray" fill="gray" style={{fontFamily: "monospace"}}>{left}</text>
     </DragSVG>
   );
 }

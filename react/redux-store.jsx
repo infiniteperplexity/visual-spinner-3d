@@ -24,7 +24,8 @@ let AppComponent = ReactRedux.connect(
       updateEngine: (args)=>dispatch({type: "updateEngine"}),
       setLock: (node, arg)=>dispatch({type: "setLock", node: node, value: arg}),
       setFrozen: (arg)=>dispatch({type: "setFrozen", value: arg}),
-      setPopup: (arg)=>dispatch({type: "setPopup", value: arg})
+      setPopup: (arg)=>dispatch({type: "setPopup", value: arg}),
+      setColors: (arr)=>dispatch({type: "setColors", colors: arr})
   })
 )(App);
 
@@ -35,6 +36,7 @@ function reducer(state, action) {
     return {
       props: clone(player.props.map(p=>p.prop)),
       moves: clone(player.props.map(p=>p.moves)),
+      colors: clone(COLORS),
       starters: player.props.map(p=>resolve(fit(p.prop, new Move({beats: 0})))),
       tick: 0,
       order: player.props.map((_,i)=>(player.props.length-i-1)),
@@ -42,7 +44,6 @@ function reducer(state, action) {
       popup: false,
       frozen: false,
       locks: {
-        body: true,
         helper: true,
         grip: true,
         head: true,
@@ -63,7 +64,7 @@ function reducer(state, action) {
     let moves = [...state.moves];
     let begins = [];
     if (state.tick===-1) {
-      renderer.render(player.props,props);
+      renderer.render(player.props, props);
       return state;
     }
     for (let i=0; i<props.length; i++) {
@@ -76,6 +77,7 @@ function reducer(state, action) {
       w.alpha = 0.6;
     });
     wrappers = wrappers.concat(player.props);
+    console.log("testing");
     renderer.render(wrappers, props);
     return state;
   } else if (action.type==="updateEngine") {
@@ -286,7 +288,26 @@ function reducer(state, action) {
     // restore the browser history
     return action.state;
   } else if (action.type==="setPlane") {
+    if (action.plane==="WALL") {
+      renderer.setCameraPosition(0,0,8);
+    } else if (action.plane==="WHEEL") {
+      renderer.setCameraPosition(8,0,0);
+    } else if (action.plane==="FLOOR") {
+      renderer.setCameraPosition(0,-8,0);
+    }
     return {...state, plane: action.plane};
+  } else if (action.type==="setColors") {
+    let colors = [...state.colors];
+    for (let i=0; i<state.props.length; i++) {
+      colors[i] = action.colors[i];
+      let prop = new VS3D.PropWrapper();
+      prop.color = action.colors[i];
+      for (let key of ["model","fire","alpha","nudge","prop","moves","fitted"]) {
+        prop[key] = player.props[i][key];
+      }
+      player.props[i] = prop;
+    }
+    return {...state, colors: colors};
   } else {
     throw new Error("wrong kind of action");
     return state;

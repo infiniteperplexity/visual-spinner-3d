@@ -68,6 +68,7 @@ VS3D = (function(VS3D) {
 		polar.rotateOnAxis(VS3D.vector(Math.sign(z),Math.sign(y),Math.sign(x)),Math.PI/2);
 		this.polar = polar;
 		this.scene.add(polar);
+		this.renderer.render(this.scene, this.camera);
 	};
 
 	ThreeRenderer.prototype.render = function(wrappers, positions) {
@@ -75,6 +76,7 @@ VS3D = (function(VS3D) {
 		for (let i=0; i<this.registry.length; i++) {
 			let prop = this.registry[i];
 			// clean up removed props or altered
+			// does not properly detected altered if mutated in place
 			if (!wrappers.includes(prop)) {
 				let shapes = this.models[i];
 				shapes.renderOrder = i;

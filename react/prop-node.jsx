@@ -135,14 +135,7 @@ class PropNode extends React.Component {
       x = v.x * UNIT;
       y = -v.z * UNIT;
     }
-    let r = UNIT/12;
-    if (this.props.node===HAND) {
-      r = UNIT/8;
-    } else if (this.props.node===HEAD) {
-      r = UNIT/4;
-    }
-    let fill = ([HEAD,HAND].includes(this.props.node)) ? this.props.color : "gray";
-    let stroke = ([HEAD,HAND].includes(this.props.node)) ? "gray" : this.props.color;
+
     let tether = null;
     let child = null;
     if (this.props.node<NODES.length-1) {
@@ -173,6 +166,32 @@ class PropNode extends React.Component {
       }
       tether = <line x1={X0} y1={Y0} x2={X0+x2} y2={Y0+y2} style={style} />
       child = <PropNode {...this.props} node={n} />;
+
+    }
+    let shape;
+    // should actually be the GRIP node?
+    if (this.props.node===BODY) {
+      shape = <rect x={X0-UNIT/12} y={Y0-UNIT/12} width={UNIT/6} height={UNIT/6} stroke="gray" strokeWidth="1" fill={this.props.color} />
+    } else if (this.props.node===PIVOT) {
+      shape = <polygon points={ (X0-UNIT/10) + "," + Y0 + " " +
+                                X0 + "," + (Y0-UNIT/10) + " " +
+                                (X0+UNIT/10) + "," + Y0 + " " +
+                                X0 + "," + (Y0+UNIT/10)
+      } stroke="gray" strokeWidth="1" fill={this.props.color} />
+    } else if (this.props.node===HELPER) {
+      shape = <polygon points={ (X0-UNIT/10) + "," + (Y0+UNIT/10) + " " +
+                                X0 + "," + (Y0-UNIT/12) + " " +
+                                (X0+UNIT/10) + "," + (Y0+UNIT/10)
+      } stroke="gray" strokeWidth="1" fill={this.props.color} />
+    } else if (this.props.node===HAND && !this.props.locks.grip) {
+      shape = <polygon points={ (X0-UNIT/10) + "," + (Y0-UNIT/10) + " " +
+                                X0 + "," + (Y0+UNIT/10) + " " +
+                                (X0+UNIT/10) + "," + (Y0-UNIT/10)
+      } stroke="gray" strokeWidth="1" fill={this.props.color} />
+    } else if (this.props.node===GRIP || this.props.node===HAND) {
+      shape = <circle cx={X0} cy={Y0} r={UNIT/8} stroke="gray" strokeWidth="1" fill={this.props.color} />;
+    } else if (this.props.node===HEAD) {
+      shape = <circle cx={X0} cy={Y0} r={UNIT/4} stroke="gray" strokeWidth="1" fill={this.props.color} />;
     }
     return (
       <g 
@@ -184,8 +203,8 @@ class PropNode extends React.Component {
         onMouseMove={this.handleMouseMove}
         onMouseLeave={this.handleMouseLeave}
       >
-        <circle cx={X0} cy={Y0} r={r} stroke={stroke} strokeWidth="1" fill={fill} />
         {tether}
+        {shape}
         {child}
       </g>
     );

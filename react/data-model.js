@@ -1,6 +1,5 @@
 let renderer, store;
 const {
-	snapto,
 	socket, fit, fits,
 	vector$spherify, sphere$vectorize, sphere$planify,
 	clone,
@@ -10,7 +9,7 @@ const {
 	NODES, HEAD, GRIP, HAND, PIVOT, HELPER, BODY,
 	parse, stringify, save,
 	flatten, submove, beats, spin, resolve,
-	Prop, Move
+	Prop, Move, PropWrapper
 } = VS3D;
 let combo = parse(json);
 

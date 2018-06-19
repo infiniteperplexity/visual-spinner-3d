@@ -928,7 +928,7 @@ let VS3D = {}; //
 				nodes[node] = {...moments_angular(args), p: args.p};
 			}
 			for (let prop in nodes[node]) {
-				if (zeroish(nodes[node][prop],0.01)) {
+				if (zeroish(nodes[node][prop],0.001)) {
 					nodes[node][prop] = 0;
 				}
 			}
@@ -976,6 +976,7 @@ let VS3D = {}; //
 				helper = {r: helper.r, a: sphere$planify(helper, plane)};
 				hand = {r: hand.r, a: sphere$planify(hand, plane)};
 				// at least for how we currently handle TWIST
+				// !!!this accumulates wrongness somehow...
 				twist = twist || 0;
 				// fit() should ignore BENT
 				grip = {r: grip.r, a: sphere$planify(grip, plane)};
@@ -985,7 +986,7 @@ let VS3D = {}; //
 					pivot: merge(pivot, move.pivot),
 					helper: merge(helper, move.helper),
 					hand: merge(hand, move.hand),
-					twist: twist,
+					twist: move.twist || 0,
 					vt: move.vt,
 					vb: move.vb,
 					grip: merge(grip, move.grip),
@@ -998,11 +999,13 @@ let VS3D = {}; //
 					return aligned;
 				}
 				// is this actually what we want, ever?
+				console.log("using last fitting method");
 				aligned = {
 					body: merge(move.body, body),
 					pivot: merge(move.pivot, pivot),
 					helper: merge(move.helper,helper),
 					hand: merge(move.hand, hand),
+					// this won't be correct, typically...
 					twist: twist,
 					vt: move.vt,
 					vb: move.vb,
@@ -1167,7 +1170,7 @@ let VS3D = {}; //
 // ****************************************************************************
 // ********************** Various helper methods ******************************
 // ****************************************************************************	
-	function snapto(args, prop) {
+	/*function snapto(args, prop) {
 		prop = prop || new Prop();
 		if (Array.isArray(args)) {
 			if (args.length===0) {
@@ -1210,9 +1213,10 @@ let VS3D = {}; //
 			twist: twist,
 			bent: bent
 		};
-		let fitted = fit(prop, prp);
+		// !!!wait a second, what's going on here???
+		// let fitted = fit(prop, prp);
 		return spin(prp,0,"dummy");
-	}
+	}*/
 
 	function beats(move) {
 		if (Array.isArray(move)) {
@@ -1349,15 +1353,21 @@ let VS3D = {}; //
 			let prev = arr[i-1];
 			let prop = socket(prev);
 			let args = arr[i];
-			let planed = Move({...args, p: prev.p});
+			let planed = {
+				...args,
+				p: args.p || prev.p,
+				twist: (args.twist!==undefined) ? args.twist : prev.twist || 0
+			};
 			for (let node of NODES) {
 				if (prev[node].m==="linear" || prev[node].la!==undefined || prev[node].vl!==undefined || prev[node].vl1!==undefined || prev[node].al!==undefined) {
+					planed[node] = planed[node] || {};
 					planed[node].m = "linear";
 				}	
 			}
 			let fitted = fit(prop, planed);
 			let moments = {};
 			for (let node of NODES) {
+				fitted[node] = fitted[node] || {a: 0, r: ["head","hand"].includes(node) ? 1 : 0};
 				if (fitted[node].m==="linear" || fitted[node].la!==undefined || fitted[node].vl!==undefined || fitted[node].vl1!==undefined || fitted[node].al!==undefined) {
 					let {vl1: vl, la: la, a1: a} = moments_linear({...prev[node], beats: prev.beats});
 					// !!! we probably need a better way of doing this...
@@ -1374,6 +1384,11 @@ let VS3D = {}; //
 				fitted.head.a = moments.a;
 			}
 			bent = angle(bent);
+			// let twist = 0;
+			// if (prev.twist || prev.vt) {
+			// 	twist = twist + (prev.twist || 0) + (prev.vb*beats(prev)*BEAT || 0);
+			// }
+			// twist = angle(twist);
 			let extended = {
 				body: merge(moments.body, fitted.body),
 				pivot: merge(moments.pivot, fitted.pivot),
@@ -1392,7 +1407,6 @@ let VS3D = {}; //
 		// should it wrap around to the beginning automatically?
 		return arr;
 	}
-
 
 // ****************************************************************************
 // ********************** Object-Oriented Convenience Wrappers ****************
@@ -1498,16 +1512,10 @@ function Player(renderer) {
 		let nname = node[0].toUpperCase()+node.slice(1);
 		PropWrapper.prototype["set"+nname+"Angle"] = function(a,p) {
 			p = p || WALL;
-			let arg = {};
-			arg[node] = {a: a};
-			this.prop = snapto(arg,this.prop);
-			 // this didn't work because it prefers the prop angle to the move angle.
-			//this.prop = spin(fit(this.prop, Move(arg)),0,"dummy");
+			this.prop[node] = {...angle$spherify(a,p), r: this.prop[node].r};
 		}
 		PropWrapper.prototype["set"+nname+"Radius"] = function(r) {
-			let arg = {};
-			arg[node] = {r: r};
-			this.prop = snapto(arg,this.prop)
+			this.prop[node].r = r;
 		}
 	}
 
@@ -1722,7 +1730,6 @@ function Player(renderer) {
 	VS3D.fits = fits;
 	VS3D.fit = fit;
 	VS3D.sum_nodes = sum_nodes;
-	VS3D.snapto = snapto;
 	VS3D.axis = axis;
 	VS3D.socket = socket;
 	VS3D.MoveFactory = MoveFactory;

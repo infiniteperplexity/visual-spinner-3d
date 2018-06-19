@@ -25,24 +25,19 @@ React App:
 	Core:
 	- The conform-vs-fits issue is actually a really thorny one.
 	- +s to add props.  -s?
-	- Add color changing?
-		- Could do via right-click?
 	- locks shouldn't be allowed when r is not zero.
+	- change how linear and radial speeds look
 
 	Nice:
 	- Make sure all panel elements work.
 	- Make sure you can't modify the first move.
 	- Better player controls.
 		- Should block / alter use of some / most other controls?
-		- Might need to override / wrap existing onclicks;
 		- Should it start at current tick?
 	- Make it so you can change prop colors.
-	- A few planes are backwards.
-	- Maybe make the different nodes look different.
-	- Get icons from noun project for viewing angle.
-	- Would be nice if SVGs rendered according to depth.
 	- Might want to remove default properties when exporting.
 	- Have the import do resolving and validating.
+	- Make looking at a move in the wrong plane more sensible.
 
 
 	Solving the node-sum problem:
@@ -59,3 +54,7 @@ React App:
 		- Need to write and test the algorithm.
 		- The inverse propnode approach doesn't really work here, does it?
 			- So you've got it set up right, then you move something, and move it back.  Does the inverse propnode survive?  No, not unless you're using the algorithm.
+
+	- Algorithm can't distinguish static stretches from spirals if one end of the move is at zero.
+		- Could have a checkbox to distinguish.
+		- Could always assume spiral for head and static for everything else.
