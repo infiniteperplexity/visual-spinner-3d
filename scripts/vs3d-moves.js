@@ -71,7 +71,7 @@ VS3D = (function(VS3D) {
 
 	let recipe = VS3D.recipe;
 	let Move = VS3D.Move;
-	let extend = VS3D.extend;
+	let chain = VS3D.chain;
 	let merge = VS3D.merge;
 	let clone = VS3D.clone;
 	let realign = VS3D.realign;
@@ -87,7 +87,7 @@ VS3D = (function(VS3D) {
 				hand: {a: orient, va: spin*direction},
 				head: {a: orient, va: spin*direction}
 			})); 
-			let move = extend([
+			let move = chain([
 				segment,
 				{	
 					hand: {va: -spin*direction},
@@ -128,7 +128,7 @@ VS3D = (function(VS3D) {
 				head: {a: orient, a1: orient+QUARTER*direction, va1: 0}
 			}));
 			let topangle = (onepointfive) ? orient+SPLIT : orient;
-			let move = extend([
+			let move = chain([
 				segment,
 				{head: {a1: topangle, spin: -direction}},
 				{head: {a1: orient-QUARTER*direction, va1: 0}},
@@ -156,7 +156,7 @@ VS3D = (function(VS3D) {
 				hand: {a: orient, va: direction},
 				head: {a: hangle, va: v*spin*direction}
 			}));
-			let move = extend([segment,{},{},{}]);
+			let move = chain([segment,{},{},{}]);
 			if (entry!==undefined) {
 				move = realign(move,(s)=>angle$nearly(s.hand.a,entry));
 			}
@@ -181,7 +181,7 @@ VS3D = (function(VS3D) {
 				hand: {r: 0.5, a: orient, va: direction},
 				head: {a: hangle, va: spin*direction}
 			}));
-			let move = extend([segment,{},{},{}])
+			let move = chain([segment,{},{},{}])
 			if (entry!==undefined) {
 				move = realign(move,(s)=>angle$nearly(s.hand.a, entry));
 			}
@@ -206,7 +206,7 @@ VS3D = (function(VS3D) {
 				hand: {a: orient, va: direction},
 				head: {a: hangle, va: bend*direction}
 			}));
-			let move = extend([segment,{},{},{}]);
+			let move = chain([segment,{},{},{}]);
 			if (entry!==undefined) {
 				move = realign(move,(s)=>angle$nearly(s.hand.a,entry));
 			}
@@ -229,7 +229,7 @@ VS3D = (function(VS3D) {
 				hand: {a: orient, r: hand.r, vl: 0, a1: orient+QUARTER*direction, r1: ovalness},
 				head: {a: orient, va: direction*harmonics}
 			}));
-			let move = extend([
+			let move = chain([
 				segment,
 				{hand: {r1: hand.r,  a1: orient+SPLIT, vl1: 0}},
 				{hand: {r1: ovalness, a1: orient-QUARTER*direction}},
@@ -256,7 +256,7 @@ VS3D = (function(VS3D) {
 				hand: {a: orient, r: hand.r, va: 0, a1: orient+QUARTER*direction, r1: ovalness},
 				head: {a: orient, va: direction*harmonics}
 			}));
-			let move = extend([
+			let move = chain([
 				segment,
 				{hand: {r1: hand.r,  a1: orient+SPLIT, vl1: 0}},
 				{hand: {r1: ovalness, a1: orient-QUARTER*direction}},
@@ -285,7 +285,7 @@ VS3D = (function(VS3D) {
 				hand: {a: orient, va: direction, r1: 0.01},
 				head: {a: hangle, va: harmonics*spin*direction}
 			}));
-			let move = extend([
+			let move = chain([
 				segment,
 				{hand: {r1: 1}},
 				{hand: {r1: 0.01}},

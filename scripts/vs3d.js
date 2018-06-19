@@ -498,6 +498,23 @@ let VS3D = {}; //
 		}
 	}
 
+	// this would let me create a version of fit that uses two moves, not a move and a prop
+	function movify(prop, p) {
+		p = p || WALL;
+		let move = {
+			p: p,
+			twist: 0, // need to figure this part out
+			vt: 0,
+			bent: 0,
+			vb: 0
+		};
+		for (let i=0; i<NODES.length; i++) {
+			let node = NODES[i];
+			let pnode = prop[node];
+			move[node] = {a: sphere$planify(pnode, p), r: pnode.r};
+		}
+		return move;
+	}
 
 // ****************************************************************************
 // ********************** Main Functional Pipeline for Spinning ***************
@@ -941,80 +958,42 @@ let VS3D = {}; //
 // ********************** Logic to make sure moves fit together ***************
 // ****************************************************************************
 
-	// returns a move that has been refitted to match the prop
-	function fit(prop, move) {
-		if (Array.isArray(move)) {
-			if (move.length===0) {
+	function fit(move1, move2) {
+		if (Array.isArray(move1)) {
+			if (move1.length===0) {
+				return clone(move2);
+			}
+			return fit(move1[move1.length-1],move2)
+		}
+		if (Array.isArray(move2)) {
+			if (move2.length===0) {
 				return [];
 			}
-			let fitted = clone(move);
-			fitted[0] = fit(prop, move[0]);
-			for (let i=1; i<move.length; i++) {
-				// !!! Should we consider propagating planes at this point?
-				fitted[i] = fit(socket(fitted[i-1]), fitted[i]);
+			let fitted = clone(move2);
+			fitted[0] = fit(move1, move2[0]);
+			for (let i=1; i<move2.length; i++) {
+				// !!!change most movify dummies to extend
+				fitted[i] = fit(extend(fitted[i-1]), fitted[i]);
 			}
 			return fitted;
 		} else {
-			if (move.recipe) {
-				let built = build(move, prop);
+			if (move2.recipe) {
+				let built = build(move2, move1);
 				return built;
-				// if (move.nofit) {
-				// 	return built;
-				// }
-				// let aligned = realign(built, (s)=>fits(prop,s))
-				// return aligned;
 			}
-			if (move.nofit || fits(prop, move)) {
-				return move;
+			if (move2.nofit || fits(move1, move2)) {
+				// is this what we actually want to do?
+				return clone(move2);
 			} else {
-				// !!!does this actually has a pretty high chance of messing up, for any 3d move?
-				let plane = move.p || WALL;
-				let {body, pivot, helper, hand, twist, bend, grip, head} = prop;
+				// !!!here is where we would fitsum
 
-				body = {r: body.r, a: sphere$planify(body, plane)};
-				pivot = {r: pivot.r, a: sphere$planify(pivot, plane)};
-				helper = {r: helper.r, a: sphere$planify(helper, plane)};
-				hand = {r: hand.r, a: sphere$planify(hand, plane)};
-				// at least for how we currently handle TWIST
-				// !!!this accumulates wrongness somehow...
-				twist = twist || 0;
-				// fit() should ignore BENT
-				grip = {r: grip.r, a: sphere$planify(grip, plane)};
-				head = {r: head.r, a: sphere$planify(head, plane)};
-				let aligned = {
-					body: merge(body, move.body),
-					pivot: merge(pivot, move.pivot),
-					helper: merge(helper, move.helper),
-					hand: merge(hand, move.hand),
-					twist: move.twist || 0,
-					vt: move.vt,
-					vb: move.vb,
-					grip: merge(grip, move.grip),
-					head: merge(head, move.head),
-					p: plane,
-					beats: move.beats,
-					notes: move.notes
-				};
-				if (fits(prop, aligned)) {
+				let aligned = merge(move1, move2);
+				if (fits(move1, aligned)) {
 					return aligned;
 				}
+				console.log("fitting by method of last resort");
 				// is this actually what we want, ever?
-				console.log("using last fitting method");
-				aligned = {
-					body: merge(move.body, body),
-					pivot: merge(move.pivot, pivot),
-					helper: merge(move.helper,helper),
-					hand: merge(move.hand, hand),
-					// this won't be correct, typically...
-					twist: twist,
-					vt: move.vt,
-					vb: move.vb,
-					grip: merge(move.grip, grip),
-					head: merge(move.head, head),
-					p: plane,
-					beats: move.beats,
-					notes: move.notes
-				};
+				aligned = merge(move2, move1);
 				return aligned;
 			}
 		}
@@ -1114,13 +1093,14 @@ let VS3D = {}; //
 	}
 
 	// check whether the hand and head positions match
-	function fits(prop, move) {
+	function fits(prev, move) {
 		if (Array.isArray(move)) {
-			return fits(prop, move[0]);
+			return fits(prev, move[0]);
 		}
-		let m = spin(move, 0, "dummy");
-		return (	sphere$nearly(sum_nodes(prop, GRIP),sum_nodes(m, GRIP), SMALL)
-					&& sphere$nearly(sum_nodes(prop, HEAD),sum_nodes(m, HEAD), SMALL));
+		let s = dummy(prev);
+		let m = dummy(move, 0);
+		return (	sphere$nearly(sum_nodes(s, GRIP),sum_nodes(m, GRIP), SMALL)
+					&& sphere$nearly(sum_nodes(s, HEAD),sum_nodes(m, HEAD), SMALL));
 	}
 
 	// find the total position of all parent nodes to the node
@@ -1155,15 +1135,10 @@ let VS3D = {}; //
 		return move;
 	}
 
-	// returns a prop aligned to the final frame of the move in question
-	function socket(move) {
-		if (Array.isArray(move)) {
-			if (move.length===0) {
-				return new Prop();
-			}
-			return socket(move[move.length-1]);
-		}
-		return spin(move, beats(move)*BEAT, "dummy");
+	// returns a prop aligned to the final frame of the move in question, or another frame
+	function dummy(m, t) {
+		t = (t===undefined) ? beats(m)*BEAT : t;
+		return spin(m, t, "dummy");
 	}
 
 	
@@ -1293,9 +1268,9 @@ let VS3D = {}; //
 		}
 	}
 
-	function build(recipe, prop) {
+	function build(recipe, prev) {
 		let bs = recipe.beats || 4;
-		if (!prop) {
+		if (!prev) {
 			let single = MoveFactory[recipe.recipe](recipe);
 			let built = single;
 			while (beats(built)<bs) {
@@ -1305,29 +1280,10 @@ let VS3D = {}; //
 			return built.slice(0,bs);
 		}
 		// if the move has a plane, we keep that; otherwise, we use the wall plane.
-		let plane = recipe.p || WALL;
-		let {body, pivot, helper, hand, twist, grip, head} = prop;
-		body = {r: body.r, a: sphere$planify(body, plane), p: plane};
-		pivot = {r: pivot.r, a: sphere$planify(pivot, plane), p: plane};
-		helper = {r: helper.r, a: sphere$planify(helper, plane), p: plane};
-		hand = {r: hand.r, a: sphere$planify(hand, plane), p: plane};
-		// at least for how we currently handle TWIST
-		bent = recipe.bent || 0;
-		// bent will almost always be zero, but later we can try to handle this
-		grip = {r: grip.r, a: sphere$planify(grip, plane), p: plane};
-		head = {r: head.r, a: sphere$planify(head, plane), p: plane};
-		let aligned = {
-			body: body,
-			pivot: pivot,
-			helper: helper,
-			hand: hand,
-			grip: grip,
-			head: head,
-		}
-		let args = merge(aligned, recipe);
+		let args = merge(prev, recipe);
 		let single = MoveFactory[args.recipe](args);
 		if (!recipe.nofit) {
-			single = realign(single, (s)=>fits(prop,s));
+			single = realign(single, (s)=>fits(prev,s));
 		}
 		let built = single;
 		while (beats(built)<bs) {
@@ -1348,11 +1304,54 @@ let VS3D = {}; //
 		}
 	}
 
-	function extend(arr) {
+	// 
+	// function extend(move, t) {
+	// 	t = (t===undefined) ? beats(t)*BEAT : t;
+	// 	// so, I think we have a good sense of what this should return.
+	// }
+
+	// for now, no "t" argument
+	function extend(move) {
+		let p = move.p || WALL;
+		let resolved = resolve(move);
+		let next = movify(dummy(resolved), p);
+		for (let i=0; i<NODES.length; i++) {
+			let node = NODES[i];
+			next[node].va = resolved[node].va1;
+			next[node].vl = resolved[node].vl1;
+			next[node].la = resolved[node].la;
+		}
+		return next;
+	}
+	function chain(arr) {
 		for (let i=1; i<arr.length; i++) {
 			let prev = arr[i-1];
-			let prop = socket(prev);
 			let args = arr[i];
+			let fitted = merge(extend(prev), args);
+			let bent = 0;
+			if (prev.bent || prev.vb) {
+				bent = bent + (prev.bent || 0) + (prev.vb*beats(prev)*BEAT || 0);
+				// this took a lonnng time to figure out
+				fitted.head.a = moments_angular({...prev.head, beats: beats(prev)}).a1;
+			}
+			bent = angle(bent);
+			let extended = {
+				...fitted,
+				vb: (args.vb!==undefined) ? args.vb : prev.vb,
+				bent: (args.bent!==undefined) ? args.bent : bent,
+			};
+			arr[i] = extended;
+		}
+		// should it wrap around to the beginning automatically?
+		return arr;
+	}
+
+
+	function chain2(arr) {
+		for (let i=1; i<arr.length; i++) {
+			let prev = arr[i-1];
+			let args = arr[i];
+			// this has been refactored a few times and there's probably a lot of wasteful code here
 			let planed = {
 				...args,
 				p: args.p || prev.p,
@@ -1364,7 +1363,7 @@ let VS3D = {}; //
 					planed[node].m = "linear";
 				}	
 			}
-			let fitted = fit(prop, planed);
+			let fitted = merge(extend(prev), planed);
 			let moments = {};
 			for (let node of NODES) {
 				fitted[node] = fitted[node] || {a: 0, r: ["head","hand"].includes(node) ? 1 : 0};
@@ -1496,7 +1495,7 @@ function Player(renderer) {
 	}
 
 	PropWrapper.prototype.refit = function() {
-		this.fitted = fit(this.prop, this.moves);
+		this.fitted = fit(movify(this.prop), this.moves);
 		return this.fitted;
 	}
 	PropWrapper.prototype.spin = function(t) {
@@ -1723,6 +1722,7 @@ function Player(renderer) {
 	VS3D.angle$longitude = angle$longitude;
 	VS3D.Prop = Prop;
 	VS3D.Move = Move;
+	VS3D.movify = movify;
 	VS3D.spin = spin;
 	VS3D.beats = beats;
 	VS3D.flatten = flatten;
@@ -1731,13 +1731,14 @@ function Player(renderer) {
 	VS3D.fit = fit;
 	VS3D.sum_nodes = sum_nodes;
 	VS3D.axis = axis;
-	VS3D.socket = socket;
+	VS3D.extend = extend;
+	VS3D.dummy = dummy;
 	VS3D.MoveFactory = MoveFactory;
 	VS3D.recipe = recipe;
 	VS3D.build = build;
 	VS3D.variant = variant;
 	VS3D.realign = realign;
-	VS3D.extend = extend;
+	VS3D.chain = chain;
 	VS3D.spin_node = spin_node;
 	VS3D.spin_angular = spin_angular;
 	VS3D.spin_linear = spin_linear;
