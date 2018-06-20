@@ -34,7 +34,6 @@ React App:
 	- Better player controls.
 		- Should block / alter use of some / most other controls?
 		- Should it start at current tick?
-	- Make it so you can change prop colors.
 	- Might want to remove default properties when exporting.
 	- Have the import do resolving and validating.
 	- Make looking at a move in the wrong plane more sensible.

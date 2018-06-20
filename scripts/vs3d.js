@@ -1549,6 +1549,21 @@ function Player(renderer) {
 		});
 	}
 
+	function sparsify(move) {
+		// so...there's two potential ways of sparsifying...this seems kind of dangerous.
+		// one is that we remove any node that's in its default position.
+		// the one thing is, we can't refit after that...right?  Well...let's try it anyway.
+		move = clone(move);
+		for (let prop of ["bent","twist","vb","vt"]) {
+			if (move[prop]===0) {
+				delete move[prop];
+			}
+		}
+		if (vector$nearly(move.p, WALL)) {
+			delete move.p;
+		}
+	}
+
 	function save(obj) {
 		let txt = (typeof(obj)==="string") ? obj : stringify(obj); 
 		let blob = new Blob([txt], {type : 'application/json'});
