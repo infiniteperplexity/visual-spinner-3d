@@ -1042,21 +1042,31 @@ let VS3D = {}; //
 		// the algorithm proper
 		let diffs = {};
 		for (let i=BODY; i<=GRIP; i++) {
+			let node = NODES[i];
+			let r0 = socket[node].r;
+			let r1 = (!move2[node]) ? 0 : move2[node].r || 0;
 			// doesn't handle plane breaks yet.
-			let node = move2[NODES[i]] || {r: 0};
-			diffs[NODES[i]] = !nearly(socket[NODES[i]].r, node.r);
+			diffs[node] = !nearly(r0, r1);
 		}
+		let deltas = Object.values(diffs).reduce((a,b)=>(a+b));
 		// the algorithm only tries if there are at least two nodes<=HAND with different radii
-		if (Object.values(diffs).reduce((a,b)=>(a+b))>=2) {
-			// console.log("searching for acceptible match");
-			let nodes = NODES.filter((node,i)=>(diffs[node] && !zeroish(move2[node] || {a: 0, r: 0})));
+		if (deltas>=2) {
+			console.log("combinating");
+			let nodes = [];
+			for (let node in diffs) {
+				if (diffs[node]) {
+					if (move2[node] && !zeroish(move2[node].r)) {
+						nodes.push(node);
+					}
+				}
+			}
 			// how many different angles will we try?
 			let ANGLES = 8;
 			let ANGLE = (2*Math.PI)/(UNIT*ANGLES);
 			// seriously wonky magic going on here...use a string as if it were a combinatorial array
 			let combos = "0".repeat(nodes.length);
+			let aligned = clone(move2);
 			while (combos.length<=nodes.length) {
-				let aligned = clone(move2);
 				for (let i=0; i<combos.length; i++) {
 					let node = merge({r: 0, a: 0}, move2[nodes[i]]);
 					node.a = angle(node.a+ANGLE*combos[i]);
@@ -1064,9 +1074,9 @@ let VS3D = {}; //
 				}
 				let m = dummy(aligned, 0);
 				if (fits(move1, m)) {
-					// if (combos!=="0".repeat(nodes.length)) {
+					if (combos!=="0".repeat(nodes.length)) {
 						console.log("found acceptible combination at "+combos);
-					// }
+					}
 					return (aligned);
 				} else {
 					// increment by one with radix ANGLES

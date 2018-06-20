@@ -77,12 +77,11 @@ function reducer(state, action) {
       w.alpha = 0.6;
     });
     wrappers = wrappers.concat(player.props);
-    console.log("testing");
     renderer.render(wrappers, props);
     return state;
   } else if (action.type==="updateEngine") {
     for (let i=0; i<state.moves.length; i++) {
-      player.props[i].prop = socket(state.starters[i]);
+      player.props[i].prop = dummy(state.starters[i]);
       player.props[i].moves = clone(state.moves[i]);
       // this prevents the player from trying to refit the moves itself.
       // the fact that that's not a good idea says there's something wrong with fitting, right?
@@ -189,6 +188,11 @@ function reducer(state, action) {
       idx = moves[propid].indexOf(move);
       prev = (idx>0) ? moves[propid][idx-1] : state.starters[propid];
     }
+    // !!! okay, here goes nothing for combinate...
+    if (move.pivot && move.pivot.r>0) {
+      console.log("hi there!");
+    }
+    let combinated = combinate(prev, move);
     for (let i=0; i<NODES.length; i++) {
       // keep a0 and r0 from the move, recalculate a1 and r1
       let node = {};
@@ -205,7 +209,8 @@ function reducer(state, action) {
       node.ar = mnode.ar;
       move[NODES[i]] = node;
     }
-    move = resolve(move);
+    move = resolve(combinated || move);
+    // move = resolve(move);
     // need to propagate either zero or one times
     if ((tick===-1 && moves[propid].length>0) || (tick>=0 && idx<moves[propid].length-1)) {
       let next;

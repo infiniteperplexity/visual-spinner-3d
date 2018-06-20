@@ -124,6 +124,7 @@ class PopUp extends React.Component {
         props: clone(player.props.map(p=>p.prop)),
         moves: clone(player.props.map(p=>p.moves)),
         starters: player.props.map(p=>resolve(fit(p.prop, new Move({beats: 0})))),
+        colors: player.props.map(p=>p.color || "red"),
         tick: -1,
         order: player.props.map((_,i)=>(player.props.length-i-1)),
         plane: "WALL",
