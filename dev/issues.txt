@@ -1,11 +1,8 @@
 Engine:
 - Allow optional planes per node, upon the first time I need it.
-- Might want to make units more readable for vl and vr.
 - Are defaults injected in the right places?  Probably not, given that object spread is the single biggest performance hog.  Much less of a problem now that I cache the fitted moes.
-- Should extend() wrap around?
-- Try to move all the "tinify" logic to very temporary places.
-	- I removed all tinification except for angle$spherify...do things work now?
-	- I left it in there for sphere$vectorize as well.  Vectors are rarely displayed directly, except as planes, so it shouldn't be much distraction.
+- linear movement is now broken and I barely care to fix it.
+- not sure if radial acceleration units are correct
 
 Apps:
 - Integrate it with React.
@@ -58,3 +55,6 @@ React App:
 	- Algorithm can't distinguish static stretches from spirals if one end of the move is at zero.
 		- Could have a checkbox to distinguish.
 		- Could always assume spiral for head and static for everything else.
+
+
+

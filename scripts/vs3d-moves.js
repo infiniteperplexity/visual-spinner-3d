@@ -246,54 +246,35 @@ VS3D = (function(VS3D) {
 		"snake",
 		{
 			harmonics: 1,
-			ovalness: 0.01	
+			oval: 0.01
 		},
 		options => {
-			let {beats, mode, hand, head, harmonics, orient, direction, ovalness, p, entry} = options;
+			console.log("new snake");
+			let {beats, mode, hand, head, harmonics, orient, direction, p, entry, oval} = options;
 			// let's say there's no such thing as mode for now
 			let segment = Move(merge(options,{
 				beats: 1,
-				hand: {a: orient, r: hand.r, va: 0, a1: orient+QUARTER*direction, r1: ovalness},
-				head: {a: orient, va: direction*harmonics}
+				hand: {a: orient, r: hand.r, r1: 0, va: 0},
+				head: {a: orient, va: direction*harmonics},
+				helper: {a: orient+direction*QUARTER, r: 0, r1: oval}
 			}));
 			let move = chain([
 				segment,
-				{hand: {r1: hand.r,  a1: orient+SPLIT, vl1: 0}},
-				{hand: {r1: ovalness, a1: orient-QUARTER*direction}},
-				{hand: {r1: hand.r, vl1: 0, a1: orient}}
+				{hand: {r1: hand.r, a: orient+SPLIT}, helper: {r1: 0}},
+				{hand: {r1: 0}, helper: {a: orient-direction*QUARTER, r1: oval}},
+				{hand: {r1: hand.r, a: orient}, helper: {r1: 0}}
 			]);
+			// alignment is pretty weird for this move that combines hand and helper
 			if (entry!==undefined) {
-				move = realign(move,(s)=>angle$nearly(s.hand.a,entry,SMALL));
+				move = realign(move,(s)=>{
+					if (s.hand.r===hand.r && angle$nearly(s.hand.a, entry, SMALL)) {
+						return true;
+					} else if (s.hand.r===0 && angle$nearly(s.helper.a ,entry, SMALL)) {
+						return true;
+					}
+					return false;
+				});
 			}	
-			return move;
-		}
-	);
-
-	recipe(
-		// This version is simple and looks perfectly fine for double linear isolations, but looks wonky for just one
-		"snake_alt",
-		{
-			harmonics: 1,
-			ovalness: 0
-		},
-		options => {
-			let {beats, mode, hand, head, spin, orient, direction, harmonics, p, entry, ovalness} = options;
-			// mode is a "soft default"
-			let hangle = (mode!==undefined) ? orient+mode : orient+head.a-hand.a;
-			let segment = Move(merge(options,{
-				beats: 1,
-				hand: {a: orient, va: direction, r1: 0.01},
-				head: {a: hangle, va: harmonics*spin*direction}
-			}));
-			let move = chain([
-				segment,
-				{hand: {r1: 1}},
-				{hand: {r1: 0.01}},
-				{hand: {r1: 1}}
-			]);
-			if (entry!==undefined) {
-				move = realign(move,(s)=>angle$nearly(s.hand.a,entry));
-			}
 			return move;
 		}
 	);

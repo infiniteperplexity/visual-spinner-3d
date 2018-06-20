@@ -8,6 +8,7 @@ let VS3D = {}; //
 	const NUDGE = VS3D.NUDGE = 0.1;
 	const DIAG = VS3D.DIAG = Math.sqrt(2)/2;
 	const UNIT = VS3D.UNIT = 2*Math.PI/360;
+
 	const BODY = VS3D.BODY = 0;
 	const PIVOT = VS3D.PIVOT = 1;
 	const HELPER = VS3D.HELPER = 2;
@@ -24,6 +25,7 @@ let VS3D = {}; //
 	const MEASURE = VS3D.MEASURE = 4;
 	const TICKS = VS3D.TICKS = 360;
 	const BEAT = VS3D.BEAT = TICKS/MEASURE;
+	const LINEAR = VS3D.LINEAR = 1/BEAT;
 	const SPEED = VS3D.SPEED = 1;
 
 
@@ -520,7 +522,7 @@ let VS3D = {}; //
 // ********************** Main Functional Pipeline for Spinning ***************
 // ****************************************************************************
 
-	// dummy is just a convenience to distinguish "real" spinning from sockets and such
+	// dummy is just a debugging convenience if you want to log only "real" spinning
 	function spin(move, t, dummy) {
 		// move = clone(move);
 		if (move.recipe) {
@@ -591,6 +593,12 @@ let VS3D = {}; //
 		}
 	}
 
+	// returns a prop aligned to the final frame of the move in question, or another frame
+	function dummy(m, t) {
+		t = (t===undefined) ? beats(m)*BEAT : t;
+		return spin(m, t, "dummy");
+	}
+
 	// *** handle spinning logic for individual nodes ***
 	function spin_node(args, t) {
 		args = alias(args);
@@ -609,13 +617,11 @@ let VS3D = {}; //
 			args[e] = args[e] || 0;
 		}
 		args.p = args.p || WALL;
-		let r = args.r + args.vr*t + args.ar*t*t/2;
+		//!!! Not clear whether the angular conversion is correct
+		let r = args.r + args.vr*t/BEAT + args.ar*t*t/(2*BEAT*BEAT);
 		let a = args.a + args.va*t*SPEED + args.aa*t*t*SPEED*SPEED/2;
 		let p = args.p;
 		let s = {...angle$spherify(a, p), r: r};
-		// if (zeroish(s.r)) {
-		// 	s.r = 0;
-		// }
 		return s;
 	}
 
@@ -626,14 +632,14 @@ let VS3D = {}; //
 		let {x: x0, y: y0} = sphere$vectorize(sphere(args.r,args.a,0));
 		let dx = Math.sin(args.la*UNIT);
 		let dy = Math.cos(args.la*UNIT);
+		// !!!! completely untested at this point
+/*		let x1 = x0 + (args.vl*dx*t + args.al*dx*t*t/2)/BEAT;
+		let y1 = y0 + (args.vl*dy*t + args.al*dy*t*t/2)/BEAT;*/
 		let x1 = x0 + args.vl*dx*t + args.al*dx*t*t/2;
 		let y1 = y0 + args.vl*dy*t + args.al*dy*t*t/2;
 		let {r, a} = vector$spherify(vector(x1,y1,0));
 		let p = args.p;
 		let s = {...angle$spherify(a, p), r: r};
-		// if (zeroish(s.r)) {
-		// 	s.r = 0;
-		// }
 		return s;
 	}
 
@@ -677,14 +683,31 @@ let VS3D = {}; //
 	// *** Solve for positions, velocities, and accelerations ****
 	function moments_angular(args) {
 		args = alias(args);
+		// convert radial speeds to/from more comprehensible units
+		if (args.vr!==undefined) {
+			args.vr/=BEAT;
+		}
+		if (args.vr1!==undefined) {
+			args.vr1/=BEAT;
+		}
+		// !!! not sure if radial acceleration is converted correctly
+		if (args.ar!==undefined) {
+			args.ar/=BEAT;
+		}
 		let {x0: r, v0: vr, a: ar, x1: r1, v1: vr1} = solve({x0: args.r, x1: args.r1, v0: args.vr, v1: args.vr1, a: args.ar, t: args.beats*BEAT});
 		let {x0: a, v0: va, a: aa, x1: a1, v1: va1} = solve_angle({x0: args.a, x1: args.a1, v0: args.va, v1: args.va1, a: args.aa, spin: args.spin, t: args.beats*BEAT});
+		vr*=BEAT;
+		vr1*=BEAT;
+		ar*=BEAT;
 		return {r: r, vr: vr, ar: ar, a: a, va: va, aa: aa, r1: r1, vr1: vr1, a1: a1, va1: va1};
 	}
 
 	function moments_linear(args) {
 		args = alias(args);
 		let {a0: a, r0: r, la: la, vl0: vl, al: al, a1: a1, r1: r1, vl1: vl1} = solve_linear({a0: args.a, r0: args.r, a1: args.a1, r1: args.r1, la: args.la, vl0: args.vl, vl1: args.vl1, al: args.al, t: args.beats})
+		// vl*=BEAT;
+		// vl1*=BEAT;
+		// al*=BEAT;
 		return {a: a, r: r, la: la, vl: vl, al: al, a1: a1, r1: r1, vl1: vl1};
 	}
 
@@ -945,7 +968,7 @@ let VS3D = {}; //
 				nodes[node] = {...moments_angular(args), p: args.p};
 			}
 			for (let prop in nodes[node]) {
-				if (zeroish(nodes[node][prop],0.001)) {
+				if (zeroish(nodes[node][prop], SMALL)) {
 					nodes[node][prop] = 0;
 				}
 			}
@@ -972,8 +995,7 @@ let VS3D = {}; //
 			let fitted = clone(move2);
 			fitted[0] = fit(move1, move2[0]);
 			for (let i=1; i<move2.length; i++) {
-				// !!!change most movify dummies to extend
-				fitted[i] = fit(extend(fitted[i-1]), fitted[i]);
+				fitted[i] = fit(fitted[i-1], fitted[i]);
 			}
 			return fitted;
 		} else {
@@ -981,14 +1003,18 @@ let VS3D = {}; //
 				let built = build(move2, move1);
 				return built;
 			}
-			if (move2.nofit || fits(move1, move2)) {
-				// is this what we actually want to do?
+			if (move2.nofit) {
+				// !!!returning the move unmodified sometimes underspecifies things
 				return clone(move2);
 			} else {
 				// !!!here is where we would fitsum
-
-				let aligned = merge(move1, move2);
+				let aligned = clone(move2);
+				let resolved = resolve(move1);
+				for (let n of NODES) {
+					aligned[n] = merge({a: resolved[n].a1, r: resolved[n].r1}, aligned[n]);
+				};
 				if (fits(move1, aligned)) {
+					// console.log("MIDDLE METHOD");
 					return aligned;
 				}
 				console.log("fitting by method of last resort");
@@ -1000,94 +1026,47 @@ let VS3D = {}; //
 	}
 
 
-
-	function incindex(arr, base, i) {
-		i = i || 0;
-		if (i>=arr.length) {
-			return null;
-		}
-		arr = [...arr];
-		// the check
-		if (arr[i]+1<base) {
-			// the operation
-			arr[i]+=1;
-			return arr;
-		} else {
-			for (let j=0; j<=i; j++) {
-				arr[j] = 0;
-			}
-			return incindex(arr, base, i+1);
-		}
-	}
-	function fitsums(prop, move) {
+	function fitsums(move1, move2) {
 		// skip all the recursive and recipe stuff for now
-		if (fits(prop, move)) {
-			return move;
+		if (fits(move1, move2)) {
+			return move2;
+		};
+		move1 = new Move(move1);
+		// the algorithm proper
+		let diffs = {};
+		for (let i=BODY; i<=HAND; i++) {
+			// doesn't handle plane breaks yet.
+			let node = move2[NODES[i]] || {r: 0};
+			diffs[NODES[i]] = !nearly(move1[NODES[i]].r, node.r);
 		}
-		let plane = move.p || WALL;
-		let {body, pivot, helper, hand, twist, bend, grip, head} = prop;
-
-		let body1 = {r: body.r, a: sphere$planify(body, plane)};
-		let pivot1 = {r: pivot.r, a: sphere$planify(pivot, plane)};
-		let helper1 = {r: helper.r, a: sphere$planify(helper, plane)};
-		let hand1 = {r: hand.r, a: sphere$planify(hand, plane)};
-		twist = twist || 0;
-		let grip1 = {r: grip.r, a: sphere$planify(grip, plane)};
-		let head1 = {r: head.r, a: sphere$planify(head, plane)};
-
-		move = new Move(move);
-		let body2 = move.body;
-		let pivot2 = move.pivot;
-		let helper2 = move.helper;
-		let hand2 = move.hand;
-		let grip2 = move.grip;
-		let head2 = move.head;
-
-		
-		let bodyd = (!nearly(body1.r, body2.r));
-		let pivotd = (!nearly(pivot1.r, pivot2.r));
-		let helperd = (!nearly(helper1.r, helper2.r));
-		let handd = (!nearly(hand1.r, hand2.r));
-		let gripd = (!nearly(grip1.r, grip2.r));
-		let handdiff = bodyd+pivotd+helperd+handd;
 		// the algorithm only tries if there are at least two nodes<=HAND with different radii
-		if (handdiff>=2) {
-		// in which case it tries spinning all the new radii to see if anything fits the old handsum
-			
-			let nodes = [];
-			if (gripd && !zeroish(grip2.r)) {
-				nodes.push(GRIP);
-			}
-			if (handd && !zeroish(hand2.r)) {
-				nodes.push(HAND);
-			}
-			if (helperd && !zeroish(helper2.r)) {
-				nodes.push(HELPER);
-			}
-			if (pivotd && !zeroish(pivot2.r)) {
-				nodes.push(PIVOT);
-			}
-			if (bodyd && !zeroish(body2.r)) {
-				nodes.push(BODY);
-			}
-			let combos = [];
-			for (let node of nodes) {
-				combos.push(0);
-			}
-			// okay, now we have our array of angles to try.
+		if (Object.values(diffs).reduce((a,b)=>(a+b))>=2) {
+			let nodes = NODES.filter((node,i)=>(diffs[node] && !zeroish(move2[node] || {a: 0, r: 0})));
+			// how many different angles will we try?
 			let ANGLES = 8;
 			let ANGLE = (2*Math.PI)/(UNIT*ANGLES);
-			let aligned = clone(move);
-			while (combos!==null) {	
+			// seriously wonky magic going on here...use a string as if it were a combinatorial array
+			let combos = "0".repeat(nodes.length);
+			let s = dummy(move1);
+			while (combos.length<=nodes.length) {
+				let aligned = clone(move2);
 				for (let i=0; i<combos.length; i++) {
-					aligned[NODES[nodes[i]]].a = angle(move[NODES[nodes[i]]].a+ANGLE*combos[i]);
+					let node = merge({r: 0, a: 0}, move2[nodes[i]]);
+					node.a = angle(node.a+ANGLE*combos[i]);
+					aligned[nodes[i]] = node;
 				}
-				let m = spin(aligned, 0, "dummy");
-				if (sphere$nearly(sum_nodes(prop, GRIP),sum_nodes(m, GRIP), SMALL)) {
+
+				let m = dummy(aligned, 0);
+				if (sphere$nearly(sum_nodes(s, GRIP),sum_nodes(m, GRIP), SMALL)) {
 					return (aligned);
 				} else {
-					combos = incindex(combos, ANGLES);
-				}
+					// increment by one with radix ANGLES
+					combos = parseInt(combos, ANGLES)+1;
+					combos = Number(combos).toString(ANGLES);
+					while (combos.length<nodes.length) {
+						combos = "0"+combos;
+					}
+				}	
 			}
 		}
 	}
@@ -1134,65 +1113,10 @@ let VS3D = {}; //
 		throw new Error("realignment failed");
 		return move;
 	}
-
-	// returns a prop aligned to the final frame of the move in question, or another frame
-	function dummy(m, t) {
-		t = (t===undefined) ? beats(m)*BEAT : t;
-		return spin(m, t, "dummy");
-	}
-
 	
 // ****************************************************************************
 // ********************** Various helper methods ******************************
 // ****************************************************************************	
-	/*function snapto(args, prop) {
-		prop = prop || new Prop();
-		if (Array.isArray(args)) {
-			if (args.length===0) {
-				return prop;
-			}
-			return snapto(args[0],prop);
-		}
-		let p = args.p || WALL;
-		args.body = args.body || {};
-		args.pivot = args.pivot || {};
-		args.helper = args.helper || {};
-		args.hand = args.hand || {};
-		args.grip = args.grip || {};
-		args.head = args.head || {};
-		let body = {r: prop.body.r, a: sphere$planify(prop.body, p), p: p};
-		let pivot = {r: prop.pivot.r, a: sphere$planify(prop.pivot, p), p: p};
-		let helper = {r: prop.helper.r, a: sphere$planify(prop.helper, p), p: p};
-		let hand = {r: prop.hand.r, a: sphere$planify(prop.hand, p), p: p};
-		let grip = {r: prop.grip.r, a: sphere$planify(prop.grip, p), p: p};
-		let head = {va: 0, vr: 0, r: prop.head.r, a: sphere$planify(prop.head, p), p: p};
-		body = merge(body, args.body);
-		pivot = merge(pivot, args.pivot);
-		helper = merge(helper, args.helper);
-		hand = merge(hand, args.hand);
-		grip = merge(grip, args.grip);
-		head = merge(head, args.head);
-		// !!!! Might want to consider plane to decide default
-		let twist = (args.twist!==undefined) ? args.twist : prop.twist;
-		let bent = args.bent || 0;
-		let prp = {
-			body: body,
-			pivot: pivot,
-			helper: helper,
-			hand: hand,
-			grip: grip,
-			head: head,
-			p: p,
-			vt: 0,
-			vb: 0,
-			twist: twist,
-			bent: bent
-		};
-		// !!!wait a second, what's going on here???
-		// let fitted = fit(prop, prp);
-		return spin(prp,0,"dummy");
-	}*/
-
 	function beats(move) {
 		if (Array.isArray(move)) {
 			let b = 0;
@@ -1276,7 +1200,7 @@ let VS3D = {}; //
 			while (beats(built)<bs) {
 				built = built.concat(single);
 			}
-			// this assumes every segment is one beat long...// this assumes every segment is one beat long...
+			// this assumes every segment is one beat long...
 			return built.slice(0,bs);
 		}
 		// if the move has a plane, we keep that; otherwise, we use the wall plane.
@@ -1304,12 +1228,6 @@ let VS3D = {}; //
 		}
 	}
 
-	// 
-	// function extend(move, t) {
-	// 	t = (t===undefined) ? beats(t)*BEAT : t;
-	// 	// so, I think we have a good sense of what this should return.
-	// }
-
 	// for now, no "t" argument
 	function extend(move) {
 		let p = move.p || WALL;
@@ -1317,12 +1235,14 @@ let VS3D = {}; //
 		let next = movify(dummy(resolved), p);
 		for (let i=0; i<NODES.length; i++) {
 			let node = NODES[i];
+			// !!! essentially untested
 			next[node].va = resolved[node].va1;
 			next[node].vl = resolved[node].vl1;
 			next[node].la = resolved[node].la;
 		}
 		return next;
 	}
+
 	function chain(arr) {
 		for (let i=1; i<arr.length; i++) {
 			let prev = arr[i-1];
@@ -1346,66 +1266,6 @@ let VS3D = {}; //
 		return arr;
 	}
 
-
-	function chain2(arr) {
-		for (let i=1; i<arr.length; i++) {
-			let prev = arr[i-1];
-			let args = arr[i];
-			// this has been refactored a few times and there's probably a lot of wasteful code here
-			let planed = {
-				...args,
-				p: args.p || prev.p,
-				twist: (args.twist!==undefined) ? args.twist : prev.twist || 0
-			};
-			for (let node of NODES) {
-				if (prev[node].m==="linear" || prev[node].la!==undefined || prev[node].vl!==undefined || prev[node].vl1!==undefined || prev[node].al!==undefined) {
-					planed[node] = planed[node] || {};
-					planed[node].m = "linear";
-				}	
-			}
-			let fitted = merge(extend(prev), planed);
-			let moments = {};
-			for (let node of NODES) {
-				fitted[node] = fitted[node] || {a: 0, r: ["head","hand"].includes(node) ? 1 : 0};
-				if (fitted[node].m==="linear" || fitted[node].la!==undefined || fitted[node].vl!==undefined || fitted[node].vl1!==undefined || fitted[node].al!==undefined) {
-					let {vl1: vl, la: la, a1: a} = moments_linear({...prev[node], beats: prev.beats});
-					// !!! we probably need a better way of doing this...
-					vl*=BEAT;
-					moments[node] = {vl: vl, la: la, a: a};
-				} else {
-					let {va1: va, a1: a, r1: r} =  moments_angular({...prev[node], beats: prev.beats});
-					moments[node] = {va: va, a: a, r: r};
-				}
-			}
-			let bent = 0;
-			if (prev.bent || prev.vb) {
-				bent = bent + (prev.bent || 0) + (prev.vb*beats(prev)*BEAT || 0);
-				fitted.head.a = moments.a;
-			}
-			bent = angle(bent);
-			// let twist = 0;
-			// if (prev.twist || prev.vt) {
-			// 	twist = twist + (prev.twist || 0) + (prev.vb*beats(prev)*BEAT || 0);
-			// }
-			// twist = angle(twist);
-			let extended = {
-				body: merge(moments.body, fitted.body),
-				pivot: merge(moments.pivot, fitted.pivot),
-				helper: merge(moments.helper, fitted.helper),
-				hand: merge(moments.hand, fitted.hand),
-				grip: merge(moments.grip, fitted.grip),
-				head: merge(moments.head, fitted.head),
-				vt: (args.vt!==undefined) ? args.vt : prev.vt,
-				vb: (args.vb!==undefined) ? args.vb : prev.vb,
-				bent: (args.bent!==undefined) ? args.bent : bent,
-				p: prev.p,
-				beats: (args.beats!==undefined) ? args.beats : prev.beats
-			};
-			arr[i] = extended;
-		}
-		// should it wrap around to the beginning automatically?
-		return arr;
-	}
 
 // ****************************************************************************
 // ********************** Object-Oriented Convenience Wrappers ****************
