@@ -3,6 +3,9 @@ Engine:
 - Are defaults injected in the right places?  Probably not, given that object spread is the single biggest performance hog.  Much less of a problem now that I cache the fitted moes.
 - linear movement is now broken and I barely care to fix it.
 - not sure if radial acceleration units are correct
+- Various fitting methods still don't handle plane breaks.
+- GRIP is mostly untested.
+- GRIP seems to display wrong for FLOOR plane, dunno why, something with bearings and angles.  Or maybe it's the optional planes per node?
 
 Apps:
 - Integrate it with React.
@@ -20,7 +23,7 @@ Bugs:
 
 React App:
 	Core:
-	- The conform-vs-fits issue is actually a really thorny one.
+	- The "combinate" algorithm now exists but I don't use it.
 	- +s to add props.  -s?
 	- locks shouldn't be allowed when r is not zero.
 	- change how linear and radial speeds look
@@ -35,26 +38,6 @@ React App:
 	- Might want to remove default properties when exporting.
 	- Have the import do resolving and validating.
 	- Make looking at a move in the wrong plane more sensible.
-
-
-	Solving the node-sum problem:
-	- Toggleable manipulation of beginning nodes.
-		- Head and hand stay frozen...does that work?
-	- Smart defaults, auto-back-propagating?
-		- Algorithm
-			- Try extending the ending non-zero abstract nodes backwards.
-			- Try zeroing out combinations of other abstract nodes in some order to find fits()
-				- Doesn't guarantee a solution, but might usually.
-
-	- Okay, finally we managed to produce the problem!  We verified that the approach I was using doesn't work.
-	- So what's next?  I feel like the algorithm is the only great idea I have right now.
-		- Need to write and test the algorithm.
-		- The inverse propnode approach doesn't really work here, does it?
-			- So you've got it set up right, then you move something, and move it back.  Does the inverse propnode survive?  No, not unless you're using the algorithm.
-
-	- Algorithm can't distinguish static stretches from spirals if one end of the move is at zero.
-		- Could have a checkbox to distinguish.
-		- Could always assume spiral for head and static for everything else.
 
 
 

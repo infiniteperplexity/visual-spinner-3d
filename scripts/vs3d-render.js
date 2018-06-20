@@ -137,6 +137,8 @@ VS3D = (function(VS3D) {
 		shapes.rotateOnAxis(axis,twist*VS3D.UNIT);
 		shapes.rotateY(-prop.head.b*VS3D.UNIT);
 		shapes.rotateZ(-prop.head.a*VS3D.UNIT);
+		// shapes.rotateY(-(prop.head.b+prop.grip.b)*VS3D.UNIT);
+		// shapes.rotateZ(-(prop.head.a+prop.grip.a)*VS3D.UNIT);
 	}
 
 	

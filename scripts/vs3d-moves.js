@@ -214,34 +214,6 @@ VS3D = (function(VS3D) {
 		}
 	);
 
-
-	recipe(
-		"snake1",
-		{
-			harmonics: 1,
-			ovalness: 0.01	
-		},
-		options => {
-			let {beats, mode, hand, head, harmonics, orient, direction, ovalness, p, entry} = options;
-			// let's say there's no such thing as mode for now
-			let segment = Move(merge(options,{
-				beats: 1,
-				hand: {a: orient, r: hand.r, vl: 0, a1: orient+QUARTER*direction, r1: ovalness},
-				head: {a: orient, va: direction*harmonics}
-			}));
-			let move = chain([
-				segment,
-				{hand: {r1: hand.r,  a1: orient+SPLIT, vl1: 0}},
-				{hand: {r1: ovalness, a1: orient-QUARTER*direction}},
-				{hand: {r1: hand.r, vl1: 0, a1: orient}}
-			]);
-			if (entry!==undefined) {
-				move = realign(move,(s)=>angle$nearly(s.hand.a,entry,SMALL));
-			}	
-			return move;
-		}
-	);
-
 	recipe(
 		"snake",
 		{
@@ -249,7 +221,6 @@ VS3D = (function(VS3D) {
 			oval: 0.01
 		},
 		options => {
-			console.log("new snake");
 			let {beats, mode, hand, head, harmonics, orient, direction, p, entry, oval} = options;
 			// let's say there's no such thing as mode for now
 			let segment = Move(merge(options,{

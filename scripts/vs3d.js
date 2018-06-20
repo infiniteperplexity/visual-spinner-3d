@@ -1007,7 +1007,6 @@ let VS3D = {}; //
 				// !!!returning the move unmodified sometimes underspecifies things
 				return clone(move2);
 			} else {
-				// !!!here is where we would fitsum
 				let aligned = clone(move2);
 				let resolved = resolve(move1);
 				for (let n of NODES) {
@@ -1016,6 +1015,14 @@ let VS3D = {}; //
 				if (fits(move1, aligned)) {
 					// console.log("MIDDLE METHOD");
 					return aligned;
+				}
+				let combinated = combinate(move1, move2);
+				if (combinated) {
+					for (let n of NODES) {
+						combinated[n] = merge({a: resolved[n].a1, r: resolved[n].r1}, combinated[n]);
+					}
+					console.log("using recombinate method");
+					return combinated;
 				}
 				console.log("fitting by method of last resort");
 				// is this actually what we want, ever?
@@ -1026,28 +1033,28 @@ let VS3D = {}; //
 	}
 
 
-	function fitsums(move1, move2) {
+	function combinate(move1, move2) {
 		// skip all the recursive and recipe stuff for now
 		if (fits(move1, move2)) {
 			return move2;
 		};
-		move1 = new Move(move1);
+		let socket = dummy(move1);
 		// the algorithm proper
 		let diffs = {};
-		for (let i=BODY; i<=HAND; i++) {
+		for (let i=BODY; i<=GRIP; i++) {
 			// doesn't handle plane breaks yet.
 			let node = move2[NODES[i]] || {r: 0};
-			diffs[NODES[i]] = !nearly(move1[NODES[i]].r, node.r);
+			diffs[NODES[i]] = !nearly(socket[NODES[i]].r, node.r);
 		}
 		// the algorithm only tries if there are at least two nodes<=HAND with different radii
 		if (Object.values(diffs).reduce((a,b)=>(a+b))>=2) {
+			// console.log("searching for acceptible match");
 			let nodes = NODES.filter((node,i)=>(diffs[node] && !zeroish(move2[node] || {a: 0, r: 0})));
 			// how many different angles will we try?
 			let ANGLES = 8;
 			let ANGLE = (2*Math.PI)/(UNIT*ANGLES);
 			// seriously wonky magic going on here...use a string as if it were a combinatorial array
 			let combos = "0".repeat(nodes.length);
-			let s = dummy(move1);
 			while (combos.length<=nodes.length) {
 				let aligned = clone(move2);
 				for (let i=0; i<combos.length; i++) {
@@ -1055,9 +1062,11 @@ let VS3D = {}; //
 					node.a = angle(node.a+ANGLE*combos[i]);
 					aligned[nodes[i]] = node;
 				}
-
 				let m = dummy(aligned, 0);
-				if (sphere$nearly(sum_nodes(s, GRIP),sum_nodes(m, GRIP), SMALL)) {
+				if (fits(move1, m)) {
+					// if (combos!=="0".repeat(nodes.length)) {
+						console.log("found acceptible combination at "+combos);
+					// }
 					return (aligned);
 				} else {
 					// increment by one with radix ANGLES
@@ -1069,6 +1078,7 @@ let VS3D = {}; //
 				}	
 			}
 		}
+		return null;
 	}
 
 	// check whether the hand and head positions match
@@ -1078,15 +1088,18 @@ let VS3D = {}; //
 		}
 		let s = dummy(prev);
 		let m = dummy(move, 0);
-		return (	sphere$nearly(sum_nodes(s, GRIP),sum_nodes(m, GRIP), SMALL)
-					&& sphere$nearly(sum_nodes(s, HEAD),sum_nodes(m, HEAD), SMALL));
+		return (sphere$nearly(	cumulate([s.body, s.pivot, s.helper, s.hand, s.grip]),
+								cumulate([m.body, m.pivot, m.helper, m.hand, m.grip]), SMALL)
+				&& 
+				sphere$nearly(	cumulate([s.grip, s.head]),
+								cumulate([m.grip, m.head]), SMALL)
+		);
 	}
-
-	// find the total position of all parent nodes to the node
-	function sum_nodes(prop, n) {
+	// find the cumulative position of an array of nodes
+	function cumulate(nodes) {
 		let [xs, ys, zs] = [0, 0, 0];
-		for (let i=BODY; i<=n; i++) {
-			let {x, y, z} = sphere$vectorize(prop[NODES[i]]);
+		for (let node of nodes) {
+			let {x, y, z} = sphere$vectorize(node);
 			xs+=x;
 			ys+=y;
 			zs+=z;
@@ -1589,7 +1602,8 @@ function Player(renderer) {
 	VS3D.submove = submove;
 	VS3D.fits = fits;
 	VS3D.fit = fit;
-	VS3D.sum_nodes = sum_nodes;
+	VS3D.combinate = combinate;
+	VS3D.cumulate = cumulate;
 	VS3D.axis = axis;
 	VS3D.extend = extend;
 	VS3D.dummy = dummy;
