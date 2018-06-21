@@ -6,7 +6,6 @@ class MoveQueue extends React.Component {
     }
     let moves = this.props.moves[this.props.propid];
     let ticks = 0;
-    // let list = [];
     let list = [<MoveItem key={-1} ticks={-1} move={this.props.starters[this.props.propid]} {...this.props}/>];
     for (let i=0; i<moves.length; i++) {
       list.push(<MoveItem key={i} ticks={ticks} move={moves[i]} {...this.props}/>);

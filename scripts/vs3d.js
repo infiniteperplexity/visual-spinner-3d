@@ -887,7 +887,7 @@ let VS3D = {}; //
 			known.a1 = true;
 		} else if (known.a1 && !known.r1 && known.r0) {
 			r1 = r0;
-			knwon.r1 = true;
+			known.r1 = true;
 		}
 		// next, convert to cartesian coordinates
 		let x0, x1, y0, y1, d;
@@ -1034,10 +1034,20 @@ let VS3D = {}; //
 
 
 	function combinate(move1, move2) {
+		if (arguments[2]) {
+			console.log("flag 1");
+		}
 		// skip all the recursive and recipe stuff for now
 		if (fits(move1, move2)) {
-			return move2;
+			if (arguments[2]) {
+				console.log("it fit");
+				console.log(clone(move2));
+			}
+			return clone(move2);
 		};
+		if (arguments[2]) {
+			console.log("flag 2");
+		}
 		let socket = dummy(move1);
 		// the algorithm proper
 		let diffs = {};
@@ -1076,8 +1086,9 @@ let VS3D = {}; //
 				if (fits(move1, m)) {
 					if (combos!=="0".repeat(nodes.length)) {
 						console.log("found acceptible combination at "+combos);
+						console.log(clone(aligned));
 					}
-					return (aligned);
+					return aligned;
 				} else {
 					// increment by one with radix ANGLES
 					combos = parseInt(combos, ANGLES)+1;

@@ -6,6 +6,8 @@ Engine:
 - Various fitting methods still don't handle plane breaks.
 - GRIP is mostly untested.
 - GRIP seems to display wrong for FLOOR plane, dunno why, something with bearings and angles.  Or maybe it's the optional planes per node?
+- Consider implementing BEND as a node.
+
 
 Apps:
 - Integrate it with React.
@@ -23,10 +25,8 @@ Bugs:
 
 React App:
 	Core:
-	- The "combinate" algorithm now exists but I don't use it.
 	- +s to add props.  -s?
 	- locks shouldn't be allowed when r is not zero.
-	- change how linear and radial speeds look
 
 	Nice:
 	- Make sure all panel elements work.

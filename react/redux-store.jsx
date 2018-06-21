@@ -44,6 +44,7 @@ function reducer(state, action) {
       popup: false,
       frozen: false,
       locks: {
+        body: true,
         helper: true,
         grip: true,
         head: true,
@@ -105,7 +106,9 @@ function reducer(state, action) {
       // propagate angular speed
       for (let i=0; i<NODES.length; i++) {
         move[NODES[i]] = {};
+        move[NODES[i]].a = prev[NODES[i]].a1;
         move[NODES[i]].a1 = prev[NODES[i]].a1 + prev[NODES[i]].va1*BEAT;
+        move[NODES[i]].r = prev[NODES[i]].r;
       }
     } else {
       // ready to replace a move in the middle
@@ -136,9 +139,11 @@ function reducer(state, action) {
     }
     let nodes = action.nodes;
     for (let i=0; i<NODES.length; i++) {
+      // !!!!need to rethink this a bit...
       let node0 = move[NODES[i]];
       let node1 = nodes[NODES[i]];
       if (!node1) {
+        node0.r = node0.r1;
         continue;
       }
       if (node1.a1!==undefined) {
@@ -169,8 +174,15 @@ function reducer(state, action) {
         node0.vr = node1.vr;
         node0.ar = node1.ar;
       }
+      node0.r = node0.r1;
     }
-    return {...state, moves: moves};
+    if (tick===-1) {
+      let starters = [...state.starters];
+      starters[propid] = move;
+      return {...state, starters: starters};
+    } else {
+      return {...state, moves: moves};
+    }
   // re-solve move after a change or insertion
   } else if (action.type==="resolveMove") {
     let {propid, tick} = action;
@@ -188,29 +200,39 @@ function reducer(state, action) {
       idx = moves[propid].indexOf(move);
       prev = (idx>0) ? moves[propid][idx-1] : state.starters[propid];
     }
-    // !!! okay, here goes nothing for combinate...
-    if (move.pivot && move.pivot.r>0) {
-      console.log("hi there!");
+    // do not break the move if it can be fitted using recombinate
+    let combinated;
+    if (tick!==-1) {
+      if (propid===0) {
+        combinated = combinate(prev, move, "flag");
+      } else {
+        combinated = combinate(prev, move);
+      }
     }
-    let combinated = combinate(prev, move);
-    for (let i=0; i<NODES.length; i++) {
-      // keep a0 and r0 from the move, recalculate a1 and r1
-      let node = {};
-      let mnode = move[NODES[i]] || {};
-      node.r = prev[NODES[i]].r1;
-      node.a = prev[NODES[i]].a1;
-      node.a1 = mnode.a1;
-      node.r1 = mnode.r1;
-      node.va = mnode.va;
-      node.va1 = mnode.va1;
-      node.aa = mnode.aa;
-      node.vr = mnode.vr;
-      node.vr1 = mnode.vr1;
-      node.ar = mnode.ar;
-      move[NODES[i]] = node;
+    if (combinated) {
+      // console.log("flag A");
+      // console.log(clone(combinated));
+      move = resolve(combinated);
+      // console.log("flag B");
+    } else {
+      for (let i=0; i<NODES.length; i++) {
+        // keep a0 and r0 from the move, recalculate a1 and r1
+        let node = {};
+        let mnode = move[NODES[i]] || {};
+        node.r = prev[NODES[i]].r1;
+        node.a = prev[NODES[i]].a1;
+        node.a1 = mnode.a1;
+        node.r1 = mnode.r1;
+        node.va = mnode.va;
+        node.va1 = mnode.va1;
+        node.aa = mnode.aa;
+        node.vr = mnode.vr;
+        node.vr1 = mnode.vr1;
+        node.ar = mnode.ar;
+        move[NODES[i]] = node;
+      }
+      move = resolve(move);
     }
-    move = resolve(combinated || move);
-    // move = resolve(move);
     // need to propagate either zero or one times
     if ((tick===-1 && moves[propid].length>0) || (tick>=0 && idx<moves[propid].length-1)) {
       let next;
@@ -219,9 +241,12 @@ function reducer(state, action) {
       } else {
         next = moves[propid][idx+1];
       }
-      // if it doesn't fit, then propagate
-      // !!!This whole check is a farce; any fitting move will probably go through a non-fitting intermediate state
-      // if (!fits(socket(move), next)) {
+      // do not break the next move if it can be fitted using recombinate
+      combinated = combinate(move, next);
+      if (combinated) {
+        // !!!! this guy causes lots of solving errors
+        next = resolve(combinated);
+      } else {
         for (let i=0; i<NODES.length; i++) {
           // keep a1 and r1 from the move, conform a0 and r0
           let node = {};
@@ -229,16 +254,16 @@ function reducer(state, action) {
           node.a = move[NODES[i]].a1;
           node.a1 = next[NODES[i]].a1;
           node.r1 = next[NODES[i]].r1;
-          // !!! probably need to do some other properties as well
+          // !!! probably need to do some other properties as well?
           next[NODES[i]] = node;
         }
         next = resolve(next);
-        if (tick===-1) {
-          moves[propid][0] = next;
-        } else {
-          moves[propid][idx+1] = next;
-        }
-      // }
+      }
+      if (tick===-1) {
+        moves[propid][0] = next;
+      } else {
+        moves[propid][idx+1] = next;
+      }
     }
     if (tick===-1) {
       let starters = [...state.starters];
