@@ -7,6 +7,7 @@ Engine:
 - GRIP is mostly untested.
 - GRIP seems to display wrong for FLOOR plane, dunno why, something with bearings and angles.  Or maybe it's the optional planes per node?
 - Consider implementing BEND as a node.
+- Over and under-solving are causing recurring problems.
 
 
 Apps:
@@ -27,7 +28,7 @@ React App:
 	Core:
 	- +s to add props.  -s?
 	- locks shouldn't be allowed when r is not zero.
-	- Now it can't tell whether to spiral or stretch.  Did I ever come up with a solution for that?
+	- unclear whether my solutions to the spiral/slide problem and the node-sum problem always work.
 
 	Nice:
 	- Make sure all panel elements work.

@@ -210,10 +210,7 @@ function reducer(state, action) {
       }
     }
     if (combinated) {
-      // console.log("flag A");
-      // console.log(clone(combinated));
       move = resolve(combinated);
-      // console.log("flag B");
     } else {
       for (let i=0; i<NODES.length; i++) {
         // keep a0 and r0 from the move, recalculate a1 and r1
@@ -232,6 +229,20 @@ function reducer(state, action) {
         move[NODES[i]] = node;
       }
       move = resolve(move);
+      // why didn't resolve fix that?  it's over-solved, and doesn't get corrected
+      console.log(clone(move));
+    }
+    for (let node of NODES) {
+      // convert suspiciously fast spirals into slides
+      if (zeroish(move[node].r,0.1) && (Math.abs(angle(move[node].a)-angle(move[node].a1))>=(Math.PI/VS3D.UNIT))) {
+        console.log("converting this fast spiral");
+        console.log(node);
+        move[node].a = move[node].a1;
+        move[node].va = 0;
+        move[node].va1 = 0;
+        move[node].aa = 0;
+        console.log(clone(move[node]));
+      }
     }
     // need to propagate either zero or one times
     if ((tick===-1 && moves[propid].length>0) || (tick>=0 && idx<moves[propid].length-1)) {
@@ -244,7 +255,6 @@ function reducer(state, action) {
       // do not break the next move if it can be fitted using recombinate
       combinated = combinate(move, next);
       if (combinated) {
-        // !!!! this guy causes lots of solving errors
         next = resolve(combinated);
       } else {
         for (let i=0; i<NODES.length; i++) {
@@ -258,6 +268,17 @@ function reducer(state, action) {
           next[NODES[i]] = node;
         }
         next = resolve(next);
+      }
+      for (let node of NODES) {
+        // convert suspiciously fast spirals into slides
+        if (zeroish(next[node].r,0.1) && (Math.abs(angle(next[node].a)-angle(next[node].a1))>=(Math.PI/VS3D.UNIT))) {
+          console.log("converting next fast spiral");
+          console.log(node);
+          next[node].a = next[node].a1;
+          next[node].va = 0;
+          next[node].va1 = 0;
+          next[node].aa = 0;
+        }
       }
       if (tick===-1) {
         moves[propid][0] = next;

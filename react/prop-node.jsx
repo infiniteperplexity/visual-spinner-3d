@@ -9,6 +9,7 @@ class PropNode extends React.Component {
       point: null,
       matrix: null
     }
+    this.ROUNDMIN = 0.2;
   }
   componentDidMount() {
     let e = this.element;
@@ -48,6 +49,9 @@ class PropNode extends React.Component {
       let plane = this.props.plane;
       let a = sphere$planify(node, VS3D[plane]);
       let nodes = {plane: VS3D[plane]};
+      if (node.r<=this.ROUNDMIN) {
+        node.r = 0.01;
+      }
       nodes[NODES[this.props.node]] = {r1: node.r, a1: a};
       this.props.modifyMove({
         propid: this.props.propid,
@@ -58,12 +62,15 @@ class PropNode extends React.Component {
         propid: this.props.propid,
         tick: this.props.tick
       });
+      // an SVG update at this point is cheap and sometimes useful
+      this.props.gotoTick(this.props.tick);
       this.props.renderEngine();
     }
     this.localState.beingDragged = false;
     Draggables[this.props.dragID].localState.dragging = null;
   }
   handleMouseLeave = (event) => {
+    //this.handleMouseUp(event);
   }
   handleMouseMove = (event) => {
     event.preventDefault();
@@ -92,11 +99,18 @@ class PropNode extends React.Component {
       if (this.props.node===HEAD && this.props.locks.head) {
         r = 1;
       } else {
-        r = round(r, 0.5);
+        if (r>=0.5) {
+          r = round(r, 0.5);
+        } else if (r>=this.ROUNDMIN) {
+          r = this.ROUNDMIN;
+        } else {
+          r = 0;
+        }
       }
       // how fine-grained is the rounding on angles?
       const FRACTION = 4;
       let rounding = round(Math.PI/(FRACTION*VS3D.UNIT),1);
+      // !!! this may be a bit fishy, actually.  shouldn't the rounding happen in-plane?
       a = round(a, rounding);
       b = round(b, rounding);
       let v = sphere$vectorize({r: r, a: a, b: b});
