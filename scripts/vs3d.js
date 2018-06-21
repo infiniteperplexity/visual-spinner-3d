@@ -1084,8 +1084,16 @@ let VS3D = {}; //
 				}
 				let m = dummy(aligned, 0);
 				if (fits(move1, m)) {
+					for (let node of nodes) {
+						for (let prop of ["va","va1","vr","vr1","aa","ar","vl","al","la"]) {
+							if (aligned[node][prop]!==undefined) {
+								delete aligned[node][prop];
+							}
+						}
+					}
 					if (combos!=="0".repeat(nodes.length)) {
 						console.log("found acceptible combination at "+combos);
+						console.log(clone(nodes));
 						console.log(clone(aligned));
 					}
 					return aligned;

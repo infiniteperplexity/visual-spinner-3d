@@ -139,7 +139,7 @@ function reducer(state, action) {
     }
     let nodes = action.nodes;
     for (let i=0; i<NODES.length; i++) {
-      // !!!!need to rethink this a bit...
+      // !!!!might need to rethink this a bit...
       let node0 = move[NODES[i]];
       let node1 = nodes[NODES[i]];
       if (!node1) {

@@ -27,6 +27,7 @@ React App:
 	Core:
 	- +s to add props.  -s?
 	- locks shouldn't be allowed when r is not zero.
+	- Now it can't tell whether to spiral or stretch.  Did I ever come up with a solution for that?
 
 	Nice:
 	- Make sure all panel elements work.
