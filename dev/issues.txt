@@ -27,18 +27,17 @@ Bugs:
 React App:
 	Core:
 	- +s to add props.  -s?
-	- locks shouldn't be allowed when r is not zero.
-	- unclear whether my solutions to the spiral/slide problem and the node-sum problem always work.
+	- Make moves deletable.
+	- Make moves insertable.
 
 	Nice:
 	- Make sure all panel elements work.
-	- Make sure you can't modify the first move.
-	- Better player controls.
-		- Should block / alter use of some / most other controls?
-		- Should it start at current tick?
 	- Might want to remove default properties when exporting.
 	- Have the import do resolving and validating.
 	- Make looking at a move in the wrong plane more sensible.
+
+	General:
+	- Mucho testing.
 
 
 

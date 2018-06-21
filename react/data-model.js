@@ -1,7 +1,7 @@
 let renderer, store;
 const {
 	dummy, fit, fits, combinate,
-	angle, zeroish, vector$spherify, sphere$vectorize, sphere$planify,
+	angle, nearly, zeroish, vector$spherify, sphere$vectorize, sphere$planify,
 	clone,
 	round,
 	BEAT,
@@ -28,6 +28,7 @@ function afterReactMounts() {
 	renderer = new VS3D.ThreeRenderer(document.getElementById("display"), 350, 350);
 	player.update = function(positions) {
 		renderer.render(this.props, positions);
+		store.dispatch({type: "gotoTick", tick: this.tick});
 	}
 	store.dispatch({type: "gotoTick", tick: -1});
 	store.dispatch({type: "renderEngine"});

@@ -145,19 +145,12 @@ VS3D = (function(VS3D) {
 
 	ThreeRenderer.prototype.builder = {};
 
-	ThreeRenderer.prototype.builder.colors = function(c) {
-		let colors = {
-			//blue: "royalblue"
-			//blue: new THREE.Color(0x3333ff)
-		};
-		return (colors[c] || c);
-	}
 
 	ThreeRenderer.prototype.builder.poi = function(prop) {
 		let {color, alpha} = prop;
 		let head = new THREE.Mesh(
 			new THREE.SphereGeometry(0.2,16,16),
-			new THREE.MeshLambertMaterial({color: this.colors(color)})
+			new THREE.MeshLambertMaterial({color: color})
 		);
 		head.userData.slidey = true;
 		let tether = new THREE.Mesh(
@@ -168,7 +161,7 @@ VS3D = (function(VS3D) {
 		tether.userData.slideish = true;
 		let handle = new THREE.Mesh(
 			new THREE.SphereGeometry(0.075,8,8),
-			new THREE.MeshLambertMaterial({color: this.colors(color)})
+			new THREE.MeshLambertMaterial({color: color})
 		);
 		if (alpha<1) {
 			head.material.transparent = true;
@@ -189,11 +182,11 @@ VS3D = (function(VS3D) {
 		let {color, alpha} = prop;
 		let shaft = new THREE.Mesh(
 			new THREE.CylinderGeometry(0.05,0.05,2,8),
-			new THREE.MeshLambertMaterial({color: this.colors(color)})
+			new THREE.MeshLambertMaterial({color: color})
 		);
 		let handle = new THREE.Mesh(
 			new THREE.CylinderGeometry(0.065,0.065,0.2,8),
-			new THREE.MeshLambertMaterial({color: this.colors(color)})
+			new THREE.MeshLambertMaterial({color: color})
 		);
 		let head = new THREE.Mesh(
 			new THREE.SphereGeometry(0.1,8,8),
@@ -227,7 +220,7 @@ VS3D = (function(VS3D) {
 		let {color, alpha} = prop;
 		let ring = new THREE.Mesh(
 			new THREE.TorusGeometry(0.8,0.05,8,32),
-			new THREE.MeshLambertMaterial({color: this.colors(color)})
+			new THREE.MeshLambertMaterial({color: color})
 		);
 		let handle = new THREE.Mesh(
 			new THREE.CylinderGeometry(0.075,0.075,0.15,8),
@@ -251,7 +244,7 @@ VS3D = (function(VS3D) {
 		let {color, alpha} = prop;
 		let ring = new THREE.Mesh(
 			new THREE.TorusGeometry(0.2,0.05,6,16),
-			new THREE.MeshLambertMaterial({color: this.colors(color)})
+			new THREE.MeshLambertMaterial({color: color})
 		);
 		let tine;
 		let tines = 3;
@@ -259,7 +252,7 @@ VS3D = (function(VS3D) {
 		let group = new THREE.Group();
 		group.add(ring);
 		for (var i=0; i<tines; i++) {
-			let c = (i===0) ? "gray" : this.colors(color);
+			let c = (i===0) ? "gray" : color;
 				tine = new THREE.Mesh(
 				new THREE.CylinderGeometry(0.05,0.05,0.8,8),
 				new THREE.MeshLambertMaterial({color: this.colors(c)})
@@ -284,20 +277,25 @@ VS3D = (function(VS3D) {
 	VS3D.ThreeRenderer = ThreeRenderer;
 	
 
+	let Colors = {};
+	Colors.rgb2hex = function(r, g, b) {
+		r = parseInt(r).toString(16);
+		g = parseInt(g).toString(16);
+		b = parseInt(b).toString(16);
+		r = (r.length===2) ? r : "0"+r;
+		g = (g.length===2) ? g : "0"+g; 
+		b = (b.length===2) ? b : "0"+b; 
+		return "#"+r+g+b;
+	}
+	Colors.css2hex = function(color) {
+	    let d = document.createElement("div");
+	    d.style.color = color;
+	    let c = getComputedStyle(d).color;
+	    let rgb = c.split("rgb(").join("").split(")").join("").split(", ");
+	    return Colors.rgb2hex(...rgb);
+	}
 
-	// how to handle captions
-	// let overlay = document.createElement("div");
-	// overlay.appendChild(document.createTextNode("hello world!"));
-	// overlay.style.color ="yellow";
-	// overlay.style.position = "absolute";
-	// overlay.style.top = "10px";
-	// overlay.style.width = "100%";
-	// overlay.style.zIndex = "100";
-	// overlay.style.display = "block";
-	// overlay.style.textAlign= "left";
-	// document.body.appendChild(overlay);
-	// overlay.innerHTML = "Testing";
-
+	VS3D.Colors = Colors;
 
 	return VS3D;
 })(VS3D);

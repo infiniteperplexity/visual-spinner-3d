@@ -25,6 +25,9 @@ class PropNode extends React.Component {
   }
   handleMouseDown = (event) => {
     event.preventDefault();
+    if (this.props.frozen) {
+      return;
+    }
     if (Draggables[this.props.dragID].localState.dragging === null) { 
       this.localState.beingDragged = true;
       Draggables[this.props.dragID].localState.dragging = this;
@@ -42,6 +45,9 @@ class PropNode extends React.Component {
     this.props.setTop(this.props.propid);
   }
   handleMouseUp = (event) => {
+    if (this.props.frozen) {
+      return;
+    }
     event.preventDefault();
     if (this.localState.beingDragged) {
       this.props.pushState();
@@ -64,6 +70,7 @@ class PropNode extends React.Component {
       });
       // an SVG update at this point is cheap and sometimes useful
       this.props.gotoTick(this.props.tick);
+      this.props.checkLocks();
       this.props.renderEngine();
     }
     this.localState.beingDragged = false;
@@ -74,6 +81,9 @@ class PropNode extends React.Component {
   }
   handleMouseMove = (event) => {
     event.preventDefault();
+    if (this.props.frozen) {
+      return;
+    }
     // note: harmless violation of React state management practices
     this.localState.point.x = event.clientX;
     this.localState.point.y = event.clientY;

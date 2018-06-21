@@ -1,5 +1,8 @@
 class NumberPanel extends React.Component {
   handleChange = (e)=>{
+    if (this.props.frozen) {
+      return;
+    }
     // !!!might need to change state.locks
     // this.props.modifyMove({...this.prop.vals, value: e.target.value});
     let nodes = {};
@@ -25,7 +28,12 @@ class NumberPanel extends React.Component {
 
 class LockBox extends React.Component {
   handleChange = (e) => {
+    if (this.props.frozen) {
+      return;
+    }
     this.props.setLock(this.props.node, e.target.checked);
+    // !!!!This is one possibility; another is to overwrite.
+    this.props.checkLocks();
   }
   render() {
     let bool = clone(this.props.locks)[this.props.node];
@@ -96,6 +104,9 @@ class MovePanel extends React.Component {
 
 class PlaneMenu extends React.Component {
   handleChange = (e)=>{
+    if (this.props.frozen) {
+      return;
+    }
     this.props.setPlane(e.target.value);
   }
   render() {
@@ -111,33 +122,68 @@ class PlaneMenu extends React.Component {
 
 class PopUp extends React.Component {
   handleSubmit = (e)=> {
+    if (this.props.frozen) {
+      this.props.setPopup(false);
+      return;
+    }
     e.preventDefault();
     let json = this.txt.value;
     if (json) {
-      let props = parse(json);
-      for (let i=0; i<props.length; i++) {
-        for (let key in props[i]) {
-          player.props[i][key] = props[i][key];
+      let saveState = clone(store.getState());
+      let savedProps = clone(player.props);
+      try {
+        let props = parse(json);
+        for (let i=0; i<props.length; i++) {
+          for (let key in props[i]) {
+            player.props[i][key] = props[i][key];
+          }
+        }
+        let state = {
+          props: clone(player.props.map(p=>p.prop)),
+          moves: clone(player.props.map(p=>p.moves)),
+          starters: player.props.map(p=>resolve(fit(p.prop, new Move({beats: 0})))),
+          colors: player.props.map(p=>p.color || "red"),
+          tick: -1,
+          order: player.props.map((_,i)=>(player.props.length-i-1)),
+          plane: "WALL",
+          locks: {
+            helper: true,
+            grip: true,
+            head: true,
+            body: true
+          } 
+        };
+        // should check state and throw errors if it's bad.
+        let nprops = state.props.length;
+        if (  state.moves.length!==nprops ||
+              state.starters.length!==nprops ||
+              state.colors.length!==nprops ||
+              state.order.length!==nprops
+          ) {
+          throw new Error("number of props not consistent.");
+        }
+        if (  !["WALL","WHEEL","FLOOR"].includes(state.plane) ||
+              tick<-1 ||
+              parseInt(tick) !== tick
+          ) {
+
+        }
+
+        this.props.restoreState(state);
+        this.props.pushState();
+        this.props.gotoTick(-1);
+        this.props.checkLocks();
+        this.props.renderEngine();
+      } catch (e) {
+        alert("invalid input!");
+        console.log(e);
+        this.props.restoreState(saveState);
+          for (let i=0; i<savedProps.length; i++) {
+          for (let key in savedProps[i]) {
+            player.props[i][key] = savedProps[i][key];
+          }
         }
       }
-      let state = {
-        props: clone(player.props.map(p=>p.prop)),
-        moves: clone(player.props.map(p=>p.moves)),
-        starters: player.props.map(p=>resolve(fit(p.prop, new Move({beats: 0})))),
-        colors: player.props.map(p=>p.color || "red"),
-        tick: -1,
-        order: player.props.map((_,i)=>(player.props.length-i-1)),
-        plane: "WALL",
-        locks: {
-          helper: true,
-          grip: true,
-          head: true,
-        } 
-      };
-      this.props.restoreState(state);
-      this.props.pushState();
-      this.props.gotoTick(-1);
-      this.props.renderEngine();
     }
     this.props.setPopup(false);
   }

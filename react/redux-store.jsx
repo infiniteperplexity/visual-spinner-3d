@@ -25,7 +25,8 @@ let AppComponent = ReactRedux.connect(
       setLock: (node, arg)=>dispatch({type: "setLock", node: node, value: arg}),
       setFrozen: (arg)=>dispatch({type: "setFrozen", value: arg}),
       setPopup: (arg)=>dispatch({type: "setPopup", value: arg}),
-      setColors: (arr)=>dispatch({type: "setColors", colors: arr})
+      setColors: (arr)=>dispatch({type: "setColors", colors: arr}),
+      checkLocks: ()=>dispatch({type: "checkLocks"})
   })
 )(App);
 
@@ -54,10 +55,6 @@ function reducer(state, action) {
   if (!["setNode", "setTop"].includes(action.type)) {
     console.log("store action:");
     console.log(clone(action));
-  }
-
-  if (state.frozen && ["insertMove","modifyMove","resolveMove","deleteMove"].includes(action.type)) {
-    return state;
   }
   if (action.type==="renderEngine") {
     //  update the view of the engine
@@ -203,11 +200,7 @@ function reducer(state, action) {
     // do not break the move if it can be fitted using recombinate
     let combinated;
     if (tick!==-1) {
-      if (propid===0) {
-        combinated = combinate(prev, move, "flag");
-      } else {
-        combinated = combinate(prev, move);
-      }
+      combinated = combinate(prev, move);
     }
     if (combinated) {
       move = resolve(combinated);
@@ -328,6 +321,22 @@ function reducer(state, action) {
   } else if (action.type==="setLock") {
     let locks = {...state.locks};
     locks[action.node] = action.value;
+    // !!!! Could consider conforming the prop's state to this; currently we just reverse it if it conflicts.
+    return {...state, locks: locks};
+  } else if (action.type==="checkLocks") {
+    let locks = {...state.locks};
+    let prop = state.props[state.order[state.order.length-1]];
+    for (let node in locks) {
+      if (node==="head") {
+        if (!nearly(prop.head.r, 1)) {
+          locks.head = false;
+        }
+      } else {
+        if (!zeroish(prop[node].r, 0.01)) {
+          locks[node] = false;
+        }
+      }
+    }
     return {...state, locks: locks};
   } else if (action.type==="setFrozen") {
     return {...state, frozen: action.value};

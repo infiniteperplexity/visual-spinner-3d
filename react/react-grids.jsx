@@ -30,11 +30,17 @@ class App extends React.Component {
             <div>
             <button onClick={(e)=>{
               e.preventDefault();
+              if (this.props.frozen) {
+                return;
+              }
               props.updateEngine();
               save(player.props);
             }}>Export</button>
             <button onClick={(e)=>{
               e.preventDefault();
+              if (this.props.frozen) {
+                return;
+              }
               props.setPopup(true);
             }}>Import</button>
             </div>
@@ -113,6 +119,7 @@ class ControlPanel extends React.Component {
     e.preventDefault();
     this.props.setFrozen(true);
     this.props.updateEngine();
+    player.goto(this.props.tick);
     player.play();
   }
   handlePause = (e)=>{
@@ -145,6 +152,7 @@ class ControlPanel extends React.Component {
     e.preventDefault();
     this.props.setFrozen(false);
     player.reset();
+    this.props.gotoTick(-1);
   }
   render() {
     // need to figure out how to handle ticks.

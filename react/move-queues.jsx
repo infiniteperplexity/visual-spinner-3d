@@ -32,6 +32,9 @@ class MoveQueue extends React.Component {
 
 class NewMove extends React.Component {
   handleClick = (e)=> {
+    if (this.props.frozen) {
+      return;
+    }
     let ticks;
     let allTicks = [];
     if (this.props.moves[this.props.propid].length===0) {
@@ -60,6 +63,7 @@ class NewMove extends React.Component {
     }
     this.props.setTop(this.props.propid);
     this.props.gotoTick(ticks);
+    this.props.checkLocks();
   }
   render() {
     return <button onClick={this.handleClick}
@@ -81,14 +85,21 @@ class MoveItem extends React.Component {
     this.HAND = 3;
   }
   handleMouseEnter = (e)=>{
+    if (this.props.frozen) {
+      return;
+    }
     this.renderContext("lightcyan");
   }
   handleMouseLeave = (e)=>{
     this.renderContext("white");
   }
   handleMouseDown = (e)=>{
+    if (this.props.frozen) {
+      return;
+    }
     this.props.setTop(this.props.propid);
     this.props.gotoTick(this.props.ticks);
+    this.props.checkLocks();
     this.props.renderEngine();
   }
   componentDidMount() {
@@ -109,7 +120,12 @@ class MoveItem extends React.Component {
     let y0 = Math.sin(hand.a1*VS3D.UNIT-Math.PI/2)*hand.r1*this.ARM;
     let x1 = Math.cos(head.a1*VS3D.UNIT-Math.PI/2)*head.r1*this.TETHER;
     let y1 = Math.sin(head.a1*VS3D.UNIT-Math.PI/2)*head.r1*this.TETHER;
-    ctx.fillStyle = (this.props.tick===this.props.ticks) ? "cyan" : bg;
+    ctx.fillStyle = bg;
+    if (this.props.tick>=this.props.ticks) {
+      if (this.props.tick===-1 || this.props.tick<(this.props.ticks+BEAT*beats(this.props.move))) {
+        ctx.fillStyle = "cyan";
+      }
+    }
     ctx.fillRect(0,0,height,width);
     ctx.fillStyle = color;
     ctx.beginPath();
@@ -151,9 +167,12 @@ class MoveItem extends React.Component {
 }
 
 
-
+let css2hex = VS3D.Colors.css2hex;
 class ColorPicker extends React.Component {
   handleChange = (e)=> {
+    if (this.props.frozen) {
+      return;
+    }
     let colors = [...this.props.colors];
     colors[this.props.propid] = e.target.value;
     this.props.setColors(colors);
@@ -161,18 +180,21 @@ class ColorPicker extends React.Component {
   }
   render() {
     return (
-      <select style={{
-        display: "inline-block"
-      }} onChange={this.handleChange} value={this.props.colors[this.props.propid]}>
-        
-        <option value="red">Red</option>
-        <option value="orange">Orange</option>
-        <option value="yellow">Yellow</option>
-        <option value="green">Green</option>
-        <option value="blue">Blue</option>
-        <option value="purple">Purple</option>
-        <option value="white">White</option>
-      </select>
+      <input type="color" onChange={this.handleChange} value={css2hex(this.props.colors[this.props.propid])}/>
     );
+    // return (
+    //   <select style={{
+    //     display: "inline-block"
+    //   }} onChange={this.handleChange} value={this.props.colors[this.props.propid]}>
+        
+    //     <option value="red">Red</option>
+    //     <option value="orange">Orange</option>
+    //     <option value="yellow">Yellow</option>
+    //     <option value="green">Green</option>
+    //     <option value="blue">Blue</option>
+    //     <option value="purple">Purple</option>
+    //     <option value="white">White</option>
+    //   </select>
+    // );
   }
 }
