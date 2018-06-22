@@ -29,7 +29,7 @@ class App extends React.Component {
           <MovePanel className="frame" {...props} />
           <PlaneMenu {...props}/>
           <ControlPanel {...props} />
-          <div>
+          <div style={{float: "right"}}>
             <button onClick={(e)=>{
               e.preventDefault();
               if (this.props.frozen) {
