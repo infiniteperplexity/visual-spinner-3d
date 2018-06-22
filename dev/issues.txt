@@ -35,6 +35,11 @@ React App:
 	- Make sure all panel elements work.
 	- Might want to remove default properties when exporting.
 	- Make looking at a move in the wrong plane more sensible.
+	- Move export and import to bottom.
+	- Get scrollbars actually working.
+	- Border boxes separating sections.
+	- Move panel to the right and views to the left.
+	- Color code movement panels.
 
 	General:
 	- Mucho testing.
