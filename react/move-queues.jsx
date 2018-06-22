@@ -11,8 +11,13 @@ class MoveQueue extends React.Component {
       list.push(<MoveItem key={i} ticks={ticks} move={moves[i]} {...this.props}/>);
       ticks += beats(moves[i])*BEAT;
     }
-    list.push(<NewMove key={list.length} {...this.props}/>);
-    list.push(<ColorPicker key={list.length+1} {...this.props}/>);
+    list.push(
+      <div key={list.length} style={{verticalAlign: "top", display: "inline-block"}}>
+        <NewMove {...this.props}/>
+        <br />
+        <ColorPicker {...this.props}/>
+      </div>
+    );
     return (
       <ul style={{
         listStyleType: "none",
@@ -66,12 +71,7 @@ class NewMove extends React.Component {
     this.props.checkLocks();
   }
   render() {
-    return <button onClick={this.handleClick}
-      style={{
-        display: "inline-block",
-        verticalAlign: "top"
-      }}
-      >+</button>
+    return <button onClick={this.handleClick}>+</button>
   }
 }
 
@@ -180,7 +180,9 @@ class ColorPicker extends React.Component {
   }
   render() {
     return (
-      <input type="color" onChange={this.handleChange} value={css2hex(this.props.colors[this.props.propid])}/>
+      <input  type="color"
+              onChange={this.handleChange}
+              value={css2hex(this.props.colors[this.props.propid])}/>
     );
     // return (
     //   <select style={{
