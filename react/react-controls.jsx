@@ -1,104 +1,59 @@
-class NumberPanel extends React.Component {
-  handleChange = (e)=>{
-    if (this.props.frozen) {
-      return;
-    }
-    // !!!might need to change state.locks
-    // this.props.modifyMove({...this.prop.vals, value: e.target.value});
-    let nodes = {};
-    let node = {};
-    node[this.props.vals.moment] = parseFloat(e.target.value);
-    nodes[NODES[this.props.vals.node]] = node;
-    this.props.modifyMove({
-      propid: this.props.vals.propid,
-      tick: this.props.tick,
-      nodes: nodes
-    });
-    this.props.resolveMove({
-      propid: this.props.vals.propid,
-      tick: this.props.tick
-    });
-    this.props.pushState();
-    this.props.renderEngine();
+class ControlPanel extends React.Component {
+  constructor(props, context) {
+    super(props, context);
+    this.RATE = 15;
+  }
+  handlePlay = (e)=>{
+    e.preventDefault();
+    this.props.setFrozen(true);
+    this.props.updateEngine();
+    player.goto(this.props.tick);
+    player.play();
+  }
+  handlePause = (e)=>{
+    e.preventDefault();
+    this.props.setFrozen(false);
+    // probably want to gotoTick...
+    player.stop();
+  }
+  handleRewind = (e)=>{
+    e.preventDefault();
+    this.props.setFrozen(false);
+    this.props.updateEngine();
+    player.stop();
+    player.goto(player.tick-this.RATE);
+  }
+  handleFrame = (e)=>{
+    this.props.setFrozen(false);
+    this.props.updateEngine();
+    player.stop();
+    player.goto(e.target.value)
+  }
+  handleForward = (e)=>{
+    e.preventDefault();
+    this.props.setFrozen(false);
+    this.props.updateEngine();
+    player.stop();
+    player.goto(player.tick+this.RATE);
+  }
+  handleReset = (e)=>{
+    e.preventDefault();
+    this.props.setFrozen(false);
+    player.reset();
+    this.props.gotoTick(-1);
   }
   render() {
-    return <input type="number" onChange={this.handleChange} style={{width: 50, fontFamily: "monospace"}} value={this.props.value} />
-  }
-}
-
-class LockBox extends React.Component {
-  handleChange = (e) => {
-    if (this.props.frozen) {
-      return;
-    }
-    this.props.setLock(this.props.node, e.target.checked);
-    // !!!!This is one possibility; another is to overwrite.
-    this.props.checkLocks();
-  }
-  render() {
-    let bool = clone(this.props.locks)[this.props.node];
+    // need to figure out how to handle ticks.
     return (
-      <span>
-        <input onChange={this.handleChange} type="checkbox" value="someDamnthing" checked={bool}/>{this.props.children}
-      </span>
+      <div>
+        <button onClick={this.handlePlay}>Play</button>
+        <button onClick={this.handlePause}>Pause</button>
+        <button onClick={this.handleRewind}>-</button>
+        <input id="panelTicks" type="number" style={{width:"80px"}} onChange={this.handleFrame} onInput={this.handleFrame} value={0}/>
+        <button onClick={this.handleForward}>+</button>
+        <button onClick={this.handleReset}>Reset</button>
+      </div>
     );
-  }
-}
-
-class MovePanel extends React.Component {
-  // the last item on order is the active one
-  render() {
-    let propid = this.props.order[this.props.order.length-1];
-    let move;
-    if (this.props.tick===-1) {
-      move = this.props.starters[propid];
-    } else if (this.props.moves[propid].length===0) {
-      return null;
-    } else {
-      move = submove(this.props.moves[propid], this.props.tick).move;
-    }
-    let list = [];
-    for (let i=NODES.length-1; i>=0; i--) {
-      let node = NODES[i];
-      let spacer = (node==="pivot") ? <span>&nbsp;</span> : <span>&nbsp;&nbsp;</span>;
-      let color = "black";
-      if (["grip","helper","body"].includes(node) && this.props.locks[node]) {
-        color = "gray";
-      }
-      if (this.props.tick===-1) {
-        color = "gray";
-      }
-      list.push(
-        <div key={i} style={{color: color}}>
-          {(node==="helper") ? "help" : node}{spacer}v<sub>angle0</sub>&nbsp;<NumberPanel vals={{propid: propid, node: i, moment: "va"}} value={move[node].va} {...this.props}/>
-          &nbsp;v<sub>angle1</sub>&nbsp;<NumberPanel vals={{propid: propid, node: i, moment: "va1"}} value={move[node].va1} {...this.props}/>
-          {(["grip","helper","body"].includes(node)) ? <LockBox node={node} {...this.props}>lock {node}</LockBox>: null}
-          <br />
-          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v<sub>radius0</sub><NumberPanel vals={{propid: propid, node: i, moment: "vr"}} value={move[node].vr} {...this.props}/>
-          &nbsp;v<sub>radius1</sub><NumberPanel vals={{propid: propid, node: i, moment: "vr1"}} value={move[node].vr1} {...this.props}/>
-          {(node==="head") ? <LockBox node={node} {...this.props}>lock tether</LockBox>: null}
-        </div>
-      );
-    }
-    return (
-      <div style={{fontFamily: "monospace"}}>
-        @tick  <input type="text" size="5" readOnly value={this.props.tick} />
-        &nbsp;ticks <NumberPanel  vals={{propid: propid, node: null, moment: "ticks"}} step={90} value={move.beats*BEAT} {...this.props}/>
-          {list}
-          <div>
-            plane <input type="text" size="5" readOnly value={this.props.plane} />
-            <br />
-            bend<sub>0</sub>&nbsp;
-              <NumberPanel vals={{propid: propid, node: null, moment: "bent"}} value={move.bent} {...this.props} />
-            &nbsp;v<sub>bend</sub>&nbsp;
-              <NumberPanel vals={{propid: propid, node: null, moment: "vb"}} value={move.vb} {...this.props} />
-            &nbsp;twist<sub>0</sub>&nbsp;
-            <NumberPanel vals={{propid: propid, node: null, moment: "twist"}} value={move.twist} {...this.props}/>
-            &nbsp;v<sub>twist</sub>&nbsp;
-              <NumberPanel vals={{propid: propid, node: null, moment: "vt"}} value={move.vt} {...this.props}/>
-          </div>
-        </div>
-    )
   }
 }
 

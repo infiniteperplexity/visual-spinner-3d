@@ -24,10 +24,12 @@ class App extends React.Component {
     return (
       <div className="grid app" style={{height: "720px"}}>
         <div className="grid top">
-            <MovePanel className="frame" {...props} />
-            <Grid dragID="SVG" {...props} />
-            <div id="display"/>
-            <div>
+          <Grid dragID="SVG" {...props} />
+          <div id="display"/>
+          <MovePanel className="frame" {...props} />
+          <PlaneMenu {...props}/>
+          <ControlPanel {...props} />
+          <div>
             <button onClick={(e)=>{
               e.preventDefault();
               if (this.props.frozen) {
@@ -43,9 +45,7 @@ class App extends React.Component {
               }
               props.setPopup(true);
             }}>Import</button>
-            </div>
-            <PlaneMenu {...props}/>
-            <ControlPanel {...props} />
+          </div>
         </div>
         <div className="grid bottom">
         <MoveQueue propid="0" {...props}/>
@@ -61,14 +61,15 @@ class App extends React.Component {
 }
 
 function Grid(props, context) {
+  let stroke = "dimgray";
   let grid = [];
   for (let i=0; i<UNITS; i++) {
     let x = UNIT*i+HALF;
-    grid.push(<line key={i} x1={x} y1={0} x2={x} y2={UNITS*UNIT} style={{stroke: "gray", strokeWidth: 1}}/>);
+    grid.push(<line key={i} x1={x} y1={0} x2={x} y2={UNITS*UNIT} style={{stroke: stroke, strokeWidth: 1}}/>);
   }  
   for (let j=0; j<UNITS; j++) {
     let y = UNIT*j+HALF;
-    grid.push(<line key={UNITS+j} x1={0} y1={y} x2={UNITS*UNIT} y2={y} style={{stroke: "gray", strokeWidth: 1}}/>);
+    grid.push(<line key={UNITS+j} x1={0} y1={y} x2={UNITS*UNIT} y2={y} style={{stroke: stroke, strokeWidth: 1}}/>);
   }
   let registry = [];
   for (let key of props.order) {
@@ -88,85 +89,19 @@ function Grid(props, context) {
   let tweak = -3;
   return (
     <DragSVG width={UNIT*UNITS} height={UNIT*UNITS} {...props}>
-
       <rect width={UNIT*UNITS} height={UNIT*UNITS} fill="black"/>
       {grid} 
-      <UnitCircle x={X0} y={Y0} />
-      <circle cx={X0} cy={Y0} r={2*UNIT} fill="none" stroke="gray" />
+      <circle cx={X0} cy={Y0} r={HALF} fill="none" stroke={stroke} />,  
+      <circle cx={X0} cy={Y0} r={UNIT} fill="none" stroke="" />
+      <circle cx={X0} cy={Y0} r={2*UNIT} fill="none" stroke={stroke} />
+      <line x1={0} y1={0} x2={UNIT*UNITS} y2={UNIT*UNITS} style={{stroke: stroke, strokeWidth: 1}}/>
+      <line x1={0} y1={UNIT*UNITS} x2={UNIT*UNITS} y2={0} style={{stroke: stroke, strokeWidth: 1}}/>
+      <text x={X0} y={0.75*UNIT+tweak} textAnchor="middle" stroke={stroke} fill={stroke} style={{fontFamily: "monospace"}}>{top}</text>
+      <text x={UNIT*(UNITS-0.5)} y={Y0+tweak} textAnchor="middle" stroke={stroke} fill={stroke} style={{fontFamily: "monospace"}}>{right}</text>
+      <text x={X0} y={UNIT*(UNITS-0.5)+tweak} textAnchor="middle" stroke={stroke} fill={stroke} style={{fontFamily: "monospace"}}>{bottom}</text>
+      <text x={HALF} y={Y0+tweak} textAnchor="middle" stroke={stroke} fill={stroke} style={{fontFamily: "monospace"}}>{left}</text>
       {registry}
-      <text x={X0} y={0.75*UNIT+tweak} textAnchor="middle" stroke="gray" fill="gray" style={{fontFamily: "monospace"}}>{top}</text>
-      <text x={UNIT*(UNITS-0.5)} y={Y0+tweak} textAnchor="middle" stroke="gray" fill="gray" style={{fontFamily: "monospace"}}>{right}</text>
-      <text x={X0} y={UNIT*(UNITS-0.5)+tweak} textAnchor="middle" stroke="gray" fill="gray" style={{fontFamily: "monospace"}}>{bottom}</text>
-      <text x={HALF} y={Y0+tweak} textAnchor="middle" stroke="gray" fill="gray" style={{fontFamily: "monospace"}}>{left}</text>
     </DragSVG>
   );
 }
-
-function UnitCircle(props, context) {
-  let {x, y} = props;
-  return [
-    <circle key={0.5} cx={x} cy={y} r={HALF} fill="none" stroke="gray" />,  
-    <circle key={1.0} cx={x} cy={y} r={UNIT} fill="none" stroke="" />
-  ];
-}
-
-class ControlPanel extends React.Component {
-  constructor(props, context) {
-    super(props, context);
-    this.RATE = 15;
-  }
-  handlePlay = (e)=>{
-    e.preventDefault();
-    this.props.setFrozen(true);
-    this.props.updateEngine();
-    player.goto(this.props.tick);
-    player.play();
-  }
-  handlePause = (e)=>{
-    e.preventDefault();
-    this.props.setFrozen(false);
-    // probably want to gotoTick...
-    player.stop();
-  }
-  handleRewind = (e)=>{
-    e.preventDefault();
-    this.props.setFrozen(false);
-    this.props.updateEngine();
-    player.stop();
-    player.goto(player.tick-this.RATE);
-  }
-  handleFrame = (e)=>{
-    this.props.setFrozen(false);
-    this.props.updateEngine();
-    player.stop();
-    player.goto(e.target.value)
-  }
-  handleForward = (e)=>{
-    e.preventDefault();
-    this.props.setFrozen(false);
-    this.props.updateEngine();
-    player.stop();
-    player.goto(player.tick+this.RATE);
-  }
-  handleReset = (e)=>{
-    e.preventDefault();
-    this.props.setFrozen(false);
-    player.reset();
-    this.props.gotoTick(-1);
-  }
-  render() {
-    // need to figure out how to handle ticks.
-    return (
-      <div>
-        <button onClick={this.handlePlay}>Play</button>
-        <button onClick={this.handlePause}>Pause</button>
-        <button onClick={this.handleRewind}>-</button>
-        <input id="panelTicks" type="number" style={{width:"80px"}} onChange={this.handleFrame} onInput={this.handleFrame} value={0}/>
-        <button onClick={this.handleForward}>+</button>
-        <button onClick={this.handleReset}>Reset</button>
-      </div>
-    );
-  }
-}
-
               

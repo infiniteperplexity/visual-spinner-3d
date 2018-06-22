@@ -1,3 +1,46 @@
+function BodyNode(props, context) {
+  let {x, y, fill, dim} = props;
+  return <rect x={x-dim} y={y-dim} width={2*dim} height={2*dim} stroke="gray" strokeWidth="1" fill={fill}/>;
+}
+
+function PivotNode(props, context) {
+  let {x, y, fill, dim} = props;
+  return <polygon points={
+    (x-dim)+","+y+" "+
+    x+","+(y-dim)+" "+
+    (x+dim)+","+y+" "+
+    x+","+(y+dim)
+  } stroke="gray" strokeWidth="1" fill={fill} />;
+}
+
+function HelperNode(props, context) {
+  let {x, y, fill, dim} = props;
+  return <polygon points={
+    (x-dim)+","+(y-dim)+" "+
+    x+","+(y+dim)+" "+
+    (x+dim)+","+(y-dim)
+  } stroke="gray" strokeWidth="1" fill={fill} />;
+}
+
+function HandNode(props, context) {
+  let {x, y, fill, dim} = props;
+  return <polygon points={
+    (x-dim)+","+(y+dim)+" "+
+    x+","+(y-dim)+" "+
+    (x+dim)+","+(y+dim)
+  } stroke="gray" strokeWidth="1" fill={fill} />;
+}
+
+function GripNode(props, context) {
+  let {x, y, fill, dim} = props;
+  return <circle cx={x} cy={y} r={dim*2} stroke="gray" strokeWidth="1" fill={fill} />;
+}
+
+function HeadNode(props, context) {
+  let {x, y, fill, dim} = props;
+  return <circle cx={x} cy={y} r={dim*2} stroke="gray" strokeWidth="1" fill={fill} />;
+}
+
 class PropNode extends React.Component {
   constructor(props, context) {
     super(props, context);
@@ -195,27 +238,17 @@ class PropNode extends React.Component {
     let shape;
     // should actually be the GRIP node?
     if (this.props.node===BODY) {
-      shape = <rect x={X0-UNIT/12} y={Y0-UNIT/12} width={UNIT/6} height={UNIT/6} stroke="gray" strokeWidth="1" fill={this.props.color} />
+      shape = <BodyNode x={X0} y={Y0} fill={this.props.color} dim={UNIT/12} />
     } else if (this.props.node===PIVOT) {
-      shape = <polygon points={ (X0-UNIT/10) + "," + Y0 + " " +
-                                X0 + "," + (Y0-UNIT/10) + " " +
-                                (X0+UNIT/10) + "," + Y0 + " " +
-                                X0 + "," + (Y0+UNIT/10)
-      } stroke="gray" strokeWidth="1" fill={this.props.color} />
+      shape = shape = <PivotNode x={X0} y={Y0} fill={this.props.color} dim={UNIT/10}/>
     } else if (this.props.node===HELPER) {
-      shape = <polygon points={ (X0-UNIT/10) + "," + (Y0+UNIT/10) + " " +
-                                X0 + "," + (Y0-UNIT/12) + " " +
-                                (X0+UNIT/10) + "," + (Y0+UNIT/10)
-      } stroke="gray" strokeWidth="1" fill={this.props.color} />
+      shape = <HelperNode x={X0} y={Y0} fill={this.props.color} dim={UNIT/10} />
     } else if (this.props.node===HAND && !this.props.locks.grip) {
-      shape = <polygon points={ (X0-UNIT/10) + "," + (Y0-UNIT/10) + " " +
-                                X0 + "," + (Y0+UNIT/10) + " " +
-                                (X0+UNIT/10) + "," + (Y0-UNIT/10)
-      } stroke="gray" strokeWidth="1" fill={this.props.color} />
+      shape = <HandNode x={X0} y={Y0} fill={this.props.color} dim={UNIT/10} />
     } else if (this.props.node===GRIP || this.props.node===HAND) {
-      shape = <circle cx={X0} cy={Y0} r={UNIT/8} stroke="gray" strokeWidth="1" fill={this.props.color} />;
+      shape = <GripNode x={X0} y={Y0} fill={this.props.color} dim={UNIT/16} />
     } else if (this.props.node===HEAD) {
-      shape = <circle cx={X0} cy={Y0} r={UNIT/4} stroke="gray" strokeWidth="1" fill={this.props.color} />;
+      shape = <HeadNode x={X0} y={Y0} fill={this.props.color} dim={UNIT/8} />
     }
     return (
       <g 

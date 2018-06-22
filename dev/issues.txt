@@ -36,13 +36,23 @@ React App:
 	- Might want to remove default properties when exporting.
 	- Make looking at a move in the wrong plane more sensible.
 	- Move export and import to bottom.
-	- Get scrollbars actually working.
 	- Border boxes separating sections.
-	- Move panel to the right and views to the left.
 	- Color code movement panels.
 
 	General:
 	- Mucho testing.
+
+The Movement Panel Sucks:
+- This is an issue.
+- In fact, it's the biggest issue.
+- I don't yet know how to solve it.
+- I think the big key is less text/numbers and more pictures.
+- Tooltips would also be nice.
+
+Ideas To Make It Suck Less:
+- Speedometers instead of number inputs; otherwise the same.
+- Four options - accelerate, decelerate, clockwise, ccw.  Four buttons and two panels can do everything.  Although currently we have four buttons and two panels already...
+
 
 
 

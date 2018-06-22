@@ -21,8 +21,6 @@ class MoveQueue extends React.Component {
     return (
       <ul style={{
         listStyleType: "none",
-        whiteSpace: "nowrap",
-        overflow: "hidden",
         borderStyle: "solid",
         border: "0px",
         padding: "0px",
@@ -166,14 +164,14 @@ class MoveItem extends React.Component {
   }
 }
 
-
-let css2hex = VS3D.Colors.css2hex;
+let {svg2hex, hex2svg} = VS3D.Colors;
 class ColorPicker extends React.Component {
   handleChange = (e)=> {
     if (this.props.frozen) {
       return;
     }
     let colors = [...this.props.colors];
+    let color = hex2svg(e.target.value);
     colors[this.props.propid] = e.target.value;
     this.props.setColors(colors);
     this.props.renderEngine();
@@ -182,21 +180,7 @@ class ColorPicker extends React.Component {
     return (
       <input  type="color"
               onChange={this.handleChange}
-              value={css2hex(this.props.colors[this.props.propid])}/>
+              value={svg2hex(this.props.colors[this.props.propid])}/>
     );
-    // return (
-    //   <select style={{
-    //     display: "inline-block"
-    //   }} onChange={this.handleChange} value={this.props.colors[this.props.propid]}>
-        
-    //     <option value="red">Red</option>
-    //     <option value="orange">Orange</option>
-    //     <option value="yellow">Yellow</option>
-    //     <option value="green">Green</option>
-    //     <option value="blue">Blue</option>
-    //     <option value="purple">Purple</option>
-    //     <option value="white">White</option>
-    //   </select>
-    // );
   }
 }

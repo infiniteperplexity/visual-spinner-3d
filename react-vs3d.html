@@ -12,12 +12,15 @@
         grid-template-rows: 385px 350px;
       }
       .top {
-        grid-template-columns: auto 350px 350px;
+        grid-template-columns: 350px 350px auto;
         grid-template-rows: auto auto;
       }
       .bottom {
         grid-template-rows: auto auto auto auto;
-        overflow: auto;
+        overflow: scroll;
+      }
+      .movepanel {
+        grid-template-columns: 50px auto;
       }
     </style>
     <link rel="stylesheet" type="text/css" href="todo.css" />
@@ -40,7 +43,9 @@
       <script type="text/babel" src="react/prop-node.jsx"></script>
       <script type="text/babel" src="react/react-grids.jsx"></script>
       <script type="text/babel" src="react/move-queues.jsx"></script>
+      <script type="text/babel" src="react/move-panel.jsx"></script>
       <script type="text/babel" src="react/react-controls.jsx"></script>
+
       <script type="text/babel" src="react/redux-store.jsx"></script>
     </div>
   </body>
