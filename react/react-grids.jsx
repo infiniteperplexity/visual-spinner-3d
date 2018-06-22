@@ -161,7 +161,7 @@ class ControlPanel extends React.Component {
         <button onClick={this.handlePlay}>Play</button>
         <button onClick={this.handlePause}>Pause</button>
         <button onClick={this.handleRewind}>-</button>
-        <input type="number" style={{width:"80px"}} onChange={this.handleFrame} onInput={this.handleFrame} value={0}/>
+        <input id="panelTicks" type="number" style={{width:"80px"}} onChange={this.handleFrame} onInput={this.handleFrame} value={0}/>
         <button onClick={this.handleForward}>+</button>
         <button onClick={this.handleReset}>Reset</button>
       </div>

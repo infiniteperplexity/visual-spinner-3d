@@ -311,8 +311,10 @@ function reducer(state, action) {
       if (t===-1) {
         props[i] = spin(state.starters[i], 0);
       } else {
+        // let's make this only go to the start of the move.
         let {move, tick} = submove(moves[i], t);
-        props[i] = spin(move, tick+beats(move)*BEAT);
+        // props[i] = spin(move, tick+beats(move)*BEAT);
+        props[i] = spin(move, beats(move)*BEAT);
       }
     }
     return {...state, tick: t, props: props};
