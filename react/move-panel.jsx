@@ -121,8 +121,6 @@ class MovePanel extends React.Component {
     this.setLock(e, "helper");
   }
   setBodyLock = (e)=>{
-    e.preventDefault();
-    console.log("huh?");
     this.setLock(e, "body");
   }
   render() {
@@ -144,20 +142,20 @@ class MovePanel extends React.Component {
     const SVG = 25;
     const TEXT = 35;
     return (
-      <div className="grid movepanel">
-        <svg height={12*SVG} width={2*SVG}>
+      <div className="grid movepanel"> 
+        <svg height={12*SVG} width={2*SVG} onMouseDown={()=>{}}>
           <HeadNode x={SVG} y={1.3*SVG} dim={SVG/4} fill={color} />
-          <GripNode x={SVG} y={3.4*SVG} dim={SVG/8} fill={gcolor}
-          onMouseOver={
-            (e)=>{
-              e.preventDefault();
-              alert("testing!");
-            }
-          } onMouseDown={this.setGripLock}/>
+          <g onMouseDown={this.setGripLock}>
+            <GripNode x={SVG} y={3.4*SVG} dim={SVG/8} fill={gcolor}/>
+          </g>
           <HandNode x={SVG} y={5.4*SVG} dim={SVG/5} fill={color}/>
-          <HelperNode x={SVG} y={7.5*SVG} dim={SVG/5} fill={hcolor} onMouseDown={this.setHelperLock}/>
+          <g onMouseDown={this.setHelperLock}>
+            <HelperNode x={SVG} y={7.5*SVG} dim={SVG/5} fill={hcolor} onMouseDown={this.setHelperLock}/>
+          </g>
           <PivotNode x={SVG} y={9.5*SVG} dim={SVG/5} fill={color}/>
-          <BodyNode x={SVG} y={11.5*SVG} dim={UNIT/6} fill={bcolor} onMouseDown={this.setBodyLock}/>
+          <g onMouseDown={this.setBodyLock}>
+            <BodyNode x={SVG} y={11.5*SVG} dim={UNIT/6} fill={bcolor} onMouseDown={this.setBodyLock}/>
+          </g>
         </svg>
         <div style={{lineHeight: TEXT+"px"}}>
           <p>head</p>

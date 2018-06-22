@@ -20,7 +20,8 @@ VS3D = (function(VS3D) {
 		this.div = document.createElement("div");
 		this.div.className = "vs3d-renderer";
 		this.div.style.position = "relative";
-		this.div.style.width = "400px";
+		// !!!This will create problems if the width is changed later
+		this.div.style.width = width+"px";
 		el.appendChild(this.div);
 		// or could maybe throw this in its own div, with relative positioning?
 		this.width = width || 400;
