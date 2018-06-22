@@ -196,6 +196,14 @@ class MoveControl extends React.Component {
     if (locked) {
       color = "lightgray";
     }
+    let niceNames = {
+      body: "body",
+      pivot: "shoulder",
+      helper: "elbow",
+      hand: "hand",
+      grip: "handle",
+      head: "head"
+    };
     if (node==="body") {
       graphic = <BodyNode x={0.5*SVG} y={SVG} dim={SVG/6} fill={color}/>;
     } else if (node==="pivot") {
@@ -242,16 +250,18 @@ class MoveControl extends React.Component {
       tether1.strokeDasharray="5,5";
       tether2.strokeDasharray="5,5";
     }
+    let title = (this.props.locks[node]===undefined) ? null : <title>click me.</title>;
     return (
       <div className="grid movecontrol">
         <svg height={2*SVG} width={SVG}>
           <g onMouseDown={this.handleMouseDown}>
+            {title}
             <line x1={0.5*SVG} y1={0} x2={0.5*SVG} y2={SVG} style={tether2} />
             <line x1={0.5*SVG} y1={SVG} x2={0.5*SVG} y2={2*SVG} style={tether1} />
             {graphic}
           </g>
         </svg>
-        <p style={{color: (locked) ? "lightgray" : "black"}}>{node}</p>
+        <p style={{color: (locked) ? "lightgray" : "black"}}>{niceNames[node]}</p>
         {buttons}
       </div>
     );

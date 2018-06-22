@@ -23,29 +23,30 @@ class App extends React.Component {
     let props = this.props;
     return (
       <div className="grid app" style={{height: "720px"}}>
+        <div style={{float: "right"}}>
+          <button onClick={(e)=>{
+            e.preventDefault();
+            if (this.props.frozen) {
+              return;
+            }
+            props.updateEngine();
+            save(player.props);
+          }}>Save</button>
+          <button onClick={(e)=>{
+            e.preventDefault();
+            if (this.props.frozen) {
+              return;
+            }
+            props.setPopup(true);
+          }}>Import</button>
+        </div>
         <div className="grid top">
           <Grid dragID="SVG" {...props} />
           <div id="display"/>
           <MovePanel className="frame" {...props} />
           <PlaneMenu {...props}/>
           <ControlPanel {...props} />
-          <div style={{float: "right"}}>
-            <button onClick={(e)=>{
-              e.preventDefault();
-              if (this.props.frozen) {
-                return;
-              }
-              props.updateEngine();
-              save(player.props);
-            }}>Export</button>
-            <button onClick={(e)=>{
-              e.preventDefault();
-              if (this.props.frozen) {
-                return;
-              }
-              props.setPopup(true);
-            }}>Import</button>
-          </div>
+          <div />
         </div>
         <div className="grid bottom">
         <MoveQueue propid="0" {...props}/>

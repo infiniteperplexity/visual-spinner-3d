@@ -260,6 +260,7 @@ class PropNode extends React.Component {
         onMouseMove={this.handleMouseMove}
         onMouseLeave={this.handleMouseLeave}
       >
+        <title>drag me.</title>
         {tether}
         {shape}
         {child}
