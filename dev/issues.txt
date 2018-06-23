@@ -30,6 +30,11 @@ React App:
 	- Make moves deletable.
 	- Make moves insertable.
 	- Make moves drag-rearrangeable.
+	- Replace unicode with SVGs.
+	- Enable the spin buttons.
+		- I'm not sure how to do this...may need to "dig out" the solver methods?
+	- Enable the speedup and slowdown buttons.
+		- This should be straightforward if we can keep spins.	
 
 	Nice:
 	- Make sure all panel elements work.

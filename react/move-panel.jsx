@@ -50,12 +50,12 @@ class MovePanel extends React.Component {
     return (
       <div className="grid movepanel">
         {duration}
-        <MoveControl node="head" {...this.props}/>
-        <MoveControl node="grip" {...this.props}/>
-        <MoveControl node="hand" {...this.props}/>
-        <MoveControl node="helper" {...this.props}/>
-        <MoveControl node="pivot" {...this.props}/>
-        <MoveControl node="body" {...this.props}/>
+        <MoveControl node="head" move={move} {...this.props}/>
+        <MoveControl node="grip" move={move} {...this.props}/>
+        <MoveControl node="hand" move={move} {...this.props}/>
+        <MoveControl node="helper" move={move} {...this.props}/>
+        <MoveControl node="pivot" move={move} {...this.props}/>
+        <MoveControl node="body" move={move} {...this.props}/>
       </div>
     );
   }
@@ -74,6 +74,43 @@ class MoveControl extends React.Component {
     let locked = this.props.locks[node];
     this.props.setLock(node, !locked);
     this.props.checkLocks();
+  }
+  modifySpins = (n) =>{
+    let {move, node} = this.props;
+    let va = move[node] ? move[node].va : 0;
+    let va1 = move[node] ? move[node].va1 : 0;
+    let speed = (va+va1)/2;
+    let spin = beats(move)/4;
+    let spins = Math.sign(speed)*Math.ceil(Math.abs(speed*spin));
+    let args = {};
+    // !!!! might want to set a max/min on this??
+    args[node] = {spins: spins+n};
+    // this.props.modifyMove({});
+  }
+  handleClockwise = (e)=>{
+    this.modifySpins(+1);
+  }
+  handleCounter = (e)=>{
+    this.modifySpins(-1);
+  }
+  modifySpeed = (n) => {
+    let {move, node} = this.props;
+    let va = move[node] ? move[node].va : 0;
+    if (zeroish(va) && n<0) {
+      // !!!don't let it go less than zero?
+      return;
+    }
+    // !!!by how much? let's assume units of 1 right now
+    let speed = va + ((va<0) ? -n : n);
+    let args = {};
+    args[node] = {va: speed};
+    // this.props.modifyMove();
+  }
+  handleSpeedUp = (e)=>{
+    this.modifySpeed(+1);
+  }
+  handleSlowDown = (e)=>{
+    this.modifySpeed(-1);
   }
   render() {
     const SVG = 25;
@@ -118,10 +155,26 @@ class MoveControl extends React.Component {
     let button = {paddingBottom: "28px", paddingRight: "25px", height: "22px", width: "22px", fontSize: "18px", fontWeight: "bold", color: color};
     let buttons = (locked || this.props.tick===-1) ? null : [
         <SpeedMeter key="0" move={move} color={color} node={node}/>,
-        <button key="1" title="More Counterclockwise / Less Clockwise Spin" style={button}>{"\u21BA"}</button>,
-        <button key="2" title="More Clockwise / Less Counterclockwise Spin" style={button}>{"\u21BB"}</button>,
-        <button key="3" title="Starts Slower, Ends Faster" style={button}>{"\u219E"}</button>,
-        <button key="4" title="Starts Faster, Ends Slower" style={button}>{"\u21A0"}</button>
+        <button key="1"
+                title="More Counterclockwise / Less Clockwise Spin"
+                style={button}
+                onClick={this.handleClockwise}
+        >{"\u21BA"}</button>,
+        <button key="2"
+                title="More Clockwise / Less Counterclockwise Spin"
+                style={button}
+                onClick={this.handleCounter}
+        >{"\u21BB"}</button>,
+        <button key="3"
+                title="Starts Slower, Ends Faster"
+                style={button}
+                onClick={this.handleSlowDown}
+        >{"\u219E"}</button>,
+        <button key="4"
+                title="Starts Faster, Ends Slower"
+                style={button}
+                onClick={this.handleSpeedUp}
+        >{"\u21A0"}</button>
     ];
     let tether1 = {stroke: "gray"};
     let tether2 = {stroke: "gray"};
