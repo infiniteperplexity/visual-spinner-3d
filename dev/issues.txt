@@ -33,6 +33,8 @@ React App:
 	- Replace unicode with SVGs.
 	- Enable the spin buttons.
 		- I'm not sure how to do this...may need to "dig out" the solver methods?
+		- Actually it's pretty easy to reverse-engineer "spins" from a solved move.
+			- In fact, I already did.
 	- Enable the speedup and slowdown buttons.
 		- This should be straightforward if we can keep spins.	
 
