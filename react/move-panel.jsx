@@ -166,11 +166,6 @@ class MovePanel extends React.Component {
   }
 }
 
-// let arrowPath = `
-// M 124.2,807.8 244.4,687.599 C 196.4,639.599 170,575.8 170,507.9 c 0,-67.9 26.4,-131.7 74.4,-179.7 48,-48 111.8,-74.4 179.7,-74.4 67.9,0 131.7,26.4 179.7,74.4 62,62 87,150.6 68.5,234.399 L 522.3,501.9 623.2,889.9 973.8,684.701 831.1,627 c 19,-65.1 22.2,-133.699 9,-200.9 C 823.899,343.3 783.7,268 723.8,208.2 683.3,167.7 636.1,136.4 583.5,115.1 532.8,94.3 479.1,83.9 424,83.9 369,83.9 315.3,94.3 264.5,115 211.8,136.4 164.6,167.7 124.2,208.1 83.7,248.6 52.4,295.8 31.1,348.4 10.5,399.2 0,452.9 0,507.9 c 0,55 10.4,108.699 31.1,159.5 21.3,52.801 52.6,100 93.1,140.4 z
-// `;
-
-// arrowPath = "M5,25 a25,25 0 0,0 25,5";
 
 class MoveControl extends React.Component {
   handleMouseDown = (e)=>{
@@ -205,27 +200,34 @@ class MoveControl extends React.Component {
       head: "head"
     };
     if (node==="body") {
-      graphic = <BodyNode x={0.5*SVG} y={SVG} dim={SVG/6} fill={color}/>;
+      graphic = <BodyNode x={SVG} y={SVG} dim={SVG/6} fill={color}/>;
     } else if (node==="pivot") {
-      graphic = <PivotNode x={0.5*SVG} y={SVG} dim={SVG/5} fill={color}/>;
+      graphic = <PivotNode x={SVG} y={SVG} dim={SVG/5} fill={color}/>;
     } else if (node==="helper") {
-      graphic = <HelperNode x={0.5*SVG} y={SVG} dim={SVG/5} fill={color}/>;
+      graphic = <HelperNode x={SVG} y={SVG} dim={SVG/5} fill={color}/>;
     } else if (node==="hand") {
       if (this.props.locks.grip) {
-        graphic = <GripNode x={0.5*SVG} y={SVG} dim={SVG/9} fill={color}/>;
+        graphic = <GripNode x={SVG} y={SVG} dim={SVG/9} fill={color}/>;
       } else {
-        graphic = <HandNode x={0.5*SVG} y={SVG} dim={SVG/5} fill={color}/>;
+        graphic = <HandNode x={SVG} y={SVG} dim={SVG/5} fill={color}/>;
       }
     } else if (node==="grip") {
-      graphic = <GripNode x={0.5*SVG} y={SVG} dim={SVG/9} fill={color}/>;
+      graphic = <GripNode x={SVG} y={SVG} dim={SVG/9} fill={color}/>;
     } else if (node==="head") {
-      graphic = <HeadNode x={0.5*SVG} y={SVG} dim={SVG/5} fill={color}/>;
+      graphic = <HeadNode x={SVG} y={SVG} dim={SVG/5} fill={color}/>;
     }
     let font = {fontSize: "32px", fontWeight: "bold", width: "50px", color: color};
-    let buttons = (locked) ? null : [
+    console.log(submove);
+    let move;
+    if (this.props.tick>-1) {
+      move = submove(this.props.moves[propid], this.props.tick).move;
+    }
+    let buttons = (locked || this.props.tick===-1) ? null : [
         <button key="0" title="More Counterclockwise / Less Clockwise Spin" style={font}>{"\u21BA"}</button>,
         <button key="1" title="More Clockwise / Less Counterclockwise Spin" style={font}>{"\u21BB"}</button>,
-        <p key="2" title="1 Clockwise Rotation, Constant Speed" type="text">{"1"+"\u21BB"+"\u21D2"+"1"+"\u21BB"}</p>,
+        <p key="2" title="1 Clockwise Rotation, Constant Speed" type="text">{
+          ((move[node]) ? move[node].va : 0)+"\u21BB"+"\u21D2"+((move[node]) ? move[node].va1 : 0)+"\u21BB"
+        }</p>,
         <button key="3" title="Starts Slower, Ends Faster" style={font}>{"\u219E"}</button>,
         <button key="4" title="Starts Faster, Ends Slower" style={font}>{"\u21A0"}</button>
     ];
@@ -253,11 +255,11 @@ class MoveControl extends React.Component {
     let title = (this.props.locks[node]===undefined) ? null : <title>click me.</title>;
     return (
       <div className="grid movecontrol">
-        <svg height={2*SVG} width={SVG}>
+        <svg height={2*SVG} width={2*SVG}>
           <g onMouseDown={this.handleMouseDown}>
             {title}
-            <line x1={0.5*SVG} y1={0} x2={0.5*SVG} y2={SVG} style={tether2} />
-            <line x1={0.5*SVG} y1={SVG} x2={0.5*SVG} y2={2*SVG} style={tether1} />
+            <line x1={SVG} y1={0} x2={SVG} y2={SVG} style={tether2} />
+            <line x1={SVG} y1={SVG} x2={SVG} y2={2*SVG} style={tether1} />
             {graphic}
           </g>
         </svg>
