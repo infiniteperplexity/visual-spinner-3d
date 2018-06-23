@@ -1,3 +1,8 @@
+// path d= for SVG from the Noun Project, clockwise arrow, user 'icon 54', CC license
+let ARROW = "M15.85,7.85l-3,3c-0.19,0.2-0.51,0.2-0.7,0l-3-3C9,7.71,8.96,7.5,9.04,7.31C9.12,7.12,9.3,7,9.5,7h1.36  c-0.47-1.889-2.203-3.163-4.241-2.983c-1.802,0.159-3.319,1.6-3.576,3.391C2.688,9.881,4.595,12,7,12  c0.873,0,1.696-0.28,2.371-0.786c0.207-0.155,0.489-0.154,0.672,0.029l1.423,1.423c0.203,0.203,0.202,0.545-0.018,0.73  c-1.162,0.974-2.606,1.535-4.154,1.598c-3.831,0.156-7.189-2.972-7.291-6.805C-0.102,4.243,3.077,1,7,1c3.53,0,6.44,2.55,6.93,6  h1.57c0.2,0,0.38,0.12,0.46,0.31C16.04,7.5,16,7.71,15.85,7.85z";
+// polygon points= for double forward arrowhead
+let ACC = "8,4 0,0 0,8 8,4 8,0 16,4 8,8, 8,4";
+
 class MovePanel extends React.Component {
   // the last item on order is the active one
   setLock = (e, node)=>{
@@ -171,29 +176,20 @@ class MoveControl extends React.Component {
     if (this.props.tick>-1) {
       move = submove(this.props.moves[propid], this.props.tick).move;
     }
-    let button = {paddingBottom: "28px", paddingRight: "25px", height: "22px", width: "22px", fontSize: "18px", fontWeight: "bold", color: color};
     let buttons = (locked || this.props.tick===-1) ? null : [
         <SpeedMeter key="0" move={move} color={color} node={node}/>,
-        <button key="1"
-                title="More Counterclockwise / Less Clockwise Spin"
-                style={button}
-                onClick={this.handleCounter}
-        >{"\u21BA"}</button>,
-        <button key="2"
-                title="More Clockwise / Less Counterclockwise Spin"
-                style={button}
-                onClick={this.handleClockwise}
-        >{"\u21BB"}</button>,
-        <button key="3"
-                title="Starts Slower, Ends Faster"
-                style={button}
-                onClick={this.handleSlowDown}
-        >{"\u219E"}</button>,
-        <button key="4"
-                title="Starts Faster, Ends Slower"
-                style={button}
-                onClick={this.handleSpeedUp}
-        >{"\u21A0"}</button>
+        <SpeedButton  key="1" onClick={this.handleCounter} title="less clockwise / more counterclockwise">
+          <path d={ARROW} transform="translate(5, 5)" fill={color} stroke={color}/>
+        </SpeedButton>,
+        <SpeedButton  key="2" onClick={this.handleClockwise} title="more clockwise / less counterclockwise">
+          <path d={ARROW} transform="scale(-1, 1) translate(-20, 5)" fill={color} stroke={color}/>
+        </SpeedButton>,
+        <SpeedButton  key="3" onClick={this.handleSlowDown} title="starts faster / ends slower">
+          <polygon points={ACC} transform="translate(5, 9)" fill={color} stroke={color}/>
+        </SpeedButton>,
+       <SpeedButton  key="4" onClick={this.handleSpeedUp} title="starts slow / ends faster">
+          <polygon points={ACC} transform="scale(-1, 1) translate(-20, 9)" fill={color} stroke={color}/>
+        </SpeedButton>
     ];
     let tether1 = {stroke: "gray"};
     let tether2 = {stroke: "gray"};
@@ -242,25 +238,30 @@ class MoveControl extends React.Component {
             {graphic}
           </g>
         </svg>
-        <p style={{color: (locked) ? "lightgray" : "black"}}>{niceNames[node]}</p>
+        <p style={{fontSize: "10px", color: (locked) ? "lightgray" : "black"}}>{niceNames[node]+" speed:"}</p>
         {buttons}
       </div>
     );
   }
 }
 
+
+
 function SpeedMeter(props, context) {
   let {move, node, color} = props;
   let va = move[node] ? move[node].va : 0;
-  let va1 = move[node] ? move[node].va1 : 0;
+  let va1 = move[node] ? move[node].va1 : va;
   let spin = beats(move)/4;
-  let spins = Math.ceil(Math.abs(va*spin));
-  let spins1 = Math.ceil(Math.abs(va1*spin));
-  let sym0 = <text textAnchor="middle" x={11} y={35} fill={color} style={{fontSize: "32px", fontWeight: "bold"}}>{(va<0) ? "\u21BA" : "\u21BB"}</text>;
-  let sym1 = <text textAnchor="middle" x={41} y={35} fill={color} style={{fontSize: "32px", fontWeight: "bold"}}>{(va1<0) ? "\u21BA" : "\u21BB"}</text>;
-  let text1 = <text textAnchor="middle" x={(va<0) ? 11 : 12} y={31} style={{fontSize: "12px"}}>{spins}</text>;
-  let text2 = <text textAnchor="middle" x={(va<0) ? 26 : 27} y={31} style={{fontSize: "12px"}}>{"\u2B62"}</text>;
-  let text3 = <text textAnchor="middle" x={(va1<0) ? 41 : 42} y={31} style={{fontSize: "12px"}}>{spins1}</text>;
+  let spins = Math.ceil(Math.abs(0.5*(va+va1)*spin));
+  let speed = Math.ceil(Math.abs(va));
+  let spintransform = "translate(9, 17)";
+  if (va<0) {
+    spintransform = "scale(-1, 1) translate(-25, 17)";
+  }
+  let acctransform = "translate(34,21)";
+  if (Math.abs(va1)<Math.abs(va)) {
+    acctransform = "scale(-1, 1) translate(-48, 21)";
+  }
   let niceNames = {
     body: "body",
     pivot: "shoulder",
@@ -269,23 +270,64 @@ function SpeedMeter(props, context) {
     grip: "handle",
     head: "head"
   };
-  let title = niceNames[node] + " starts at "+va+" spins, ends at "+va1+" spins per measure";
+  let title = spins + " rotations";
+  if (!nearly(va, va1)) {
+    if (Math.abs(va)>Math.abs(va1)) {
+      title += ", decelerating to speed " + Math.abs(va1);
+    } else {
+      title += ", accelerating from speed " + Math.abs(va);
+    }
+  }
+  let spinshape = <path d={ARROW} transform={spintransform} fill={color} />;
+  let accshape = <polygon transform={acctransform} points={ACC} fill={color}/>;
+  let spintext = <text textAnchor="middle" x={5} y={29} style={{fontSize: "10px"}}>{spins}</text>;
+  let acctext = <text textAnchor="middle" x={30} y={29} style={{fontSize: "10px"}}>{speed}</text>;
+  if (zeroish(spins)) {
+    spinshape = null;
+  }
   if (nearly(va, va1)) {
-    sym0 = <text textAnchor="middle" x={26} y={35} fill={color} style={{fontSize: "32px", fontWeight: "bold"}}>{(va<0) ? "\u21BA" : "\u21BB"}</text>;
-    text1 = <text textAnchor="middle" x={(va<0) ? 26 : 27} y={31} style={{fontSize: "12px"}}>{spins}</text>;
-    sym1 = null;
-    text2 = null;
-    text3 = null;
-    title = niceNames[node]+" speed is "+va+" spins per measure";
+    accshape = null;
+    acctext = null;
   }
   return (
     <svg height={49} width={80}>
       <title>{title}</title>
-      {sym0}
-      {sym1}
-      {text1}
-      {text2}
-      {text3}
+      {spinshape}
+      {spintext}
+      {accshape}
+      {acctext}
     </svg>
   );
+}
+
+class SpeedButton extends React.Component {
+  constructor(props, context) {
+    super(props, context);
+    this.state = {
+      stroke: "lightgray",
+      fill: "white"
+    }
+  }
+  handleMouseOver = (e)=>{
+    this.setState({
+      stroke: "cyan",
+      fill: "lightcyan"
+    });
+  }
+  handleMouseLeave = (e)=>{
+    this.setState({
+      stroke: "lightgray",
+      fill: "white"
+    });
+  }
+  render() {
+    const SVG = 25;
+    return (
+      <svg height={SVG} width={SVG} onMouseOver={this.handleMouseOver} onMouseLeave={this.handleMouseLeave} onMouseDown={this.props.onClick}>
+        <title>{this.props.title}</title>
+        <rect x="1" y="1" height={SVG-2} width={SVG-2} fill={this.state.fill} stroke={this.state.stroke} rx="4" ry="4"/>
+        {this.props.children}
+      </svg>
+    )
+  }
 }

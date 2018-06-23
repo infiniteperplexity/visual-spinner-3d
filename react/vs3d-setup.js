@@ -11,7 +11,6 @@ const {
 	flatten, submove, beats, spin, resolve,
 	Prop, Move, PropWrapper
 } = VS3D;
-let combo = parse(json);
 
 const NPROPS = 2;
 const COLORS = ["red","blue"];
