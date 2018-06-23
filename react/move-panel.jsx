@@ -77,7 +77,7 @@ class MoveControl extends React.Component {
   modifySpins = (n) =>{
     let {move, node, propid, tick} = this.props;
     let va = move[node] ? move[node].va : 0;
-    let va1 = move[node] ? move[node].va1 : 0;
+    let va1 = move[node] ? move[node].va1 : va;
     let speed = (va+va1)/2;
     let spin = beats(move)/4;
     let spins = Math.sign(speed)*Math.ceil(Math.abs(speed*spin));
@@ -86,8 +86,7 @@ class MoveControl extends React.Component {
     if (zeroish(spins)) {
       spins += n;
     }
-    args[node] = {spin: spins+n};
-    console.log(clone(args));
+    args[node] = {spin: spins};
     this.props.modifyMove({
       propid: propid,
       tick: tick,

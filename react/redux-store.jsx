@@ -104,8 +104,11 @@ function reducer(state, action) {
       for (let i=0; i<NODES.length; i++) {
         move[NODES[i]] = {};
         move[NODES[i]].a = prev[NODES[i]].a1;
-        move[NODES[i]].a1 = prev[NODES[i]].a1 + prev[NODES[i]].va1*BEAT;
+        move[NODES[i]].va = prev[NODES[i]].va1;
+        move[NODES[i]].va1 = prev[NODES[i]].va1;
+        // move[NODES[i]].a1 = prev[NODES[i]].a1 + prev[NODES[i]].va1*BEAT;
         move[NODES[i]].r = prev[NODES[i]].r;
+        // !!! want to propagate spins as well, but can't do it directly.
       }
     } else {
       // ready to replace a move in the middle
@@ -148,14 +151,22 @@ function reducer(state, action) {
         node0.va = node1.va;
         node0.va1 = node1.va1;
         node0.aa = node1.aa;
+        node0.spin = node1.spin;
       } else if (node1.va!==undefined) {
         node0.va = node1.va;
         node0.va1 = node1.va1;
         node0.aa = node1.aa;
+        node0.spin = node1.spin;
       } else if (node1.va1!==undefined) {
         node0.va1 = node1.va1;
         node0.va = node1.va;
         node0.aa = node1.aa;
+        node0.spin = node1.spin;
+      } else if (node1.spin!==undefined) {
+        node0.va1 = node1.va1;
+        node0.va = node1.va;
+        node0.aa = node1.aa;
+        node0.spin = node1.spin;
       }
       if (node1.r1!==undefined) {
         node0.r1 = node1.r1;
@@ -222,8 +233,6 @@ function reducer(state, action) {
         move[NODES[i]] = node;
       }
       move = resolve(move);
-      // why didn't resolve fix that?  it's over-solved, and doesn't get corrected
-      console.log(clone(move));
     }
     for (let node of NODES) {
       // convert suspiciously fast spirals into slides
