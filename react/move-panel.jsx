@@ -52,8 +52,10 @@ class MovePanel extends React.Component {
     if (this.props.tick===-1) {
       duration = <div style={{color: "lightgray"}}>{"\u231B"+" (starting position)"}</div>;
     }
+    // placeholder
+    duration = <div>(duration info will go here)</div>;
     return (
-      <div className="grid movepanel">
+      <div style={{color: "lightgray"}} className="grid movepanel">
         {duration}
         <MoveControl node="head" move={move} propid={propid} {...this.props}/>
         <MoveControl node="grip" move={move} propid={propid} {...this.props}/>
@@ -261,7 +263,7 @@ class MoveControl extends React.Component {
             {graphic}
           </g>
         </svg>
-        <p style={{fontSize: "10px", color: (locked) ? "lightgray" : "black"}}>{niceNames[node]+" speed:"}</p>
+        <p style={{fontSize: "10px", color: (locked) ? "lightgray" : "black"}}>{niceNames[node]+((this.props.tick===-1) ? "" : " speed:")}</p>
         {buttons}
       </div>
     );

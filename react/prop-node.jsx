@@ -101,6 +101,14 @@ class PropNode extends React.Component {
       if (node.r<=this.ROUNDMIN) {
         node.r = 0.01;
       }
+      // don't update if nothing changed
+      if (this.props.tick!==-1) {
+        let {move} = submove(this.props.moves[this.props.propid], this.props.tick);
+        let nd = NODES[this.props.node];
+        if (nearly(move[nd].r1, node.r) && nearly(move[nd].a1, a)) {
+          return;
+        }
+      }
       nodes[NODES[this.props.node]] = {r1: node.r, a1: a};
       this.props.modifyMove({
         propid: this.props.propid,

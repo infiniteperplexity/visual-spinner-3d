@@ -20,6 +20,7 @@ Bugs:
 - Fan-based toroids flicker in certain spots, which may be related to the above.
 - All breaks in angle$spherify are gone, but are there maybe still cusps?
 - The refitting approach I used to save the comborific.json got a few things wrong, including twist and a handful of positions.  This may not still be the case, though.
+- SVG and WebGL occasionally get out of sync.
 
 - It seems like prop.toXYZ and move.toXYZ might be good things, 
 
@@ -29,6 +30,7 @@ React App:
 	- +s to add props.  -s?
 	- Make moves deletable.
 	- Make moves insertable.
+	- Multi-Selection and copying?
 	- Make moves drag-rearrangeable.
 
 	Nice:
@@ -40,13 +42,10 @@ React App:
 	General:
 	- Mucho testing.
 
-	- Clicking a prop re-solves the move, which erases spins.
-		- Could consider not re-solving when a1 is nearly the same.
-		- Or, could consider trying to preserve spins, which is more involved.
-			- This also solves the problem for the propagated move.
-			- a spins() method could help with this.
 	- Brigid doesn't like the ff-style acceleration arrow
 	- modifying a move should move the player to the beginning of it.
+
+
 	- Want controls for adjusting beats / ticks.
 	- Clock at 3pm (circle with l-shape) is clock symbol. Or, 11:15, to make it halvable.
 		- Click on icons to rotate?
@@ -55,3 +54,11 @@ React App:
 		- Drop-down menu?
 		- Number input?
 
+
+One idea for maintaining solved state:
+- If va & va1 are both zero, completely re-solve without respecting spins.
+- Otherwise, try to respect spins:
+- If va was zero, try to keep va at zero.
+- Otherwise, if va1 was zero, try to keep it at zero.
+- Otherwise, if va===va1, re-solve.
+- Otherwise, try to keep va as-is.
