@@ -250,6 +250,7 @@ class PropNode extends React.Component {
     } else if (this.props.node===HEAD) {
       shape = <HeadNode x={X0} y={Y0} fill={this.props.color} dim={UNIT/8} />
     }
+    let title = (this.props.tick) ? "drag to set starting positions" : "drag to set movement positions"; 
     return (
       <g 
         ref={(e)=>(this.element=e)}
@@ -260,7 +261,7 @@ class PropNode extends React.Component {
         onMouseMove={this.handleMouseMove}
         onMouseLeave={this.handleMouseLeave}
       >
-        <title>drag me.</title>
+        <title>{title}</title>
         {tether}
         {shape}
         {child}

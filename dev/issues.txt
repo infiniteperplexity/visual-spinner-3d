@@ -30,13 +30,6 @@ React App:
 	- Make moves deletable.
 	- Make moves insertable.
 	- Make moves drag-rearrangeable.
-	- Replace unicode with SVGs.
-	- Enable the spin buttons.
-		- I'm not sure how to do this...may need to "dig out" the solver methods?
-		- Actually it's pretty easy to reverse-engineer "spins" from a solved move.
-			- In fact, I already did.
-	- Enable the speedup and slowdown buttons.
-		- This should be straightforward if we can keep spins.	
 
 	Nice:
 	- Make sure all panel elements work.
@@ -47,5 +40,18 @@ React App:
 	General:
 	- Mucho testing.
 
-	- Maybe pivot, helper, and grip should be called elbow, wrist, and handle?
+	- Clicking a prop re-solves the move, which erases spins.
+		- Could consider not re-solving when a1 is nearly the same.
+		- Or, could consider trying to preserve spins, which is more involved.
+			- This also solves the problem for the propagated move.
+			- a spins() method could help with this.
+	- Brigid doesn't like the ff-style acceleration arrow
+	- modifying a move should move the player to the beginning of it.
+	- Want controls for adjusting beats / ticks.
+	- Clock at 3pm (circle with l-shape) is clock symbol. Or, 11:15, to make it halvable.
+		- Click on icons to rotate?
+		- Next icon is visible in gray?
+		- Drag to stretch.
+		- Drop-down menu?
+		- Number input?
 

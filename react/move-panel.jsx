@@ -80,15 +80,21 @@ class MoveControl extends React.Component {
     this.props.checkLocks();
   }
   modifySpins = (n) =>{
+    const BOUNDS = 2;
     let {move, node, propid, tick} = this.props;
     let va = move[node] ? move[node].va : 0;
     let va1 = move[node] ? move[node].va1 : va;
+    let a = move[node] ? move[node].a : 0;
+    let a1 = move[node] ? move[node].a1 : a;
     let speed = (va+va1)/2;
     let spin = beats(move)/4;
     let spins = Math.sign(speed)*Math.ceil(Math.abs(speed*spin));
+    if (Math.abs(spins+n)>BOUNDS) {
+      return;
+    }
     let args = {};
     spins += n;
-    if (zeroish(spins)) {
+    if (zeroish(spins) && !nearly(a,a1)) {
       spins += n;
     }
     args[node] = {spin: spins};
@@ -110,15 +116,32 @@ class MoveControl extends React.Component {
   handleCounter = (e)=>{
     this.modifySpins(-1);
   }
-  modifySpeed = (n) => {
+  modifyAcc = (n) => {
+    let BOUNDS = 8;
     let {move, node, propid, tick} = this.props;
     let va = move[node] ? move[node].va : 0;
-    if (zeroish(va) && n<0) {
+    let va1 = move[node] ? move[node].va1 : va;
+    let spin = beats(move)/4;
+    let spins = Math.sign(va+va1)*Math.ceil(Math.abs(0.5*(va+va1)*spin));
+    if (zeroish(spins) || zeroish(va+va1)) {
       return;
     }
-    let speed = va + ((va<0) ? -n : n);
+    // if zero starting speed, can't accelerate more
+    if (zeroish(va) && n>0) {
+      return;
+    // if zero ending speed, can't decelerate more
+    } else if (zeroish(va1) && n<0) {
+      return;
+    } else if ((Math.abs(va)>=BOUNDS || nearly(Math.abs(va),BOUNDS)) && n<0) {
+      return;
+    }
+    if ((va+va1)>0) {
+      va -= n;
+    } else if ((va+va1)<0) {
+      va += n;
+    }
     let args = {};
-    args[node] = {va: speed};
+    args[node] = {va: va, spin: spins};
     this.props.modifyMove({
       propid: propid,
       tick: tick,
@@ -132,10 +155,10 @@ class MoveControl extends React.Component {
     this.props.renderEngine();
   }
   handleSpeedUp = (e)=>{
-    this.modifySpeed(+1);
+    this.modifyAcc(+1);
   }
   handleSlowDown = (e)=>{
-    this.modifySpeed(-1);
+    this.modifyAcc(-1);
   }
   render() {
     const SVG = 25;
@@ -178,16 +201,16 @@ class MoveControl extends React.Component {
     }
     let buttons = (locked || this.props.tick===-1) ? null : [
         <SpeedMeter key="0" move={move} color={color} node={node}/>,
-        <SpeedButton  key="1" onClick={this.handleCounter} title="less clockwise / more counterclockwise">
-          <path d={ARROW} transform="translate(5, 5)" fill={color} stroke={color}/>
-        </SpeedButton>,
-        <SpeedButton  key="2" onClick={this.handleClockwise} title="more clockwise / less counterclockwise">
+        <SpeedButton key="1" onClick={this.handleCounter} title="less clockwise / more counterclockwise">
           <path d={ARROW} transform="scale(-1, 1) translate(-20, 5)" fill={color} stroke={color}/>
         </SpeedButton>,
-        <SpeedButton  key="3" onClick={this.handleSlowDown} title="starts faster / ends slower">
+        <SpeedButton key="2" onClick={this.handleClockwise} title="more clockwise / less counterclockwise">
+          <path d={ARROW} transform="translate(5, 5)" fill={color} stroke={color}/>
+        </SpeedButton>,
+        <SpeedButton key="3" onClick={this.handleSpeedUp} title="starts slow / ends faster">
           <polygon points={ACC} transform="translate(5, 9)" fill={color} stroke={color}/>
         </SpeedButton>,
-       <SpeedButton  key="4" onClick={this.handleSpeedUp} title="starts slow / ends faster">
+        <SpeedButton key="4" onClick={this.handleSlowDown} title="starts faster / ends slower">
           <polygon points={ACC} transform="scale(-1, 1) translate(-20, 9)" fill={color} stroke={color}/>
         </SpeedButton>
     ];
@@ -253,9 +276,8 @@ function SpeedMeter(props, context) {
   let va1 = move[node] ? move[node].va1 : va;
   let spin = beats(move)/4;
   let spins = Math.ceil(Math.abs(0.5*(va+va1)*spin));
-  let speed = Math.ceil(Math.abs(va));
   let spintransform = "translate(9, 17)";
-  if (va<0) {
+  if ((va+va1)<0) {
     spintransform = "scale(-1, 1) translate(-25, 17)";
   }
   let acctransform = "translate(34,21)";
@@ -270,13 +292,19 @@ function SpeedMeter(props, context) {
     grip: "handle",
     head: "head"
   };
+  
+  let speed = Math.abs(va);
   let title = spins + " rotations";
   if (!nearly(va, va1)) {
     if (Math.abs(va)>Math.abs(va1)) {
-      title += ", decelerating to speed " + Math.abs(va1);
+      speed = Math.round(Math.abs(va1));
+      title += ", decelerating to speed " + speed;
     } else {
-      title += ", accelerating from speed " + Math.abs(va);
+      speed = Math.round(Math.abs(va));
+      title += ", accelerating from speed " + speed;
     }
+  } else {
+    title += ", speed " + speed;
   }
   let spinshape = <path d={ARROW} transform={spintransform} fill={color} />;
   let accshape = <polygon transform={acctransform} points={ACC} fill={color}/>;
@@ -286,8 +314,12 @@ function SpeedMeter(props, context) {
     spinshape = null;
   }
   if (nearly(va, va1)) {
-    accshape = null;
-    acctext = null;
+    if (zeroish(spins)) {
+      accshape = null;
+      acctext = null;
+    } else {
+      accshape = <polygon transform="translate(34,19)" points="0,0 0,12, 12,6" fill={color}/>;
+    }
   }
   return (
     <svg height={49} width={80}>
