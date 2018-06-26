@@ -21,110 +21,90 @@ video {
 <script src="scripts/vs3d.js"></script>
 <script src="scripts/vs3d-moves.js"></script>
 <script src="scripts/three.min.js"></script>
-<script src="scripts/vs3d-render.js"></script><script>
+<script src="scripts/vs3d-render.js"></script>
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
 
 function init() {
 	vidControls();
 }
 
-function getTime() {
-	return video.currentTime.toFixed(3);
-}
-
-function setTime(t) {
-	video.currentTime = t;
-}
-
-function update() {
-	updateFrame;
-}
-
-const RATE = 24;
-let renderer, player, orange, white, video, controls, input;
-
-
+let player, bookmarker, controls;
 function vidControls() {
-	video = document.getElementById("vid");
-	video.onTimeUpdate = update;
+	player = new YT.Player('player', {
+        width: '854',
+        height: '480',
+        videoId: '05tyrZonnmw',
+        events: {
+        	onReady: updateBookmarker,
+        	onStateChange: updateBookmarker
+        }
+    });
+    bookmarker = new VS3D.Bookmarker();
+    bookmarker.getTime = function() {
+    	if (!player.getCurrentTime) {
+    		return 0;
+    	}
+    	return parseFloat(VS3D.round(player.getCurrentTime(), 1/this.RATE));
+    }
+    bookmarker.setTime = function(t) {
+    	t = VS3D.round(t, 1/this.RATE);
+    	console.log("seeking to");
+    	console.log(t);
+    	player.seekTo(t);
+    }
 	controls = document.getElementById("controls");
 	input = document.getElementById("frame");
-	updateFrame();
-	updateBookmarks();
+	bookmarker.update = function() {
+    	input.value = this.getTime();
+    	let books = document.getElementById("bookmarks");
+		books.innerHTML = "<option value='null'>(bookmarks)</option>";
+		let selected = false;
+		for (let mark of this.bookmarks) {
+			let node = document.createElement("option");
+			node.innerHTML = mark;
+			node.value = mark;
+			if (VS3D.nearly(parseFloat(mark), this.getTime())) {
+				node.selected = true;
+				selected = true;
+			}
+			books.appendChild(node);
+		}
+		if (!selected) {
+			books.firstChild.selected = true;
+		}
+    }
+	bookmarker.update();
 }
 
-/*
-	- so basically, the bookmarker needs two callbacks for sure...	
-		- setTime
-		- getTime
-			- possibly maxTime
-			- possibly validate
-		- it probably needs contents for a div, maybe.
-
-
-*/
-
-function updateFrame() {
-	// this is a validation thing...
-	setTime(VS3D.round(getTime(), 1/RATE));
-	input.value = getTime();
+function updateBookmarker() {
+	bookmarker.update();
 }
-let bookmarks = [];
-
 function chooseBookmark() {
 	let val = this.target.value;
 	video.currentTime = parseFloat(e.target.value);
-	updateBookmarks();
+	update();
 }
-function updateBookmarks() {
-	let books = document.getElementById("bookmarks");
-	books.innerHTML = "<option value='null'>(bookmarks)</option>";
-	let selected = false;
-	for (let mark of bookmarks) {
-		let node = document.createElement("option");
-		node.innerHTML = mark;
-		node.value = mark;
-		if (VS3D.nearly(parseFloat(mark), getTime())) {
-			node.selected = true;
-			selected = true;
-		}
-		books.appendChild(node);
-	}
-	if (!selected) {
-		books.firstChild.selected = true;
-	}
-}
+
 function addBookmark() {
-	updateFrame();
-	for (let mark of bookmarks) {
-		if (VS3D.nearly(getTime(), mark)) {
-			return;
-		}
-	}
-	bookmarks.push(parseFloat(getTime()));
-	updateBookmarks();
+	bookmarker.add();
 }
+
 function deleteBookmark() {
-	updateFrame();
-	let i = 0;
-	while (i<bookmarks.length) {
-		if (VS3D.nearly(bookmarks[i], getTime())) {
-			bookmarks.splice(i,1);
-		}
-	}
-	updateBookmarks();
+	bookmarker.remove();
 }
 function backFrame() {
-	setTime(Math.max(0, getTime() - 1/RATE));
-	updateFrame();
+	bookmarker.goto(Math.max(0, bookmarker.getTime()-1/bookmarker.RATE));
 }
 function forwardFrame() {
 	// do these things handle duration the way they should anyway?
-	setTime(Math.min(video.duration, getTime() + 1/RATE));
-	updateFrame();
+	console.log(bookmarker.getTime());
+	console.log(1/bookmarker.RATE);
+	bookmarker.goto(bookmarker.getTime()+1/bookmarker.RATE);
 }
 function chooseTime(e) {
 	let val = e.target.value;
-	if (VS3D.nearly(parseFloat(val), parseFloat(String(parseFloat(val))))) {
+	if (parseFloat(val)===parseFloat(String(parseFloat(val)))) {
 		setTime(parseFloat(val));
 	}
 }
@@ -135,7 +115,7 @@ function chooseTime(e) {
 </header>
 <div id="grid">
 	<div>
-		<iframe width="854" height="480" src="https://www.youtube.com/embed/05tyrZonnmw" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+		<div id="player"></div>
 		<div id="controls">
 			<select onChange="chooseBookmark();" id="bookmarks">
 			</select>
@@ -144,7 +124,6 @@ function chooseTime(e) {
 			<button onClick="backFrame();">&lt;=</button>
 			<input id="frame" onInput="chooseTime();" type="text"></input>
 			<button onClick="forwardFrame();">=&gt;</button>
-			
 		</div>
 	</div>
 </div>
