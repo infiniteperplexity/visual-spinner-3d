@@ -1545,46 +1545,54 @@ function Player(renderer) {
 		}
 	}
 
-	function Bookmarker() {
+	function TimeCoder() {
 	this.RATE = 24;
-		this.bookmarks = [];
+		this.timecodes = [];
 	}
 
-	Bookmarker.prototype.setTime = function(t) {
+	TimeCoder.prototype.setTime = function(t) {
 		// must override
 		// might need to handle bounds?
 		//video.setTime(round(t, 1/this.RATE));
 	}
 
-	Bookmarker.prototype.getTime = function() {
+	TimeCoder.prototype.getTime = function() {
 		// must override
 		// video.currentTime =
 		// return video.currentTime.toFixed(3);
 	}
 
-	Bookmarker.prototype.update = function() {
+	TimeCoder.prototype.update = function() {
 		// should override
 		// updateFrame;
 	}
 
-	Bookmarker.prototype.add = function() {
+	TimeCoder.prototype.add = function() {
 		let time = this.getTime();
-		for (let mark of this.bookmarks) {
-			if (nearly(mark, time)) {
+		for (let code of this.timecodes) {
+			if (nearly(code, time)) {
 				return;
 			} 
 		}
-		this.bookmarks.push(time);
-		this.bookmarks.sort();
+		this.timecodes.push(time);
+		this.timecodes.sort((a,b)=>{
+			if (parseFloat(a)<parseFloat(b)) {
+				return -1;
+			} else if (parseFloat(a)>parseFloat(b)) {
+				return +1;
+			} else {
+				return 0;
+			}
+		});
 		this.update();
 	}
 
-	Bookmarker.prototype.remove = function() {
+	TimeCoder.prototype.remove = function() {
 		let time = this.getTime();
 		let i=0;
-		while (i<this.bookmarks.length) {
-			if (nearly(this.bookmarks[i], time)) {
-				this.bookmarks.splice(i,1);
+		while (i<this.timecodes.length) {
+			if (nearly(this.timecodes[i], time)) {
+				this.timecodes.splice(i,1);
 			} else {
 				i++;
 			}
@@ -1716,7 +1724,7 @@ function Player(renderer) {
 	VS3D.Player = Player;
 	VS3D.Controls = Controls;
 	VS3D.Overlay = Overlay;
-	VS3D.Bookmarker = Bookmarker;
+	VS3D.TimeCoder = TimeCoder;
 	VS3D.stringify = stringify;
 	VS3D.parse = parse;
 	VS3D.save = save;

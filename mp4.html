@@ -8,12 +8,11 @@ body {background-color: #99CCFF}
 
 
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>YouTube API timecoder for VS3D, by Glenn Wright)</title>
+<title>MP4 timecoder for VS3D, by Glenn Wright)</title>
 <script src="scripts/vs3d.js"></script>
 <script src="scripts/vs3d-moves.js"></script>
 <script src="scripts/three.min.js"></script>
 <script src="scripts/vs3d-render.js"></script>
-<script src="https://www.youtube.com/iframe_api"></script>
 <script>
 
 function init() {
@@ -21,32 +20,21 @@ function init() {
 }
 
 let frozen = true;
-let player, timecoder, controls;
+let video, timecoder, controls;
 function vidControls() {
-	player = new YT.Player('player', {
-        width: '854',
-        height: '480',
-        videoId: 'bHQqvYy5KYo',
-        events: {
-        	onReady: ()=>{
-        		frozen = false;
-        		updateTimeCoder();
-        	},
-        	onStateChange: updateTimeCoder
-        }
-    });
+	video = document.getElementById("video");
+	video.ontimeupdate = updateTimeCoder;
     timecoder = new VS3D.TimeCoder();
-    timecoder.getTime = function() {
-    	if (!player.getCurrentTime) {
+    timecoder.getTime = function() {    	
+    	if (!video.currentTime) {
     		return 0;
     	}
-    	let t = parseFloat(VS3D.round(player.getCurrentTime(), 1/this.RATE).toFixed(3));
+    	let t = parseFloat(VS3D.round(video.currentTime, 1/this.RATE).toFixed(3));
     	return t;
     }
     timecoder.setTime = function(t) {
-    	player.seekTo(t);
-    	setTimeout(()=>this.update(),100);
-    	setTimeout(()=>player.pauseVideo(),1000);
+    	video.currentTime = t;
+    	this.update();
     }
 	controls = document.getElementById("controls");
 	input = document.getElementById("frame");
@@ -69,6 +57,8 @@ function vidControls() {
 			codes.firstChild.selected = true;
 		}
     }
+    frozen = false;
+    timecoder.update();
 }
 
 function updateTimeCoder() {
@@ -118,20 +108,11 @@ function chooseTime() {
 }
 
 function cueVideo() {
-	let url = document.getElementById("url").value;
-	if (url) {
-		url = url.split("/");
-		url = url[url.length-1];
-		url = url.split("&");
-		url = url[0];
-		url = url.split("=");
-		url = url[url.length-1];
-		try {
-			player.cueVideoById(url);
-		} catch(e) {
-			alert("invalid url");
-		}
-	}
+	let files = document.getElementById("file").files;
+	let path = files[0].name;
+	console.log(files[0]);
+	console.log(path);
+	video.src = path;
 }
 
 function stringify() {
@@ -154,13 +135,14 @@ function parse() {
 <div id="grid">
 	<div>
 		<div id="header">
-			<button onClick="cueVideo();">Load Youtube URL/id</button>
-			<input id="url" type="text" onChange="cueVideo();" size="35" value="https://youtu.be/bHQqvYy5KYo"></input>
+			<input id="file" type="file" onChange="cueVideo();"></input>
 			<button onClick="stringify();">Save</button>
 			<button onClick="parse();">Import</button>
 			<input id="json" type="text" onChange="parse();" size="35"></input>
 		</div>
-		<div id="player"></div>
+		<video id="video" height="400px" controls src="comborific.mp4" type="video/mp4">
+			Your browser does not support HTML5 video.
+		</video>
 		<div id="controls">
 			<select onChange="gotoTimeCode();" id="timecodes">
 			</select>
