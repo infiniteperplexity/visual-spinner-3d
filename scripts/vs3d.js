@@ -1568,9 +1568,9 @@ function Player(renderer) {
 	}
 
 	Bookmarker.prototype.add = function() {
-		let time = getTime();
+		let time = this.getTime();
 		for (let mark of this.bookmarks) {
-			if (nearly(mark), time) {
+			if (nearly(mark, time)) {
 				return;
 			} 
 		}
@@ -1580,7 +1580,7 @@ function Player(renderer) {
 	}
 
 	Bookmarker.prototype.remove = function() {
-		let time = getTime();
+		let time = this.getTime();
 		let i=0;
 		while (i<this.bookmarks.length) {
 			if (nearly(this.bookmarks[i], time)) {
@@ -1589,12 +1589,6 @@ function Player(renderer) {
 				i++;
 			}
 		}
-		this.update();
-	}
-
-	Bookmarker.prototype.goto = function(t) {
-		// handle bounds?
-		this.setTime(t);
 		this.update();
 	}
 

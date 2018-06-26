@@ -3,21 +3,12 @@
 <html><head>
 <style>
 body {background-color: #99CCFF}
-#grid {
-	display: grid;
-	grid-column-gap: 3px;
-	grid-row-gap: 3px;
-	grid-template-columns: 400px auto;
-}
-video {
-	height: 400px;
-}
 </style>
 
 
 
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Drex's "combo-rific" video modeled in VisualSpinner, by Glenn Wright)</title>
+<title>Video bookmarker for VS3D, by Glenn Wright)</title>
 <script src="scripts/vs3d.js"></script>
 <script src="scripts/vs3d-moves.js"></script>
 <script src="scripts/three.min.js"></script>
@@ -29,6 +20,7 @@ function init() {
 	vidControls();
 }
 
+let frozen = true;
 let player, bookmarker, controls;
 function vidControls() {
 	player = new YT.Player('player', {
@@ -36,7 +28,10 @@ function vidControls() {
         height: '480',
         videoId: '05tyrZonnmw',
         events: {
-        	onReady: updateBookmarker,
+        	onReady: ()=>{
+        		frozen = false;
+        		updateBookmarker();
+        	},
         	onStateChange: updateBookmarker
         }
     });
@@ -45,13 +40,13 @@ function vidControls() {
     	if (!player.getCurrentTime) {
     		return 0;
     	}
-    	return parseFloat(VS3D.round(player.getCurrentTime(), 1/this.RATE));
+    	let t = parseFloat(VS3D.round(player.getCurrentTime(), 1/this.RATE).toFixed(3));
+    	return t;
     }
     bookmarker.setTime = function(t) {
-    	t = VS3D.round(t, 1/this.RATE);
-    	console.log("seeking to");
-    	console.log(t);
     	player.seekTo(t);
+    	setTimeout(()=>this.update(),100);
+    	setTimeout(()=>player.pauseVideo(),1000);
     }
 	controls = document.getElementById("controls");
 	input = document.getElementById("frame");
@@ -64,7 +59,7 @@ function vidControls() {
 			let node = document.createElement("option");
 			node.innerHTML = mark;
 			node.value = mark;
-			if (VS3D.nearly(parseFloat(mark), this.getTime())) {
+			if (VS3D.nearly(parseFloat(mark), this.getTime(), 1/this.RATE)) {
 				node.selected = true;
 				selected = true;
 			}
@@ -74,39 +69,56 @@ function vidControls() {
 			books.firstChild.selected = true;
 		}
     }
-	bookmarker.update();
 }
 
 function updateBookmarker() {
 	bookmarker.update();
 }
 function chooseBookmark() {
-	let val = this.target.value;
-	video.currentTime = parseFloat(e.target.value);
-	update();
+	if (frozen) {
+		return;
+	}
+	let val = document.getElementById("bookmarks").value;
+	bookmarker.setTime(parseFloat(val));
 }
 
 function addBookmark() {
+	if (frozen) {
+		return;
+	}
 	bookmarker.add();
 }
 
 function deleteBookmark() {
+	if (frozen) {
+		return;
+	}
 	bookmarker.remove();
 }
 function backFrame() {
-	bookmarker.goto(Math.max(0, bookmarker.getTime()-1/bookmarker.RATE));
+	if (frozen) {
+		return;
+	}
+	bookmarker.setTime(Math.max(0, bookmarker.getTime()-1/bookmarker.RATE));
 }
 function forwardFrame() {
-	// do these things handle duration the way they should anyway?
-	console.log(bookmarker.getTime());
-	console.log(1/bookmarker.RATE);
-	bookmarker.goto(bookmarker.getTime()+1/bookmarker.RATE);
-}
-function chooseTime(e) {
-	let val = e.target.value;
-	if (parseFloat(val)===parseFloat(String(parseFloat(val)))) {
-		setTime(parseFloat(val));
+	if (frozen) {
+		return;
 	}
+	bookmarker.setTime(bookmarker.getTime()+1/bookmarker.RATE);
+}
+function chooseTime() {
+	if (frozen) {
+		return;
+	}
+	let val = input.value;
+	if (parseFloat(val)===parseFloat(String(parseFloat(val)))) {
+		bookmarker.setTime(parseFloat(val));
+	}
+}
+
+function changeVideo(txt) {
+	player.cueVideoById("cdiFhv3gsyo");
 }
 </script>
 </head>
@@ -122,7 +134,7 @@ function chooseTime(e) {
 			<button onClick="addBookmark();">Add bookmark.</button>
 			<button onClick="deleteBookmark();">Delete bookmark.</button>
 			<button onClick="backFrame();">&lt;=</button>
-			<input id="frame" onInput="chooseTime();" type="text"></input>
+			<input id="frame" onInput="chooseTime();" type="text" size="6"></input>
 			<button onClick="forwardFrame();">=&gt;</button>
 		</div>
 	</div>
