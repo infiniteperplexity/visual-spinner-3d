@@ -118,7 +118,8 @@ function chooseTime() {
 }
 
 function cueVideo() {
-	let url = document.getElementById("url").value;
+	let url = prompt("Enter URL or YouTube ID");
+	// let url = document.getElementById("url").value;
 	if (url) {
 		url = url.split("/");
 		url = url[url.length-1];
@@ -138,13 +139,28 @@ function stringify() {
 	VS3D.save(timecoder.timecodes);
 }
 
-function parse() {
-	let json = document.getElementById("json").value;
-	if (json) {
-		let timecodes = JSON.parse();
-		timecoder.timecodes = timecodes;
-		timecoder.update();
+function loadJSON() {
+	let json = document.getElementById("json");
+	json.onclick = ()=>{
+		let files =json.files;
+		let reader = new FileReader();
+		reader.onload = (f)=>{
+			if (reader.result) {
+				try {
+					let timecodes = JSON.parse(reader.result);
+					console.log(timecodes);
+					timecoder.timecodes = timecodes;
+					timecoder.update();
+				} catch (e) {
+					throw e;
+				}
+			}
+		}
+		if (files[0]) {
+			reader.readAsText(files[0]);
+		}
 	}
+	json.click();
 }
 </script>
 </head>
@@ -155,10 +171,8 @@ function parse() {
 	<div>
 		<div id="header">
 			<button onClick="cueVideo();">Load Youtube URL/id</button>
-			<input id="url" type="text" onChange="cueVideo();" size="35" value="https://youtu.be/bHQqvYy5KYo"></input>
-			<button onClick="stringify();">Save</button>
-			<button onClick="parse();">Import</button>
-			<input id="json" type="text" onChange="parse();" size="35"></input>
+			<button onClick="stringify();">Save Timecodes</button>
+			<button onClick="loadJSON();">Import Timecodes</button>
 		</div>
 		<div id="player"></div>
 		<div id="controls">

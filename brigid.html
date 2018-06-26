@@ -4,15 +4,68 @@
 <style>
 body {background-color: #99CCFF}
 </style>
-
-
-
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>MP4 timecoder for VS3D, by Glenn Wright)</title>
-<script src="scripts/vs3d.js"></script>
-<script src="scripts/vs3d-moves.js"></script>
-<script src="scripts/three.min.js"></script>
-<script src="scripts/vs3d-render.js"></script>
+<title>MP4 timecoder, by Glenn Wright (based on code developed for VisualSpinner3D))</title>
+<script>
+// utilies copied from VisualSpinner3D
+function round(n, step) {
+ 	return Math.round(n/step)*step;
+}
+function nearly(n1, n2, delta) {
+		delta = delta || 0.001;
+		return (Math.abs(n1-n2)<delta);
+	}
+
+function TimeCoder() {
+	this.RATE = 24;
+		this.timecodes = [];
+	}
+
+	TimeCoder.prototype.setTime = function(t) {
+		// must override
+	}
+
+	TimeCoder.prototype.getTime = function() {
+		// must override
+	}
+
+	TimeCoder.prototype.update = function() {
+		// should override
+	}
+
+	TimeCoder.prototype.add = function() {
+		let time = this.getTime();
+		for (let code of this.timecodes) {
+			if (nearly(code, time)) {
+				return;
+			} 
+		}
+		this.timecodes.push(time);
+		this.timecodes.sort((a,b)=>{
+			if (parseFloat(a)<parseFloat(b)) {
+				return -1;
+			} else if (parseFloat(a)>parseFloat(b)) {
+				return +1;
+			} else {
+				return 0;
+			}
+		});
+		this.update();
+	}
+
+	TimeCoder.prototype.remove = function() {
+		let time = this.getTime();
+		let i=0;
+		while (i<this.timecodes.length) {
+			if (nearly(this.timecodes[i], time)) {
+				this.timecodes.splice(i,1);
+			} else {
+				i++;
+			}
+		}
+		this.update();
+	}
+</script>
 <script>
 
 function init() {
@@ -24,12 +77,12 @@ let video, timecoder, controls;
 function vidControls() {
 	video = document.getElementById("video");
 	video.ontimeupdate = updateTimeCoder;
-    timecoder = new VS3D.TimeCoder();
+    timecoder = new TimeCoder();
     timecoder.getTime = function() {    	
     	if (!video.currentTime) {
     		return 0;
     	}
-    	let t = parseFloat(VS3D.round(video.currentTime, 1/this.RATE).toFixed(3));
+    	let t = parseFloat(round(video.currentTime, 1/this.RATE).toFixed(3));
     	return t;
     }
     timecoder.setTime = function(t) {
@@ -47,7 +100,7 @@ function vidControls() {
 			let node = document.createElement("option");
 			node.innerHTML = code;
 			node.value = code;
-			if (VS3D.nearly(parseFloat(code), this.getTime(), 1/this.RATE)) {
+			if (nearly(parseFloat(code), this.getTime(), 1/this.RATE)) {
 				node.selected = true;
 				selected = true;
 			}
@@ -120,7 +173,7 @@ function cueVideo() {
 }
 
 function stringify() {
-	VS3D.save(timecoder.timecodes);
+	save(timecoder.timecodes);
 }
 
 function loadJSON() {
@@ -155,10 +208,12 @@ function loadJSON() {
 	<div>
 		<div id="header">
 			<button onClick="cueVideo();">Load MP4</button>
+			<input id="mp4" style="display: none;" type="file" "></input>
 			<button onClick="stringify();">Save Timecodes</button>
 			<button onClick = "loadJSON();">Load Timecodes</button>
+			<input id="json" type="file" style="display: none;"></input>
 		</div>
-		<video id="video" height="400px" controls src="comborific.mp4" type="video/mp4">
+		<video id="video" height="400px" controls src="" type="video/mp4">
 			Your browser does not support HTML5 video.
 		</video>
 		<div id="controls">

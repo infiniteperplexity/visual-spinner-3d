@@ -1650,11 +1650,20 @@ function Player(renderer) {
 
 	function save(obj) {
 		let txt = (typeof(obj)==="string") ? obj : stringify(obj); 
-		let blob = new Blob([txt], {type : 'application/json'});
+		let blob = new Blob([txt], {type : 'text/plain'});
 		let url = window.URL.createObjectURL(blob);
-		window.open(url);
+		// window.open(url);
+		let anchor = document.createElement("a");
+		anchor.download = "saved.json";
+		anchor.href = url;
+		anchor.dataset.downloadurl = ['text/plain', anchor.download, anchor.href].join(':');
+		document.body.appendChild(anchor);
+		anchor.click();
+		setTimeout(()=>{
+			document.body.removeChild(anchor);
+			window.URL.revokeObjectURL(url);
+		}, 0);
 	}
-
 
 // ****************************************************************************
 // ********************** Module Exports **************************************
@@ -1730,3 +1739,6 @@ function Player(renderer) {
 	VS3D.save = save;
 	return VS3D;
 }();
+
+
+
