@@ -1545,6 +1545,59 @@ function Player(renderer) {
 		}
 	}
 
+	function Bookmarker() {
+	this.RATE = 24;
+		this.bookmarks = [];
+	}
+
+	Bookmarker.prototype.setTime = function(t) {
+		// must override
+		// might need to handle bounds?
+		//video.setTime(round(t, 1/this.RATE));
+	}
+
+	Bookmarker.prototype.getTime = function() {
+		// must override
+		// video.currentTime =
+		// return video.currentTime.toFixed(3);
+	}
+
+	Bookmarker.prototype.update = function() {
+		// should override
+		// updateFrame;
+	}
+
+	Bookmarker.prototype.add = function() {
+		let time = getTime();
+		for (let mark of this.bookmarks) {
+			if (nearly(mark), time) {
+				return;
+			} 
+		}
+		this.bookmarks.push(time);
+		this.bookmarks.sort();
+		this.update();
+	}
+
+	Bookmarker.prototype.remove = function() {
+		let time = getTime();
+		let i=0;
+		while (i<this.bookmarks.length) {
+			if (nearly(this.bookmarks[i], time)) {
+				this.bookmarks.splice(i,1);
+			} else {
+				i++;
+			}
+		}
+		this.update();
+	}
+
+	Bookmarker.prototype.goto = function(t) {
+		// handle bounds?
+		this.setTime(t);
+		this.update();
+	}
+
 
 // ****************************************************************************
 // ********************** Serialization Methods *******************************
@@ -1669,6 +1722,7 @@ function Player(renderer) {
 	VS3D.Player = Player;
 	VS3D.Controls = Controls;
 	VS3D.Overlay = Overlay;
+	VS3D.Bookmarker = Bookmarker;
 	VS3D.stringify = stringify;
 	VS3D.parse = parse;
 	VS3D.save = save;
