@@ -139,10 +139,10 @@ function stringify() {
 	VS3D.save(timecoder.timecodes);
 }
 
-function loadJSON() {
+ffunction loadJSON() {
 	let json = document.getElementById("json");
-	json.onclick = ()=>{
-		let files =json.files;
+	json.onchange = ()=>{
+		let files = json.files;
 		let reader = new FileReader();
 		reader.onload = (f)=>{
 			if (reader.result) {
@@ -173,6 +173,7 @@ function loadJSON() {
 			<button onClick="cueVideo();">Load Youtube URL/id</button>
 			<button onClick="stringify();">Save Timecodes</button>
 			<button onClick="loadJSON();">Import Timecodes</button>
+			<input id="json" type="file" accept="application/json" style="display: none"></input>
 		</div>
 		<div id="player"></div>
 		<div id="controls">

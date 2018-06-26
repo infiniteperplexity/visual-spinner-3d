@@ -30,15 +30,14 @@ class App extends React.Component {
               return;
             }
             props.updateEngine();
-            save(player.props);
-          }}>Save</button>
-          <button onClick={(e)=>{
-            e.preventDefault();
-            if (this.props.frozen) {
-              return;
+            let p = clone(player.props);
+            for (let i=0; i<p.length; i++) {
+              p[i].moves = VS3D.desolve(p[i].moves);
             }
-            props.setPopup(true);
-          }}>Import</button>
+            save(p);
+            //save(player.props);
+          }}>Save</button>
+          <ImportButton {...props} />
         </div>
         <div className="grid top">
           <Grid dragID="SVG" {...props} />
@@ -54,7 +53,6 @@ class App extends React.Component {
         <MoveQueue propid="2" {...props}/>
         <MoveQueue propid="3" {...props}/>
         </div>
-        <PopUp {...props}/>
       </div>
       
     );

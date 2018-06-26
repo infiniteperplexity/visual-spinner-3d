@@ -102,27 +102,29 @@ class PropNode extends React.Component {
         node.r = 0.01;
       }
       // don't update if nothing changed
-      if (this.props.tick!==-1) {
-        let {move} = submove(this.props.moves[this.props.propid], this.props.tick);
-        let nd = NODES[this.props.node];
-        if (nearly(move[nd].r1, node.r) && nearly(move[nd].a1, a)) {
-          return;
-        }
+      let move;
+      if (this.props.tick===-1) {
+        move = this.props.starters[this.props.propid];
+      } else {
+        move = submove(this.props.moves[this.props.propid], this.props.tick).move;
       }
-      nodes[NODES[this.props.node]] = {r1: node.r, a1: a};
-      this.props.modifyMove({
-        propid: this.props.propid,
-        tick: this.props.tick,
-        nodes: nodes
-      });
-      this.props.resolveMove({
-        propid: this.props.propid,
-        tick: this.props.tick
-      });
-      // an SVG update at this point is cheap and sometimes useful
-      this.props.gotoTick(this.props.tick);
-      this.props.checkLocks();
-      this.props.renderEngine();
+      let nd = NODES[this.props.node];
+      if (!(nearly(move[nd].r1, node.r) && nearly(move[nd].a1, a))) {
+        nodes[NODES[this.props.node]] = {r1: node.r, a1: a};
+        this.props.modifyMove({
+          propid: this.props.propid,
+          tick: this.props.tick,
+          nodes: nodes
+        });
+        this.props.resolveMove({
+          propid: this.props.propid,
+          tick: this.props.tick
+        });
+        // an SVG update at this point is cheap and sometimes useful
+        this.props.gotoTick(this.props.tick);
+        this.props.checkLocks();
+        this.props.renderEngine();
+      }
     }
     this.localState.beingDragged = false;
     Draggables[this.props.dragID].localState.dragging = null;

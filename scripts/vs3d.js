@@ -1633,19 +1633,57 @@ function Player(renderer) {
 		});
 	}
 
-	function sparsify(move) {
-		// so...there's two potential ways of sparsifying...this seems kind of dangerous.
-		// one is that we remove any node that's in its default position.
-		// the one thing is, we can't refit after that...right?  Well...let's try it anyway.
-		move = clone(move);
-		for (let prop of ["bent","twist","vb","vt"]) {
-			if (move[prop]===0) {
-				delete move[prop];
+	// removes unneeded properties from solved move
+	function desolve(move) {
+		if (Array.isArray(move)) {
+			return move.map(desolve);
+		}
+
+		move = resolve(move);
+		for (let i=0; i<NODES.length; i++) {
+			let node = move[NODES[i]];
+			if (!node) {
+				continue;
+			}
+			// assume that it is fully solved
+			if (node.r===node.r1 && node.vr===0 && node.vr1==0 && node.a===node.a1 && node.va===0 && node.va1==0) {
+				delete move[NODES[i]];
+			} else {
+				if (node.r===node.r1 && node.vr===0 && node.vr1==0) {
+					if (zeroish(node.r) && i!==HEAD && i!==HAND) {
+						delete node.r;
+					}
+					delete node.r1;
+					delete node.vr;
+					delete node.vr1;
+					delete node.ar;
+				} else if (node.vr===node.vr1) {
+					delete node.r1;
+					delete node.vr1;
+					delete node.ar;
+				} else {
+					delete node.r1;
+					delete node.ar;
+				}
+				if (node.a===node.a1 && node.va===0 && node.va1==0) {
+					if (zeroish(node.a)) {
+						delete node.a;
+					}
+					delete node.a1;
+					delete node.va;
+					delete node.va1;
+					delete node.aa;
+				} else if (node.va===node.va1) {
+					delete node.a1;
+					delete node.va1;
+					delete node.aa;
+				} else {
+					delete node.a1;
+					delete node.aa;
+				}
 			}
 		}
-		if (vector$nearly(move.p, WALL)) {
-			delete move.p;
-		}
+		return move;
 	}
 
 	function save(obj) {
@@ -1653,16 +1691,20 @@ function Player(renderer) {
 		let blob = new Blob([txt], {type : 'text/plain'});
 		let url = window.URL.createObjectURL(blob);
 		// window.open(url);
-		let anchor = document.createElement("a");
-		anchor.download = "saved.json";
-		anchor.href = url;
-		anchor.dataset.downloadurl = ['text/plain', anchor.download, anchor.href].join(':');
-		document.body.appendChild(anchor);
-		anchor.click();
-		setTimeout(()=>{
-			document.body.removeChild(anchor);
-			window.URL.revokeObjectURL(url);
-		}, 0);
+		
+		let p = prompt("Enter name for saved file:","sequence.json");
+		if (p) {
+			let anchor = document.createElement("a");
+			anchor.download = p;
+			anchor.href = url;
+			anchor.dataset.downloadurl = ['text/plain', anchor.download, anchor.href].join(':');
+			document.body.appendChild(anchor);
+			anchor.click();
+			setTimeout(()=>{
+				document.body.removeChild(anchor);
+				window.URL.revokeObjectURL(url);
+			}, 0);
+		}
 	}
 
 // ****************************************************************************
@@ -1736,6 +1778,7 @@ function Player(renderer) {
 	VS3D.TimeCoder = TimeCoder;
 	VS3D.stringify = stringify;
 	VS3D.parse = parse;
+	VS3D.desolve = desolve;
 	VS3D.save = save;
 	return VS3D;
 }();

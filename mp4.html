@@ -125,8 +125,8 @@ function stringify() {
 
 function loadJSON() {
 	let json = document.getElementById("json");
-	json.onclick = ()=>{
-		let files =json.files;
+	json.onchange = ()=>{
+		let files = json.files;
 		let reader = new FileReader();
 		reader.onload = (f)=>{
 			if (reader.result) {
@@ -155,8 +155,10 @@ function loadJSON() {
 	<div>
 		<div id="header">
 			<button onClick="cueVideo();">Load MP4</button>
+			<input id="mp4" type="file" accept="video/mp4" style="display: none"></input>
 			<button onClick="stringify();">Save Timecodes</button>
 			<button onClick = "loadJSON();">Load Timecodes</button>
+			<input id="json" type="file" accept="application/json" style="display: none"></input>
 		</div>
 		<video id="video" height="400px" controls src="comborific.mp4" type="video/mp4">
 			Your browser does not support HTML5 video.

@@ -75,96 +75,91 @@ class PlaneMenu extends React.Component {
   }
 }
 
-class PopUp extends React.Component {
-  handleSubmit = (e)=> {
-    if (this.props.frozen) {
-      this.props.setPopup(false);
-      return;
-    }
-    e.preventDefault();
-    let json = this.txt.value;
-    if (json) {
-      let saveState = clone(store.getState());
-      let savedProps = clone(player.props);
-      try {
-        let props = parse(json);
-        for (let i=0; i<props.length; i++) {
-          for (let key in props[i]) {
-            player.props[i][key] = props[i][key];
-          }
-        }
-        let state = {
-          props: clone(player.props.map(p=>p.prop)),
-          moves: clone(player.props.map(p=>p.moves)),
-          starters: player.props.map(p=>resolve(fit(p.prop, new Move({beats: 0})))),
-          colors: player.props.map(p=>p.color || "red"),
-          tick: -1,
-          order: player.props.map((_,i)=>(player.props.length-i-1)),
-          plane: "WALL",
-          locks: {
-            helper: true,
-            grip: true,
-            head: true,
-            body: true
-          } 
-        };
-        // should check state and throw errors if it's bad.
-        let nprops = state.props.length;
-        if (  state.moves.length!==nprops ||
-              state.starters.length!==nprops ||
-              state.colors.length!==nprops ||
-              state.order.length!==nprops
-          ) {
-          throw new Error("number of props not consistent.");
-        }
-        if (  !["WALL","WHEEL","FLOOR"].includes(state.plane) ||
-              tick<-1 ||
-              parseInt(tick) !== tick
-          ) {
 
+class ImportButton extends React.Component {
+  handleInput = (json)=>{
+    let saveState = clone(store.getState());
+    let savedProps = clone(player.props);
+    try {
+      let props = parse(json);
+      for (let i=0; i<props.length; i++) {
+        player.props[i] = new PropWrapper();
+        for (let key in props[i]) {
+          player.props[i][key] = props[i][key];
         }
+      }
+      let state = {
+        props: clone(player.props.map(p=>p.prop)),
+        moves: clone(player.props.map(p=>p.moves)),
+        starters: player.props.map(p=>resolve(fit(p.prop, new Move({beats: 0})))),
+        colors: player.props.map(p=>p.color || "red"),
+        tick: -1,
+        order: player.props.map((_,i)=>(player.props.length-i-1)),
+        plane: "WALL",
+        locks: {
+          helper: true,
+          grip: true,
+          head: true,
+          body: true
+        } 
+      };
+      // should check state and throw errors if it's bad.
+      let nprops = state.props.length;
+      if (  state.moves.length!==nprops ||
+            state.starters.length!==nprops ||
+            state.colors.length!==nprops ||
+            state.order.length!==nprops
+        ) {
+        throw new Error("number of props not consistent.");
+      }
+      if (  !["WALL","WHEEL","FLOOR"].includes(state.plane) ||
+            state.tick<-1 ||
+            parseInt(state.tick) !== state.tick
+        ) {
+        throw new Error("still working on error messages");
+      }
 
-        this.props.restoreState(state);
-        this.props.pushState();
-        this.props.gotoTick(-1);
-        this.props.checkLocks();
-        this.props.renderEngine();
-      } catch (e) {
-        alert("invalid input!");
-        console.log(e);
-        this.props.restoreState(saveState);
-          for (let i=0; i<savedProps.length; i++) {
-          for (let key in savedProps[i]) {
-            player.props[i][key] = savedProps[i][key];
-          }
+      this.props.restoreState(state);
+      this.props.pushState();
+      this.props.gotoTick(-1);
+      this.props.checkLocks();
+      this.props.renderEngine();
+    } catch (e) {
+      alert("invalid input!");
+      console.log(json);
+      console.log(e);
+      this.props.restoreState(saveState);
+        for (let i=0; i<savedProps.length; i++) {
+        for (let key in savedProps[i]) {
+          player.props[i][key] = savedProps[i][key];
         }
       }
     }
-    this.props.setPopup(false);
   }
-  handleCancel= (e)=> {
+  handleClick = (e)=>{
     e.preventDefault();
-    this.props.setPopup(false);
+    let input = document.createElement("input");
+    input.type = "file";
+    input.accept = "application/json";
+    input.style.display = "none";
+    input.onchange = ()=>{
+      let files = input.files;
+      console.log(files);
+      let reader = new FileReader();
+      reader.onload = (f)=>{
+        if (reader.result) {
+          this.handleInput(reader.result);
+        }
+      }
+      if (files[0]) {
+        reader.readAsText(files[0]);
+      }
+    }
+    document.body.appendChild(input);
+    input.click();
+    setTimeout(()=>document.body.removeChild(input),0);
   }
   render() {
-    if (this.props.popup===false) {
-      return null;
-    }
-    return (
-      <div style={{
-        position: "absolute"
-      }}>
-        <textarea ref={txt=>this.txt=txt} cols="50" rows="12">
-
-        </textarea>
-        <br />
-        <button onClick={this.handleSubmit}>
-          Submit
-        </button>
-        <button onClick={this.handleCancel}>
-          Cancel
-        </button>
-      </div>
-    );
+    return <button onClick={this.handleClick}>Import</button>
   }
 }

@@ -21,6 +21,7 @@ Bugs:
 - All breaks in angle$spherify are gone, but are there maybe still cusps?
 - The refitting approach I used to save the comborific.json got a few things wrong, including twist and a handful of positions.  This may not still be the case, though.
 - SVG and WebGL occasionally get out of sync.
+	- I'm seeing something where you click on a node that is in both props???
 
 - It seems like prop.toXYZ and move.toXYZ might be good things, 
 
@@ -34,7 +35,6 @@ React App:
 	- Make moves drag-rearrangeable.
 
 	Nice:
-	- Make sure all panel elements work.
 	- Might want to remove default properties when exporting.
 	- Make looking at a move in the wrong plane more sensible.
 	- Border boxes separating sections.
