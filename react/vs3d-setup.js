@@ -24,14 +24,16 @@ for (let i=0; i<NPROPS; i++) {
 	prop.setHandAngle(ANGLES[i]);
 }
 
+let panelTicks;
 function afterReactMounts() {
 	renderer = new VS3D.ThreeRenderer(document.getElementById("display"), 350, 350);
+	panelTicks = document.getElementById("panelTicks");
 	player.update = function(positions) {
 		renderer.render(this.props, positions);
 		store.dispatch({type: "gotoTick", tick: this.tick});
-		console.log("but why?");
-		document.getElementById("panelTicks").value = this.tick;
+		panelTicks.value = this.tick;
 	}
+
 	store.dispatch({type: "gotoTick", tick: -1});
 	store.dispatch({type: "renderEngine"});
 	let controls = new VS3D.Controls(player);
