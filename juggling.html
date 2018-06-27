@@ -36,13 +36,15 @@ function init() {
 	blue.moves.push({beats: 3, head: {va: -2}});
 	green.moves.push({beats: 5, head: {va: 2}});
 
-	red.moves.push({beats: 1.5, pivot: {a: LEFT, r: 0, r1: 1}, helper: {a: UP, r: 0, r1: 2, vr1: 0}, head: {va: 4/3}});
-	red.moves.push({beats: 1.5, pivot: {r1: 2}, helper: {r1: 0, vr: 0}, head: {va: 4/3}});
+	// ah...well...this broke...because it violated the combinating assumption
+
+	red.moves.push({beats: 1.5, pivot: {a: LEFT, r: 0, r1: 1}, helper: {a: UP, r: 0, r1: 2, vr1: 0}, head: {va: 4/3}, notes: "test1"});
+	red.moves.push({beats: 1.5, pivot: {r1: 2}, helper: {r1: 0, vr: 0}, head: {va: 4/3}, notes: "test2"});
 
 	blue.moves.push({beats: 1.5, pivot: {a: RIGHT, r: 0, r1: 1}, helper: {a: UP, r: 0, r1: 2, vr1: 0}, head: {va: -4/3}});
 	blue.moves.push({beats: 1.5, pivot: {r1: 2}, helper: {r1: 0, vr: 0}, head: {va: -4/3}});
 
-	red.moves.push({beats: 3, pivot: {r: 0}, hand: {a: LEFT}, head: {va: -2}});
+	red.moves.push({beats: 3, pivot: {r: 0}, hand: {a: LEFT}, head: {va: -2}, notes: "test3"});
 
 	green.moves.push({beats: 1.5, pivot: {a: LEFT, r: 0, r1: 1}, helper: {a: UP, r: 0, r1: 2, vr1: 0}, head: {va: 4/3}});
 	green.moves.push({beats: 1.5, pivot: {r1: 2}, helper: {r1: 0, vr: 0}, head: {va: 4/3}});

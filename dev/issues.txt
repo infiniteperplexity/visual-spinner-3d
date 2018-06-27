@@ -23,7 +23,7 @@ Bugs:
 - SVG and WebGL occasionally get out of sync.
 	- I'm seeing something where you click on a node that is in both props???
 
-- It seems like prop.toXYZ and move.toXYZ might be good things, 
+- The juggling page is broken now, almost certainly because it violates the "only one radius changes" combinating assumption.  Was there way around that one?  Ugh...I really don't like these situations where I can't remember how the fitting algorithms work.
 
 
 React App:

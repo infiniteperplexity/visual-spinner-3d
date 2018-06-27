@@ -617,8 +617,7 @@ let VS3D = {}; //
 			args[e] = args[e] || 0;
 		}
 		args.p = args.p || WALL;
-		//!!! Not clear whether the angular conversion is correct
-		let r = args.r + args.vr*t/BEAT + args.ar*t*t/(2*BEAT*BEAT);
+		let r = args.r + args.vr*t/BEAT + args.ar*t*t/(2*BEAT);
 		let a = args.a + args.va*t*SPEED + args.aa*t*t*SPEED*SPEED/2;
 		let p = args.p;
 		let s = {...angle$spherify(a, p), r: r};
@@ -1013,7 +1012,7 @@ let VS3D = {}; //
 					aligned[n] = merge({a: resolved[n].a1, r: resolved[n].r1}, aligned[n]);
 				};
 				if (fits(move1, aligned)) {
-					// console.log("MIDDLE METHOD");
+					//console.log("MIDDLE METHOD");
 					return aligned;
 				}
 				let combinated = combinate(move1, move2);
