@@ -17,6 +17,7 @@ const COLORS = ["red","blue"];
 const ANGLES = [LEFT, RIGHT];
 
 let	player = new VS3D.Player();
+player.speed = 1;
 player.rate = 2;
 for (let i=0; i<NPROPS; i++) {
 	let prop = player.addProp(new VS3D.Prop(), {color: COLORS[i]});

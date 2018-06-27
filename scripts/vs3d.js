@@ -1318,7 +1318,7 @@ function Player(renderer) {
 			};
 		}
 		this.props = [];
-		this.speed = 1;
+		this.speed = 10;
 		this.rate = 1;
 		this.tick = 0;
 	}
