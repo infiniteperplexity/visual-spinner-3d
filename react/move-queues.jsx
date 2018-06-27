@@ -175,6 +175,9 @@ class ColorPicker extends React.Component {
     colors[this.props.propid] = e.target.value;
     this.props.setColors(colors);
     this.props.renderEngine();
+    console.log(e.target.value);
+    console.log(this.props.colors[this.props.propid]);
+    console.log(svg2hex(this.props.colors[this.props.propid]));
   }
   render() {
     return (

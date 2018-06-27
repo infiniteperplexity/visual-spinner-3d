@@ -29,6 +29,7 @@ function afterReactMounts() {
 	player.update = function(positions) {
 		renderer.render(this.props, positions);
 		store.dispatch({type: "gotoTick", tick: this.tick});
+		console.log("but why?");
 		document.getElementById("panelTicks").value = this.tick;
 	}
 	store.dispatch({type: "gotoTick", tick: -1});
