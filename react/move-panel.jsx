@@ -71,7 +71,7 @@ class MovePanel extends React.Component {
 }
 
 class MoveControl extends React.Component {
-  handleMouseDown = (e)=>{
+  handleMouseDown = (e)=>{    
     if (this.props.frozen) {
       return;
     }
@@ -86,6 +86,19 @@ class MoveControl extends React.Component {
   modifySpins = (n) =>{
     const BOUNDS = 2;
     let {move, node, propid, tick} = this.props;
+    // make sure we align to the beginning of the move
+    let moves = this.props.moves[propid];
+    let past = 0;
+    let i = 0;
+    while (past<tick) {
+      let ticks = beats(moves[i])*BEAT;
+      if (past+ticks>tick) {
+        this.props.gotoTick(past);
+      }
+      past+=ticks;
+      i+=1;
+    }
+    
     let va = move[node] ? move[node].va : 0;
     let va1 = move[node] ? move[node].va1 : va;
     let a = move[node] ? move[node].a : 0;
@@ -115,14 +128,33 @@ class MoveControl extends React.Component {
     this.props.renderEngine();
   }
   handleClockwise = (e)=>{
+    if (this.props.frozen) {
+      return;
+    }
     this.modifySpins(+1);
   }
   handleCounter = (e)=>{
+      if (this.props.frozen) {
+      return;
+    }
     this.modifySpins(-1);
   }
   modifyAcc = (n) => {
     let BOUNDS = 8;
     let {move, node, propid, tick} = this.props;
+    // make sure we align to the beginning of the move
+    let moves = this.props.moves[propid];
+    let past = 0;
+    let i = 0;
+    while (past<tick) {
+      let ticks = beats(moves[i])*BEAT;
+      if (past+ticks>tick) {
+        this.props.gotoTick(past);
+      }
+      past+=ticks;
+      i+=1;
+    }
+
     let va = move[node] ? move[node].va : 0;
     let va1 = move[node] ? move[node].va1 : va;
     let spin = beats(move)/4;
@@ -159,9 +191,15 @@ class MoveControl extends React.Component {
     this.props.renderEngine();
   }
   handleSpeedUp = (e)=>{
+    if (this.props.frozen) {
+      return;
+    }
     this.modifyAcc(+1);
   }
   handleSlowDown = (e)=>{
+    if (this.props.frozen) {
+      return;
+    }
     this.modifyAcc(-1);
   }
   render() {

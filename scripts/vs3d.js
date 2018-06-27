@@ -618,7 +618,7 @@ let VS3D = {}; //
 		}
 		args.p = args.p || WALL;
 		let r = args.r + args.vr*t/BEAT + args.ar*t*t/(2*BEAT);
-		let a = args.a + args.va*t*SPEED + args.aa*t*t*SPEED*SPEED/2;
+		let a = args.a + args.va*t*SPEED + args.aa*t*t*SPEED*SPEED/(2*BEAT);
 		let p = args.p;
 		let s = {...angle$spherify(a, p), r: r};
 		return s;
@@ -691,13 +691,17 @@ let VS3D = {}; //
 		}
 		// !!! not sure if radial acceleration is converted correctly
 		if (args.ar!==undefined) {
-			args.ar/=BEAT;
+			args.ar/=(BEAT);
+		}
+		if (args.aa!==undefined) {
+			args.aa/=BEAT;
 		}
 		let {x0: r, v0: vr, a: ar, x1: r1, v1: vr1} = solve({x0: args.r, x1: args.r1, v0: args.vr, v1: args.vr1, a: args.ar, t: args.beats*BEAT});
 		let {x0: a, v0: va, a: aa, x1: a1, v1: va1} = solve_angle({x0: args.a, x1: args.a1, v0: args.va, v1: args.va1, a: args.aa, spin: args.spin, t: args.beats*BEAT});
 		vr*=BEAT;
 		vr1*=BEAT;
-		ar*=BEAT;
+		ar*=(BEAT);
+		aa*=BEAT;
 		return {r: r, vr: vr, ar: ar, a: a, va: va, aa: aa, r1: r1, vr1: vr1, a1: a1, va1: va1};
 	}
 

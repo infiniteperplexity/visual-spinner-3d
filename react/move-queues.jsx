@@ -35,9 +35,7 @@ class MoveQueue extends React.Component {
 
 class NewMove extends React.Component {
   handleClick = (e)=> {
-    if (this.props.frozen) {
-      return;
-    }
+    player.stop();
     let ticks;
     let allTicks = [];
     if (this.props.moves[this.props.propid].length===0) {
@@ -76,25 +74,20 @@ class NewMove extends React.Component {
 class MoveItem extends React.Component {
   constructor(props, context) {
     super(props, context);
-    this.WIDTH = 120;
-    this.ARM = 24;
-    this.TETHER = 24;
+    this.WIDTH = 90;
+    this.ARM = 18;
+    this.TETHER = 18;
     this.HEAD = 6;
     this.HAND = 3;
   }
   handleMouseEnter = (e)=>{
-    if (this.props.frozen) {
-      return;
-    }
     this.renderContext("lightcyan");
   }
   handleMouseLeave = (e)=>{
     this.renderContext("white");
   }
   handleMouseDown = (e)=>{
-    if (this.props.frozen) {
-      return;
-    }
+    player.stop();
     this.props.setTop(this.props.propid);
     this.props.gotoTick(this.props.ticks);
     this.props.checkLocks();
@@ -167,9 +160,7 @@ class MoveItem extends React.Component {
 let {svg2hex, hex2svg} = VS3D.Colors;
 class ColorPicker extends React.Component {
   handleChange = (e)=> {
-    if (this.props.frozen) {
-      return;
-    }
+    player.stop();
     let colors = [...this.props.colors];
     let color = hex2svg(e.target.value);
     colors[this.props.propid] = e.target.value;
