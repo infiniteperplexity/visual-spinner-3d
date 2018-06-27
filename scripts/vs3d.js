@@ -1319,7 +1319,7 @@ function Player(renderer) {
 			};
 		}
 		this.props = [];
-		this.speed = 10;
+		this.speed = 1;
 		this.rate = 1;
 		this.tick = 0;
 	}

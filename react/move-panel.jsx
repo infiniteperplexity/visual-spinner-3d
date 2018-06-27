@@ -213,7 +213,7 @@ class MoveControl extends React.Component {
         <SpeedButton key="2" onClick={this.handleClockwise} title="more clockwise / less counterclockwise">
           <path d={ARROW} transform="translate(5, 5)" fill={color} stroke={stroke}/>
         </SpeedButton>,
-        <SpeedButton key="3" onClick={this.handleSpeedUp} title="starts slow / ends faster">
+        <SpeedButton key="3" onClick={this.handleSpeedUp} title="starts slower / ends faster">
           <polygon points={ACC} transform="translate(5, 9)" fill={color} stroke={stroke}/>
         </SpeedButton>,
         <SpeedButton key="4" onClick={this.handleSlowDown} title="starts faster / ends slower">
