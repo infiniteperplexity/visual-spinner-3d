@@ -191,12 +191,12 @@ VS3D = (function(VS3D) {
 		);
 		let head = new THREE.Mesh(
 			new THREE.SphereGeometry(0.1,8,8),
-			new THREE.MeshLambertMaterial({color: this.colors("white")})
+			new THREE.MeshLambertMaterial({color: "white"})
 		);
 		head.position.y = 1;
 		let tail = new THREE.Mesh(
 			new THREE.SphereGeometry(0.1,8,8),
-			new THREE.MeshLambertMaterial({color: this.colors("gray")})
+			new THREE.MeshLambertMaterial({color: "gray"})
 		);
 		tail.position.y = -1;
 		let group = new THREE.Group();
@@ -225,7 +225,7 @@ VS3D = (function(VS3D) {
 		);
 		let handle = new THREE.Mesh(
 			new THREE.CylinderGeometry(0.075,0.075,0.15,8),
-			new THREE.MeshLambertMaterial({color: this.colors("gray")})
+			new THREE.MeshLambertMaterial({color: "gray"})
 		);
 		//rotateX?
 		handle.translateOnAxis(THREEY,-0.8);
@@ -256,7 +256,7 @@ VS3D = (function(VS3D) {
 			let c = (i===0) ? "gray" : color;
 				tine = new THREE.Mesh(
 				new THREE.CylinderGeometry(0.05,0.05,0.8,8),
-				new THREE.MeshLambertMaterial({color: this.colors(c)})
+				new THREE.MeshLambertMaterial({color: c})
 			);
 			tine.rotateZ(-angle+i*angle);
 			tine.translateOnAxis(THREEY,0.6);
