@@ -34,6 +34,12 @@ function setup() {
 	player.rate = 2;
 	let controls = new VS3D.Controls(player);
 	renderer.div.appendChild(controls.div);
+	let button = document.createElement("button");
+	button.innerHTML = "Export";
+	button.onclick = ()=>{
+		VS3D.save(player.props);
+	}
+	controls.div.appendChild(button);
 	player.update = function(positions) {
 		renderer.render(this.props, positions);
 		controls.update(this.tick);
