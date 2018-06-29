@@ -54,3 +54,9 @@ One idea for maintaining solved state:
 - Otherwise, if va1 was zero, try to keep it at zero.
 - Otherwise, if va===va1, re-solve.
 - Otherwise, try to keep va as-is.
+
+
+- I ran into a "fast spiral" issue, like, instantly...something about the starting stuff is really messed up.
+- Even stuff that was working before is going wrong now.  Did commenting out all that "align with beginning of the move" stuff help?
+- Appears to be a consequence of hand length changing?
+- Nice.  Does it work for combinated?

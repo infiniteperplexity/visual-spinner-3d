@@ -87,18 +87,17 @@ class MoveControl extends React.Component {
     const BOUNDS = 2;
     let {move, node, propid, tick} = this.props;
     // make sure we align to the beginning of the move
-    let moves = this.props.moves[propid];
-    let past = 0;
-    let i = 0;
-    while (past<tick) {
-      let ticks = beats(moves[i])*BEAT;
-      if (past+ticks>tick) {
-        this.props.gotoTick(past);
-      }
-      past+=ticks;
-      i+=1;
-    }
-    
+    // let moves = this.props.moves[propid];
+    // let past = 0;
+    // let i = 0;
+    // while (past<tick) {
+    //   let ticks = beats(moves[i])*BEAT;
+    //   if (past+ticks>tick) {
+    //     this.props.gotoTick(past);
+    //   }
+    //   past+=ticks;
+    //   i+=1;
+    // }
     let va = move[node] ? move[node].va : 0;
     let va1 = move[node] ? move[node].va1 : va;
     let a = move[node] ? move[node].a : 0;
@@ -143,18 +142,17 @@ class MoveControl extends React.Component {
     let BOUNDS = 8;
     let {move, node, propid, tick} = this.props;
     // make sure we align to the beginning of the move
-    let moves = this.props.moves[propid];
-    let past = 0;
-    let i = 0;
-    while (past<tick) {
-      let ticks = beats(moves[i])*BEAT;
-      if (past+ticks>tick) {
-        this.props.gotoTick(past);
-      }
-      past+=ticks;
-      i+=1;
-    }
-
+    // let moves = this.props.moves[propid];
+    // let past = 0;
+    // let i = 0;
+    // while (past<tick) {
+    //   let ticks = beats(moves[i])*BEAT;
+    //   if (past+ticks>tick) {
+    //     this.props.gotoTick(past);
+    //   }
+    //   past+=ticks;
+    //   i+=1;
+    // }
     let va = move[node] ? move[node].va : 0;
     let va1 = move[node] ? move[node].va1 : va;
     let spin = beats(move)/4;

@@ -230,8 +230,10 @@ function reducer(state, action) {
         node.vr = mnode.vr;
         node.vr1 = mnode.vr1;
         node.ar = mnode.ar;
+        node.spin = mnode.spin;
         move[NODES[i]] = node;
       }
+      console.log(clone(move));
       move = resolve(move);
     }
     for (let node of NODES) {
