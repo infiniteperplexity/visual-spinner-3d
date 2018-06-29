@@ -58,5 +58,5 @@ One idea for maintaining solved state:
 
 - I ran into a "fast spiral" issue, like, instantly...something about the starting stuff is really messed up.
 - Even stuff that was working before is going wrong now.  Did commenting out all that "align with beginning of the move" stuff help?
-- Appears to be a consequence of hand length changing?
-- Nice.  Does it work for combinated?
+
+- My brain keeps confusing the + tick button with the + move button.
