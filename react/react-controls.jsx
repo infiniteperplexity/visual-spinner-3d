@@ -15,6 +15,8 @@ class ControlPanel extends React.Component {
     this.props.setFrozen(false);
     // probably want to gotoTick...
     player.stop();
+    this.props.gotoTick(player.tick);
+    this.props.renderEngine();
   }
   handleRewind = (e)=>{
     e.preventDefault();
@@ -22,12 +24,16 @@ class ControlPanel extends React.Component {
     this.props.updateEngine();
     player.stop();
     player.goto(player.tick-this.RATE);
+    this.props.gotoTick(player.tick);
+    this.props.renderEngine();
   }
   handleFrame = (e)=>{
     this.props.setFrozen(false);
     this.props.updateEngine();
     player.stop();
-    player.goto(e.target.value)
+    player.goto(e.target.value);
+    this.props.gotoTick(player.tick);
+    this.props.renderEngine();
   }
   handleForward = (e)=>{
     e.preventDefault();
@@ -35,12 +41,15 @@ class ControlPanel extends React.Component {
     this.props.updateEngine();
     player.stop();
     player.goto(player.tick+this.RATE);
+    this.props.gotoTick(player.tick);
+    this.props.renderEngine();
   }
   handleReset = (e)=>{
     e.preventDefault();
     this.props.setFrozen(false);
     player.reset();
     this.props.gotoTick(-1);
+    this.props.renderEngine();
   }
   render() {
     // need to figure out how to handle ticks.
