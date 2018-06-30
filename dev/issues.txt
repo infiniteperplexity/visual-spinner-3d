@@ -56,3 +56,6 @@ One idea for maintaining solved state:
 - Otherwise, try to keep va as-is.
 
 - Out-there ideas...let people drag things in the middle of moves?
+- I think we need lots of experiments with hands and elbows and shit.p
+- Why can't I return the elbow to zero? 
+- Should we able able to set spins for things that start at radius 0?

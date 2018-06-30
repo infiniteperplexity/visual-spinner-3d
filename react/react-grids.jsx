@@ -91,7 +91,7 @@ function Grid(props, context) {
       <rect width={UNIT*UNITS} height={UNIT*UNITS} fill="black"/>
       {grid} 
       <circle cx={X0} cy={Y0} r={HALF} fill="none" stroke={stroke} />,  
-      <circle cx={X0} cy={Y0} r={UNIT} fill="none" stroke="" />
+      <circle cx={X0} cy={Y0} r={UNIT} fill="none" stroke={stroke} />
       <circle cx={X0} cy={Y0} r={2*UNIT} fill="none" stroke={stroke} />
       <line x1={0} y1={0} x2={UNIT*UNITS} y2={UNIT*UNITS} style={{stroke: stroke, strokeWidth: 1}}/>
       <line x1={0} y1={UNIT*UNITS} x2={UNIT*UNITS} y2={0} style={{stroke: stroke, strokeWidth: 1}}/>
