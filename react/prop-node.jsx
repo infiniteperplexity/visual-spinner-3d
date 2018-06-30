@@ -121,18 +121,18 @@ class PropNode extends React.Component {
           tick: this.props.tick
         });
         // make sure we align to the beginning of the move
-        // let {propid, tick} = this.props;
-        // let moves = this.props.moves[propid];
-        // let past = 0;
-        // let i = 0;
-        // while (past<tick) {
-        //   let ticks = beats(moves[i])*BEAT;
-        //   if (past+ticks>tick) {
-        //     this.props.gotoTick(past);
-        //   }
-        //   past+=ticks;
-        //   i+=1;
-        // }
+        let {propid, tick} = this.props;
+        let moves = this.props.moves[propid];
+        let past = 0;
+        let i = 0;
+        while (past<tick) {
+          let ticks = beats(moves[i])*BEAT;
+          if (past+ticks>tick) {
+            this.props.gotoTick(past);
+          }
+          past+=ticks;
+          i+=1;
+        }
         this.props.checkLocks();
         this.props.renderEngine();
       }
