@@ -1,9 +1,9 @@
 // path d= for SVG from the Noun Project, clockwise arrow, user 'icon 54', CC license
 let ARROW = "M15.85,7.85l-3,3c-0.19,0.2-0.51,0.2-0.7,0l-3-3C9,7.71,8.96,7.5,9.04,7.31C9.12,7.12,9.3,7,9.5,7h1.36  c-0.47-1.889-2.203-3.163-4.241-2.983c-1.802,0.159-3.319,1.6-3.576,3.391C2.688,9.881,4.595,12,7,12  c0.873,0,1.696-0.28,2.371-0.786c0.207-0.155,0.489-0.154,0.672,0.029l1.423,1.423c0.203,0.203,0.202,0.545-0.018,0.73  c-1.162,0.974-2.606,1.535-4.154,1.598c-3.831,0.156-7.189-2.972-7.291-6.805C-0.102,4.243,3.077,1,7,1c3.53,0,6.44,2.55,6.93,6  h1.57c0.2,0,0.38,0.12,0.46,0.31C16.04,7.5,16,7.71,15.85,7.85z";
 // polygon points= for double forward arrowhead
-let ACC = "8,4 0,0 0,8 8,4 8,0 16,4 8,8, 8,4";
+let ACC = "8,4 0,2 0,6 8,4 8,0 16,4 8,8, 8,4";
 let DEC = "8,4 0,0 0,8 8,4 8,2 16,4 8,6, 8,4";
-ACC = "8,4 0,2 0,6 8,4 8,0 16,4 8,8, 8,4";
+let LINEAR = "0,2 8,2 8,0 16,4 8,8 8,6 0,6 0,2";
 
 class MovePanel extends React.Component {
   // the last item on order is the active one
@@ -318,13 +318,14 @@ class MoveControl extends React.Component {
 }
 
 
-
+// okay...we need some stuff here to deal with linear motion
 function SpeedMeter(props, context) {
   let {move, node, color} = props;
   let va = move[node] ? move[node].va : 0;
   let va1 = move[node] ? move[node].va1 : va;
   let spin = beats(move)/4;
   let spins = Math.ceil(Math.abs(0.5*(va+va1)*spin));
+  let {vl, vl1, la} = move[node];
   let spintransform = "translate(9, 17)";
   if ((va+va1)<0) {
     spintransform = "scale(-1, 1) translate(-25, 17)";
@@ -342,10 +343,25 @@ function SpeedMeter(props, context) {
     grip: "handle",
     head: "head"
   };
-  
   let speed = Math.abs(va);
   let title = spins + " rotations";
-  if (!nearly(va, va1)) {
+  // deal with linear motion
+  if (va===undefined && vl!==undefined) {
+    spins = 0;
+    title = "linear ("+la+" degrees)";
+    if (!nearly(vl, vl1)) {
+      if (Math.abs(vl)>Math.abs(vl1)) {
+        speed = Math.round(Math.abs(vl1));
+        title += ", decelerating to speed " + speed;
+      } else {
+        speed = Math.round(Math.abs(vl));
+        title += ", accelerating from speed " + speed;
+      }
+    } else {
+      speed = Math.round(Math.abs(vl));
+      title += ", speed " + Math.round(Math.abs(vl));
+    }
+  } else if (!nearly(va, va1)) {
     if (Math.abs(va)>Math.abs(va1)) {
       speed = Math.round(Math.abs(va1));
       title += ", decelerating to speed " + speed;
@@ -364,6 +380,17 @@ function SpeedMeter(props, context) {
   let acctext = <text textAnchor="middle" x={Math.abs(va1)<Math.abs(va) ? 46 : 30} y={29} style={{fontSize: "10px"}}>{speed}</text>;
   if (zeroish(spins)) {
     spinshape = null;
+    if (vl!==undefined) {
+      spinshape = <polygon transform={"translate(12,21) rotate("+(la-90)+" 8 4)"} points={LINEAR} fill={color} stroke={stroke}/>;
+      spintext = null;
+      if (zeroish(vl) && zeroish(vl1)) {
+        accshape = null;
+        acctext = null;
+      } else if (nearly(vl, vl1)) {
+        accshape = <polygon transform="translate(34,19)" points="0,0 0,12, 12,6" fill={color} stroke={stroke}/>;
+      }
+    }
+    // spinshape = <path d={LINEAR} transform={spintransform} fill={color} stroke="lightgray"/>;
   }
   if (nearly(va, va1)) {
     if (zeroish(spins)) {
