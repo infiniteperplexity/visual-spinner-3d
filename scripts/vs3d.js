@@ -631,8 +631,8 @@ let VS3D = {}; //
 		let {x: x0, y: y0} = sphere$vectorize(sphere(args.r,args.a,0));
 		let dx = Math.sin(args.la*UNIT);
 		let dy = Math.cos(args.la*UNIT);
-		let x1 = x0 + args.vl*dx*t*SPEED + args.al*dx*t*t*SPEED/2;
-		let y1 = y0 + args.vl*dy*t*SPEED + args.al*dy*t*t*SPEED/2;
+		let x1 = x0 + args.vl*dx*t*SPEED/BEAT + args.al*dx*t*t*SPEED/(2*BEAT);
+		let y1 = y0 + args.vl*dy*t*SPEED/BEAT + args.al*dy*t*t*SPEED/(2*BEAT);
 		let {r, a} = vector$spherify(vector(x1,y1,0));
 		let p = args.p;
 		let s = {...angle$spherify(a, p), r: r};
@@ -652,7 +652,6 @@ let VS3D = {}; //
 		speed: "va",
 		speed0: "va",
 		speed1: "va1",
-		motion: "m",
 		vl0: "vl",
 		spin: "spin"
 	}
@@ -931,8 +930,10 @@ let VS3D = {}; //
 		r1 = Math.sqrt(x1*x1+y1*y1);
 		a0 = Math.atan2(y0,x0)/UNIT;
 		a1 = Math.atan2(y1,x1)/UNIT;
+
 		// now all moments should be guaranteed
-		return {a0: a0, a1: a1, r0: r0, r1: r1, la: la, vl0: vl0/BEAT, vl1: vl1/BEAT, al: al/(BEAT*BEAT), t: t};
+		// return {a0: a0, a1: a1, r0: r0, r1: r1, la: la, vl0: vl0/BEAT, vl1: vl1/BEAT, al: al/(BEAT*BEAT), t: t};
+		return {a0: a0, a1: a1, r0: r0, r1: r1, la: la, vl0: vl0, vl1: vl1, al: al, t: t};
 	}
 
 	// moves?  or just node?

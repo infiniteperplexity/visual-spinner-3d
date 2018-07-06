@@ -115,6 +115,9 @@ class MoveControl extends React.Component {
       // !!! let's try not doing this, to make it do linear motions
       // spins += n;
     }
+    if (spins===0) {
+      console.log("here ye!");
+    }
     args[node] = {spin: spins};
     this.props.modifyMove({
       propid: propid,
