@@ -67,3 +67,4 @@ One idea for maintaining solved state:
 
 - Speed display doesn't round the way you'd like it to
 - Okay, now we need to really hone in on the spiral conversion crap.
+- Make sure to display zero when r is zeroish if no TINY is needed (no movement from node to node)
