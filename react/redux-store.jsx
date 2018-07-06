@@ -135,9 +135,11 @@ function reducer(state, action) {
     if (tick===-1) {
       move = state.starters[propid];
     } else {
+      // Does this return a copy?  And should it?
       move = submove(moves[propid], tick).move;
     }
     let nodes = action.nodes;
+    /*** coalesce existing move and new arguments ***/
     for (let i=0; i<NODES.length; i++) {
       // !!!!might need to rethink this a bit...
       let node0 = move[NODES[i]];
@@ -183,7 +185,6 @@ function reducer(state, action) {
         node0.ar = node1.ar;
       }
       node0.r = node0.r1;
-      //node0.spin = node1.spin;
     }
     if (tick===-1) {
       let starters = [...state.starters];
@@ -215,6 +216,7 @@ function reducer(state, action) {
       combinated = combinate(prev, move);
     }
     if (combinated) {
+      console.log("COMBINATED");
       move = resolve(combinated);
     } else {
       for (let i=0; i<NODES.length; i++) {
@@ -235,6 +237,7 @@ function reducer(state, action) {
         move[NODES[i]] = node;
       }
       console.log(clone(move));
+      console.log("CALCULATED");
       move = resolve(move);
     }
     for (let node of NODES) {
@@ -244,15 +247,15 @@ function reducer(state, action) {
         // move[node].a = angle(prev[node].a1+SPLIT);
       // }
       // convert suspiciously fast spirals into slides
-      if (zeroish(move[node].r,0.1) && (Math.abs(angle(move[node].a)-angle(move[node].a1))>=(Math.PI/VS3D.UNIT))) {
-        console.log("converting this fast spiral");
-        console.log(node);
-        move[node].a = move[node].a1;
-        move[node].va = 0;
-        move[node].va1 = 0;
-        move[node].aa = 0;
-        console.log(clone(move[node]));
-      }
+      // if (zeroish(move[node].r,0.1) && (Math.abs(angle(move[node].a)-angle(move[node].a1))>=(Math.PI/VS3D.UNIT))) {
+      //   console.log("converting this fast spiral");
+      //   console.log(node);
+      //   move[node].a = move[node].a1;
+      //   move[node].va = 0;
+      //   move[node].va1 = 0;
+      //   move[node].aa = 0;
+      //   console.log(clone(move[node]));
+      // }
     }
     // need to propagate either zero or one times
     if ((tick===-1 && moves[propid].length>0) || (tick>=0 && idx<moves[propid].length-1)) {

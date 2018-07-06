@@ -106,6 +106,10 @@ class MoveControl extends React.Component {
     let speed = (va+va1)/2;
     let spin = beats(move)/4;
     let spins = Math.sign(speed)*Math.ceil(Math.abs(speed*spin));
+    let {vl} = move[node];
+    if (vl!==undefined) {
+      spins = 0;
+    }
     if (Math.abs(spins+n)>BOUNDS) {
       return;
     }
@@ -348,7 +352,7 @@ function SpeedMeter(props, context) {
   // deal with linear motion
   if (va===undefined && vl!==undefined) {
     spins = 0;
-    title = "linear ("+la+" degrees)";
+    title = "linear ("+Math.round(la)+" degrees)";
     if (!nearly(vl, vl1)) {
       if (Math.abs(vl)>Math.abs(vl1)) {
         speed = Math.round(Math.abs(vl1));
@@ -359,7 +363,7 @@ function SpeedMeter(props, context) {
       }
     } else {
       speed = Math.round(Math.abs(vl));
-      title += ", speed " + Math.round(Math.abs(vl));
+      title += ", speed " + speed;
     }
   } else if (!nearly(va, va1)) {
     if (Math.abs(va)>Math.abs(va1)) {
@@ -380,7 +384,7 @@ function SpeedMeter(props, context) {
   if (zeroish(spins)) {
     spinshape = null;
     if (vl!==undefined) {
-      spinshape = <polygon transform={"translate(12,21) rotate("+(la-90)+" 8 4)"} points={LINEAR} fill={color} stroke={stroke}/>;
+      spinshape = <polygon transform={"translate(11,21) rotate("+(la-90)+" 8 4)"} points={LINEAR} fill={color} stroke={stroke}/>;
       spintext = null;
       if (zeroish(vl) && zeroish(vl1)) {
         accshape = null;

@@ -66,3 +66,4 @@ One idea for maintaining solved state:
 - Could make default "outward spiral" go from 180 degrees across from the entering side, *or* from wherever it's snapped-to.
 
 - Speed display doesn't round the way you'd like it to
+- Okay, now we need to really hone in on the spiral conversion crap.
