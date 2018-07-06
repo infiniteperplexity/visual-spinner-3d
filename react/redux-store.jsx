@@ -183,6 +183,7 @@ function reducer(state, action) {
         node0.ar = node1.ar;
       }
       node0.r = node0.r1;
+      //node0.spin = node1.spin;
     }
     if (tick===-1) {
       let starters = [...state.starters];

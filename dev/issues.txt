@@ -64,3 +64,5 @@ One idea for maintaining solved state:
 - spin=0 could replace "m=linear"
 - Should this whole "snap to close to zero" thing apply to other integers.
 - Could make default "outward spiral" go from 180 degrees across from the entering side, *or* from wherever it's snapped-to.
+
+- Speed display doesn't round the way you'd like it to

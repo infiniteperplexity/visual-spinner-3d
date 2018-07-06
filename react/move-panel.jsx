@@ -343,7 +343,7 @@ function SpeedMeter(props, context) {
     grip: "handle",
     head: "head"
   };
-  let speed = Math.abs(va);
+  let speed = Math.round(Math.abs(va));
   let title = spins + " rotations";
   // deal with linear motion
   if (va===undefined && vl!==undefined) {
@@ -372,7 +372,6 @@ function SpeedMeter(props, context) {
   } else {
     title += ", speed " + speed;
   }
-  // let stroke = (color==="#ffffff") ? "lightgray" : color;
   let stroke = "lightgray";
   let spinshape = <path d={ARROW} transform={spintransform} fill={color} stroke="lightgray"/>;
   let accshape = <polygon transform={acctransform} points={(Math.abs(va1)<Math.abs(va)) ? DEC : ACC} fill={color} stroke={stroke}/>;
