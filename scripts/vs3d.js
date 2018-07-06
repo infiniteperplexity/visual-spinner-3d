@@ -603,12 +603,8 @@ let VS3D = {}; //
 	function spin_node(args, t) {
 		args = alias(args);
 		let {p, beats, m} = args;
-		if (m==="linear" || args.la!==undefined || args.vl!==undefined || args.vl1!==undefined || args.al!==undefined) {
-			let moments = moments_linear(args);
-			return spin_linear({...moments, p: p}, t);
-
-		} else if (args.spin===0) {
-			// !!! let's try this for now
+		// explicit spin of zero codes for linear movement
+		if (args.spin===0 || args.la!==undefined || args.vl!==undefined || args.vl1!==undefined || args.al!==undefined) {
 			let moments = moments_linear(args);
 			return spin_linear({...moments, p: p}, t);
 		}
@@ -621,7 +617,7 @@ let VS3D = {}; //
 			args[e] = args[e] || 0;
 		}
 		args.p = args.p || WALL;
-		let r = args.r + args.vr*t/BEAT + args.ar*t*t/(2*BEAT);
+		let r = args.r + args.vr*t*SPEED/BEAT + args.ar*t*t*SPEED*SPEED/(2*BEAT);
 		let a = args.a + args.va*t*SPEED + args.aa*t*t*SPEED*SPEED/(2*BEAT);
 		let p = args.p;
 		let s = {...angle$spherify(a, p), r: r};
@@ -635,11 +631,8 @@ let VS3D = {}; //
 		let {x: x0, y: y0} = sphere$vectorize(sphere(args.r,args.a,0));
 		let dx = Math.sin(args.la*UNIT);
 		let dy = Math.cos(args.la*UNIT);
-		// !!!! completely untested at this point
-/*		let x1 = x0 + (args.vl*dx*t + args.al*dx*t*t/2)/BEAT;
-		let y1 = y0 + (args.vl*dy*t + args.al*dy*t*t/2)/BEAT;*/
-		let x1 = x0 + args.vl*dx*t/BEAT + args.al*dx*t*t/(2*BEAT);
-		let y1 = y0 + args.vl*dy*t/BEAT + args.al*dy*t*t/(2*BEAT);
+		let x1 = x0 + args.vl*dx*t*SPEED + args.al*dx*t*t*SPEED/2;
+		let y1 = y0 + args.vl*dy*t*SPEED + args.al*dy*t*t*SPEED/2;
 		let {r, a} = vector$spherify(vector(x1,y1,0));
 		let p = args.p;
 		let s = {...angle$spherify(a, p), r: r};
@@ -660,7 +653,8 @@ let VS3D = {}; //
 		speed0: "va",
 		speed1: "va1",
 		motion: "m",
-		vl0: "vl"
+		vl0: "vl",
+		spin: "spin"
 	}
 	function alias(args) {
 		let nargs = {};
@@ -678,8 +672,7 @@ let VS3D = {}; //
 			}
 		}
 		if (nargs.vl!==undefined || nargs.al!==undefined || nargs.la!==undefined) {
-			//!!!!could set spin=0
-			nargs.m = "linear";
+			nargs.spin = 0;
 		}
 		return nargs;
 	}
@@ -694,7 +687,6 @@ let VS3D = {}; //
 		if (args.vr1!==undefined) {
 			args.vr1/=BEAT;
 		}
-		// !!! not sure if radial acceleration is converted correctly
 		if (args.ar!==undefined) {
 			args.ar/=(BEAT);
 		}
@@ -712,21 +704,7 @@ let VS3D = {}; //
 
 	function moments_linear(args) {
 		args = alias(args);
-		// !!!untested but I think it's correct
-		if (args.vl!==undefined) {
-			args.vl/=BEAT;
-		}
-		if (args.vl1!==undefined) {
-			args.vl1/=BEAT;
-		}
-		// !!! god only knows if this works, or will even ever be used
-		if (args.al!==undefined) {
-			args.al/=BEAT;
-		}
 		let {a0: a, r0: r, la: la, vl0: vl, al: al, a1: a1, r1: r1, vl1: vl1} = solve_linear({a0: args.a, r0: args.r, a1: args.a1, r1: args.r1, la: args.la, vl0: args.vl, vl1: args.vl1, al: args.al, t: args.beats})
-		vl*=BEAT;
-		vl1*=BEAT;
-		al*=BEAT;
 		return {a: a, r: r, la: la, vl: vl, al: al, a1: a1, r1: r1, vl1: vl1};
 	}
 
@@ -980,7 +958,7 @@ let VS3D = {}; //
 			let args = moves[node] || nodes[node];
 			args = alias(args);
 			args.beats = nodes.beats;
-			if (args.m==="linear" || args.la!==undefined || args.vl!==undefined || args.vl1!==undefined || args.al!==undefined) {
+			if (args.spin===0 || args.la!==undefined || args.vl!==undefined || args.vl1!==undefined || args.al!==undefined) {
 				nodes[node] = {...moments_linear(args), p: args.p};
 
 			} else {

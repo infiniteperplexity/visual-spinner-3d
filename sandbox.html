@@ -12,8 +12,8 @@
 <script>
 
 	let renderer, player;
-	let red = new VS3D.Prop({pivot: {a: VS3D.LEFT, r: 1}, hand: {a: VS3D.RIGHT, r: 0}});
-	let move = {pivot: {a: VS3D.LEFT, r: 1}, hand: {a: VS3D.RIGHT, r: 0.0001, r1: 2}, head: {va: 1}, vb: -1};
+	let red = new VS3D.Prop();
+	let move = {hand: {la: VS3D.DOWN, vl: 0, al: 2}, head: {va: 0, aa: 1}, beats: 1};
 	let overlay;
 	function init() {	
 		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
@@ -21,7 +21,7 @@
 		let controls = new VS3D.Controls(player);
 		player.addProp(red,{model: "poi"});
 		player.props[0].moves.push(move);
-		player.speed = 50;
+		player.speed = 1;
 		player.update = function(positions) {
 			renderer.render(this.props, positions);
 			controls.update(this.tick);
