@@ -112,7 +112,8 @@ class MoveControl extends React.Component {
     let args = {};
     spins += n;
     if (zeroish(spins) && !nearly(a,a1)) {
-      spins += n;
+      // !!! let's try not doing this, to make it do linear motions
+      // spins += n;
     }
     args[node] = {spin: spins};
     this.props.modifyMove({

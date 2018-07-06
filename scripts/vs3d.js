@@ -607,6 +607,10 @@ let VS3D = {}; //
 			let moments = moments_linear(args);
 			return spin_linear({...moments, p: p}, t);
 
+		} else if (args.spin===0) {
+			// !!! let's try this for now
+			let moments = moments_linear(args);
+			return spin_linear({...moments, p: p}, t);
 		}
 		let moments = moments_angular(args);
 		return spin_angular({...moments, p: p}, t);
@@ -634,8 +638,8 @@ let VS3D = {}; //
 		// !!!! completely untested at this point
 /*		let x1 = x0 + (args.vl*dx*t + args.al*dx*t*t/2)/BEAT;
 		let y1 = y0 + (args.vl*dy*t + args.al*dy*t*t/2)/BEAT;*/
-		let x1 = x0 + args.vl*dx*t + args.al*dx*t*t/2;
-		let y1 = y0 + args.vl*dy*t + args.al*dy*t*t/2;
+		let x1 = x0 + args.vl*dx*t/BEAT + args.al*dx*t*t/(2*BEAT);
+		let y1 = y0 + args.vl*dy*t/BEAT + args.al*dy*t*t/(2*BEAT);
 		let {r, a} = vector$spherify(vector(x1,y1,0));
 		let p = args.p;
 		let s = {...angle$spherify(a, p), r: r};
@@ -674,6 +678,7 @@ let VS3D = {}; //
 			}
 		}
 		if (nargs.vl!==undefined || nargs.al!==undefined || nargs.la!==undefined) {
+			//!!!!could set spin=0
 			nargs.m = "linear";
 		}
 		return nargs;
@@ -707,10 +712,21 @@ let VS3D = {}; //
 
 	function moments_linear(args) {
 		args = alias(args);
+		// !!!untested but I think it's correct
+		if (args.vl!==undefined) {
+			args.vl/=BEAT;
+		}
+		if (args.vl1!==undefined) {
+			args.vl1/=BEAT;
+		}
+		// !!! god only knows if this works, or will even ever be used
+		if (args.al!==undefined) {
+			args.al/=BEAT;
+		}
 		let {a0: a, r0: r, la: la, vl0: vl, al: al, a1: a1, r1: r1, vl1: vl1} = solve_linear({a0: args.a, r0: args.r, a1: args.a1, r1: args.r1, la: args.la, vl0: args.vl, vl1: args.vl1, al: args.al, t: args.beats})
-		// vl*=BEAT;
-		// vl1*=BEAT;
-		// al*=BEAT;
+		vl*=BEAT;
+		vl1*=BEAT;
+		al*=BEAT;
 		return {a: a, r: r, la: la, vl: vl, al: al, a1: a1, r1: r1, vl1: vl1};
 	}
 

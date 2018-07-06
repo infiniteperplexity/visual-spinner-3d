@@ -52,7 +52,7 @@ function reducer(state, action) {
       } // mean slightly different things
     };
   }
-  if (!["setNode", "setTop"].includes(action.type)) {
+  if (!["setNode", "setTop", "gotoTick"].includes(action.type)) {
     console.log("store action:");
     console.log(clone(action));
   }
@@ -237,6 +237,11 @@ function reducer(state, action) {
       move = resolve(move);
     }
     for (let node of NODES) {
+      // !!!okay, so instead of that...
+      // !!!not a great place to do this...should do it in previous step?
+      // if (zeroish(move[node].r,0.1) && !zeroish(prev[node].r,0.1))) {
+        // move[node].a = angle(prev[node].a1+SPLIT);
+      // }
       // convert suspiciously fast spirals into slides
       if (zeroish(move[node].r,0.1) && (Math.abs(angle(move[node].a)-angle(move[node].a1))>=(Math.PI/VS3D.UNIT))) {
         console.log("converting this fast spiral");
