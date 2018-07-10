@@ -1109,18 +1109,35 @@ let VS3D = {}; //
 	}
 
 	// check whether the hand and head positions match
-	function fits(prev, move) {
+	function fits(prev, move, delta) {
+		delta = delta || 0.01;
 		if (Array.isArray(move)) {
 			return fits(prev, move[0]);
 		}
 		let s = dummy(prev);
 		let m = dummy(move, 0);
 		return (sphere$nearly(	cumulate([s.body, s.pivot, s.helper, s.hand, s.grip]),
-								cumulate([m.body, m.pivot, m.helper, m.hand, m.grip]), SMALL)
+								cumulate([m.body, m.pivot, m.helper, m.hand, m.grip]),  delta)
 				&& 
 				sphere$nearly(	cumulate([s.grip, s.head]),
-								cumulate([m.grip, m.head]), SMALL)
+								cumulate([m.grip, m.head]), delta)
 		);
+	}
+
+	function matches(prev, move) {
+		if (Array.isArray(move)) {
+			return matches(prev, move[0]);
+		}
+		prev = resolve(prev);
+		move = resolve(move);
+		for (let n of NODES) {
+			let node1 = prev[n];
+			let node2 = move[n];
+			if (!nearly(node1.r1, node2.r) || !angle$nearly(node1.a1, node2.a)) {
+				return false;
+			}
+		}
+		return true;
 	}
 	// find the cumulative position of an array of nodes
 	function cumulate(nodes) {
@@ -1750,6 +1767,7 @@ function Player(renderer) {
 	VS3D.submove = submove;
 	VS3D.fits = fits;
 	VS3D.fit = fit;
+	VS3D.matches = matches;
 	VS3D.combinate = combinate;
 	VS3D.cumulate = cumulate;
 	VS3D.axis = axis;

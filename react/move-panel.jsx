@@ -251,7 +251,7 @@ class MoveControl extends React.Component {
     }
     // let stroke = (color==="#ffffff") ? "lightgray" : color;
     let stroke = "lightgray";
-    let buttons = (locked || this.props.tick===-1) ? null : [
+    let buttons = (locked || this.props.tick===-1 || this.props.transition) ? null : [
         <SpeedMeter key="0" move={move} color={color} node={node}/>,
         <SpeedButton key="1" onClick={this.handleCounter} title="less clockwise / more counterclockwise">
           <path d={ARROW} transform="scale(-1, 1) translate(-20, 5)" fill={color} stroke={stroke}/>

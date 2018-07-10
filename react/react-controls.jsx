@@ -5,6 +5,10 @@ class ControlPanel extends React.Component {
   }
   handlePlay = (e)=>{
     e.preventDefault();
+    if (this.props.transitionWorks()) {
+      this.props.acceptTransition();
+    }
+    this.props.setTransition(false);
     this.props.setFrozen(true);
     this.props.updateEngine();
     player.goto(this.props.tick);

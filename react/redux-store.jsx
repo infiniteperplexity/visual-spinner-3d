@@ -2,6 +2,27 @@
   // attaches properties to the "wrapped" component
 let AppComponent = ReactRedux.connect(
   (state)=>({
+    transitionWorks: ()=>{
+      if (!state.transition) {
+        return false;
+      }
+      let {tick, moves, props, order} = state;
+      let propid = order[order.length-1];
+      let {move} = submove(moves[propid], tick);
+      let idx = moves[propid].indexOf(move);      
+      let prev = moves[propid][idx-1];
+      let prop = dummy(props[propid],0);
+      if (matches(prev, prop)) {
+        console.log("The transition perfectly matches the end of the preceding move and will be discarded.");
+        return false;
+      } else if (fits(prev, prop, 0.1)) {
+        console.log("The transition is an acceptable fit to the end of the preceding move and will be accepted.");
+        return true;
+      } else {
+        alert("The transition does not fit with the end of the preceding move and will be discarded.");
+      }
+      return false;
+    },
     // props: state.props,
     // moves: state.moves,
     // order: state.order,
@@ -26,6 +47,8 @@ let AppComponent = ReactRedux.connect(
       setFrozen: (arg)=>dispatch({type: "setFrozen", value: arg}),
       setPopup: (arg)=>dispatch({type: "setPopup", value: arg}),
       setColors: (arr)=>dispatch({type: "setColors", colors: arr}),
+      setTransition: (val)=>dispatch({type: "setTransition", value: val}),
+      acceptTransition: (args)=>dispatch({type: "acceptTransition", ...args}),
       checkLocks: ()=>dispatch({type: "checkLocks"})
   })
 )(App);
@@ -44,6 +67,10 @@ function reducer(state, action) {
       plane: "WALL",
       popup: false,
       frozen: false,
+      transition: false,
+      buffer: null,
+      // sparse array
+      transitions: player.props.map(p=>({})),
       locks: {
         body: true,
         helper: true,
@@ -100,6 +127,9 @@ function reducer(state, action) {
       idx = moves[propid].length;
       move = action.move;
       let prev = moves[propid][idx-1];
+      if (state.transitions[propid][idx-1]) {
+        prev = state.transitions[propid][idx-1];
+      }
       // propagate angular speed
       for (let i=0; i<NODES.length; i++) {
         move[NODES[i]] = {};
@@ -209,54 +239,31 @@ function reducer(state, action) {
       move = submove(moves[propid], tick).move;
       idx = moves[propid].indexOf(move);
       prev = (idx>0) ? moves[propid][idx-1] : state.starters[propid];
-    }
-    // do not break the move if it can be fitted using recombinate
-    let combinated;
-    if (tick!==-1) {
-      combinated = combinate(prev, move);
-    }
-    if (combinated) {
-      console.log("COMBINATED");
-      move = resolve(combinated);
-    } else {
-      for (let i=0; i<NODES.length; i++) {
-        // keep a0 and r0 from the move, recalculate a1 and r1
-        let node = {};
-        let mnode = move[NODES[i]] || {};
-        node.r = prev[NODES[i]].r1;
-        node.a = prev[NODES[i]].a1;
-        node.a1 = mnode.a1;
-        node.r1 = mnode.r1;
-        node.va = mnode.va;
-        node.va1 = mnode.va1;
-        node.aa = mnode.aa;
-        node.vr = mnode.vr;
-        node.vr1 = mnode.vr1;
-        node.ar = mnode.ar;
-        node.spin = mnode.spin;
-        move[NODES[i]] = node;
+      // check for a transition
+      if (state.transitions[propid][idx]) {
+        prev = state.transitions[propid][idx];
       }
-      console.log(clone(move));
-      console.log("CALCULATED");
-      move = resolve(move);
     }
-    for (let node of NODES) {
-      // !!!okay, so instead of that...
-      // !!!not a great place to do this...should do it in previous step?
-      // if (zeroish(move[node].r,0.1) && !zeroish(prev[node].r,0.1))) {
-        // move[node].a = angle(prev[node].a1+SPLIT);
-      // }
-      // convert suspiciously fast spirals into slides
-      // if (zeroish(move[node].r,0.1) && (Math.abs(angle(move[node].a)-angle(move[node].a1))>=(Math.PI/VS3D.UNIT))) {
-      //   console.log("converting this fast spiral");
-      //   console.log(node);
-      //   move[node].a = move[node].a1;
-      //   move[node].va = 0;
-      //   move[node].va1 = 0;
-      //   move[node].aa = 0;
-      //   console.log(clone(move[node]));
-      // }
+    for (let i=0; i<NODES.length; i++) {
+      // keep a0 and r0 from the move, recalculate a1 and r1
+      let node = {};
+      let mnode = move[NODES[i]] || {};
+      node.r = prev[NODES[i]].r1;
+      node.a = prev[NODES[i]].a1;
+      node.a1 = mnode.a1;
+      node.r1 = mnode.r1;
+      node.va = mnode.va;
+      node.va1 = mnode.va1;
+      node.aa = mnode.aa;
+      node.vr = mnode.vr;
+      node.vr1 = mnode.vr1;
+      node.ar = mnode.ar;
+      node.spin = mnode.spin;
+      move[NODES[i]] = node;
     }
+    move = resolve(move);
+    // get trady to break transitions
+    let transitions = clone(state.transitions);
     // need to propagate either zero or one times
     if ((tick===-1 && moves[propid].length>0) || (tick>=0 && idx<moves[propid].length-1)) {
       let next;
@@ -265,38 +272,25 @@ function reducer(state, action) {
       } else {
         next = moves[propid][idx+1];
       }
-      // do not break the next move if it can be fitted using recombinate
-      combinated = combinate(move, next);
-      if (combinated) {
-        next = resolve(combinated);
-      } else {
-        for (let i=0; i<NODES.length; i++) {
-          // keep a1 and r1 from the move, conform a0 and r0
-          let node = {};
-          node.r = move[NODES[i]].r1;
-          node.a = move[NODES[i]].a1;
-          node.a1 = next[NODES[i]].a1;
-          node.r1 = next[NODES[i]].r1;
-          // !!! probably need to do some other properties as well?
-          next[NODES[i]] = node;
-        }
-        next = resolve(next);
+      for (let i=0; i<NODES.length; i++) {
+        // keep a1 and r1 from the move, conform a0 and r0
+        let node = {};
+        node.r = move[NODES[i]].r1;
+        node.a = move[NODES[i]].a1;
+        node.a1 = next[NODES[i]].a1;
+        node.r1 = next[NODES[i]].r1;
+        // !!! probably need to do some other properties as well?
+        next[NODES[i]] = node;
       }
-      for (let node of NODES) {
-        // convert suspiciously fast spirals into slides
-        if (zeroish(next[node].r,0.1) && (Math.abs(angle(next[node].a)-angle(next[node].a1))>=(Math.PI/VS3D.UNIT))) {
-          console.log("converting next fast spiral");
-          console.log(node);
-          next[node].a = next[node].a1;
-          next[node].va = 0;
-          next[node].va1 = 0;
-          next[node].aa = 0;
-        }
-      }
+      next = resolve(next);
       if (tick===-1) {
         moves[propid][0] = next;
       } else {
         moves[propid][idx+1] = next;
+      }
+      // break transitions
+      if (transitions[propid][idx]) {
+        delete transitions[propid][idx];
       }
     }
     if (tick===-1) {
@@ -305,7 +299,7 @@ function reducer(state, action) {
       return {...state, starters: starters, moves: moves};
     } else {
       moves[propid][idx] = move;
-      return {...state, moves: moves};
+      return {...state, transitions: transitions, moves: moves};
     }
   } else if (action.type==="setNode") {
     // update an ending node of a move
@@ -338,6 +332,40 @@ function reducer(state, action) {
       }
     }
     return {...state, tick: t, props: props};
+  } else if (action.type==="acceptTransition") {
+    let {tick, moves, props, order, transitions} = state;
+    let propid = order[order.length-1];
+    let {move} = submove(moves[propid], tick);
+    let idx = moves[propid].indexOf(move);   
+    let position = clone(props[propid]);
+    position = dummy(position,0);
+    transitions = clone(transitions);
+    let transition = {};
+    for (let node of NODES) {
+      transition[node] = {
+        r: position[node].r,
+        r1: position[node].r, 
+        a: position[node].a,
+        a1: position[node].a, 
+      };
+    }
+    transition = resolve(transition);
+    transitions[propid][idx] = transition;
+    return {...state, transitions: transitions}; 
+  } else if (action.type==="setTransition") {
+    if (action.value) {
+      // gotta do some crazy stuff.
+      let props = [...state.props];
+      let moves = [...state.moves];
+      for (let i=0; i<props.length; i++) {
+        // let's make this only go to the start of the move.
+        let {move} = submove(moves[i], state.tick);
+        // props[i] = spin(move, tick+beats(move)*BEAT);
+        props[i] = spin(move, 0);
+      }
+      return {...state, props: props, transition: action.value};
+    }
+    return {...state, transition: action.value};
   } else if (action.type==="setPopup") {
     return {...state, popup: action.value};
   } else if (action.type==="setLock") {

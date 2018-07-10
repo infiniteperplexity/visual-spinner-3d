@@ -110,20 +110,23 @@ class PropNode extends React.Component {
       }
       let nd = NODES[this.props.node];
       if (!(nearly(move[nd].r1, node.r) && nearly(move[nd].a1, a))) {
-        // !!!! At this point we could decide on spins...
-        nodes[NODES[this.props.node]] = {r1: node.r, a1: a};
-        if (nearly(move[nd].a1, a)) {
-          nodes[NODES[this.props.node]].spin = 0;
+        // if we're in transition mode, use the prop nodes as a buffer
+        if (!this.props.transition) {
+        // otherwise, modify moves
+          nodes[NODES[this.props.node]] = {r1: node.r, a1: a};
+          if (nearly(move[nd].a1, a)) {
+            nodes[NODES[this.props.node]].spin = 0;
+          }
+          this.props.modifyMove({
+            propid: this.props.propid,
+            tick: this.props.tick,
+            nodes: nodes
+          });
+          this.props.resolveMove({
+            propid: this.props.propid,
+            tick: this.props.tick
+          });
         }
-        this.props.modifyMove({
-          propid: this.props.propid,
-          tick: this.props.tick,
-          nodes: nodes
-        });
-        this.props.resolveMove({
-          propid: this.props.propid,
-          tick: this.props.tick
-        });
         // make sure we align to the beginning of the move
         let {propid, tick} = this.props;
         let moves = this.props.moves[propid];

@@ -55,16 +55,13 @@ One idea for maintaining solved state:
 - Otherwise, if va===va1, re-solve.
 - Otherwise, try to keep va as-is.
 
-- Out-there ideas...let people drag things in the middle of moves?
-- I think we need lots of experiments with hands and elbows and shit.p
 - Why can't I return the elbow to zero? 
-- Should we able able to set spins for things that start at radius?  Wait, now it seems like I can.
-- Why can't I seem to do spirals from zero at all?
 
-- spin=0 could replace "m=linear"
-- Should this whole "snap to close to zero" thing apply to other integers.
-- Could make default "outward spiral" go from 180 degrees across from the entering side, *or* from wherever it's snapped-to.
+- This transition stuff is almost *certainly* going to require a refactoe
+- Might want one of those "selector" things for picking current move
+
 
 - Speed display doesn't round the way you'd like it to
-- Okay, now we need to really hone in on the spiral conversion crap.
 - Make sure to display zero when r is zeroish if no TINY is needed (no movement from node to node)
+- Need to figure out how to import/export transitions.
+- Need to exit transition mode when dragging nodes.

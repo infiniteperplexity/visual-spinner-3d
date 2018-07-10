@@ -55,6 +55,10 @@ class PropOptions extends React.Component {
     this.props.setTop(this.props.propid);
     this.props.gotoTick(0);
     this.props.checkLocks();
+    if (this.props.transitionWorks()) {
+      this.props.acceptTransition();
+    }
+    this.props.setTransition(false);
     this.props.renderEngine();
   }
   render() {
@@ -107,6 +111,10 @@ class NewMove extends React.Component {
       }
     }
     this.props.setTop(this.props.propid);
+    if (this.props.transitionWorks()) {
+      this.props.acceptTransition();
+    }
+    this.props.setTransition(false);
     this.props.gotoTick(ticks);
     this.props.checkLocks();
   }
@@ -141,6 +149,10 @@ class MoveItem extends React.Component {
     this.props.setTop(this.props.propid);
     this.props.gotoTick(this.props.ticks);
     this.props.checkLocks();
+    if (this.props.transitionWorks()) {
+      this.props.acceptTransition();
+    }
+    this.props.setTransition(false);
     this.props.renderEngine();
   }
   componentDidMount() {
@@ -164,7 +176,11 @@ class MoveItem extends React.Component {
     ctx.fillStyle = bg;
     if (this.props.tick>=this.props.ticks) {
       if (this.props.tick===-1 || this.props.tick<(this.props.ticks+BEAT*beats(this.props.move))) {
-        ctx.fillStyle = "cyan";
+        if (!this.props.transition) {
+          ctx.fillStyle = "cyan";
+        } else {
+          ctx.fillStyle = "lightcyan";
+        }
       }
     }
     ctx.fillRect(0,0,height,width);
@@ -215,7 +231,6 @@ class Transition extends React.Component {
     this.dim = 8;
     this.margin = 90/2 - this.dim/2;
     this.activated = false;
-    this.active = false;
     this.state = {highlight: false};
   }
   handleMouseEnter = (e)=>{
@@ -229,16 +244,25 @@ class Transition extends React.Component {
     this.setState({highlight: false});
     this.props.setTop(this.props.propid);
     this.props.gotoTick(this.props.ticks);
+    // check to see if it's the *same* transition
+    // if (this.props.transitionWorks()) {
+      
+    // }
+    this.props.setTransition(true);
     this.props.checkLocks();
     this.props.renderEngine();
   }
   render() {
+    let active = false;
+    if (this.props.transition && parseInt(this.props.propid)===this.props.order[this.props.order.length-1] && this.props.tick<(this.props.ticks+BEAT*beats(this.props.move)) && this.props.tick>=this.props.ticks) {
+      active = true;
+    }
     let color = "white";
     if (this.activated) {
       color = this.props.colors[this.props.propid];
-    } else if (this.active) {
-      color = "cyan";
     } else if (this.state.highlight) {
+      color = "cyan";
+    } else if (active) {
       color = "cyan";
     }
     return (
