@@ -65,3 +65,16 @@ One idea for maintaining solved state:
 - Make sure to display zero when r is zeroish if no TINY is needed (no movement from node to node)
 - Need to figure out how to import/export transitions.
 - Need to exit transition mode when dragging nodes.
+
+- What are the basic functions?
+	- Delete.
+	- Insert before.
+	- Either, drag to rearrange, or <- ->
+
+- Could do it with delete box and drag handles, and insert box.
+
+- Spiral directions don't consistently "stick" after being set and changing moves.
+- Maybe NodeMarkers should show up only under special circumstances?
+	- Angle is not zero,
+	-...or, R changes?
+	- The way the dragging works is not very intuitive.

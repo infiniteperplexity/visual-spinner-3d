@@ -41,6 +41,16 @@ function HeadNode(props, context) {
   return <circle cx={x} cy={y} r={dim*2} stroke="gray" strokeWidth="1" fill={fill} />;
 }
 
+function NodeMarker(props, context) {
+  let {x, y, fill, dim, tip} = props;
+  return <polygon points={
+    (x-dim)+","+y+" "+
+    x+","+(y-dim)+" "+
+    (x+dim)+","+y+" "+
+    x+","+(y+dim)
+  } stroke="gray" strokeWidth="1" fill={fill}><title>{tip}</title></polygon>;
+}
+
 class PropNode extends React.Component {
   constructor(props, context) {
     super(props, context);
@@ -278,7 +288,15 @@ class PropNode extends React.Component {
     } else if (this.props.node===HEAD) {
       shape = <HeadNode x={X0} y={Y0} fill={this.props.color} dim={UNIT/8} />
     }
-    let title = (this.props.tick) ? "drag to set starting positions" : "drag to set movement positions"; 
+    let marker = null;
+    if (zeroish(node.r, 0.015)) {
+      // !!!! I can't really do this with node.a
+      let dx = Math.cos(node.a*VS3D.UNIT-Math.PI/2)*UNIT/4;
+      let dy = Math.sin(node.a*VS3D.UNIT-Math.PI/2)*UNIT/4;
+      let tip = "zero " +NODES[this.props.node]+" at angle "+node.a;
+      marker = <NodeMarker x={X0+dx} y={Y0+dy} fill={this.props.color} dim={UNIT/20} tip={tip}/>;
+    }
+    let title = (this.props.tick) ? "drag to set starting "+NODES[this.props.node] : "drag to set next "+NODES[this.props.node]; 
     return (
       <g 
         ref={(e)=>(this.element=e)}
@@ -293,6 +311,7 @@ class PropNode extends React.Component {
         {tether}
         {shape}
         {child}
+        {marker}
       </g>
     );
   }

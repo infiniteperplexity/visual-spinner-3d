@@ -1,5 +1,20 @@
+const KEYCODES = {
+  DELETE: 46,
+  BACKSPACE: 8
+}
 
 class MoveQueue extends React.Component {
+  componentWillMount = ()=>{
+    document.addEventListener("keydown", this.handleKeyDown.bind(this));
+  }
+  componentWillUnmount = ()=>{
+    document.removeEventListener("keydown", this.handleKeyDown.bind(this));
+  }
+  handleKeyDown = (e)=> {
+    if ([KEYCODES.DELETE, KEYCODES.BACKSPACE].includes(e.keyCode)) {
+      e.preventDefault();
+    }
+  }
   render() {
     if (parseInt(this.props.propid)>=this.props.props.length) {
       return null;
@@ -7,13 +22,12 @@ class MoveQueue extends React.Component {
     let moves = this.props.moves[this.props.propid];
     let ticks = 0;
     let list = [<MoveItem key={-1} ticks={-1} move={this.props.starters[this.props.propid]} {...this.props}/>];
-    list.push(<PropOptions key={-0.5} {...this.props}/>);
     // push the half-things onto here...
     for (let i=0; i<moves.length; i++) {
       if (i>0) {
-        list.push(<Transition key={i-0.5} ticks={ticks} move={moves[i]} {...this.props}/>);
+        list.push(<Transition key={i-0.5} n={i} ticks={ticks} move={moves[i]} {...this.props}/>);
       }
-      list.push(<MoveItem key={i} ticks={ticks} move={moves[i]} {...this.props}/>);
+      list.push(<MoveItem key={i} n={i} ticks={ticks} move={moves[i]} {...this.props}/>);
       ticks += beats(moves[i])*BEAT;
     }
     list.push(
@@ -91,6 +105,12 @@ class NewMove extends React.Component {
     } else {
       ticks = beats(this.props.moves[this.props.propid])*BEAT;
     }
+    // !!!! try rearranging this
+    this.props.setTop(this.props.propid);
+    if (this.props.transitionWorks()) {
+      this.props.acceptTransition();
+    }
+    this.props.setTransition(false);
     // add a new move to any prop that has equal or fewer ticks
     for (let i=0; i<this.props.moves.length; i++) {
       if (this.props.moves[i].length===0) {
@@ -110,11 +130,6 @@ class NewMove extends React.Component {
         });
       }
     }
-    this.props.setTop(this.props.propid);
-    if (this.props.transitionWorks()) {
-      this.props.acceptTransition();
-    }
-    this.props.setTransition(false);
     this.props.gotoTick(ticks);
     this.props.checkLocks();
   }
@@ -147,12 +162,12 @@ class MoveItem extends React.Component {
   handleMouseDown = (e)=>{
     player.stop();
     this.props.setTop(this.props.propid);
-    this.props.gotoTick(this.props.ticks);
-    this.props.checkLocks();
     if (this.props.transitionWorks()) {
       this.props.acceptTransition();
     }
     this.props.setTransition(false);
+    this.props.gotoTick(this.props.ticks);
+    this.props.checkLocks();
     this.props.renderEngine();
   }
   componentDidMount() {
@@ -205,12 +220,19 @@ class MoveItem extends React.Component {
     let move = this.props.move;
     let width = this.WIDTH*beats(this.props.move);
     width = width || this.WIDTH;
+    let title = "codes a segment of movement";
+    if (this.props.ticks===-1) {
+      title = "codes the starting positions for all nodes";
+    }
     let canv = (
       <canvas ref={c=>this.canvas=c} height={this.WIDTH} width={width}
         onMouseEnter={(e)=>this.handleMouseEnter(e)}
         onMouseLeave={(e)=>this.handleMouseLeave(e)}
         onMouseDown={(e)=>this.handleMouseDown(e)}
+        title={title}
         style={{
+          borderTopRightRadius: (this.props.ticks===-1) ? "50%" : "0",
+          borderBottomRightRadius: (this.props.ticks===-1) ? "50%" : "0",
           borderStyle: "solid",
           borderWidth: "1px",
           marginRight: (this.props.ticks===-1) ? "-1px" : "0",
@@ -230,7 +252,6 @@ class Transition extends React.Component {
     super(props, context);
     this.dim = 8;
     this.margin = 90/2 - this.dim/2;
-    this.activated = false;
     this.state = {highlight: false};
   }
   handleMouseEnter = (e)=>{
@@ -257,8 +278,10 @@ class Transition extends React.Component {
     if (this.props.transition && parseInt(this.props.propid)===this.props.order[this.props.order.length-1] && this.props.tick<(this.props.ticks+BEAT*beats(this.props.move)) && this.props.tick>=this.props.ticks) {
       active = true;
     }
+    let title = "no custom transition defined";
     let color = "white";
-    if (this.activated) {
+    if (this.props.transitions[this.props.propid][this.props.n]) {
+      title = "custom transition defined";
       color = this.props.colors[this.props.propid];
     } else if (this.state.highlight) {
       color = "cyan";
@@ -270,6 +293,7 @@ class Transition extends React.Component {
         onMouseEnter={this.handleMouseEnter}
         onMouseLeave={this.handleMouseLeave}
         onMouseDown={this.handleMouseDown}
+        title={title}
         style={{
           height: this.dim,
           width: this.dim,
@@ -279,6 +303,8 @@ class Transition extends React.Component {
           marginRight: "-1px",
           display: "inline-block",
           overflowX: "hidden",
+          // borderTopRightRadius: "50%",
+          // borderBottomRightRadius: "50%",
           borderRadius: "50%",
           backgroundColor: color
         }}

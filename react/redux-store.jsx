@@ -342,12 +342,14 @@ function reducer(state, action) {
     transitions = clone(transitions);
     let transition = {};
     for (let node of NODES) {
+      console.log(node);
       transition[node] = {
         r: position[node].r,
         r1: position[node].r, 
         a: position[node].a,
         a1: position[node].a, 
       };
+      console.log(transition[node]);
     }
     transition = resolve(transition);
     transitions[propid][idx] = transition;
