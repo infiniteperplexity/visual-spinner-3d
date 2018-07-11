@@ -1223,14 +1223,14 @@ let VS3D = {}; //
 				let ticks = beats(moves[i])*BEAT || BEAT;
 				if (past+ticks>t) {
 					// if I wanted a recursive version, this is where I would do it
-					return {move: moves[i], tick: t-past};
+					return {move: moves[i], tick: t-past, index: i};
 				} else {
 					past+=ticks;
 					i=(i+1)%moves.length;
 				}
 			}
 		} else {
-			return {move: moves, tick: t};
+			return {move: moves, tick: t, index: 0};
 		}
 	}
 	

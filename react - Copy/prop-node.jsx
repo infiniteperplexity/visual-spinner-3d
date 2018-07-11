@@ -103,10 +103,56 @@ class PropNode extends React.Component {
     }
     event.preventDefault();
     if (this.localState.beingDragged) {
-      this.props.modifyMoveUsingNode({
-        node: NODES[this.props.node],
-        propid: this.props.propid,
-      });
+      this.props.pushState();
+      let node = this.props.props[this.props.propid][NODES[this.props.node]];
+      let plane = this.props.plane;
+      let a = sphere$planify(node, VS3D[plane]);
+      let nodes = {plane: VS3D[plane]};
+      if (node.r<=this.ROUNDMIN) {
+        node.r = 0.01;
+      }
+      // don't update if nothing changed
+      let move;
+      if (this.props.tick===-1) {
+        move = this.props.starters[this.props.propid];
+      } else {
+        move = submove(this.props.moves[this.props.propid], this.props.tick).move;
+      }
+      let nd = NODES[this.props.node];
+      if (!(nearly(move[nd].r1, node.r) && nearly(move[nd].a1, a))) {
+        // if we're in transition mode, use the prop nodes as a buffer
+        if (!this.props.transition) {
+        // otherwise, modify moves
+          nodes[NODES[this.props.node]] = {r1: node.r, a1: a};
+          if (nearly(move[nd].a1, a)) {
+            nodes[NODES[this.props.node]].spin = 0;
+          }
+          this.props.modifyMove({
+            propid: this.props.propid,
+            tick: this.props.tick,
+            nodes: nodes
+          });
+          this.props.resolveMove({
+            propid: this.props.propid,
+            tick: this.props.tick
+          });
+        }
+        // make sure we align to the beginning of the move
+        let {propid, tick} = this.props;
+        let moves = this.props.moves[propid];
+        let past = 0;
+        let i = 0;
+        while (past<tick) {
+          let ticks = beats(moves[i])*BEAT;
+          if (past+ticks>tick) {
+            this.props.gotoTick(past);
+          }
+          past+=ticks;
+          i+=1;
+        }
+        this.props.checkLocks();
+        this.props.renderEngine();
+      }
     }
     this.localState.beingDragged = false;
     Draggables[this.props.dragID].localState.dragging = null;

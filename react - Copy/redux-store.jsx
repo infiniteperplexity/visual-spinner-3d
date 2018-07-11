@@ -23,7 +23,6 @@ let AppComponent = ReactRedux.connect(
       }
       return false;
     },
-    getMovesAtTick: getMovesAtTick,
     // props: state.props,
     // moves: state.moves,
     // order: state.order,
@@ -33,303 +32,35 @@ let AppComponent = ReactRedux.connect(
     ...state
   }),
   (dispatch)=>({
-      renderEngine: renderEngine,
-      updateEngine: updateEngine,
-
-      gotoTick: gotoTick,
-
-      setTop: setTopPropById,
-      setTopPropById: setTopPropById,
-      
-      // moving the node around 
-      setNode: setNodePosition,
-      setNodePosition: setNodePosition,
-      
-      pushState: pushStoreState,
-      pushStoreState: pushStoreState,
-      restoreState: restoreStoreState,
-      restoreStoreState: restoreStoreState,
-
-      
-      
-      addMovesToEnd: addMovesToEnd,
-      modifyMoveUsingNode: modifyMoveUsingNode,
-      insertMove: (args)=>{},
-      resolveMove: (args)=>{},
-      modifyMove: (args)=>{},
-      setTransition: (val)=>{},
-      acceptTransition: (args)=>{},
-
-      
-
-      setPlane: (plane)=>{},
-      setLock: (node, arg)=>{},
-      setFrozen: (arg)=>{},
-      setPopup: (arg)=>{},
-      setColors: (arr)=>{},
-      checkLocks: ()=>{},
-
-      helloWorld: ()=>{}
+      renderEngine: ()=>dispatch({type: "renderEngine"}),
+      setNode: (args)=>dispatch({type: "setNode", ...args}),
+      setTop: (top)=>dispatch({type: "setTop", top: top}),
+      gotoTick: (tick)=>dispatch({type: "gotoTick", tick: tick}),
+      pushState: ()=>dispatch({type: "pushState"}),
+      restoreState: (state)=>dispatch({type: "restoreState", state: state}),
+      setPlane: (plane)=>dispatch({type: "setPlane", plane: plane}),
+      insertMove: (args)=>dispatch({type: "insertMove", ...args}),
+      resolveMove: (args)=>dispatch({type: "resolveMove", ...args}),
+      modifyMove: (args)=>dispatch({type: "modifyMove", ...args}),
+      updateEngine: (args)=>dispatch({type: "updateEngine"}),
+      setLock: (node, arg)=>dispatch({type: "setLock", node: node, value: arg}),
+      setFrozen: (arg)=>dispatch({type: "setFrozen", value: arg}),
+      setPopup: (arg)=>dispatch({type: "setPopup", value: arg}),
+      setColors: (arr)=>dispatch({type: "setColors", colors: arr}),
+      setTransition: (val)=>dispatch({type: "setTransition", value: val}),
+      acceptTransition: (args)=>dispatch({type: "acceptTransition", ...args}),
+      checkLocks: ()=>dispatch({type: "checkLocks"}),
+      helloWorld: ()=>{
+        dispatch({type: "HELLO"});
+        console.log("Beautiful");
+        dispatch({type: "WORLD"});
+      }
   })
 )(App);
 
-/***** UI functionality *****/
 
-/*** Update rendering on the VS3D engine, based on the store state ***/
-function renderEngine() {
-  let {props, moves, tick} = store.getState();
-  /*** If the initial positions are selected, render only those ***/
-  if (tick===-1) {
-    renderer.render(player.props, props);
-  } else {
-    /*** Otherwise, do some swapping and cloning to get wrappers and positions for beginnings and endings ***/
-      /* Rendering transitions treats the current beginning as the beginning and the editing buffer as the ending */
-    let begins = props.map((_,i)=>spin(moves[i],tick));
-    let positions = props.concat(begins);
-    let ends = clone(player.props);
-    ends.map(e=>{
-      e.nudge = -e.nudge;
-      e.alpha = 0.6;
-    });
-    let wrappers = ends.concat(player.props);
-    renderer.render(wrappers, positions);
-  }
-}
-
-function updateEngine() {
-  let {moves, props, starters} = store.getState();
-  for (let i=0; i<moves.length; i++) {
-    player.props[i].prop = dummy(starters[i]);
-    player.props[i].moves = clone(moves[i]);
-    // this prevents the player from trying to refit the moves itself.
-    // the fact that that's not a good idea says there's something wrong with fitting, right?
-    player.props[i].fitted = player.props[i].moves;
-  }
-}
-
-// might rename to just apply to the UI
-function gotoTick(tick) {
-  store.dispatch({type: "SET_TICK", tick: tick});
-  setPropNodesByTick(tick);
-}
-
-function getMovesAtTick(tick) {
-  let state = store.getState();
-  return state.moves.map(m=>submove(m, tick));
-}
-function setPropNodesByTick(tick) {
-  let state = store.getState();
-  let props;
-  if (tick===-1) {
-    props = state.starters.map(s=>spin(s, 0))
-  } else {
-    props = getMovesAtTick(tick).map(m=>spin(m.move, beats(m.move)*BEAT));
-  }
-  ;
-  store.dispatch({type: "SET_PROPS", props: props});
-}
-function setTopPropById(propid) {
-  store.dispatch({type: "SET_TOP", propid: propid});
-}
-
-/*** Update the position of a single node on a single prop in the UI only, without updating any other state ***/
-function setNodePosition({propid, node, x, y, z}) {
-  let s = vector$spherify({x: x, y: y, z: z});
-  let props = clone(store.getState().props);
-  props[parseInt(propid)][NODES[node]] = s;
-  store.dispatch({type: "SET_PROPS", props: props});
-}
-
-function pushStoreState() {
-  window.history.pushState({storeState: clone(store.getState())}, "emptyTitle");
-}
-
-function restoreStoreState(state) {
-  store.dispatch({type: "SET_STATE", state: state});
-}
-
-function insertMove({propid, tick, move}) {
-  propid = parseInt(propid);
-  let {moves} = store.getState();
-  moves = [...moves];
-  /*** If there are no existing moves on this prop, then it's really simple ***/
-  if (moves[propid].length===0) {
-    moves[propid] = move;
-    console.log(move);
-    store.dispatch({type: "SET_MOVES", moves: moves});
-    return;
-  }
-  console.log("don't want to get here yet");
-}
-
-// very high level
-/*** Select one prop, and then propagate a move onto the end of each prop that has equal or shorter queue ***/
-function addMovesToEnd(propid) {
-  player.stop();
-  pushStoreState();
-  // exit transition mode
-  setTopPropById(propid);
-  let {moves, starters} = store.getState();
-  moves = [...moves];
-  let ticks = (moves[propid].length===0) ? 0 : beats(moves[propid])*BEAT;
-  for (let i=0; i<moves.length; i++) {
-    if (moves[i].length===0) {
-      // just snag nodes from starters
-      moves[i] = [merge(starters[i], {beats: 1})];
-    } else if (beats(moves[i])*BEAT<=ticks) {
-      let previous = moves[i][moves[i].length-1];
-      let move = {beats: 1};
-      // otherwise, copy radius and angle, but use previous ending speed as starting speed
-      NODES.map(node=> {
-        move[node] = {};
-        move[node].r = previous[node].r;
-        move[node].a = previous[node].a1;
-        move[node].va = previous[node].va1;
-        move[node].va1 = previous[node].va1;
-      });
-      moves[i].push(resolve(move));
-    }
-  }
-  store.dispatch({type: "SET_MOVES", moves: moves});
-  gotoTick(ticks);
-  // check locks and stuff
-}
-
-function modifyMoveUsingNode({node, propid}) {
-  propid = parseInt(propid);
-  const ROUNDMIN = 0.2;
-  pushStoreState();
-  let {props, moves, starters, plane, tick, transition, transitions} = store.getState();
-  let prop = props[propid]
-  let a = sphere$planify(prop[node], VS3D[plane]);
-  let r = prop[node].r;
-  // if the radius is just slightly offset from zero, snap it to zero
-  if (r<=ROUNDMIN) {
-    // should it be lower?
-    r = 0.01;
-    props = clone(props);
-    prop[node] = angle$spherify(a, VS3D[plane]);
-    prop[node].r = r;
-    props[propid] = prop;
-    store.dispatch({type: "SET_PROPS", props: props});
-  }
-  // don't update if nothing changed, or if it's a transition
-  let current = (tick===-1) ? starters[propid] : submove(moves[propid], tick).move;
-  if (!transition && !(nearly(current[node].r1, r) && nearly(current[node].a1, a))) {
-    current = clone(current);
-    let old = current[node];
-          // should I try to snag spin at this point???
-    let updated = {r: old.r, r1: r, a: old.a, a1: a};
-    // update one node based on the change
-    current[node] = updated;
-    current = resolve(current);
-    let next = null;
-    // if we modified the starting positions
-    if (tick===-1) {
-      if (moves[propid].length>0) {
-        next = clone(moves[propid][0]);
-      }
-    } else {
-      // if there is at least one more move on the list
-      let {index} = submove(moves[propid], tick);
-      // don't worry about transitions; we will discard them
-      if (index<moves[propid].length-1) {
-        next = clone(moves[propid][index+1]);
-      }
-    }
-    if (next) {
-      // ??? should I try to keep spins here?
-      next[node] = {
-        r: updated.r1,
-        r1: next[node].r1,
-        a: updated.a1,
-        a1: next[node].a1
-      };
-      next = resolve(next);
-    }
-    if (tick===-1) {
-      starters = clone(starters);
-      starters[propid] = current;
-      store.dispatch({type: "SET_STARTERS", starters: starters});
-      if (next) {
-        moves = clone(moves);
-        moves[propid][0] = next;
-        store.dispatch({type: "SET_MOVES", moves: moves});
-      }
-    } else {
-      moves = clone(moves);
-      let {index} = submove(moves[propid], tick);
-      moves[propid][index] = current;
-      if (next) {
-        moves[propid][index+1] = next;
-        if (transitions[propid][index+1]) {
-          transitions = clone(transitions);
-          delete transitions[propid][index+1];
-          store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
-        }
-      }
-      store.dispatch({type: "SET_MOVES", moves: moves});
-
-    }
-    // !!! should do a prop display update here?
-  }
-  // goto beginning of move
-  // check locks
-}
-
-
-
-function reducer(state, action) {
-  if (state === undefined) {
-    return {
-      props: clone(player.props.map(p=>p.prop)),
-      moves: clone(player.props.map(p=>p.moves)),
-      colors: clone(COLORS),
-      starters: player.props.map(p=>resolve(fit(p.prop, new Move({beats: 0})))),
-      tick: 0,
-      order: player.props.map((_,i)=>(player.props.length-i-1)),
-      plane: "WALL",
-      popup: false,
-      frozen: false,
-      transition: false,
-      // sparse array
-      transitions: player.props.map(p=>({})),
-      locks: {
-        body: true,
-        helper: true,
-        grip: true,
-        head: true,
-      } // mean slightly different things
-    };
-  }
-  if (!["SET_TICK","SET_TOP","SET_PROPS"].includes(action.type)) {
-    console.log(action);
-  }
-  switch (action.type) {
-    case "SET_STATE":
-      return action.state;
-    case "SET_TICK":
-      return {...state, tick: action.tick};
-    case "SET_TOP":
-      let order = [...state.order];
-      let propid = parseInt(action.propid);
-      order.push(order.splice(order.indexOf(propid),1)[0]);
-      return {...state, order};
-    case "SET_PROPS":
-      return {...state, props: action.props};
-    case "SET_MOVES":
-      return {...state, moves: action.moves};
-    case "SET_STARTERS":
-      return {...state, starters: action.starters};
-    case "SET_TRANSITIONS":
-      return {...state, transitions: action.transitions};
-    default:
-      console.log("whatever for now");
-      return state;
-  }
-}
 //a reducer function for a Redux store
-function reducer1(state, action) {
+function reducer(state, action) {
   if (state === undefined) {
     return {
       props: clone(player.props.map(p=>p.prop)),
@@ -353,10 +84,10 @@ function reducer1(state, action) {
       } // mean slightly different things
     };
   }
-  // if (!["setNode", "setTop", "gotoTick"].includes(action.type)) {
+  if (!["setNode", "setTop", "gotoTick"].includes(action.type)) {
     console.log("store action:");
     console.log(clone(action));
-  // }
+  }
   if (action.type==="renderEngine") {
     //  update the view of the engine
     let props = [...state.props];
@@ -525,7 +256,7 @@ function reducer1(state, action) {
       }
     }
     for (let i=0; i<NODES.length; i++) {
-      // keep a1 and r1 from the move, recalculate a0 and r0
+      // keep a0 and r0 from the move, recalculate a1 and r1
       let node = {};
       let mnode = move[NODES[i]] || {};
       node.r = prev[NODES[i]].r1;

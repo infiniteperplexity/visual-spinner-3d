@@ -1,8 +1,8 @@
 let renderer, store;
 const {
-	dummy, fit, fits, matches, 
-	angle, nearly, zeroish, vector$spherify, sphere$vectorize, sphere$planify, angle$spherify,
-	clone, merge,
+	dummy, fit, fits, matches,
+	angle, nearly, zeroish, vector$spherify, sphere$vectorize, sphere$planify,
+	clone,
 	round,
 	BEAT,
 	LEFT, RIGHT,
@@ -31,12 +31,12 @@ function afterReactMounts() {
 	panelTicks = document.getElementById("panelTicks");
 	player.update = function(positions) {
 		renderer.render(this.props, positions);
-		store.dispatch({type: "SET_TICK", tick: this.tick});
+		store.dispatch({type: "gotoTick", tick: this.tick});
 		panelTicks.value = this.tick;
 	}
 
-	gotoTick(-1);
-	renderEngine();
+	store.dispatch({type: "gotoTick", tick: -1});
+	store.dispatch({type: "renderEngine"});
 	let controls = new VS3D.Controls(player);
 }
 

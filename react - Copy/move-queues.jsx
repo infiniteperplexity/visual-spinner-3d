@@ -54,7 +54,42 @@ class MoveQueue extends React.Component {
 
 class NewMove extends React.Component {
   handleClick = (e)=> {
-    this.props.addMovesToEnd(this.props.propid);
+    this.props.helloWorld();
+    player.stop();
+    let ticks;
+    let allTicks = [];
+    if (this.props.moves[this.props.propid].length===0) {
+      ticks = 0;
+    } else {
+      ticks = beats(this.props.moves[this.props.propid])*BEAT;
+    }
+    // !!!! try rearranging this
+    this.props.setTop(this.props.propid);
+    if (this.props.transitionWorks()) {
+      this.props.acceptTransition();
+    }
+    this.props.setTransition(false);
+    // add a new move to any prop that has equal or fewer ticks
+    for (let i=0; i<this.props.moves.length; i++) {
+      if (this.props.moves[i].length===0) {
+        allTicks[i] = 0;
+      } else {
+        allTicks[i] = beats(this.props.moves[i])*BEAT;
+      }
+      if (allTicks[i]<=ticks) {
+        this.props.insertMove({
+          propid: i,
+          tick: allTicks[i],
+          move: {}
+        });
+        this.props.resolveMove({
+          propid: i,
+          tick: allTicks[i]
+        });
+      }
+    }
+    this.props.gotoTick(ticks);
+    this.props.checkLocks();
   }
   render() {
     return (
