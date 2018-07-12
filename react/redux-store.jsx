@@ -258,7 +258,14 @@ function modifyMoveUsingNode({node, propid}) {
 }
 
 function editTransition() {
+  let {props, moves, tick} = store.getState();
+  props = clone(props);
+  for (let i=0; i<props.length; i++) {
+    let {move} = submove(moves[i], tick);
+    props[i] = spin(move, 0);
+  }
   store.dispatch({type: "SET_TRANSITION", transition: true});
+  store.dispatch({type: "SET_PROPS", props: props});
 }
 
 function validateTransition() {
