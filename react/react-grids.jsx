@@ -30,11 +30,6 @@ class App extends React.Component {
               return;
             }
             props.updateEngine();
-            // let p = clone(player.props);
-            // for (let i=0; i<p.length; i++) {
-            //   p[i].moves = VS3D.desolve(p[i].moves);
-            // }
-            //save(p);
             save(player.props);
           }}>Save</button>
           <ImportButton {...props} />

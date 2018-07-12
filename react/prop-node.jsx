@@ -102,7 +102,7 @@ class PropNode extends React.Component {
       return;
     }
     event.preventDefault();
-    if (this.localState.beingDragged) {
+    if (this.localState.beingDragged && !this.props.validate) {
       this.props.modifyMoveUsingNode({
         node: NODES[this.props.node],
         propid: this.props.propid,

@@ -5,12 +5,8 @@ class ControlPanel extends React.Component {
   }
   handlePlay = (e)=>{
     e.preventDefault();
-    if (this.props.transitionWorks()) {
-      this.props.acceptTransition();
-    }
-    this.props.setTransition(false);
+    this.props.validateTransition();
     this.props.setFrozen(true);
-    this.props.updateEngine();
     player.goto(this.props.tick);
     player.play();
   }
@@ -20,40 +16,32 @@ class ControlPanel extends React.Component {
     // probably want to gotoTick...
     player.stop();
     this.props.gotoTick(player.tick);
-    this.props.renderEngine();
   }
   handleRewind = (e)=>{
     e.preventDefault();
     this.props.setFrozen(false);
-    this.props.updateEngine();
     player.stop();
     player.goto(player.tick-this.RATE);
-    this.props.gotoTick(player.tick);
-    this.props.renderEngine();
-  }
+    this.props.gotoTick(player.tick)
+  };
   handleFrame = (e)=>{
     this.props.setFrozen(false);
-    this.props.updateEngine();
     player.stop();
     player.goto(e.target.value);
     this.props.gotoTick(player.tick);
-    this.props.renderEngine();
   }
   handleForward = (e)=>{
     e.preventDefault();
     this.props.setFrozen(false);
-    this.props.updateEngine();
     player.stop();
     player.goto(player.tick+this.RATE);
     this.props.gotoTick(player.tick);
-    this.props.renderEngine();
   }
   handleReset = (e)=>{
     e.preventDefault();
     this.props.setFrozen(false);
     player.reset();
     this.props.gotoTick(-1);
-    this.props.renderEngine();
   }
   render() {
     // need to figure out how to handle ticks.
@@ -91,86 +79,11 @@ class PlaneMenu extends React.Component {
 
 class ImportButton extends React.Component {
   handleInput = (json)=>{
-    let saveState = clone(store.getState());
-    let savedProps = clone(player.props);
-    try {
-      let props = parse(json);
-      for (let i=0; i<props.length; i++) {
-        player.props[i] = new PropWrapper();
-        for (let key in props[i]) {
-          player.props[i][key] = props[i][key];
-        }
-      }
-      let state = {
-        props: clone(player.props.map(p=>p.prop)),
-        moves: clone(player.props.map(p=>p.moves)),
-        starters: player.props.map(p=>resolve(fit(p.prop, new Move({beats: 0})))),
-        colors: player.props.map(p=>p.color || "red"),
-        tick: -1,
-        order: player.props.map((_,i)=>(player.props.length-i-1)),
-        plane: "WALL",
-        locks: {
-          helper: true,
-          grip: true,
-          head: true,
-          body: true
-        } 
-      };
-      // should check state and throw errors if it's bad.
-      let nprops = state.props.length;
-      if (  state.moves.length!==nprops ||
-            state.starters.length!==nprops ||
-            state.colors.length!==nprops ||
-            state.order.length!==nprops
-        ) {
-        throw new Error("number of props not consistent.");
-      }
-      if (  !["WALL","WHEEL","FLOOR"].includes(state.plane) ||
-            state.tick<-1 ||
-            parseInt(state.tick) !== state.tick
-        ) {
-        throw new Error("still working on error messages");
-      }
-
-      this.props.restoreState(state);
-      this.props.pushState();
-      this.props.gotoTick(-1);
-      this.props.checkLocks();
-      this.props.renderEngine();
-    } catch (e) {
-      alert("invalid input!");
-      console.log(json);
-      console.log(e);
-      this.props.restoreState(saveState);
-        for (let i=0; i<savedProps.length; i++) {
-        for (let key in savedProps[i]) {
-          player.props[i][key] = savedProps[i][key];
-        }
-      }
-    }
+    this.props.loadJSON(json);
   }
   handleClick = (e)=>{
     e.preventDefault();
-    let input = document.createElement("input");
-    input.type = "file";
-    input.accept = "application/json";
-    input.style.display = "none";
-    input.onchange = ()=>{
-      let files = input.files;
-      console.log(files);
-      let reader = new FileReader();
-      reader.onload = (f)=>{
-        if (reader.result) {
-          this.handleInput(reader.result);
-        }
-      }
-      if (files[0]) {
-        reader.readAsText(files[0]);
-      }
-    }
-    document.body.appendChild(input);
-    input.click();
-    setTimeout(()=>document.body.removeChild(input),0);
+    this.props.fileInput();
   }
   render() {
     return <button onClick={this.handleClick}>Import</button>

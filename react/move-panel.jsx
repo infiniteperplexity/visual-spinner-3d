@@ -81,134 +81,31 @@ class MoveControl extends React.Component {
     let node = this.props.node;
     let locked = this.props.locks[node];
     this.props.setLock(node, !locked);
-    this.props.checkLocks();
-  }
-  modifySpins = (n) =>{
-    const BOUNDS = 2;
-    let {move, node, propid, tick} = this.props;
-    // make sure we align to the beginning of the move
-    let moves = this.props.moves[propid];
-    let past = 0;
-    let i = 0;
-    while (past<tick) {
-      let ticks = beats(moves[i])*BEAT;
-      if (past+ticks>tick) {
-        this.props.gotoTick(past);
-      }
-      past+=ticks;
-      i+=1;
-    }
-    tick = this.props.tick;
-    let va = move[node] ? move[node].va : 0;
-    let va1 = move[node] ? move[node].va1 : va;
-    let a = move[node] ? move[node].a : 0;
-    let a1 = move[node] ? move[node].a1 : a;
-    let speed = (va+va1)/2;
-    let spin = beats(move)/4;
-    let spins = Math.sign(speed)*Math.ceil(Math.abs(speed*spin));
-    let {vl} = move[node];
-    if (vl!==undefined) {
-      spins = 0;
-    }
-    if (Math.abs(spins+n)>BOUNDS) {
-      return;
-    }
-    let args = {};
-    spins += n;
-    if (zeroish(spins) && !nearly(a,a1)) {
-      // !!! let's try not doing this, to make it do linear motions
-      // spins += n;
-    }
-    if (spins===0) {
-      console.log("here ye!");
-    }
-    args[node] = {spin: spins};
-    this.props.modifyMove({
-      propid: propid,
-      tick: tick,
-      nodes: args
-    });
-    this.props.resolveMove({
-      propid: propid,
-      tick: tick
-    });
-    this.props.pushState();
-    this.props.renderEngine();
   }
   handleClockwise = (e)=>{
     if (this.props.frozen) {
       return;
     }
-    this.modifySpins(+1);
+    this.props.modifySpins({propid: this.props.propid, node: this.props.node, n: +1});
   }
   handleCounter = (e)=>{
       if (this.props.frozen) {
       return;
     }
-    this.modifySpins(-1);
+    this.props.modifySpins({propid: this.props.propid, node: this.props.node, n: -1});
   }
-  modifyAcc = (n) => {
-    let BOUNDS = 8;
-    let {move, node, propid, tick} = this.props;
-    // make sure we align to the beginning of the move
-    let moves = this.props.moves[propid];
-    let past = 0;
-    let i = 0;
-    while (past<tick) {
-      let ticks = beats(moves[i])*BEAT;
-      if (past+ticks>tick) {
-        this.props.gotoTick(past);
-      }
-      past+=ticks;
-      i+=1;
-    }
-    tick = this.props.tick;
-    let va = move[node] ? move[node].va : 0;
-    let va1 = move[node] ? move[node].va1 : va;
-    let spin = beats(move)/4;
-    let spins = Math.sign(va+va1)*Math.ceil(Math.abs(0.5*(va+va1)*spin));
-    if (zeroish(spins) || zeroish(va+va1)) {
-      return;
-    }
-    // if zero starting speed, can't accelerate more
-    if (zeroish(va) && n>0) {
-      return;
-    // if zero ending speed, can't decelerate more
-    } else if (zeroish(va1) && n<0) {
-      return;
-    } else if ((Math.abs(va)>=BOUNDS || nearly(Math.abs(va),BOUNDS)) && n<0) {
-      return;
-    }
-    if ((va+va1)>0) {
-      va -= n;
-    } else if ((va+va1)<0) {
-      va += n;
-    }
-    let args = {};
-    args[node] = {va: va, spin: spins};
-    this.props.modifyMove({
-      propid: propid,
-      tick: tick,
-      nodes: args
-    });
-    this.props.resolveMove({
-      propid: propid,
-      tick: tick
-    });
-    this.props.pushState();
-    this.props.renderEngine();
-  }
+  
   handleSpeedUp = (e)=>{
     if (this.props.frozen) {
       return;
     }
-    this.modifyAcc(+1);
+    this.props.modifyAcceleration({propid: this.props.propid, node: this.props.node, n: +1});
   }
   handleSlowDown = (e)=>{
     if (this.props.frozen) {
       return;
     }
-    this.modifyAcc(-1);
+    this.props.modifyAcceleration({propid: this.props.propid, node: this.props.node, n: -1});
   }
   render() {
     const SVG = 25;

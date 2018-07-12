@@ -85,13 +85,7 @@ class MoveItem extends React.Component {
   handleMouseDown = (e)=>{
     player.stop();
     this.props.setTop(this.props.propid);
-    if (this.props.transitionWorks()) {
-      this.props.acceptTransition();
-    }
-    this.props.setTransition(false);
     this.props.gotoTick(this.props.ticks);
-    this.props.checkLocks();
-    this.props.renderEngine();
   }
   componentDidMount() {
     this.renderContext();
@@ -188,13 +182,7 @@ class Transition extends React.Component {
     this.setState({highlight: false});
     this.props.setTop(this.props.propid);
     this.props.gotoTick(this.props.ticks);
-    // check to see if it's the *same* transition
-    // if (this.props.transitionWorks()) {
-      
-    // }
-    this.props.setTransition(true);
-    this.props.checkLocks();
-    this.props.renderEngine();
+    this.props.editTransition();
   }
   render() {
     let active = false;
@@ -244,10 +232,6 @@ class ColorPicker extends React.Component {
     let color = hex2svg(e.target.value);
     colors[this.props.propid] = e.target.value;
     this.props.setColors(colors);
-    this.props.renderEngine();
-    console.log(e.target.value);
-    console.log(this.props.colors[this.props.propid]);
-    console.log(svg2hex(this.props.colors[this.props.propid]));
   }
   render() {
     return (
