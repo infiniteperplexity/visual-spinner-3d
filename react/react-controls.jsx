@@ -5,6 +5,11 @@ class ControlPanel extends React.Component {
   }
   handlePlay = (e)=>{
     e.preventDefault();
+    for (let move of store.getState().moves) {
+      if (move.length===0) {
+        return;
+      }
+    }
     this.props.validateTransition();
     this.props.setFrozen(true);
     player.goto(this.props.tick);
@@ -19,18 +24,33 @@ class ControlPanel extends React.Component {
   }
   handleRewind = (e)=>{
     e.preventDefault();
+    for (let move of store.getState().moves) {
+      if (move.length===0) {
+        return;
+      }
+    }
     this.props.setFrozen(false);
     player.stop();
     player.goto(player.tick-this.RATE);
     this.props.gotoTick(player.tick)
   };
   handleFrame = (e)=>{
+    for (let move of store.getState().moves) {
+      if (move.length===0) {
+        return;
+      }
+    }
     this.props.setFrozen(false);
     player.stop();
     player.goto(e.target.value);
     this.props.gotoTick(player.tick);
   }
   handleForward = (e)=>{
+    for (let move of store.getState().moves) {
+      if (move.length===0) {
+        return;
+      }
+    }
     e.preventDefault();
     this.props.setFrozen(false);
     player.stop();

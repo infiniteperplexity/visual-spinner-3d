@@ -52,6 +52,8 @@ function NodeMarker(props, context) {
   } transform={transform} stroke="gray" strokeWidth="1" fill={fill}><title>{tip}</title></polygon>;
 }
 
+
+let _debounce = false;
 class PropNode extends React.Component {
   constructor(props, context) {
     super(props, context);
@@ -96,7 +98,12 @@ class PropNode extends React.Component {
     let y = v.y * UNIT;
     this.localState.xoffset = p.x - x;
     this.localState.yoffset = p.y + y;
-    this.props.setActiveNode(this.props.node);
+    // do I need to debounce this sucker??
+    if (!_debounce) {
+      this.props.setActiveNode(this.props.node);
+      _debounce = true;
+      setTimeout(()=>(_debounce=false),0);
+    }
     this.props.setTop(this.props.propid);
   }
   handleMouseUp = (event) => {
@@ -146,13 +153,7 @@ class PropNode extends React.Component {
       if (this.props.node===HEAD && this.props.locks.head) {
         r = 1;
       } else {
-        // if (r>=0.5) {
           r = round(r, 0.5) || 0.01;
-        // } else if (r>=this.ROUNDMIN) {
-        //   r = this.ROUNDMIN;
-        // } else {
-        //   r = 0;
-        // }
       }
       // how fine-grained is the rounding on angles?
       const FRACTION = 4;

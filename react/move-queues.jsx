@@ -115,7 +115,7 @@ class MoveItem extends React.Component {
         }
       }
     }
-    ctx.fillRect(0,0,height,width);
+    ctx.fillRect(0,0,width,height);
     ctx.fillStyle = color;
     ctx.beginPath();
     ctx.moveTo(width/2+x0,height/2+y0);
@@ -153,7 +153,7 @@ class MoveItem extends React.Component {
           borderStyle: "solid",
           borderWidth: "1px",
           marginRight: (this.props.ticks===-1) ? "-1px" : "0",
-          marginLeft:(this.props.ticks===-1) ? "0" : "1px",
+          marginLeft:(this.props.ticks===-1) ? "0" : (this.props.ticks===0) ? "1px" : "-11px",
           display: "inline-block",
           overflowX: "hidden",
           backgroundColor: (this.props.tick===this.props.ticks) ? "cyan" : "white"
@@ -167,7 +167,7 @@ class MoveItem extends React.Component {
 class Transition extends React.Component {
   constructor(props, context) {
     super(props, context);
-    this.dim = 8;
+    this.dim = 7;
     this.margin = 90/2 - this.dim/2;
     this.state = {highlight: false};
   }
@@ -186,10 +186,6 @@ class Transition extends React.Component {
     this.props.editTransition();
   }
   render() {
-    let active = false;
-    if (this.props.transition && parseInt(this.props.propid)===this.props.order[this.props.order.length-1] && this.props.tick<(this.props.ticks+BEAT*beats(this.props.move)) && this.props.tick>=this.props.ticks) {
-      active = true;
-    }
     let title = "no custom transition defined";
     let color = "white";
     if (this.props.transitions[this.props.propid][this.props.n]) {
@@ -197,8 +193,12 @@ class Transition extends React.Component {
       color = this.props.colors[this.props.propid];
     } else if (this.state.highlight) {
       color = "cyan";
-    } else if (active) {
-      color = "cyan";
+    } else if (this.props.tick===this.props.ticks) {
+      if (this.props.transition) {
+        color = "cyan";
+      } else {
+        color = "white";
+      }
     }
     return (
       <div
@@ -212,9 +212,11 @@ class Transition extends React.Component {
           borderStyle: "solid",
           borderWidth: "1px",
           marginBottom: this.margin+"px",
-          marginRight: "-1px",
+          left: "-6.25px",
           display: "inline-block",
           overflowX: "hidden",
+          position: "relative",
+          zIndex: "1",
           // borderTopRightRadius: "50%",
           // borderBottomRightRadius: "50%",
           borderRadius: "50%",

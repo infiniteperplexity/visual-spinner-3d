@@ -4,6 +4,7 @@ let AppComponent = ReactRedux.connect(
   (state)=>({
     getActiveProp: getActiveProp,
     getActivePropId: getActivePropId,
+    getMovesAtTick: getMovesAtTick,
     ...state
   }),
   (dispatch)=>({
@@ -33,6 +34,7 @@ let AppComponent = ReactRedux.connect(
       editTransition: editTransition,
       validateTransition: validateTransition,
 
+      setDuration: setDuration,
       modifySpins: modifySpins,
       modifyAcceleration: modifyAcceleration,
 
@@ -79,6 +81,13 @@ function reducer(state, action) {
     case "SET_STATE":
       return action.state;
     case "SET_TICK":
+      if (action.tick!==-1) {
+        for (let move of state.moves) {
+          if (move.length===0) {
+            return state;
+          }
+        }
+      }
       return {...state, tick: action.tick};
     case "SET_TOP":
       let order = [...state.order];
@@ -102,7 +111,7 @@ function reducer(state, action) {
     case "SET_TRANSITION":
       return {...state, transition: action.transition};
     case "SET_FROZEN":
-      return {...state, transition: action.frozen};
+      return {...state, frozen: action.frozen};
     case "SET_LOCKS":
       return {...state, locks: action.locks};
     default:

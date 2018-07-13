@@ -61,3 +61,8 @@ React App:
 Next up:
 	- Duration adjustment
 	- Selection/insertion stuff.
+	- Maybe zeroify a node by clicking?
+	- Things are a bit confusing, if you create a transition where you're off a different angle from zero.
+	- Cumulative move width is very slightly off
+	- transition selection tick should say so explicitly
+	- dragging the other prop while in transition mode can get weird.

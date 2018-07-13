@@ -6,8 +6,14 @@ let DEC = "8,4 0,0 0,8 8,4 8,2 16,4 8,6, 8,4";
 let LINEAR = "0,2 8,2 8,0 16,4 8,8 8,6 0,6 0,2";
 
 class MovePanel extends React.Component {
+  handleDurationChange = (e)=>{
+    this.props.setDuration({
+      propid: this.props.getActivePropId(),
+      ticks: round(e.target.value,0.5)
+    });
+  }
   render() {
-    let propid = this.props.order[this.props.order.length-1];
+    let propid = this.props.getActivePropId();
     let move;
     if (this.props.tick===-1) {
       move = this.props.starters[propid];
@@ -24,19 +30,27 @@ class MovePanel extends React.Component {
     let bcolor = (locks.body) ? "gray" : color;
     const SVG = 25;
     const TEXT = 35;
-    let duration =
-      <div>
-        <span>
-          {"duration "+"\u231B"}
-        </span>
-        {beats(move)*BEAT}
-      </div>
-    ;
+    let txt, buttons;
     if (this.props.tick===-1) {
-      duration = <div style={{color: "lightgray"}}>{"\u231B"+" (starting position)"}</div>;
+      txt = "tick 0";
+    } else if (this.props.transition) {
+      txt = "tick "+this.props.tick;
+    } else {
+      txt = "tick "+this.props.tick+" to "+(this.props.tick+beats(move)*BEAT);
+      buttons = <div>
+        <button>-</button>
+        <input type="number" min="22.5" step="22.5" onChange={this.handleDurationChange} value={beats(move)*BEAT} />
+        <button>+</button>
+      </div>;
     }
+    let duration = <div style={{
+      color: "black"
+    }}>
+      {txt}
+      {buttons}
+    </div>;
     // placeholder
-    duration = <div>(duration info will go here)</div>;
+    // duration = <div>(duration info will go here)</div>;
     return (
       <div style={{color: "lightgray"}} className="grid movepanel">
         {duration}

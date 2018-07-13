@@ -124,6 +124,29 @@ function modifyMoveUsingNode({node, propid}) {
   validateLocks();
 }
 
+function setDuration({propid, ticks}) {
+
+  let {moves, tick} = store.getState();
+  let {move, index} = getMovesAtTick(tick)[propid];
+  if (beats(move)*BEAT===ticks) {
+    return;
+  } else {
+    let beats = ticks / BEAT;
+    let updated = {beats: beats};
+    for (let node of NODES) {
+      updated[node] = {
+        r: move[node].r,
+        r1: move[node].r1,
+        a: move[node].a,
+        a1: move[node].a1
+      };
+    }
+    updated = resolve(updated);
+    moves = clone(moves);
+    moves[propid][index] = updated;
+    store.dispatch({type: "SET_MOVES", moves: moves});
+  }
+}
 /***************************************************************************************/
 /********** Modify rotations using panel buttons ***************************************/
 /***************************************************************************************/
@@ -240,7 +263,7 @@ function validateTransition() {
     let {move, index} = submove(moves[propid], tick);
     let previous = moves[propid][index-1];
     let position = dummy(props[propid],0);
-    if (matches(previous, position)) {
+    if (matches(previous, position, 0.1)) {
       if (!transitions[propid][index]) {
         console.log("The transition perfectly matches the end of the preceding move and will be discarded.");
       } else {
