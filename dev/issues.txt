@@ -57,10 +57,6 @@ One idea for maintaining solved state:
 
 - Why can't I return the elbow to zero? 
 
-- This transition stuff is almost *certainly* going to require a refactoe
-- Might want one of those "selector" things for picking current move
-
-
 - Speed display doesn't round the way you'd like it to
 - Make sure to display zero when r is zeroish if no TINY is needed (no movement from node to node)
 - Need to figure out how to import/export transitions.
@@ -78,3 +74,9 @@ One idea for maintaining solved state:
 	- Angle is not zero,
 	-...or, R changes?
 	- The way the dragging works is not very intuitive.
+
+
+Next up:
+- Make it so loading JSON handles transitions properly
+- Work on spiral handles.
+- So...can I stick handles in there as children?
