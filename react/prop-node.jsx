@@ -42,13 +42,14 @@ function HeadNode(props, context) {
 }
 
 function NodeMarker(props, context) {
-  let {x, y, fill, dim, tip} = props;
+  let {x, y, fill, dim, tip, transform} = props;
+  y-=UNIT/4;
   return <polygon points={
     (x-dim)+","+y+" "+
-    x+","+(y-dim)+" "+
+    x+","+(y-2*dim)+" "+
     (x+dim)+","+y+" "+
     x+","+(y+dim)
-  } stroke="gray" strokeWidth="1" fill={fill}><title>{tip}</title></polygon>;
+  } transform={transform} stroke="gray" strokeWidth="1" fill={fill}><title>{tip}</title></polygon>;
 }
 
 class PropNode extends React.Component {
@@ -95,6 +96,7 @@ class PropNode extends React.Component {
     let y = v.y * UNIT;
     this.localState.xoffset = p.x - x;
     this.localState.yoffset = p.y + y;
+    this.props.setActiveNode(this.props.node);
     this.props.setTop(this.props.propid);
   }
   handleMouseUp = (event) => {
@@ -144,13 +146,13 @@ class PropNode extends React.Component {
       if (this.props.node===HEAD && this.props.locks.head) {
         r = 1;
       } else {
-        if (r>=0.5) {
-          r = round(r, 0.5);
-        } else if (r>=this.ROUNDMIN) {
-          r = this.ROUNDMIN;
-        } else {
-          r = 0;
-        }
+        // if (r>=0.5) {
+          r = round(r, 0.5) || 0.01;
+        // } else if (r>=this.ROUNDMIN) {
+        //   r = this.ROUNDMIN;
+        // } else {
+        //   r = 0;
+        // }
       }
       // how fine-grained is the rounding on angles?
       const FRACTION = 4;
@@ -243,12 +245,11 @@ class PropNode extends React.Component {
       shape = <HeadNode x={X0} y={Y0} fill={this.props.color} dim={UNIT/8} />
     }
     let marker = null;
-    if (zeroish(node.r, 0.015)) {
+    if (zeroish(node.r, 0.015) && this.props.activeNode===this.props.node && this.props.getActivePropId()===this.props.propid) {
       // !!!! I can't really do this with node.a
-      let dx = Math.cos(node.a*VS3D.UNIT-Math.PI/2)*UNIT/4;
-      let dy = Math.sin(node.a*VS3D.UNIT-Math.PI/2)*UNIT/4;
       let tip = "zero " +NODES[this.props.node]+" at angle "+node.a;
-      marker = <NodeMarker x={X0+dx} y={Y0+dy} fill={this.props.color} dim={UNIT/20} tip={tip}/>;
+      let trans = "rotate(" + node.a + " "+X0+" "+Y0+")";
+      marker = <NodeMarker x={X0} y={Y0} transform={trans} fill={this.props.color} dim={UNIT/20} tip={tip}/>;
     }
     let title = (this.props.tick) ? "drag to set starting "+NODES[this.props.node] : "drag to set next "+NODES[this.props.node]; 
     return (

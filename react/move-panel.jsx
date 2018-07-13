@@ -6,25 +6,6 @@ let DEC = "8,4 0,0 0,8 8,4 8,2 16,4 8,6, 8,4";
 let LINEAR = "0,2 8,2 8,0 16,4 8,8 8,6 0,6 0,2";
 
 class MovePanel extends React.Component {
-  // the last item on order is the active one
-  setLock = (e, node)=>{
-    e.preventDefault();
-    if (this.props.frozen) {
-      return;
-    }
-    let locked = this.props.locks[node];
-    this.props.setLock(node, !locked);
-    this.props.checkLocks();
-  }
-  setGripLock = (e)=>{
-    this.setLock(e, "grip");
-  }
-  setHelperLock = (e)=>{
-    this.setLock(e, "helper");
-  }
-  setBodyLock = (e)=>{
-    this.setLock(e, "body");
-  }
   render() {
     let propid = this.props.order[this.props.order.length-1];
     let move;
@@ -204,10 +185,10 @@ class MoveControl extends React.Component {
     return (
       <div className="grid movecontrol">
         <svg height={2*SVG} width={2*SVG}>
+          <line x1={SVG} y1={0} x2={SVG} y2={SVG} style={tether2} />
+          <line x1={SVG} y1={SVG} x2={SVG} y2={2*SVG} style={tether1} />
           <g onMouseDown={this.handleMouseDown}>
             <title>{title}</title>
-            <line x1={SVG} y1={0} x2={SVG} y2={SVG} style={tether2} />
-            <line x1={SVG} y1={SVG} x2={SVG} y2={2*SVG} style={tether1} />
             {graphic}
           </g>
         </svg>
@@ -233,7 +214,6 @@ function SpeedMeter(props, context) {
   }
   let acctransform = "translate(34,21)";
   if (Math.abs(va1)<Math.abs(va)) {
-    // acctransform = "scale(-1, 1) translate(-48, 21)";
     acctransform = "translate(27, 21)";
   }
   let niceNames = {
@@ -290,7 +270,6 @@ function SpeedMeter(props, context) {
         accshape = <polygon transform="translate(34,19)" points="0,0 0,12, 12,6" fill={color} stroke={stroke}/>;
       }
     }
-    // spinshape = <path d={LINEAR} transform={spintransform} fill={color} stroke="lightgray"/>;
   }
   if (nearly(va, va1)) {
     if (zeroish(spins)) {

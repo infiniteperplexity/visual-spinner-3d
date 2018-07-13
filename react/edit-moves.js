@@ -19,7 +19,7 @@ function addMovesToEnd(propid) {
       // otherwise, copy radius and angle, but use previous ending speed as starting speed
       NODES.map(node=> {
         move[node] = {};
-        move[node].r = previous[node].r;
+        move[node].r = previous[node].r1;
         move[node].a = previous[node].a1;
         move[node].va = previous[node].va1;
         move[node].va1 = previous[node].va1;
@@ -43,23 +43,18 @@ function modifyMoveUsingNode({node, propid}) {
   let prop = props[propid]
   let a = sphere$planify(prop[node], VS3D[plane]);
   let r = prop[node].r;
-  // if the radius is just slightly offset from zero, snap it to zero
-  if (r<=ROUNDMIN) {
-    // should it be lower?
-    r = 0.01;
-    props = clone(props);
-    prop[node] = angle$spherify(a, VS3D[plane]);
-    prop[node].r = r;
-    props[propid] = prop;
-    store.dispatch({type: "SET_PROPS", props: props});
-  }
   // don't update if nothing changed, or if it's a transition
   let current = (tick===-1) ? starters[propid] : submove(moves[propid], tick).move;
   if (!transition && !(nearly(current[node].r1, r) && nearly(current[node].a1, a))) {
     current = clone(current);
     let old = current[node];
           // should I try to snag spin at this point???
-    let updated = {r: old.r, r1: r, a: old.a, a1: a};
+    let updated = {
+      r: (tick===-1) ? r : old.r,
+      r1: r,
+      a: (tick===-1) ? a: old.a,
+      a1: a
+    };
     // update one node based on the change
     current[node] = updated;
     current = resolve(current);
@@ -304,5 +299,35 @@ function validateTransition() {
     }
     store.dispatch({type: "SET_TRANSITION", transition: false});
   }
+}
+
+function validateSequences() {
+  let {props, moves, transitions} = store.getState();
+  moves = clone(moves);
+  transitions = props.map(p=>({}));
+  for (let i=0; i<props.length; i++) {
+    for (let j=1; j<moves[i].length; j++) {
+      let previous = moves[i][j-1];
+      let move = moves[i][j];
+      // we could also force the moves to resolve() at this point...
+      if (!matches(previous, move, 0.1)) {
+        if (fits(previous, move, 0.1)) {
+          let transition = {};
+          NODES.map(node=>{
+            transition[node] = {
+              r: move[node].r,
+              r1: move[node].r,
+              a: move[node].a,
+              a1: move[node].a,
+            };
+          });
+          transitions[i][j] = transition;
+        } else {
+          throw new Error("move positions do not match");
+        }
+      }
+    }
+  }
+  store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
 }
 

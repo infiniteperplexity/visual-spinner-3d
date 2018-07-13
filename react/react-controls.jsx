@@ -83,7 +83,7 @@ class ImportButton extends React.Component {
   }
   handleClick = (e)=>{
     e.preventDefault();
-    this.props.fileInput();
+    this.props.fileInput(this.handleInput.bind(this));
   }
   render() {
     return <button onClick={this.handleClick}>Import</button>

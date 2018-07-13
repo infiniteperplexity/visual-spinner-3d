@@ -60,11 +60,16 @@ function setTopPropById(propid) {
   store.dispatch({type: "SET_TOP", propid: propid});
 }
 
+function setActiveNode(node) {
+  store.dispatch({type: "SET_NODE", node: node});
+}
+
 /*** Update the position of a single node on a single prop in the UI only, without updating any other state ***/
 function setNodePosition({propid, node, x, y, z}) {
   let s = vector$spherify({x: x, y: y, z: z});
   let props = clone(store.getState().props);
   props[parseInt(propid)][NODES[node]] = s;
+  setActiveNode(node);
   store.dispatch({type: "SET_PROPS", props: props});
 }
 
@@ -129,6 +134,11 @@ function getActiveProp() {
   return props[order[order.length-1]];
 }
 
+function getActivePropId() {
+  let {order} = store.getState();
+  return order[order.length-1];
+}
+
 function validateLocks() {
   let {locks} = store.getState();
   locks = clone(locks);
@@ -168,8 +178,7 @@ function loadJSON(json) {
       plane: "WALL",
       frozen: false,
       transition: false,
-      // !!!! need to do something about transitions here...
-      transitions: player.props.map(p=>{}),
+      transitions: player.props.map(p=>({})),
       locks: {
         helper: true,
         grip: true,
@@ -193,6 +202,7 @@ function loadJSON(json) {
       throw new Error("still working on error messages");
     }
     store.dispatch({type: "SET_STATE", state: state});
+    validateSequences();
     pushStoreState();
     gotoTick(-1);
   } catch (e) {
@@ -208,7 +218,7 @@ function loadJSON(json) {
   }
 }
 
-function fileInput() {
+function fileInput(callback) {
   let input = document.createElement("input");
   input.type = "file";
   input.accept = "application/json";
@@ -218,7 +228,7 @@ function fileInput() {
     let reader = new FileReader();
     reader.onload = (f)=>{
       if (reader.result) {
-        this.handleInput(reader.result);
+        callback(reader.result);
       }
     }
     if (files[0]) {

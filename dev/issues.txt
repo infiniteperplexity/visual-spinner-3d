@@ -9,6 +9,7 @@ Engine:
 - Consider implementing BEND as a node.
 - Over and under-solving are causing recurring problems.
 - Might want to actually make PIVOT named SHOULDER and so on.
+- Does resolve() keep spin?
 
 
 Apps:
@@ -47,20 +48,8 @@ React App:
 		- Number input?
 
 
-One idea for maintaining solved state:
-- If va & va1 are both zero, completely re-solve without respecting spins.
-- Otherwise, try to respect spins:
-- If va was zero, try to keep va at zero.
-- Otherwise, if va1 was zero, try to keep it at zero.
-- Otherwise, if va===va1, re-solve.
-- Otherwise, try to keep va as-is.
-
-- Why can't I return the elbow to zero? 
-
 - Speed display doesn't round the way you'd like it to
-- Make sure to display zero when r is zeroish if no TINY is needed (no movement from node to node)
 - Need to figure out how to import/export transitions.
-- Need to exit transition mode when dragging nodes.
 
 - What are the basic functions?
 	- Delete.
@@ -69,14 +58,6 @@ One idea for maintaining solved state:
 
 - Could do it with delete box and drag handles, and insert box.
 
-- Spiral directions don't consistently "stick" after being set and changing moves.
-- Maybe NodeMarkers should show up only under special circumstances?
-	- Angle is not zero,
-	-...or, R changes?
-	- The way the dragging works is not very intuitive.
-
-
 Next up:
-- Make it so loading JSON handles transitions properly
-- Work on spiral handles.
-- So...can I stick handles in there as children?
+	- Duration adjustment
+	- Selection/insertion stuff.

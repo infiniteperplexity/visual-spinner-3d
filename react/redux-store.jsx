@@ -2,6 +2,8 @@
   // attaches properties to the "wrapped" component
 let AppComponent = ReactRedux.connect(
   (state)=>({
+    getActiveProp: getActiveProp,
+    getActivePropId: getActivePropId,
     ...state
   }),
   (dispatch)=>({
@@ -12,6 +14,7 @@ let AppComponent = ReactRedux.connect(
 
       setTop: setTopPropById,
       setTopPropById: setTopPropById,
+      setActiveNode: setActiveNode,
       
       // moving the node around 
       setNode: setNodePosition,
@@ -55,8 +58,8 @@ function reducer(state, action) {
       starters: player.props.map(p=>resolve(fit(p.prop, new Move({beats: 0})))),
       tick: 0,
       order: player.props.map((_,i)=>(player.props.length-i-1)),
+      activeNode: null,
       plane: "WALL",
-      popup: false,
       frozen: false,
       transition: false,
       // sparse array
@@ -81,7 +84,9 @@ function reducer(state, action) {
       let order = [...state.order];
       let propid = parseInt(action.propid);
       order.push(order.splice(order.indexOf(propid),1)[0]);
-      return {...state, order};
+      return {...state, order: order};
+    case "SET_NODE":
+      return {...state, activeNode: action.node};
     case "SET_PROPS":
       return {...state, props: action.props};
     case "SET_MOVES":
