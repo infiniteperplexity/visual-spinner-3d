@@ -106,7 +106,7 @@ function setPropNodesByTick(tick) {
   if (tick===-1) {
     props = state.starters.map(s=>spin(s, 0))
   } else {
-    props = getMovesAtTick(tick).map(m=>spin(m.move, beats(m.move)*BEAT));
+    props = getMovesAtTick(tick).map(m=>dummy(m.move));
   }
   ;
   store.dispatch({type: "SET_PROPS", props: props});
@@ -276,11 +276,36 @@ function validateTransition() {
     let previous = moves[propid][index-1];
     let position = dummy(props[propid],0);
     if (matches(previous, position)) {
-      console.log("The transition perfectly matches the end of the preceding move and will be discarded.");
+      if (!transitions[propid][index]) {
+        console.log("The transition perfectly matches the end of the preceding move and will be discarded.");
+      } else {
+        // undo the custom transition
+        console.log("The transition perfectly matches the end of the preceding move, so it will be deleted.");
+        transitions = clone(transitions);
+        delete transitions[propid][index];
+        store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
+        move = clone(move);
+        NODES.map(node=>{
+          // don't overwrite the next node unless necessary
+          if (!(nearly(position[node].r, move[node].r) && nearly(position[node].a, move[node].a))) {
+            //try to keep spins?
+            move[node] = {
+              r: position[node].r,
+              r1: move[node].r1,
+              a: position[node].a,
+              a1: move[node].a1
+            };
+          }
+        });    
+        moves = clone(moves);
+        moves[propid][index] = resolve(move);
+        store.dispatch({type: "SET_MOVES", moves: moves});
+      }
     } else if (fits(previous, position, 0.1)) {
       console.log("The transition is an acceptable fit to the end of the preceding move and will be accepted.");
       transitions = clone(transitions);
       let transition = {};
+      move = clone(move);
       NODES.map(node=>{
         transition[node] = {
           r: position[node].r,
@@ -288,10 +313,22 @@ function validateTransition() {
           a: position[node].a,
           a1: position[node].a    
         }
+        // don't overwrite the next node unless necessary
+        if (!(nearly(position[node].r, move[node].r) && nearly(position[node].a, move[node].a))) {
+          //try to keep spins?
+          move[node] = {
+            r: position[node].r,
+            r1: move[node].r1,
+            a: position[node].a,
+            a1: move[node].a1
+          };
+        }
       });
-      transition = resolve(transition);
-      transitions[propid][index] = transition;
+      transitions[propid][index] = resolve(transition);
       store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
+      moves = clone(moves);
+      moves[propid][index] = resolve(move);
+      store.dispatch({type: "SET_MOVES", moves: moves});
     } else {
       alert("The transition does not fit with the end of the preceding move and will be discarded.");
     }
@@ -446,7 +483,7 @@ function fileInput() {
 function modifySpins({propid, node, n}) {
   const BOUNDS = 2;
   let {tick, moves} = store.getState();
-  let {move} = submove(moves[propid], tick);
+  let {move, index} = submove(moves[propid], tick);
   // make sure we align to the beginning of the move
   let past = 0;
   let i = 0;
@@ -473,31 +510,28 @@ function modifySpins({propid, node, n}) {
   if (Math.abs(spins+n)>BOUNDS) {
     return;
   }
-  let args = {};
-  spins += n;
-  if (zeroish(spins) && !nearly(a,a1)) {
-    // !!! let's try not doing this, to make it do linear motions
-    // spins += n;
-  }
-  args[node] = {spin: spins};
-  // this.props.modifyMove({
-  //   propid: propid,
-  //   tick: tick,
-  //   nodes: args
-  // });
-  // this.props.resolveMove({
-  //   propid: propid,
-  //   tick: tick
-  // });
+  move = clone(move);
+  let updated = {
+    r: move[node].r,
+    r1: move[node].r1,
+    a: move[node].a,
+    a1: move[node].a1,
+    spin: spins+n
+  };
+  move[node] = updated;
+  moves = clone(moves);
+  moves[propid][index] = resolve(move);
+  store.dispatch({type: "SET_MOVES", moves: moves});
   pushStoreState();
-  renderEngine();
+  updateEngine();
 }
 
+/**** Lots of duplicated code from the previous thing ****/
 function modifyAcceleration({propid, node, n}) {
   let BOUNDS = 8;
   // make sure we align to the beginning of the move
   let {tick, moves} = store.getState();
-  let {move} = submove(moves[propid], tick);
+  let {move, index} = submove(moves[propid], tick);
   let past = 0;
   let i = 0;
   while (past<tick) {
@@ -530,19 +564,21 @@ function modifyAcceleration({propid, node, n}) {
   } else if ((va+va1)<0) {
     va += n;
   }
-  let args = {};
-  args[node] = {va: va, spin: spins};
-  // this.props.modifyMove({
-  //   propid: propid,
-  //   tick: tick,
-  //   nodes: args
-  // });
-  // this.props.resolveMove({
-  //   propid: propid,
-  //   tick: tick
-  // });
+  move = clone(move);
+  let updated = {
+    r: move[node].r,
+    r1: move[node].r1,
+    a: move[node].a,
+    a1: move[node].a1,
+    va: va,
+    spin: spins
+  };
+  move[node] = updated;
+  moves = clone(moves);
+  moves[propid][index] = resolve(move);
+  store.dispatch({type: "SET_MOVES", moves: moves});
   pushStoreState();
-  renderEngsine();
+  updateEngine();
 }
 
 function reducer(state, action) {
