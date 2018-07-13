@@ -180,6 +180,7 @@ class Transition extends React.Component {
   handleMouseDown = (e)=>{
     player.stop();
     this.setState({highlight: false});
+    this.props.validateTransition();
     this.props.setTop(this.props.propid);
     this.props.gotoTick(this.props.ticks);
     this.props.editTransition();
