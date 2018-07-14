@@ -1233,6 +1233,18 @@ let VS3D = {}; //
 			return {move: moves, tick: t, index: 0};
 		}
 	}
+
+	function elapsed(move, index) {
+		if (Array.isArray(move)) {
+			let past = 0;
+			for (let i=0; i<index; i++) {
+				past+=beats(move[i])*BEAT;
+			}
+			return past;
+		} else {
+			return 0;
+		}
+	}
 	
 // ****************************************************************************
 // ********************** Tools for building prefab moves *********************
@@ -1720,7 +1732,7 @@ function Player(renderer) {
 				document.body.removeChild(anchor);
 				window.URL.revokeObjectURL(url);
 			}, 0);
-		}
+		} 
 		return fname;
 	}
 
@@ -1767,6 +1779,7 @@ function Player(renderer) {
 	VS3D.beats = beats;
 	VS3D.flatten = flatten;
 	VS3D.submove = submove;
+	VS3D.elapsed = elapsed;
 	VS3D.fits = fits;
 	VS3D.fit = fit;
 	VS3D.matches = matches;

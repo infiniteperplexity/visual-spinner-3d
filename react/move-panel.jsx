@@ -36,7 +36,7 @@ class MovePanel extends React.Component {
     } else if (this.props.transition) {
       txt = "tick "+this.props.tick;
     } else {
-      txt = "tick "+this.props.tick+" to "+(this.props.tick+beats(move)*BEAT);
+      txt = "tick "+this.props.tick+" to "+(this.props.tick+beats(move)*BEAT-1);
       buttons = <div>
         <button>-</button>
         <input type="number" min="22.5" step="22.5" onChange={this.handleDurationChange} value={beats(move)*BEAT} />

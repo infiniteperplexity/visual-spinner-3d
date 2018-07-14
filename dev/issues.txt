@@ -65,7 +65,10 @@ Next up:
 	- Things are a bit confusing, if you create a transition where you're off a different angle from zero.
 	- Cumulative move width is very slightly off
 	- transition selection tick should say so explicitly
-	- dragging the other prop while in transition mode can get weird.
-	- should make it so you can do two transitions at once.
+	- don't show other prop if not at move break?
 	- We still see the occasional 0 spin label
-	- should record the last saved name.
+	- add .json to the end of save files
+	- show at some point what tick we are at?
+
+
+- Okay, now a differnet problem...we really need these things to line up by ending time, not beginning time.

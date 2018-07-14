@@ -15,7 +15,9 @@ let AppComponent = ReactRedux.connect(
 
       setTop: setTopPropById,
       setTopPropById: setTopPropById,
+      activateProp: activateProp,
       setActiveNode: setActiveNode,
+      propSelectAllowed: propSelectAllowed,
       
       // moving the node around 
       setNode: setNodePosition,

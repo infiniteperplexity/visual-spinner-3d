@@ -50,12 +50,53 @@ function setPropNodesByTick(tick) {
   if (tick===-1) {
     props = state.starters.map(s=>spin(s, 0))
   } else {
-    props = getMovesAtTick(tick).map(m=>dummy(m.move));
+    let moves = getMovesAtTick(tick);
+    let ticks = tick + beats(moves[getActivePropId()].move)*BEAT-1;
+    props = state.moves.map(m=>dummy(m, ticks));
+    // !!! This is better than it was, but we still need to have some way of preventing con
   }
   ;
   store.dispatch({type: "SET_PROPS", props: props});
   updateEngine();
 }
+
+function propSelectAllowed(propid) {
+  console.log(propid);
+  propid = parseInt(propid);
+  let active = getActivePropId();
+  if (propid===active) {
+    return true;
+  } else {
+    let {tick} = store.getState();
+    if (tick===-1) {
+      return true;
+    }
+    let moves = getMovesAtTick(tick);
+    let ticks = tick + beats(moves[active].move)*BEAT;
+    console.log(propid);
+    console.log(moves);
+    let past = elapsed(moves[propid].move, moves[propid].index);
+    // if the ending points of the two moves line up, say yes
+    if (past+beats(moves[propid].move)*BEAT===ticks) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+}
+
+function activateProp(propid) {
+  let {tick, moves, transition} = store.getState();
+  if (propid!==getActivePropId()) {
+    if (transition) {
+      validateTransition();
+      editTransition();
+    }
+  }
+  setTopPropById(propid);
+}
+
+
 function setTopPropById(propid) {
   store.dispatch({type: "SET_TOP", propid: propid});
 }

@@ -84,6 +84,16 @@ class PropNode extends React.Component {
     if (this.props.frozen) {
       return;
     }
+    if (!this.props.propSelectAllowed(this.props.propid)) {
+      let {move, index} = this.props.getMovesAtTick(this.props.tick)[this.props.propid];
+      // a slightly better thing to do w
+      let past = elapsed(this.props.moves[this.props.propid], index);
+      this.props.activateProp(this.props.propid);
+      this.props.gotoTick(past);
+      // successfully stopped the issue!
+      // some kind of warning, then?
+      return;
+    }
     if (Draggables[this.props.dragID].localState.dragging === null) { 
       this.localState.beingDragged = true;
       Draggables[this.props.dragID].localState.dragging = this;
@@ -104,14 +114,14 @@ class PropNode extends React.Component {
       _debounce = true;
       setTimeout(()=>(_debounce=false),0);
     }
-    this.props.setTop(this.props.propid);
+    this.props.activateProp(this.props.propid);
   }
   handleMouseUp = (event) => {
     if (this.props.frozen) {
       return;
     }
     event.preventDefault();
-    if (this.localState.beingDragged && !this.props.validate) {
+    if (this.localState.beingDragged && !this.props.validate && this.props.propSelectAllowed(this.props.propid)) {
       this.props.modifyMoveUsingNode({
         node: NODES[this.props.node],
         propid: this.props.propid,
