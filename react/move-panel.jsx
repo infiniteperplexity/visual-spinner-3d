@@ -252,6 +252,9 @@ function SpeedMeter(props, context) {
         speed = Math.round(Math.abs(vl));
         title += ", accelerating from speed " + speed;
       }
+    } else if (zeroish(vl)) {
+      speed = 0;
+      title = "0 rotations, speed 0";
     } else {
       speed = Math.round(Math.abs(vl));
       title += ", speed " + speed;
@@ -275,13 +278,15 @@ function SpeedMeter(props, context) {
   if (zeroish(spins)) {
     spinshape = null;
     if (vl!==undefined) {
-      spinshape = <polygon transform={"translate(11,21) rotate("+(la-90)+" 8 4)"} points={LINEAR} fill={color} stroke={stroke}/>;
-      spintext = null;
       if (zeroish(vl) && zeroish(vl1)) {
         accshape = null;
         acctext = null;
-      } else if (nearly(vl, vl1)) {
-        accshape = <polygon transform="translate(34,19)" points="0,0 0,12, 12,6" fill={color} stroke={stroke}/>;
+      } else {
+        if (nearly(vl, vl1)) {
+          accshape = <polygon transform="translate(34,19)" points="0,0 0,12, 12,6" fill={color} stroke={stroke}/>;
+        }
+        spinshape = <polygon transform={"translate(11,21) rotate("+(la-90)+" 8 4)"} points={LINEAR} fill={color} stroke={stroke}/>;
+        spintext = null;
       }
     }
   }
