@@ -218,6 +218,7 @@ function loadJSON(json) {
   }
 }
 
+
 function fileInput(callback) {
   let input = document.createElement("input");
   input.type = "file";
@@ -233,6 +234,7 @@ function fileInput(callback) {
     }
     if (files[0]) {
       reader.readAsText(files[0]);
+      _filename = files[0].name;
     }
   }
   document.body.appendChild(input);

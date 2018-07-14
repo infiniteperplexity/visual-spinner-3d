@@ -1701,13 +1701,14 @@ function Player(renderer) {
 		return move;
 	}
 
-	function save(obj) {
+	function save(obj, fname) {
+		fname = fname || "sequence.json";
 		let txt = (typeof(obj)==="string") ? obj : stringify(obj); 
 		let blob = new Blob([txt], {type : 'text/plain'});
 		let url = window.URL.createObjectURL(blob);
 		// window.open(url);
 		
-		let p = prompt("Enter name for saved file:","sequence.json");
+		let p = prompt("Enter name for saved file:",fname);
 		if (p) {
 			let anchor = document.createElement("a");
 			anchor.download = p;
@@ -1720,6 +1721,7 @@ function Player(renderer) {
 				window.URL.revokeObjectURL(url);
 			}, 0);
 		}
+		return fname;
 	}
 
 // ****************************************************************************

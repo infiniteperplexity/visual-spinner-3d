@@ -148,12 +148,13 @@ class MoveItem extends React.Component {
         onMouseDown={(e)=>this.handleMouseDown(e)}
         title={title}
         style={{
-          borderTopRightRadius: (this.props.ticks===-1) ? "50%" : "0",
-          borderBottomRightRadius: (this.props.ticks===-1) ? "50%" : "0",
+          borderRadius: (this.props.ticks===-1) ? "50%" : "0",
+          // borderTopRightRadius: (this.props.ticks===-1) ? "50%" : "0",
+          // borderBottomRightRadius: (this.props.ticks===-1) ? "50%" : "0",
           borderStyle: "solid",
           borderWidth: "1px",
           marginRight: (this.props.ticks===-1) ? "-1px" : "0",
-          marginLeft:(this.props.ticks===-1) ? "0" : (this.props.ticks===0) ? "1px" : "-11px",
+          marginLeft:(this.props.ticks===-1) ? "0" : (this.props.ticks===0) ? "3px" : "-11px",
           display: "inline-block",
           overflowX: "hidden",
           backgroundColor: (this.props.tick===this.props.ticks) ? "cyan" : "white"

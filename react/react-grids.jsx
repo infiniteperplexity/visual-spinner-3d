@@ -15,6 +15,7 @@ function handleDoubleClick() {
   setInterval(()=>(doubleClickHandled=false),0);
 }
 
+let _filename = "sequence";
 class App extends React.Component {
   componentDidMount() {
     afterReactMounts();
@@ -30,7 +31,7 @@ class App extends React.Component {
               return;
             }
             props.updateEngine();
-            save(player.props);
+            _filename=save(player.props, _filename);
           }}>Save</button>
           <ImportButton {...props} />
         </div>
@@ -56,6 +57,7 @@ class App extends React.Component {
 
 function Grid(props, context) {
   let stroke = "dimgray";
+  let dimmer = "#333333";
   let grid = [];
   for (let i=0; i<UNITS; i++) {
     let x = UNIT*i+HALF;
@@ -85,11 +87,10 @@ function Grid(props, context) {
     <DragSVG width={UNIT*UNITS} height={UNIT*UNITS} {...props}>
       <rect width={UNIT*UNITS} height={UNIT*UNITS} fill="black"/>
       {grid} 
-      <circle cx={X0} cy={Y0} r={HALF} fill="none" stroke={stroke} />,  
-      <circle cx={X0} cy={Y0} r={UNIT} fill="none" stroke={stroke} />
-      <circle cx={X0} cy={Y0} r={2*UNIT} fill="none" stroke={stroke} />
-      <line x1={0} y1={0} x2={UNIT*UNITS} y2={UNIT*UNITS} style={{stroke: stroke, strokeWidth: 1}}/>
-      <line x1={0} y1={UNIT*UNITS} x2={UNIT*UNITS} y2={0} style={{stroke: stroke, strokeWidth: 1}}/>
+      <line x1={0} y1={0} x2={UNIT*UNITS} y2={UNIT*UNITS} style={{stroke: dimmer, strokeWidth: 1}}/>
+      <line x1={0} y1={UNIT*UNITS} x2={UNIT*UNITS} y2={0} style={{stroke: dimmer, strokeWidth: 1}}/>
+      <circle cx={X0} cy={Y0} r={UNIT} fill="none" stroke={dimmer} />
+      <circle cx={X0} cy={Y0} r={2*UNIT} fill="none" stroke={dimmer} />
       <text x={X0} y={0.75*UNIT+tweak} textAnchor="middle" stroke={stroke} fill={stroke} style={{fontFamily: "monospace"}}>{top}</text>
       <text x={UNIT*(UNITS-0.5)} y={Y0+tweak} textAnchor="middle" stroke={stroke} fill={stroke} style={{fontFamily: "monospace"}}>{right}</text>
       <text x={X0} y={UNIT*(UNITS-0.5)+tweak} textAnchor="middle" stroke={stroke} fill={stroke} style={{fontFamily: "monospace"}}>{bottom}</text>

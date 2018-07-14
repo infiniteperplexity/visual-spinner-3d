@@ -66,3 +66,6 @@ Next up:
 	- Cumulative move width is very slightly off
 	- transition selection tick should say so explicitly
 	- dragging the other prop while in transition mode can get weird.
+	- should make it so you can do two transitions at once.
+	- We still see the occasional 0 spin label
+	- should record the last saved name.

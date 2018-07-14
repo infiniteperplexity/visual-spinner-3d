@@ -162,9 +162,24 @@ class PropNode extends React.Component {
       a = round(a, rounding);
       b = round(b, rounding);
       let v = sphere$vectorize({r: r, a: a, b: b});
-      x = v.x;
-      y = v.y;
-      z = v.z;
+      let x1 = v.x;
+      let y1 = v.y;
+      let z1 = v.z;
+      // alternate, grid-based rounding
+      let x2 = round(x, 0.5);
+      let y2 = round(y, 0.5);
+      let z2 = round(z, 0.5);
+      let d1 = (x1-x)*(x1-x)+(y1-y)*(y1-y)+(z1-z)*(z1-z);
+      let d2 = (x2-x)*(x2-x)+(y2-y)*(y2-y)+(z2-z)*(z2-z);
+      if ((this.props.node===HEAD && this.props.locks.head) || d1<=d2) {
+        x = x1;
+        y = y1;
+        z = z1;
+      } else {
+        x = x2;
+        y = y2;
+        z = z2;
+      }
       this.props.setNode({
         propid: this.props.propid,
         node: this.props.node,
@@ -253,10 +268,25 @@ class PropNode extends React.Component {
       marker = <NodeMarker x={X0} y={Y0} transform={trans} fill={this.props.color} dim={UNIT/20} tip={tip}/>;
     }
     let title = (this.props.tick) ? "drag to set starting "+NODES[this.props.node] : "drag to set next "+NODES[this.props.node]; 
+    let dimmer = "#333333";
+    let circles = null;
+    if (this.localState.beingDragged && !isNaN(x) && !isNaN(y)) {
+      let xc = round(X0-x,1);
+      let yc = round(Y0-y,1);
+      // I need some way to round this off to zero.
+      circles = 
+        <g>
+          <circle cx={xc} cy={yc} r={HALF} fill="none" stroke={dimmer} />  
+          <circle cx={xc} cy={yc} r={UNIT} fill="none" stroke={dimmer} />
+          <circle cx={xc} cy={yc} r={1.5*UNIT} fill="none" stroke={dimmer} />
+          <circle cx={xc} cy={yc} r={2*UNIT} fill="none" stroke={dimmer} />
+        </g>
+      ;
+    }
     return (
       <g 
         ref={(e)=>(this.element=e)}
-        transform={"translate("+x+","+y+")"}
+        transform={"translate("+round(x,1)+","+round(y,1)+")"}
         onDoubleClick={this.handleDoubleClick}
         onMouseDown={this.handleMouseDown}
         onMouseUp={this.handleMouseUp}
@@ -264,6 +294,7 @@ class PropNode extends React.Component {
         onMouseLeave={this.handleMouseLeave}
       >
         <title>{title}</title>
+        {circles}
         {tether}
         {shape}
         {child}
