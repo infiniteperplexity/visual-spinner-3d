@@ -74,3 +74,7 @@ Next up:
 - Okay, now a differnet problem...we really need these things to line up by ending time, not beginning time.
 - Make half a beat the minimum unit.
 - Fix the scrollbar thing.
+
+- get all the pushStates in there
+- If there's not a transition when you try to switch mves, go to move instead.
+	- basically, we need to really solidify the logic for activating a prop.

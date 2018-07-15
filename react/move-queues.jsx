@@ -1,20 +1,5 @@
-const KEYCODES = {
-  DELETE: 46,
-  BACKSPACE: 8
-}
 
 class MoveQueue extends React.Component {
-  componentWillMount = ()=>{
-    document.addEventListener("keydown", this.handleKeyDown.bind(this));
-  }
-  componentWillUnmount = ()=>{
-    document.removeEventListener("keydown", this.handleKeyDown.bind(this));
-  }
-  handleKeyDown = (e)=> {
-    if ([KEYCODES.DELETE, KEYCODES.BACKSPACE].includes(e.keyCode)) {
-      e.preventDefault();
-    }
-  }
   render() {
     if (parseInt(this.props.propid)>=this.props.props.length) {
       return null;
@@ -134,8 +119,8 @@ class MoveItem extends React.Component {
     let x1 = Math.cos(head.a1*VS3D.UNIT-Math.PI/2)*head.r1*this.TETHER;
     let y1 = Math.sin(head.a1*VS3D.UNIT-Math.PI/2)*head.r1*this.TETHER;
     ctx.fillStyle = bg;
-    if (this.props.tick>=this.props.ticks) {
-      if (this.props.tick===-1 || this.props.tick<(this.props.ticks+BEAT*beats(this.props.move))) {
+    if (this.props.tick2>=this.props.ticks) {
+      if (this.props.tick2===-1 || this.props.tick2<(this.props.ticks+BEAT*beats(this.props.move))) {
         if (!this.props.transition) {
           ctx.fillStyle = "cyan";
         } else {

@@ -5,66 +5,50 @@ let ACC = "8,4 0,2 0,6 8,4 8,0 16,4 8,8, 8,4";
 let DEC = "8,4 0,0 0,8 8,4 8,2 16,4 8,6, 8,4";
 let LINEAR = "0,2 8,2 8,0 16,4 8,8 8,6 0,6 0,2";
 
-class MoveHeader extends React.Component {
-  render() {
-    let propid = this.props.getActivePropId();
-    let move;
-    if (this.props.tick===-1) {
-      move = this.props.starters[propid];
-    } else if (this.props.moves[propid].length===0) {
-      // I don't think this ever happens
-      return null;
-    } else {
-      move = submove(this.props.moves[propid], this.props.tick).move;
-    }
-    let txt;
-    if (this.props.frozen) {
-      txt = "(should show something here)";
-    } else if (this.props.tick===-1) {
-      txt = "starting positions";
-    } else if (this.props.transition) {
-      txt = "custom transition at "+this.props.tick;
-    } else {
-      txt = "move starting from "+this.props.tick+" to "+(this.props.tick+beats(move)*BEAT);
-    }
-    return <div style={{
-      borderStyle: "solid",
-      borderColor: "lightgray",
-      borderWidth: "1px"
-    }}>{txt}</div>;
-  }
-}
-
 class DurationEditor extends React.Component {
+  handleDurationChange = (n)=>{
+    let {move} = this.props.getActiveMove();
+    let duration = beats(move)*BEAT;
+    this.props.setDuration({
+      propid: this.props.getActivePropId(),
+      ticks: duration+n*BEAT
+    });
+  }
+  handleDurationIncrease = ()=>{
+    this.handleDurationChange(0.5);
+  }
+  handleDurationDecrease = ()=>{
+    this.handleDurationChange(-0.5);
+  }
   render() {
     let propid = this.props.getActivePropId();
-    let move;
-    if (this.props.tick===-1 || this.props.transition) {
-      return <div/>;
-    } if (this.props.moves[propid].length===0) {
-      // I don't think this ever happens
-      return <div/>;
+    if (this.props.tick===-1) {
+      return <div>editing starting positions</div>;
+    } else if (this.props.transition) {
+      return <div>{"editing transition at tick "+this.props.tick+""}</div>;
     } else {
-      move = submove(this.props.moves[propid], this.props.tick).move;
+
+      let move;
+      if (this.props.tick===-1 || this.props.transition) {
+        return <div/>;
+      } if (this.props.moves[propid].length===0) {
+        // I don't think this ever happens
+        return <div/>;
+      } else {
+        move = submove(this.props.moves[propid], this.props.tick).move;
+      }
+      return (
+        <div>
+          {"editing move from tick "+this.props.tick+" to "+this.props.tick2}
+          <button title={"shorter"} onClick={this.handleDurationDecrease}>-</button>
+          {"("+beats(move)+" "+ ((beats(move)===1) ? "beat)" : "beats)")}
+          <button title={"longer"} onClick={this.handleDurationIncrease}>+</button>
+        </div>
+      );
     }
-    let duration = beats(move)+ " beats (" + beats(move)*BEAT  + " ticks)";
-    return (
-      <div>
-        {"move duration"}
-        <button>-</button>
-        {duration}
-        <button>+</button>
-      </div>
-    );
   }
 }
 class MovePanel extends React.Component {
-  handleDurationChange = (e)=>{
-    this.props.setDuration({
-      propid: this.props.getActivePropId(),
-      ticks: round(e.target.value,0.5)
-    });
-  }
   render() {
     let propid = this.props.getActivePropId();
     let move;

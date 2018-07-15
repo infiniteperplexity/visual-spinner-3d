@@ -1721,6 +1721,9 @@ function Player(renderer) {
 		// window.open(url);
 		
 		let p = prompt("Enter name for saved file:",fname);
+		if (p.length<5 || p.substring(p.length-5)!==".json") {
+			p = p+".json";
+		}
 		if (p) {
 			let anchor = document.createElement("a");
 			anchor.download = p;

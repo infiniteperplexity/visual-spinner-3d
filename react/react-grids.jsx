@@ -15,7 +15,6 @@ function handleDoubleClick() {
   setInterval(()=>(doubleClickHandled=false),0);
 }
 
-let _filename = "sequence";
 class App extends React.Component {
   componentDidMount() {
     afterReactMounts();
@@ -32,24 +31,22 @@ class App extends React.Component {
                 return;
               }
               props.updateEngine();
-              _filename=save(player.props, _filename);
+              setFileName(save(player.props, this.props.filename));
             }}>Save</button>
             <ImportButton {...props} />
             <span style={{
-              textAlign: "center"
-            }}>_ _ _ project_name.json</span>
+              paddingLeft: "25px"
+            }}>{this.props.filename}</span>
           </div>
-          <MoveHeader {...this.props}/>
-          <div>
-            display header goes here
-          </div>
+          <div />
+          <div />
         </div>
         <div className="grid top">
           <Grid dragID="SVG" {...props} />
           <MovePanel className="frame" {...props} />
           <div id="display"/>
-          <PlaneMenu {...props}/>
           <DurationEditor {...props}/>
+          <PlaneMenu {...props}/>
           <ControlPanel {...props} />
         </div>
         <div className="grid bottom" style={{

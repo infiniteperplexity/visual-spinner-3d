@@ -5,6 +5,7 @@ let AppComponent = ReactRedux.connect(
     getActiveProp: getActiveProp,
     getActivePropId: getActivePropId,
     getMovesAtTick: getMovesAtTick,
+    getActiveMove: getActiveMove,
     ...state
   }),
   (dispatch)=>({
@@ -40,6 +41,8 @@ let AppComponent = ReactRedux.connect(
       modifySpins: modifySpins,
       modifyAcceleration: modifyAcceleration,
 
+      deleteMove: deleteMove,
+
       setColors: setColors,
       setPlane: setPlane,
       setLock: setLock,
@@ -56,11 +59,13 @@ let AppComponent = ReactRedux.connect(
 function reducer(state, action) {
   if (state === undefined) {
     return {
+      filename: "sequence.json",
       props: clone(player.props.map(p=>p.prop)),
       moves: clone(player.props.map(p=>p.moves)),
       colors: clone(COLORS),
       starters: player.props.map(p=>resolve(fit(p.prop, new Move({beats: 0})))),
-      tick: 0,
+      tick: -1,
+      tick2: -1,
       order: player.props.map((_,i)=>(player.props.length-i-1)),
       activeNode: null,
       plane: "WALL",
@@ -82,6 +87,8 @@ function reducer(state, action) {
   switch (action.type) {
     case "SET_STATE":
       return action.state;
+    case "SET_FILENAME":
+      return {...state, filename: action.filename};
     case "SET_TICK":
       if (action.tick!==-1) {
         for (let move of state.moves) {
@@ -91,6 +98,15 @@ function reducer(state, action) {
         }
       }
       return {...state, tick: action.tick};
+    case "SET_TICK2":
+      if (action.tick2!==-1) {
+        for (let move of state.moves) {
+          if (move.length===0) {
+            return state;
+          }
+        }
+      }
+      return {...state, tick2: action.tick2};
     case "SET_TOP":
       let order = [...state.order];
       let propid = parseInt(action.propid);

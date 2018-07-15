@@ -1,11 +1,28 @@
+
+function getActiveMove() {
+  let propid = getActivePropId();
+  let {moves, tick} = store.getState();
+  console.log(moves[propid]);
+  console.log(tick);
+  return submove(moves[propid], tick);
+}
+
 // might rename to just apply to the UI
 function gotoTick(tick) {
   validateTransition();
   store.dispatch({type: "SET_TICK", tick: tick});
-  setPropNodesByTick(tick);
+  let tick2 = -1;
+  if (tick!==-1) {
+    let {move} = getActiveMove();
+    tick2 = tick+beats(move)*BEAT-1;
+    store.dispatch({type: "SET_TICK2", tick2: tick2});
+  } 
+  setPropNodesByTick(tick2);
   updateEngine();
   validateLocks();
 }
+
+
 
 /*** Update rendering on the VS3D engine, based on the store state ***/
 function renderEngine() {
@@ -51,9 +68,7 @@ function setPropNodesByTick(tick) {
     props = state.starters.map(s=>spin(s, 0))
   } else {
     let moves = getMovesAtTick(tick);
-    let ticks = tick + beats(moves[getActivePropId()].move)*BEAT-1;
-    props = state.moves.map(m=>dummy(m, ticks));
-    // !!! This is better than it was, but we still need to have some way of preventing con
+    props = state.moves.map(m=>dummy(m, tick));
   }
   ;
   store.dispatch({type: "SET_PROPS", props: props});
@@ -90,6 +105,11 @@ function activateProp(propid) {
   if (propid!==getActivePropId()) {
     if (transition) {
       validateTransition();
+      // !!! so...this is where we need to not do it if the timing is wrong
+      // what we want to check is...whether we're at a move endpoint.  how do?
+      let move = getActiveMove();
+      // we're going to be at the same tick and tick2 as before, right?
+      //wait...shouldn't this be able to change times?
       editTransition();
     }
   }
@@ -198,6 +218,9 @@ function validateLocks() {
   store.dispatch({type: "SET_LOCKS", locks: locks});
 }
 
+function setFileName(fname) {
+  store.dispatch({type: "SET_FILENAME", filename: filename});
+}
 function loadJSON(json) {
   let saveState = clone(store.getState());
   let savedProps = clone(player.props);
@@ -275,7 +298,7 @@ function fileInput(callback) {
     }
     if (files[0]) {
       reader.readAsText(files[0]);
-      _filename = files[0].name;
+      setFileName(files[0].name);
     }
   }
   document.body.appendChild(input);

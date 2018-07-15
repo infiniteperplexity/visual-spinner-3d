@@ -86,12 +86,11 @@ class PropNode extends React.Component {
     }
     if (!this.props.propSelectAllowed(this.props.propid)) {
       let {move, index} = this.props.getMovesAtTick(this.props.tick)[this.props.propid];
-      // a slightly better thing to do w
+      // does this handle transitions okay?
+      // does this get weird?  maybe we should move this logic into activateProp.  Yeah, I think so.
       let past = elapsed(this.props.moves[this.props.propid], index);
       this.props.activateProp(this.props.propid);
       this.props.gotoTick(past);
-      // successfully stopped the issue!
-      // some kind of warning, then?
       return;
     }
     if (Draggables[this.props.dragID].localState.dragging === null) { 

@@ -125,7 +125,6 @@ function modifyMoveUsingNode({node, propid}) {
 }
 
 function setDuration({propid, ticks}) {
-
   let {moves, tick} = store.getState();
   let {move, index} = getMovesAtTick(tick)[propid];
   if (beats(move)*BEAT===ticks) {
@@ -260,6 +259,7 @@ function validateTransition() {
   let {transition, transitions, tick, moves, props, order} = store.getState();
   if (transition) {
     let propid = order[order.length-1];
+    // this gets messed up only if you get into an invalid transition state
     let {move, index} = submove(moves[propid], tick);
     let previous = moves[propid][index-1];
     let position = dummy(props[propid],0);
@@ -324,6 +324,32 @@ function validateTransition() {
   }
 }
 
+function deleteTransition() {
+  let propid = getActivePropId();
+  let {transitions, moves, tick} = store.getState();
+  transitions = clone(transitions);
+  delete transitions[propid][index];
+  store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
+  let {move, index} = getActiveMove();
+  move = clone(move);
+  let position = moves[propid][index-1];
+  NODES.map(node=>{
+    // don't overwrite the next node unless necessary
+    if (!(nearly(position[node].r, move[node].r) && nearly(position[node].a, move[node].a))) {
+      //try to keep spins?
+      move[node] = {
+        r: position[node].r,
+        r1: move[node].r1,
+        a: position[node].a,
+        a1: move[node].a1
+      };
+    }
+  });    
+  moves = clone(moves);
+  moves[propid][index] = resolve(move);
+  store.dispatch({type: "SET_MOVES", moves: moves});
+}
+
 function validateSequences() {
   let {props, moves, transitions} = store.getState();
   moves = clone(moves);
@@ -354,3 +380,36 @@ function validateSequences() {
   store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
 }
 
+function deleteMove() {
+  let {moves, transitions, starters} = store.getState();
+  let propid = getActivePropId();
+  let {index} = getActiveMove();
+  if (transitions[propid][index]) {
+    transitions = clone(transitions);
+    delete transitions[propid][index];
+    store.dispatch({type: "SET_TRANSITIONS", transitions: tranistions});
+  }  
+  moves = clone(moves);
+  moves[propid] = moves[propid].filter((_,i)=>(i!==index));
+  if (index<moves[propid].length-1) {
+    let first;
+    if (index===0) {
+      first = starters[propid];
+    } else {
+      first = moves[propid][index-1];
+    }
+    let second = moves[propid][index];
+    for (let node of NODES) {
+      // keep spins?
+      second[node] = {
+        a: first[node].a1,
+        a1: second[node].a1,
+        r: first[node].r1,
+        r1: second[node].r1
+      }
+    }
+    second = resolve(second);
+    moves[propid][index] = second;
+  }
+  store.dispatch({type: "SET_MOVES", moves: moves});''
+}
