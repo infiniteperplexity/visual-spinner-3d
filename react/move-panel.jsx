@@ -5,6 +5,59 @@ let ACC = "8,4 0,2 0,6 8,4 8,0 16,4 8,8, 8,4";
 let DEC = "8,4 0,0 0,8 8,4 8,2 16,4 8,6, 8,4";
 let LINEAR = "0,2 8,2 8,0 16,4 8,8 8,6 0,6 0,2";
 
+class MoveHeader extends React.Component {
+  render() {
+    let propid = this.props.getActivePropId();
+    let move;
+    if (this.props.tick===-1) {
+      move = this.props.starters[propid];
+    } else if (this.props.moves[propid].length===0) {
+      // I don't think this ever happens
+      return null;
+    } else {
+      move = submove(this.props.moves[propid], this.props.tick).move;
+    }
+    let txt;
+    if (this.props.frozen) {
+      txt = "(should show something here)";
+    } else if (this.props.tick===-1) {
+      txt = "starting positions";
+    } else if (this.props.transition) {
+      txt = "custom transition at "+this.props.tick;
+    } else {
+      txt = "move starting from "+this.props.tick+" to "+(this.props.tick+beats(move)*BEAT);
+    }
+    return <div style={{
+      borderStyle: "solid",
+      borderColor: "lightgray",
+      borderWidth: "1px"
+    }}>{txt}</div>;
+  }
+}
+
+class DurationEditor extends React.Component {
+  render() {
+    let propid = this.props.getActivePropId();
+    let move;
+    if (this.props.tick===-1 || this.props.transition) {
+      return <div/>;
+    } if (this.props.moves[propid].length===0) {
+      // I don't think this ever happens
+      return <div/>;
+    } else {
+      move = submove(this.props.moves[propid], this.props.tick).move;
+    }
+    let duration = beats(move)+ " beats (" + beats(move)*BEAT  + " ticks)";
+    return (
+      <div>
+        {"move duration"}
+        <button>-</button>
+        {duration}
+        <button>+</button>
+      </div>
+    );
+  }
+}
 class MovePanel extends React.Component {
   handleDurationChange = (e)=>{
     this.props.setDuration({
@@ -39,7 +92,9 @@ class MovePanel extends React.Component {
       txt = "tick "+this.props.tick+" to "+(this.props.tick+beats(move)*BEAT-1);
       buttons = <div>
         <button>-</button>
-        <input type="number" min="22.5" step="22.5" onChange={this.handleDurationChange} value={beats(move)*BEAT} />
+        <input style={{
+          width: "25px"
+        }} type="number" min="22.5" step="22.5" onChange={this.handleDurationChange} value={beats(move)*BEAT} />
         <button>+</button>
       </div>;
     }
@@ -52,14 +107,21 @@ class MovePanel extends React.Component {
     // placeholder
     // duration = <div>(duration info will go here)</div>;
     return (
-      <div style={{color: "lightgray"}} className="grid movepanel">
-        {duration}
+      <div style={{
+        color: "lightgray",
+        border: "solid",
+        borderWidth: "1px",
+        paddingTop: "5px",
+        paddingLeft: "5px",
+        marginBottom: "9px"
+      }} className="grid movepanel">
         <MoveControl node="head" move={move} propid={propid} {...this.props}/>
         <MoveControl node="grip" move={move} propid={propid} {...this.props}/>
         <MoveControl node="hand" move={move} propid={propid} {...this.props}/>
         <MoveControl node="helper" move={move} propid={propid} {...this.props}/>
         <MoveControl node="pivot" move={move} propid={propid} {...this.props}/>
         <MoveControl node="body" move={move} propid={propid} {...this.props}/>
+        <div>bend twist</div>
       </div>
     );
   }

@@ -21,7 +21,26 @@ class MoveQueue extends React.Component {
     }
     let moves = this.props.moves[this.props.propid];
     let ticks = 0;
-    let list = [<MoveItem key={-1} ticks={-1} move={this.props.starters[this.props.propid]} {...this.props}/>];
+    let list = [
+      <PropPanel key={-2}>
+        <ColorPicker {...this.props}/>
+        <br />
+        <select>
+          <option>Poi</option>
+          <option>Staff</option>
+          <option>Hoop</option>
+          <option>Fan</option>
+        </select>
+        <br />
+        <button>&lt;</button>
+        <button>&gt;</button>
+        <br />
+        <button>+</button>
+        <button>-</button>
+        <button>*</button>
+      </PropPanel>
+    ];
+    list.push(<MoveItem key={-1} ticks={-1} move={this.props.starters[this.props.propid]} {...this.props}/>);
     // push the half-things onto here...
     for (let i=0; i<moves.length; i++) {
       if (i>0) {
@@ -33,8 +52,6 @@ class MoveQueue extends React.Component {
     list.push(
       <div key={list.length} style={{verticalAlign: "top", display: "inline-block"}}>
         <NewMove {...this.props}/>
-        <br />
-        <ColorPicker {...this.props}/>
       </div>
     );
     return (
@@ -67,6 +84,17 @@ class NewMove extends React.Component {
   }
 }
 
+class PropPanel extends React.Component {
+  render() {
+    return <div style={{
+      height: "90px",
+      display: "inline-block",
+      verticalAlign: "top"
+    }}>
+      {this.props.children}
+    </div>
+  }
+}
 class MoveItem extends React.Component {
   constructor(props, context) {
     super(props, context);
@@ -148,13 +176,11 @@ class MoveItem extends React.Component {
         onMouseDown={(e)=>this.handleMouseDown(e)}
         title={title}
         style={{
-          borderRadius: (this.props.ticks===-1) ? "50%" : "0",
-          // borderTopRightRadius: (this.props.ticks===-1) ? "50%" : "0",
-          // borderBottomRightRadius: (this.props.ticks===-1) ? "50%" : "0",
+          borderRadius: (this.props.ticks===-1) ? "50%" : "10%",
           borderStyle: "solid",
           borderWidth: "1px",
           marginRight: (this.props.ticks===-1) ? "-1px" : "0",
-          marginLeft:(this.props.ticks===-1) ? "0" : (this.props.ticks===0) ? "3px" : "-11px",
+          marginLeft:(this.props.ticks===-1) ? "0" : (this.props.ticks===0) ? "1px" : "-9.5px",
           display: "inline-block",
           overflowX: "hidden",
           backgroundColor: (this.props.tick===this.props.ticks) ? "cyan" : "white"
@@ -213,7 +239,7 @@ class Transition extends React.Component {
           borderStyle: "solid",
           borderWidth: "1px",
           marginBottom: this.margin+"px",
-          left: "-6.25px",
+          left: "-5.25px",
           display: "inline-block",
           overflowX: "hidden",
           position: "relative",

@@ -24,30 +24,45 @@ class App extends React.Component {
     let props = this.props;
     return (
       <div className="grid app" style={{height: "720px"}}>
-        <div style={{float: "right"}}>
-          <button onClick={(e)=>{
-            e.preventDefault();
-            if (this.props.frozen) {
-              return;
-            }
-            props.updateEngine();
-            _filename=save(player.props, _filename);
-          }}>Save</button>
-          <ImportButton {...props} />
+        <div className="grid header">
+          <div>
+            <button onClick={(e)=>{
+              e.preventDefault();
+              if (this.props.frozen) {
+                return;
+              }
+              props.updateEngine();
+              _filename=save(player.props, _filename);
+            }}>Save</button>
+            <ImportButton {...props} />
+            <span style={{
+              textAlign: "center"
+            }}>_ _ _ project_name.json</span>
+          </div>
+          <MoveHeader {...this.props}/>
+          <div>
+            display header goes here
+          </div>
         </div>
         <div className="grid top">
           <Grid dragID="SVG" {...props} />
-          <div id="display"/>
           <MovePanel className="frame" {...props} />
+          <div id="display"/>
           <PlaneMenu {...props}/>
+          <DurationEditor {...props}/>
           <ControlPanel {...props} />
-          <div />
         </div>
-        <div className="grid bottom">
-        <MoveQueue propid="0" {...props}/>
-        <MoveQueue propid="1" {...props}/>
-        <MoveQueue propid="2" {...props}/>
-        <MoveQueue propid="3" {...props}/>
+        <div className="grid bottom" style={{
+          borderStyle: "solid",
+          borderWidth: "1px",
+          marginTop: "15px",
+          padding: "5px",
+          color: "dimgray"
+        }}>
+          <MoveQueue propid="0" {...props}/>
+          <MoveQueue propid="1" {...props}/>
+          <MoveQueue propid="2" {...props}/>
+          <MoveQueue propid="3" {...props}/>
         </div>
       </div>
       

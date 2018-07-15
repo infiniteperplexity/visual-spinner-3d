@@ -6,10 +6,13 @@
       .grid {
         display: grid;
         grid-column-gap: 3px;
-        grid-row-gap: 3px;
+        grid-row-gap: 0px;
       }
       .app {
-        grid-template-rows: 25px 385px 350px;
+        grid-template-rows: 25px 385px auto;
+      }
+      .header {
+        grid-template-columns: 350px 350px auto;
       }
       .top {
         grid-template-columns: 350px 350px auto;

@@ -72,3 +72,5 @@ Next up:
 
 
 - Okay, now a differnet problem...we really need these things to line up by ending time, not beginning time.
+- Make half a beat the minimum unit.
+- Fix the scrollbar thing.
