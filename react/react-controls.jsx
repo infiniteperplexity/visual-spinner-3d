@@ -15,7 +15,7 @@ class ControlPanel extends React.Component {
     player.goto(this.props.tick);
     player.play();
   }
-  handlePause = (e)=>{
+  handlePause = (e)=>{  
     e.preventDefault();
     this.props.setFrozen(false);
     // probably want to gotoTick...

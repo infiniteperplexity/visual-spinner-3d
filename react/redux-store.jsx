@@ -82,7 +82,7 @@ function reducer(state, action) {
     };
   }
   // if (!["SET_TICK","SET_TOP","SET_PROPS"].includes(action.type)) {
-    console.log(action);
+  //   console.log(action);
   // }
   switch (action.type) {
     case "SET_STATE":

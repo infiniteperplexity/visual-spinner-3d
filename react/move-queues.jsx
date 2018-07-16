@@ -146,6 +146,28 @@ class MoveItem extends React.Component {
     ctx.stroke();
     ctx.fill();
   }
+  handleDragStart =(e)=>{
+    let json = {hello: "world"};
+    e.dataTransfer.setData("text", JSON.stringify(json));
+  }
+  handleDragOver =(e)=>{
+    // allow drop
+    e.preventDefault();
+    this.renderContext("cyan");
+    // maybe do cyan background as visual indicator
+  }
+  handleDragLeave = (e)=>{
+    e.preventDefault();
+    this.renderContext("white");
+    // remove the visual indicator
+
+  }
+  handleDrop = (e)=>{
+    e.preventDefault();
+    let json = e.dataTransfer.getData("text");
+    JSON.parse(json);
+    // insert move after target
+  }
   render() {
     let move = this.props.move;
     let width = this.WIDTH*beats(this.props.move);
@@ -156,6 +178,11 @@ class MoveItem extends React.Component {
     }
     let canv = (
       <canvas ref={c=>this.canvas=c} height={this.WIDTH} width={width}
+        draggable={"true"}
+        onDragStart={this.handleDragStart}
+        onDragOver={this.handleDragOver}
+        onDragLeave={this.handleDragLeave}
+        onDrop={this.handleDrop}
         onMouseEnter={(e)=>this.handleMouseEnter(e)}
         onMouseLeave={(e)=>this.handleMouseLeave(e)}
         onMouseDown={(e)=>this.handleMouseDown(e)}
@@ -175,7 +202,6 @@ class MoveItem extends React.Component {
     return canv;
   }
 }
-
 class Transition extends React.Component {
   constructor(props, context) {
     super(props, context);

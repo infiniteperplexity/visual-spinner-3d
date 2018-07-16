@@ -22,24 +22,32 @@ class DurationEditor extends React.Component {
   }
   render() {
     let propid = this.props.getActivePropId();
-    if (this.props.tick===-1) {
+    // want to align this to start of move
+    let tick = this.props.tick;
+    let tick2 = this.props.tick2;
+    if (tick!==-1) {
+      let {move, index} = getActiveMove();
+      tick = elapsed(this.props.moves[propid], index);
+      tick2 = tick + beats(move)*BEAT-1;
+    }
+    if (tick===-1) {
       return <div>editing starting positions</div>;
     } else if (this.props.transition) {
-      return <div>{"editing transition at tick "+this.props.tick+""}</div>;
+      return <div>{"editing transition at tick "+tick+""}</div>;
     } else {
 
       let move;
-      if (this.props.tick===-1 || this.props.transition) {
+      if (tick===-1 || this.props.transition) {
         return <div/>;
       } if (this.props.moves[propid].length===0) {
         // I don't think this ever happens
         return <div/>;
       } else {
-        move = submove(this.props.moves[propid], this.props.tick).move;
+        move = submove(this.props.moves[propid], tick).move;
       }
       return (
         <div>
-          {"editing move from tick "+this.props.tick+" to "+this.props.tick2}
+          {"editing move from tick "+tick+" to "+tick2}
           <button title={"shorter"} onClick={this.handleDurationDecrease}>-</button>
           {"("+beats(move)+" "+ ((beats(move)===1) ? "beat)" : "beats)")}
           <button title={"longer"} onClick={this.handleDurationIncrease}>+</button>

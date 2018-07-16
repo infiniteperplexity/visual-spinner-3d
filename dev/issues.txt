@@ -78,3 +78,12 @@ Next up:
 - get all the pushStates in there
 - If there's not a transition when you try to switch mves, go to move instead.
 	- basically, we need to really solidify the logic for activating a prop.
+
+- may need to refactor those setTick checks out of existence.
+
+
+-Ugh, so several big next steps:
+	- pushStates.
+	- UI display during play.
+	- solidify logic for activating a prop.
+	- drag to copy.

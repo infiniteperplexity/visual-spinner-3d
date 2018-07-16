@@ -36,6 +36,7 @@ function addMovesToEnd(propid) {
 /********** Modify a move by dragging and dropping a node ******************************/
 /***************************************************************************************/
 function modifyMoveUsingNode({node, propid}) {
+  player.stop();
   propid = parseInt(propid);
   const ROUNDMIN = 0.2;
   pushStoreState();
@@ -125,6 +126,8 @@ function modifyMoveUsingNode({node, propid}) {
 }
 
 function setDuration({propid, ticks}) {
+  player.stop();
+  pushStoreState();
   let {moves, tick} = store.getState();
   let {move, index} = getMovesAtTick(tick)[propid];
   if (beats(move)*BEAT===ticks) {
@@ -150,6 +153,8 @@ function setDuration({propid, ticks}) {
 /********** Modify rotations using panel buttons ***************************************/
 /***************************************************************************************/
 function modifySpins({propid, node, n}) {
+  player.stop();
+  pushStoreState();
   const BOUNDS = 2;
   let {tick, moves} = store.getState();
   let {move, index} = submove(moves[propid], tick);
@@ -199,6 +204,8 @@ function modifySpins({propid, node, n}) {
 /********** Modify acceleration using panel buttons ************************************/
 /***************************************************************************************/
 function modifyAcceleration({propid, node, n}) {
+  player.stop();
+  pushStoreState();
   let BOUNDS = 8;
   // make sure we align to the beginning of the move
   let {tick, moves} = store.getState();
@@ -267,6 +274,7 @@ function validateTransition() {
       if (!transitions[propid][index]) {
         console.log("The transition perfectly matches the end of the preceding move and will be discarded.");
       } else {
+        pushStoreState();
         // undo the custom transition
         console.log("The transition perfectly matches the end of the preceding move, so it will be deleted.");
         transitions = clone(transitions);
@@ -290,6 +298,7 @@ function validateTransition() {
         store.dispatch({type: "SET_MOVES", moves: moves});
       }
     } else if (fits(previous, position, 0.1)) {
+      pushStoreState();
       console.log("The transition is an acceptable fit to the end of the preceding move and will be accepted.");
       transitions = clone(transitions);
       let transition = {};
@@ -325,6 +334,8 @@ function validateTransition() {
 }
 
 function deleteTransition() {
+  player.stop();
+  pushStoreState();
   let propid = getActivePropId();
   let {transitions, moves, tick} = store.getState();
   transitions = clone(transitions);
@@ -381,6 +392,8 @@ function validateSequences() {
 }
 
 function deleteMove() {
+  player.stop();
+  pushStoreState();
   let {moves, transitions, starters} = store.getState();
   let propid = getActivePropId();
   let {index} = getActiveMove();

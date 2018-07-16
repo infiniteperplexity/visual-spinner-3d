@@ -2,8 +2,6 @@
 function getActiveMove() {
   let propid = getActivePropId();
   let {moves, tick} = store.getState();
-  console.log(moves[propid]);
-  console.log(tick);
   return submove(moves[propid], tick);
 }
 
@@ -14,14 +12,25 @@ function gotoTick(tick) {
   let tick2 = -1;
   if (tick!==-1) {
     let {move} = getActiveMove();
-    tick2 = tick+beats(move)*BEAT-1;
-    store.dispatch({type: "SET_TICK2", tick2: tick2});
-  } 
+    tick2 = tick+beats(move)*BEAT-1; 
+  }
+  store.dispatch({type: "SET_TICK2", tick2: tick2});
   setPropNodesByTick(tick2);
   updateEngine();
   validateLocks();
 }
 
+
+let _playerCache;
+function playEngineTick(tick, props, positions) {
+  if (tick===-1) {
+    return;
+  }
+  panelTicks.value = tick;
+  // slowly refactor this to perfection
+  renderer.render(props, positions);
+  // should I just update this once every half beat instead of checking complicated stuff?
+}
 
 
 /*** Update rendering on the VS3D engine, based on the store state ***/
@@ -219,7 +228,7 @@ function validateLocks() {
 }
 
 function setFileName(fname) {
-  store.dispatch({type: "SET_FILENAME", filename: filename});
+  store.dispatch({type: "SET_FILENAME", filename: fname});
 }
 function loadJSON(json) {
   let saveState = clone(store.getState());

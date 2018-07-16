@@ -30,11 +30,8 @@ function afterReactMounts() {
 	renderer = new VS3D.ThreeRenderer(document.getElementById("display"), 350, 350);
 	panelTicks = document.getElementById("panelTicks");
 	player.update = function(positions) {
-		renderer.render(this.props, positions);
-		store.dispatch({type: "SET_TICK", tick: this.tick});
-		panelTicks.value = this.tick;
+		playEngineTick(this.tick, this.props, positions);
 	}
-
 	gotoTick(-1);
 	renderEngine();
 	let controls = new VS3D.Controls(player);
