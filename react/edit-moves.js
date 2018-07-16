@@ -426,3 +426,43 @@ function deleteMove() {
   }
   store.dispatch({type: "SET_MOVES", moves: moves});''
 }
+
+function insertNewMove() {
+  let propid = getActivePropId();
+  let {moves, starters, tick2} = store.getState();
+  moves = clone(moves);
+  if (tick2===-1) {
+    let starter = starters[propid];
+    let created = {
+      beats: 1
+    };
+    NODES.map(node=>{
+      created[node] = {
+        a: starter[node].a1,
+        a1: starter[node].a1,
+        r: starter[node].r1,
+        r1: starter[node].r1
+      }
+    });
+    moves[propid].unshift(created);
+  } else {
+    let {move, index} = getActiveMove();
+    let created = {
+      beats: 1;
+    };
+    NODES.map(node=>{
+      created[node] = {
+        a: move[node].a1,
+        a1: move[node].a1,
+        r: move[node].r1,
+        r1: move[node].r1
+      }
+    });
+    moves.splice(index, 0, created);
+  }
+  store.dispatch({type: "SET_MOVES", moves: moves});
+}
+
+function copyDraggedMove() {
+  
+}
