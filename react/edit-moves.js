@@ -469,7 +469,6 @@ function insertNewMove() {
 function copyDraggedMove(move, propid, i) {
   let {moves, starters} = store.getState();
   moves = clone(moves);
-  console.log(i);
   let previous = (i===-1) ? starters[propid] : moves[propid][i];
   NODES.map(node=>{
     // shouldn't mess with nodes if we don't have to

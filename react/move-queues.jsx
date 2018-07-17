@@ -167,7 +167,6 @@ class MoveItem extends React.Component {
     let json = e.dataTransfer.getData("text");
     let move = JSON.parse(json);
     // insert move after target
-    alert("inserting move at "+parseInt(this.props.n));
     this.props.copyDraggedMove(move, this.props.propid, parseInt(this.props.n));
     // probably goto that tick as well?
     //this.props.gotoTick(this.props.tick+beats(this.props.move)*BEAT);
