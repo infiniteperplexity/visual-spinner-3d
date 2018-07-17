@@ -21,15 +21,34 @@ function gotoTick(tick) {
 }
 
 
-let _playerCache;
-function playEngineTick(tick, props, positions) {
+
+let _cusps = {};
+let _cusps2 = [];
+function playEngineTick(tick, wrappers, positions) {
   if (tick===-1) {
-    return;
+    tick = 0;
   }
   panelTicks.value = tick;
-  // slowly refactor this to perfection
-  renderer.render(props, positions);
-  // should I just update this once every half beat instead of checking complicated stuff?
+  if (_cusps[tick]) {
+    store.dispatch({type: "SET_TICK", tick: tick});
+    let index = _cusps2.indexOf(tick);
+    let next = (index>=_cusps2.length-1) ? tick : _cusps2[index+1];
+    store.dispatch({type: "SET_TICK2", tick2: next-1});
+    setPropNodesByTick(next);
+  }
+  let {moves, tick2, props} = store.getState();
+  if (tick2===-1) {
+    tick2 = 0;
+  }
+  let ends = props.map((_,i)=>spin(moves[i],tick2));
+  positions = positions.concat(ends);
+  let endwraps = clone(wrappers);
+  endwraps.map(e=>{
+    e.nudge = -e.nudge;
+    e.alpha = 0.6;
+  });
+  wrappers = wrappers.concat(endwraps);
+  renderer.render(wrappers, positions);
 }
 
 
@@ -54,6 +73,7 @@ function renderEngine() {
   }
 }
 
+
 function updateEngine() {
   let {moves, props, starters} = store.getState();
   for (let i=0; i<moves.length; i++) {
@@ -64,6 +84,23 @@ function updateEngine() {
     player.props[i].fitted = player.props[i].moves;
   }
   renderEngine();
+  _cusps = {};
+  _cusps2 = [];
+  for (let sequence of moves) {
+    let past = 0;
+    _cusps[past] = true;
+    if (!_cusps2.includes(past)) {
+      _cusps2.push(past);
+    }
+    for (let move of sequence) {
+      past+=beats(move)*BEAT;
+      _cusps[past] = true;
+      if (!_cusps2.includes(past)) {
+        _cusps2.push(past);
+      }
+    }
+  }
+  _cusps2.sort((a,b)=>(a-b));
 }
 
 function getMovesAtTick(tick) {
@@ -85,7 +122,6 @@ function setPropNodesByTick(tick) {
 }
 
 function propSelectAllowed(propid) {
-  console.log(propid);
   propid = parseInt(propid);
   let active = getActivePropId();
   if (propid===active) {

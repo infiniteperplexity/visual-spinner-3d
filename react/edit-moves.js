@@ -448,7 +448,7 @@ function insertNewMove() {
   } else {
     let {move, index} = getActiveMove();
     let created = {
-      beats: 1;
+      beats: 1
     };
     NODES.map(node=>{
       created[node] = {

@@ -87,3 +87,5 @@ Next up:
 	- UI display during play.
 	- solidify logic for activating a prop.
 	- drag to copy.
+
+- It basically plays right now, but it doesn't FF or rewind right.

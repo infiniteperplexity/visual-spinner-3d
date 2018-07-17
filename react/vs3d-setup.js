@@ -18,7 +18,7 @@ const ANGLES = [LEFT, RIGHT];
 
 let	player = new VS3D.Player();
 player.speed = 1;
-player.rate = 2;
+player.rate = 1;
 for (let i=0; i<NPROPS; i++) {
 	let prop = player.addProp(new VS3D.Prop(), {color: COLORS[i]});
 	prop.setHeadAngle(ANGLES[i]);
@@ -36,5 +36,3 @@ function afterReactMounts() {
 	renderEngine();
 	let controls = new VS3D.Controls(player);
 }
-
-
