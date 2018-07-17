@@ -10,6 +10,8 @@ class ControlPanel extends React.Component {
         return;
       }
     }
+    // just to make sure
+    this.props.updateEngine();
     this.props.validateTransition();
     this.props.setFrozen(true);
     player.goto(this.props.tick);
@@ -18,9 +20,7 @@ class ControlPanel extends React.Component {
   handlePause = (e)=>{  
     e.preventDefault();
     this.props.setFrozen(false);
-    // probably want to gotoTick...
     player.stop();
-    this.props.gotoTick(player.tick);
   }
   handleRewind = (e)=>{
     e.preventDefault();
@@ -32,7 +32,7 @@ class ControlPanel extends React.Component {
     this.props.setFrozen(false);
     player.stop();
     player.goto(player.tick-this.RATE);
-    this.props.gotoTick(player.tick)
+    this.props.skipToEngineTick(player.tick);
   };
   handleFrame = (e)=>{
     for (let move of store.getState().moves) {
@@ -43,7 +43,7 @@ class ControlPanel extends React.Component {
     this.props.setFrozen(false);
     player.stop();
     player.goto(e.target.value);
-    this.props.gotoTick(player.tick);
+    this.props.skipToEngineTick(player.tick);
   }
   handleForward = (e)=>{
     for (let move of store.getState().moves) {
@@ -55,7 +55,7 @@ class ControlPanel extends React.Component {
     this.props.setFrozen(false);
     player.stop();
     player.goto(player.tick+this.RATE);
-    this.props.gotoTick(player.tick);
+    this.props.skipToEngineTick(player.tick);
   }
   handleReset = (e)=>{
     e.preventDefault();
@@ -70,7 +70,7 @@ class ControlPanel extends React.Component {
         <button onClick={this.handlePlay}>Play</button>
         <button onClick={this.handlePause}>Pause</button>
         <button onClick={this.handleRewind}>&lt;</button>
-        <input id="panelTicks" type="number" style={{width:"80px"}} onChange={this.handleFrame} onInput={this.handleFrame} value={this.props.tick}/>
+        <input id="panelTicks" type="number" style={{width:"80px"}} onChange={this.handleFrame} onInput={this.handleFrame} value={this.props.frame}/>
         <button onClick={this.handleForward}>&gt;</button>
         <button onClick={this.handleReset}>Reset</button>
       </div>

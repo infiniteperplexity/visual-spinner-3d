@@ -85,13 +85,17 @@ class PropNode extends React.Component {
       return;
     }
     if (!this.props.propSelectAllowed(this.props.propid)) {
-      let {move, index} = this.props.getMovesAtTick(this.props.tick)[this.props.propid];
-      // does this handle transitions okay?
-      // does this get weird?  maybe we should move this logic into activateProp.  Yeah, I think so.
-      let past = elapsed(this.props.moves[this.props.propid], index);
-      this.props.activateProp(this.props.propid);
-      this.props.gotoTick(past);
-      return;
+      let past = 0;
+      for (let move of this.props.moves[this.props.propid]) {
+        if (past+beats(move)*BEAT > this.props.tick2) {
+          this.props.validateTransition();
+          this.props.activateProp(this.props.propid);
+          this.props.gotoTick(past);
+          return;
+        } else {
+          past += beats(move)*BEAT;
+        }
+      }
     }
     if (Draggables[this.props.dragID].localState.dragging === null) { 
       this.localState.beingDragged = true;
@@ -112,8 +116,8 @@ class PropNode extends React.Component {
       this.props.setActiveNode(this.props.node);
       _debounce = true;
       setTimeout(()=>(_debounce=false),0);
+      this.props.activateProp(this.props.propid);
     }
-    this.props.activateProp(this.props.propid);
   }
   handleMouseUp = (event) => {
     if (this.props.frozen) {

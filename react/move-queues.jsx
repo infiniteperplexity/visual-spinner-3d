@@ -25,7 +25,7 @@ class MoveQueue extends React.Component {
         <button>*</button>
       </PropPanel>
     ];
-    list.push(<MoveItem key={-1} ticks={-1} move={this.props.starters[this.props.propid]} {...this.props}/>);
+    list.push(<MoveItem key={-1} ticks={-1} n={-1} move={this.props.starters[this.props.propid]} {...this.props}/>);
     // push the half-things onto here...
     for (let i=0; i<moves.length; i++) {
       if (i>0) {
@@ -147,7 +147,7 @@ class MoveItem extends React.Component {
     ctx.fill();
   }
   handleDragStart =(e)=>{
-    let json = {hello: "world"};
+    let json = this.props.move;
     e.dataTransfer.setData("text", JSON.stringify(json));
   }
   handleDragOver =(e)=>{
@@ -165,8 +165,12 @@ class MoveItem extends React.Component {
   handleDrop = (e)=>{
     e.preventDefault();
     let json = e.dataTransfer.getData("text");
-    JSON.parse(json);
+    let move = JSON.parse(json);
     // insert move after target
+    alert("inserting move at "+parseInt(this.props.n));
+    this.props.copyDraggedMove(move, this.props.propid, parseInt(this.props.n));
+    // probably goto that tick as well?
+    //this.props.gotoTick(this.props.tick+beats(this.props.move)*BEAT);
   }
   render() {
     let move = this.props.move;
@@ -178,7 +182,7 @@ class MoveItem extends React.Component {
     }
     let canv = (
       <canvas ref={c=>this.canvas=c} height={this.WIDTH} width={width}
-        draggable={"true"}
+        draggable={(this.props.n===-1) ? false : true}
         onDragStart={this.handleDragStart}
         onDragOver={this.handleDragOver}
         onDragLeave={this.handleDragLeave}

@@ -14,11 +14,13 @@ function gotoTick(tick) {
     let {move} = getActiveMove();
     tick2 = tick+beats(move)*BEAT-1; 
   }
+  store.dispatch({type: "SET_FRAME", frame: tick});
   store.dispatch({type: "SET_TICK2", tick2: tick2});
   setPropNodesByTick(tick2);
   updateEngine();
   validateLocks();
 }
+
 
 
 
@@ -28,19 +30,19 @@ function playEngineTick(tick, wrappers, positions) {
   if (tick===-1) {
     tick = 0;
   }
-  panelTicks.value = tick;
+  store.dispatch({type: "SET_FRAME", frame: tick});
   if (_cusps[tick]) {
     store.dispatch({type: "SET_TICK", tick: tick});
     let index = _cusps2.indexOf(tick);
     let next = (index>=_cusps2.length-1) ? tick : _cusps2[index+1];
     store.dispatch({type: "SET_TICK2", tick2: next-1});
-    setPropNodesByTick(next);
+    setPropNodesByTick(next-1);
   }
   let {moves, tick2, props} = store.getState();
   if (tick2===-1) {
     tick2 = 0;
   }
-  let ends = props.map((_,i)=>spin(moves[i],tick2));
+  let ends = props.map((_,i)=>spin(moves[i],tick2+1));
   positions = positions.concat(ends);
   let endwraps = clone(wrappers);
   endwraps.map(e=>{
@@ -48,6 +50,31 @@ function playEngineTick(tick, wrappers, positions) {
     e.alpha = 0.6;
   });
   wrappers = wrappers.concat(endwraps);
+  renderer.render(wrappers, positions);
+}
+
+function skipToEngineTick(frame) {
+  store.dispatch({type: "SET_FRAME", frame: frame});
+  let tick, tick2;
+  for (let i=1; i<_cusps2.length; i++) {
+    if (frame>=_cusps2[i-1] && frame<_cusps2[i]) {
+      tick = _cusps2[i-1]
+      store.dispatch({type: "SET_TICK", tick: tick});
+      tick2 = _cusps2[i];
+      store.dispatch({type: "SET_TICK2", tick2: tick2-1});
+      setPropNodesByTick(tick2-1);
+      break;
+    }
+  }
+  let {props, moves} = store.getState();
+  let begins = props.map((_,i)=>spin(moves[i], frame));
+  let positions = props.concat(begins);
+  let ends = clone(player.props);
+  ends.map(e=>{
+    e.nudge = -e.nudge;
+    e.alpha = 0.6;
+  });
+  let wrappers = ends.concat(player.props);
   renderer.render(wrappers, positions);
 }
 
@@ -113,52 +140,68 @@ function setPropNodesByTick(tick) {
   if (tick===-1) {
     props = state.starters.map(s=>spin(s, 0))
   } else {
-    let moves = getMovesAtTick(tick);
-    props = state.moves.map(m=>dummy(m, tick));
+    props = state.moves.map(m=>dummy(m, tick+1));
   }
   ;
   store.dispatch({type: "SET_PROPS", props: props});
   updateEngine();
 }
 
+// function nextCusp(propid) {
+
+// }
 function propSelectAllowed(propid) {
   propid = parseInt(propid);
   let active = getActivePropId();
   if (propid===active) {
     return true;
   } else {
-    let {tick} = store.getState();
-    if (tick===-1) {
-      return true;
-    }
-    let moves = getMovesAtTick(tick);
-    let ticks = tick + beats(moves[active].move)*BEAT;
-    console.log(propid);
-    console.log(moves);
-    let past = elapsed(moves[propid].move, moves[propid].index);
-    // if the ending points of the two moves line up, say yes
-    if (past+beats(moves[propid].move)*BEAT===ticks) {
-      return true;
-    } else {
+    let {transition, moves, tick2, tick} = store.getState();
+    if (transition) {
+      let past = 0;
+      for (let move of moves[propid]) {
+        past += beats(move)*BEAT;
+        if (past===tick) {
+          return true;
+        }
+      }
       return false;
     }
+    if (tick2===-1) {
+      return true;
+    }
+    let past = 0;
+    for (let move of moves[propid]) {
+      past += beats(move)*BEAT;
+      if (past===tick2+1) {
+        return true;
+      }
+    }
+    return false;
   }
 }
 
 function activateProp(propid) {
-  let {tick, moves, transition} = store.getState();
+  let {tick2, moves, transition} = store.getState();
   if (propid!==getActivePropId()) {
     if (transition) {
       validateTransition();
-      // !!! so...this is where we need to not do it if the timing is wrong
-      // what we want to check is...whether we're at a move endpoint.  how do?
       let move = getActiveMove();
-      // we're going to be at the same tick and tick2 as before, right?
-      //wait...shouldn't this be able to change times?
       editTransition();
+      store.dispatch({type: "SET_TOP", propid: propid});
+      return;
+    }
+    setTopPropById(propid);
+    // might need to change tick here.
+    let past = 0;
+      for (let move of moves[propid]) {
+      if (past+beats(move)*BEAT===tick2+1) {
+        gotoTick(past);
+        break;
+      }
+      past += beats(move)*BEAT;
     }
   }
-  setTopPropById(propid);
 }
 
 
@@ -188,11 +231,11 @@ function restoreStoreState(state) {
 }
 
 function editTransition() {
+  // okay, so this guy is gonna need to change a bit maybe?
   let {props, moves, tick} = store.getState();
   props = clone(props);
   for (let i=0; i<props.length; i++) {
-    let {move} = submove(moves[i], tick);
-    props[i] = spin(move, 0);
+    props[i] = spin(moves[i], tick);
   }
   store.dispatch({type: "SET_TRANSITION", transition: true});
   store.dispatch({type: "SET_PROPS", props: props});
@@ -283,6 +326,8 @@ function loadJSON(json) {
       starters: player.props.map(p=>resolve(fit(p.prop, new Move({beats: 0})))),
       colors: player.props.map(p=>p.color || "red"),
       tick: -1,
+      tick2: -1,
+      frame: -1,
       order: player.props.map((_,i)=>(player.props.length-i-1)),
       plane: "WALL",
       frozen: false,

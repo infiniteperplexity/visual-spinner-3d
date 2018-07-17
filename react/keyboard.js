@@ -13,5 +13,6 @@ window.addEventListener("keydown", handleKeyDown);
 	  	} else if (tick!==-1) {
 	  		deleteMove();
 	  	}
+	  	gotoTick(store.getState().tick);
 	}
 }

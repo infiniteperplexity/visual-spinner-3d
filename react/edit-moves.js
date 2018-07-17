@@ -393,9 +393,12 @@ function validateSequences() {
 
 function deleteMove() {
   player.stop();
-  pushStoreState();
   let {moves, transitions, starters} = store.getState();
   let propid = getActivePropId();
+  if (moves[propid].length<=1) {
+    return;
+  }
+  pushStoreState();
   let {index} = getActiveMove();
   if (transitions[propid][index]) {
     transitions = clone(transitions);
@@ -404,7 +407,7 @@ function deleteMove() {
   }  
   moves = clone(moves);
   moves[propid] = moves[propid].filter((_,i)=>(i!==index));
-  if (index<moves[propid].length-1) {
+  if (index<moves[propid].length) {
     let first;
     if (index===0) {
       first = starters[propid];
@@ -424,7 +427,7 @@ function deleteMove() {
     second = resolve(second);
     moves[propid][index] = second;
   }
-  store.dispatch({type: "SET_MOVES", moves: moves});''
+  store.dispatch({type: "SET_MOVES", moves: moves});
 }
 
 function insertNewMove() {
@@ -463,6 +466,33 @@ function insertNewMove() {
   store.dispatch({type: "SET_MOVES", moves: moves});
 }
 
-function copyDraggedMove() {
-  
+function copyDraggedMove(move, propid, i) {
+  let {moves, starters} = store.getState();
+  moves = clone(moves);
+  console.log(i);
+  let previous = (i===-1) ? starters[propid] : moves[propid][i];
+  NODES.map(node=>{
+    // shouldn't mess with nodes if we don't have to
+    move[node] = {
+      a: previous[node].a1,
+      a1: move[node].a1,
+      r: previous[node].r1,
+      r1: move[node].r1
+    }
+  });
+  moves[propid].splice(i, 0, resolve(move));
+  if (i<moves[propid].length-1) {
+    let next = clone(moves[propid][i+1]);
+    NODES.map(node=>{
+      // shouldn't mess with nodes if we don't have to
+      next[node] = {
+        a: move[node].a1,
+        a1: next[node].a1,
+        r: move[node].r1,
+        r1: next[node].r1
+      }
+    });
+    moves[propid][i+1] = resolve(next);
+  }
+  store.dispatch({type: "SET_MOVES", moves: moves});
 }

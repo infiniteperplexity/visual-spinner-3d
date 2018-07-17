@@ -11,6 +11,7 @@ let AppComponent = ReactRedux.connect(
   (dispatch)=>({
       renderEngine: renderEngine,
       updateEngine: updateEngine,
+      skipToEngineTick: skipToEngineTick,
 
       gotoTick: gotoTick,
 
@@ -36,6 +37,8 @@ let AppComponent = ReactRedux.connect(
       setTransition: editTransition,
       editTransition: editTransition,
       validateTransition: validateTransition,
+      insertNewMove: insertNewMove,
+      copyDraggedMove: copyDraggedMove,
 
       setDuration: setDuration,
       modifySpins: modifySpins,
@@ -66,6 +69,7 @@ function reducer(state, action) {
       starters: player.props.map(p=>resolve(fit(p.prop, new Move({beats: 0})))),
       tick: -1,
       tick2: -1,
+      frame: -1,
       order: player.props.map((_,i)=>(player.props.length-i-1)),
       activeNode: null,
       plane: "WALL",
@@ -81,9 +85,9 @@ function reducer(state, action) {
       } // mean slightly different things
     };
   }
-  // if (!["SET_TICK","SET_TOP","SET_PROPS"].includes(action.type)) {
-  //   console.log(action);
-  // }
+  if (!["SET_TICK","SET_TOP","SET_PROPS"].includes(action.type)) {
+    console.log(action);
+  }
   switch (action.type) {
     case "SET_STATE":
       return action.state;
@@ -107,6 +111,8 @@ function reducer(state, action) {
         }
       }
       return {...state, tick2: action.tick2};
+    case "SET_FRAME":
+      return {...state, frame: action.frame};
     case "SET_TOP":
       let order = [...state.order];
       let propid = parseInt(action.propid);
