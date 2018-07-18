@@ -411,3 +411,8 @@ function fileInput(callback) {
   input.click();
   setTimeout(()=>document.body.removeChild(input),0);
 }
+
+
+function setScrolled(scrolled) {
+  store.dispatch({type: "SET_SCROLLED", scrolled: scrolled})
+}

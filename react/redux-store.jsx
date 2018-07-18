@@ -51,6 +51,7 @@ let AppComponent = ReactRedux.connect(
       setPlane: setPlane,
       setLock: setLock,
       setFrozen: setFrozen,
+      setScrolled: setScrolled,
       checkLocks: validateLocks,
       validateLocks: validateLocks,
 
@@ -76,6 +77,7 @@ function reducer(state, action) {
       activeNode: null,
       plane: "WALL",
       frozen: false,
+      scrolled: 0,
       transition: false,
       // sparse array
       transitions: player.props.map(p=>({})),
@@ -114,6 +116,7 @@ function reducer(state, action) {
       }
       return {...state, tick2: action.tick2};
     case "SET_FRAME":
+      player.tick = action.frame;
       return {...state, frame: action.frame};
     case "SET_TOP":
       let order = [...state.order];
@@ -142,6 +145,8 @@ function reducer(state, action) {
       return {...state, frozen: action.frozen};
     case "SET_LOCKS":
       return {...state, locks: action.locks};
+    case "SET_SCROLLED":
+      return {...state, scrolled: action.scrolled};
     default:
       console.log("whatever for now");
       return state;

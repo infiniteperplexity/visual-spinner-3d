@@ -1,11 +1,18 @@
+let debugScroll;
 class QueuePanel extends React.Component {
+  componentDidUpdate = ()=>{
+    this._scroll.scrollLeft = this.props.scrolled;
+  }
+  handleScroll = (e)=>{
+    this.props.setScrolled(e.target.scrollLeft);
+  }
   render() {
     let panels = this.props.props.map((_,i)=><PropPanel key={i}>
       <ColorPicker propid={i} {...this.props}/>
       <br />
       <ModelPicker propid={i} {...this.props}/>
     </PropPanel>);
-    let queues = this.props.props.map((_,i)=><MoveQueue key={i} propid={i} {...this.props}/>);
+    let queues = this.props.props.map((_,i)=><MoveQueue key={i} propid={i} scrollTarget={this} {...this.props}/>);
     return (
       <div>
         <div style={{
@@ -13,21 +20,24 @@ class QueuePanel extends React.Component {
         }}>
           {panels}
         </div>
-        <div style={{
-          width: "981px",
-          borderRight: "1px solid lightgray",
-          overflowX: "scroll",
-          whiteSpace: "nowrap",
-          display: "inline-block",
-          verticalAlign: "top"
-        }}>
+        <div 
+          ref={e=>(this._scroll = e)}
+          onScroll={this.handleScroll}
+          style={{
+            width: "981px",
+            borderRight: "1px solid lightgray",
+            overflowX: "scroll",
+            whiteSpace: "nowrap",
+            display: "inline-block",
+            verticalAlign: "top"
+          }}
+        >
           {queues}
         </div>
       </div>
     );
   }
 }
-
 class MoveQueue extends React.Component {
   render() {
     if (parseInt(this.props.propid)>=this.props.props.length) {
@@ -70,10 +80,15 @@ class MoveQueue extends React.Component {
 class NewMove extends React.Component {
   handleClick = (e)=> {
     this.props.addMovesToEnd(this.props.propid);
+    let _scroll = this.props.scrollTarget._scroll;
+    if (this._element.getBoundingClientRect().x>950) {
+      this.props.setScrolled(_scroll.scrollWidth);
+    }
   }
   render() {
     return (
       <button 
+        ref={e=>(this._element=e)}
         style={{
           marginLeft: "1px"
         }}
@@ -180,6 +195,10 @@ class MoveItem extends React.Component {
     let move = JSON.parse(json);
     // insert move after target
     this.props.copyDraggedMove(move, this.props.propid, parseInt(this.props.n));
+    let _scroll = this.props.scrollTarget._scroll;
+    if (this.canvas.getBoundingClientRect().x>950) {
+      this.props.setScrolled(_scroll.scrollWidth);
+    }
     // probably goto that tick as well?
     //this.props.gotoTick(this.props.tick+beats(this.props.move)*BEAT);
   }
