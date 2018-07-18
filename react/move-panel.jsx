@@ -11,7 +11,7 @@ class DurationEditor extends React.Component {
     let duration = beats(move)*BEAT;
     this.props.setDuration({
       propid: this.props.getActivePropId(),
-      ticks: duration+n*BEAT
+      ticks: Math.max(0.5*BEAT, duration+n*BEAT)
     });
   }
   handleDurationIncrease = ()=>{
@@ -30,30 +30,67 @@ class DurationEditor extends React.Component {
       tick = elapsed(this.props.moves[propid], index);
       tick2 = tick + beats(move)*BEAT-1;
     }
+    let style = {
+      height: "30px",
+      borderStyle: "solid",
+      borderWidth: "1px",
+      borderColor: "lightgray",
+      paddingLeft: "16px",
+      paddingTop: "4px"
+    };
+    let content;
+    let pnames = [
+      "Prop 1",
+      "Prop 2",
+      "Prop 3",
+      "Prop 4"
+    ];
+    let buttons = null;
     if (tick===-1) {
-      return <div>editing starting positions</div>;
+      content = pnames[propid]+", starting position";
     } else if (this.props.transition) {
-      return <div>{"editing transition at tick "+tick+""}</div>;
+      content = pnames[propid]+", transition at tick "+tick;
     } else {
-
       let move;
       if (tick===-1 || this.props.transition) {
-        return <div/>;
+        content = null;
       } if (this.props.moves[propid].length===0) {
         // I don't think this ever happens
-        return <div/>;
+        content = null;;
       } else {
         move = submove(this.props.moves[propid], tick).move;
+        content = pnames[propid]+", move at ticks "+tick+"-"+tick2+" ("+beats(move)+" "+ ((beats(move)===1) ? "beat) " : "beats) ");
+        let color = this.props.colors[propid];
+        let plus = <polygon points="0,4 4,4 4,0 8,0 8,4 12,4 12,8 8,8 8,12 4,12 4,8 0,8 0,4" transform="translate(6.5,6.5)" fill={color} stroke="lightgray"/>;
+        let minus = <rect x="6.5" y="11" width="12" height="4" fill={color} stroke="lightgray"/>;
+        buttons = (<div style={{
+          display: "inline-block",
+          float: "right",
+          paddingRight: "16px"
+        }}>
+          <SpeedButton title={"shorter"} onClick={this.handleDurationDecrease}>
+            {minus}
+          </SpeedButton>
+          <SpeedButton title={"longer"} onClick={this.handleDurationIncrease}>
+            {plus}
+          </SpeedButton>
+        </div>);
       }
-      return (
-        <div>
-          {"editing move from tick "+tick+" to "+tick2}
-          <button title={"shorter"} onClick={this.handleDurationDecrease}>-</button>
-          {"("+beats(move)+" "+ ((beats(move)===1) ? "beat)" : "beats)")}
-          <button title={"longer"} onClick={this.handleDurationIncrease}>+</button>
-        </div>
-      );
     }
+    return (
+      <div style={style}>
+        <div style={{
+          display: "inline-block",
+          position: "relative",
+          top: "4px",
+          fontSize: "14px",
+          fontFamily: "Tahoma"
+        }}>
+          {content}
+        </div>
+        {buttons}
+      </div>
+    );
   }
 }
 class MovePanel extends React.Component {

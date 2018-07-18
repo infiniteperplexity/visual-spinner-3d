@@ -340,6 +340,7 @@ function loadJSON(json) {
       moves: clone(player.props.map(p=>p.moves)),
       starters: player.props.map(p=>resolve(fit(p.prop, new Move({beats: 0})))),
       colors: player.props.map(p=>p.color || "red"),
+      models: player.props.map(p=>p.model || "poi"),
       tick: -1,
       tick2: -1,
       frame: -1,
