@@ -261,7 +261,7 @@ function setModels(models) {
   for (let i=0; i<props.length; i++) {
     let prop = new VS3D.PropWrapper();
     prop.model = models[i];
-    for (let key of ["model","fire","alpha","nudge","prop","moves","fitted"]) {
+    for (let key of ["color","fire","alpha","nudge","prop","moves","fitted"]) {
       prop[key] = player.props[i][key];
     }
     player.props[i] = prop;
