@@ -222,6 +222,25 @@ function setNodePosition({propid, node, x, y, z}) {
   store.dispatch({type: "SET_PROPS", props: props});
 }
 
+function offsetNodePosition({propid, node, x, y, z}) {
+  propid = parseInt(propid);
+  let s = vector$spherify({x: x, y: y, z: z});
+  let props = clone(store.getState().props);
+  let former = props[propid][NODES[node]];
+  props[propid][NODES[node]] = s;
+  let {x: x0, y: y0, z: z0} = sphere$vectorize(former);
+  let next = props[propid][NODES[node+1]];
+  let {x: xn, y: yn, z: zn} = sphere$vectorize(next);
+  let s2 = vector$spherify({
+    x: xn - x + x0,
+    y: yn - y + y0,
+    z: zn - z + z0    
+  });
+  props[propid][NODES[node+1]] = s2;
+  setActiveNode(node);
+  store.dispatch({type: "SET_PROPS", props: props});
+}
+
 function pushStoreState() {
   window.history.pushState({storeState: clone(store.getState())}, "emptyTitle");
 }

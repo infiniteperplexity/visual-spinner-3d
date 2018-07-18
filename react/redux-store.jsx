@@ -24,6 +24,7 @@ let AppComponent = ReactRedux.connect(
       // moving the node around 
       setNode: setNodePosition,
       setNodePosition: setNodePosition,
+      offsetNodePosition: offsetNodePosition,
       
       pushState: pushStoreState,
       pushStoreState: pushStoreState,

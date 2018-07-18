@@ -84,6 +84,16 @@ class PropNode extends React.Component {
     if (this.props.frozen) {
       return;
     }
+    if (event.button!==undefined) {
+      console.log("mouse button");
+      console.log(event);
+      console.log(event.button);
+    }
+    // !!! should also check for right-click
+    if (event.ctrlKey) {
+      alert("control key is down!");
+      this.localState.ctrlKey = true;
+    }
     if (!this.props.propSelectAllowed(this.props.propid)) {
       let past = 0;
       for (let move of this.props.moves[this.props.propid]) {
@@ -124,6 +134,7 @@ class PropNode extends React.Component {
       return;
     }
     event.preventDefault();
+    // this.localState.ctrlKey = false;
     if (this.localState.beingDragged && !this.props.validate && this.props.propSelectAllowed(this.props.propid)) {
       this.props.modifyMoveUsingNode({
         node: NODES[this.props.node],
@@ -193,14 +204,30 @@ class PropNode extends React.Component {
         y = y2;
         z = z2;
       }
-      this.props.setNode({
-        propid: this.props.propid,
-        node: this.props.node,
-        x: x,
-        y: y,
-        z: z,
-        plane: plane
-      });
+      if (this.props.transition || this.localState.ctrlKey) {
+        // !!! need to do something for GRIP
+        if ([VS3D.HEAD, VS3D.HAND].includes[this.props.node]) {
+          return;
+        }
+        // this.props.setNodePosition({
+        this.props.offsetNodePosition({
+          propid: this.props.propid,
+          node: this.props.node,
+          x: x,
+          y: y,
+          z: z,
+          plane: plane
+        });
+      } else {
+        this.props.setNodePosition({
+          propid: this.props.propid,
+          node: this.props.node,
+          x: x,
+          y: y,
+          z: z,
+          plane: plane
+        });
+      }
     }
   }
   handleDoubleClick = (event) => {
@@ -299,6 +326,26 @@ class PropNode extends React.Component {
         </g>
       ;
     }
+    if (this.props.transition) {
+      if (this.props.node<VS3D.HAND) {
+        return (<g 
+          ref={(e)=>(this.element=e)}
+          transform={"translate("+round(x,1)+","+round(y,1)+")"}
+          onDoubleClick={this.handleDoubleClick}
+          onMouseDown={this.handleMouseDown}
+          onMouseUp={this.handleMouseUp}
+          onMouseMove={this.handleMouseMove}
+          onMouseLeave={this.handleMouseLeave}
+        >
+          <title>{title}</title>
+          {circles}
+          {tether}
+          {child}
+          {shape}
+          {marker}
+        </g>);
+      }
+    }
     return (
       <g 
         ref={(e)=>(this.element=e)}
@@ -317,5 +364,15 @@ class PropNode extends React.Component {
         {marker}
       </g>
     );
+  }
+}
+
+class NodeTrails extends React.Component {
+  // no need for nesting
+  render() {
+    let {index} = this.props.getActiveMove();
+    let previous = (index===0) ? this.props.starters[this.props.propid] : this.props.moves[this.props.propid][index-1];  
+    let trail = <line x1={} y1={} x2={X0} y2={Y0} stroke={this.props.color} strokeDasharray="4"/>;
+    return trail;
   }
 }

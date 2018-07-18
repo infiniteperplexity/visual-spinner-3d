@@ -339,9 +339,9 @@ function deleteTransition() {
   let propid = getActivePropId();
   let {transitions, moves, tick} = store.getState();
   transitions = clone(transitions);
+  let {move, index} = getActiveMove();
   delete transitions[propid][index];
   store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
-  let {move, index} = getActiveMove();
   move = clone(move);
   let position = moves[propid][index-1];
   NODES.map(node=>{

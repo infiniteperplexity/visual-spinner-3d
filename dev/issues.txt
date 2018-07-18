@@ -49,3 +49,6 @@ Bugs:
 			...that also gets rid of the "discarding" issue.
 		...you could make it just a control-drag thing, for normal moves.
 	- You could put some helpful tips on the screen.  For example, show starting and ending values for that node.
+
+- CSS Animations:
+	- 
