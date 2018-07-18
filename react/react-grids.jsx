@@ -50,16 +50,10 @@ class App extends React.Component {
           <ControlPanel {...props} />
         </div>
         <div className="grid bottom" style={{
-          borderStyle: "solid",
-          borderWidth: "1px",
           marginTop: "15px",
-          padding: "5px",
-          color: "dimgray"
+          padding: "5px"
         }}>
-          <MoveQueue propid="0" {...props}/>
-          <MoveQueue propid="1" {...props}/>
-          <MoveQueue propid="2" {...props}/>
-          <MoveQueue propid="3" {...props}/>
+          <QueuePanel {...props}/>
         </div>
       </div>
       

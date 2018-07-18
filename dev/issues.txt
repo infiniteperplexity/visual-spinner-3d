@@ -32,13 +32,10 @@ Bugs:
 	- Mucho testing.
 
 
-- Fix the scrollbar thing.
-- Duration adjustment is ugly.
 - Do we need "insert a new move"?
 - Check to see if we ever get "0 spin" label.
 - Cumulative width is a bit off sometimes.
 - Maybe let locking a node zeroify it?
 - Speed display doesn't always round the way you'd like it to
 - Make it possible to add more props, or delete them.
-- Make other prop types possible.
 - Quite possibly should keep over spin and stuff like that.

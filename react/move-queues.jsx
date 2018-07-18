@@ -1,3 +1,32 @@
+class QueuePanel extends React.Component {
+  render() {
+    let panels = this.props.props.map((_,i)=><PropPanel key={i}>
+      <ColorPicker propid={i} {...this.props}/>
+      <br />
+      <ModelPicker propid={i} {...this.props}/>
+    </PropPanel>);
+    let queues = this.props.props.map((_,i)=><MoveQueue key={i} propid={i} {...this.props}/>);
+    return (
+      <div>
+        <div style={{
+          display: "inline-block"
+        }}>
+          {panels}
+        </div>
+        <div style={{
+          width: "981px",
+          borderRight: "1px solid lightgray",
+          overflowX: "scroll",
+          whiteSpace: "nowrap",
+          display: "inline-block",
+          verticalAlign: "top"
+        }}>
+          {queues}
+        </div>
+      </div>
+    );
+  }
+}
 
 class MoveQueue extends React.Component {
   render() {
@@ -6,15 +35,7 @@ class MoveQueue extends React.Component {
     }
     let moves = this.props.moves[this.props.propid];
     let ticks = 0;
-    let list = [
-      <PropPanel key={-2}>
-        <ColorPicker {...this.props}/>
-        <br />
-        <ModelPicker {...this.props}/>
-        <br />
-      </PropPanel>
-    ];
-    list.push(<MoveItem key={-1} ticks={-1} n={-1} move={this.props.starters[this.props.propid]} {...this.props}/>);
+    let list = [<MoveItem key={-1} ticks={-1} n={-1} move={this.props.starters[this.props.propid]} {...this.props}/>];
     // push the half-things onto here...
     for (let i=0; i<moves.length; i++) {
       if (i>0) {
@@ -31,11 +52,14 @@ class MoveQueue extends React.Component {
     return (
       <ul style={{
         listStyleType: "none",
+        width: "100%",
         borderStyle: "solid",
-        border: "0px",
-        padding: "0px",
-        margin: "0px",
-        borderRight: "1px"
+        borderWidth: "1px",
+        borderColor: "lightgray",
+        borderBottom: "0px",
+        padding: "3px",
+        paddingBottom: "0px",
+        margin: "0px"
       }}>
         {list}
       </ul>
@@ -62,8 +86,7 @@ class PropPanel extends React.Component {
   render() {
     return <div style={{
       height: "90px",
-      display: "inline-block",
-      verticalAlign: "top"
+      padding: "3px"
     }}>
       {this.props.children}
     </div>
@@ -288,6 +311,7 @@ class ModelPicker extends React.Component {
   render() {
     return (
       <select onChange={this.handleChange} 
+        style={{width: "64px"}}
         value={this.props.models[this.props.propid]}>
         <option value="poi">Poi</option>
         <option value="staff">Staff</option>
