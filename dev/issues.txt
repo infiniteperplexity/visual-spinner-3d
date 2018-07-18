@@ -41,4 +41,4 @@ Bugs:
 - Speed display doesn't always round the way you'd like it to
 - Make it possible to add more props, or delete them.
 - Make other prop types possible.
-- Drag and drop defaults aren't great.  For example, when you drop it on the end, it should try to keep va and stuff.
+- Quite possibly should keep over spin and stuff like that.

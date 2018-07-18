@@ -470,17 +470,16 @@ function copyDraggedMove(move, propid, i) {
   let {moves, starters} = store.getState();
   moves = clone(moves);
   let previous = (i===-1) ? starters[propid] : moves[propid][i];
-  NODES.map(node=>{
-    // shouldn't mess with nodes if we don't have to
-    move[node] = {
-      a: previous[node].a1,
-      a1: move[node].a1,
-      r: previous[node].r1,
-      r1: move[node].r1
-    }
-  });
-  moves[propid].splice(i, 0, resolve(move));
   if (i<moves[propid].length-1) {
+    NODES.map(node=>{
+    // shouldn't mess with nodes if we don't have to
+      move[node] = {
+        a: previous[node].a1,
+        a1: move[node].a1,
+        r: previous[node].r1,
+        r1: move[node].r1
+      };
+    });
     let next = clone(moves[propid][i+1]);
     NODES.map(node=>{
       // shouldn't mess with nodes if we don't have to
@@ -492,6 +491,18 @@ function copyDraggedMove(move, propid, i) {
       }
     });
     moves[propid][i+1] = resolve(next);
+  } else {
+    NODES.map(node=>{
+      move[node].a = previous[node].a1;
+      move[node].r = previous[node].r1;
+      if (move[node].a1) {
+        delete move[node].a1;
+      }
+      if (move[node].r1) {
+        delete move[node].r1;
+      }
+    });
   }
+  moves[propid].splice(i+1, 0, resolve(move));
   store.dispatch({type: "SET_MOVES", moves: moves});
 }

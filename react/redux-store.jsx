@@ -47,6 +47,7 @@ let AppComponent = ReactRedux.connect(
       deleteMove: deleteMove,
 
       setColors: setColors,
+      setModels: setModels,
       setPlane: setPlane,
       setLock: setLock,
       setFrozen: setFrozen,
@@ -66,6 +67,7 @@ function reducer(state, action) {
       props: clone(player.props.map(p=>p.prop)),
       moves: clone(player.props.map(p=>p.moves)),
       colors: clone(COLORS),
+      models: player.props.map(p=>"poi"),
       starters: player.props.map(p=>resolve(fit(p.prop, new Move({beats: 0})))),
       tick: -1,
       tick2: -1,
@@ -130,6 +132,8 @@ function reducer(state, action) {
       return {...state, transitions: action.transitions};
     case "SET_COLORS":
       return {...state, colors: action.colors};
+    case "SET_MODELS":
+      return {...state, models: action.models};
     case "SET_PLANE":
       return {...state, plane: action.plane};
     case "SET_TRANSITION":

@@ -10,19 +10,8 @@ class MoveQueue extends React.Component {
       <PropPanel key={-2}>
         <ColorPicker {...this.props}/>
         <br />
-        <select>
-          <option>Poi</option>
-          <option>Staff</option>
-          <option>Hoop</option>
-          <option>Fan</option>
-        </select>
+        <ModelPicker {...this.props}/>
         <br />
-        <button>&lt;</button>
-        <button>&gt;</button>
-        <br />
-        <button>+</button>
-        <button>-</button>
-        <button>*</button>
       </PropPanel>
     ];
     list.push(<MoveItem key={-1} ticks={-1} n={-1} move={this.props.starters[this.props.propid]} {...this.props}/>);
@@ -287,4 +276,25 @@ class ColorPicker extends React.Component {
               value={svg2hex(this.props.colors[this.props.propid])}/>
     );
   }
+}
+
+class ModelPicker extends React.Component {
+  handleChange = (e)=> {
+    player.stop();
+    let models = [...this.props.models];
+    models[this.props.propid] = e.target.value;
+    this.props.setModels(models);
+  }
+  render() {
+    return (
+      <select onChange={this.handleChange} 
+        value={this.props.models[this.props.propid]}>
+        <option value="poi">Poi</option>
+        <option value="staff">Staff</option>
+        <option value="hoop">Hoop</option>
+        <option value="fan">Fan</option>
+      </select>
+    );
+  }
+
 }

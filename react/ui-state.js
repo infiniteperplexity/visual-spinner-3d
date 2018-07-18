@@ -255,6 +255,21 @@ function setColors(colors) {
   updateEngine();
 }
 
+function setModels(models) {
+  store.dispatch({type: "SET_MODELS", models: models});
+  let {props} = store.getState();
+  for (let i=0; i<props.length; i++) {
+    let prop = new VS3D.PropWrapper();
+    prop.model = models[i];
+    for (let key of ["model","fire","alpha","nudge","prop","moves","fitted"]) {
+      prop[key] = player.props[i][key];
+    }
+    player.props[i] = prop;
+  }
+  updateEngine();
+}
+
+
 function setPlane(plane) {
   if (plane==="WALL") {
     renderer.setCameraPosition(0,0,8);
