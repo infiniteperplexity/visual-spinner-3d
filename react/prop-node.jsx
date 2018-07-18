@@ -281,6 +281,9 @@ class PropNode extends React.Component {
       marker = <NodeMarker x={X0} y={Y0} transform={trans} fill={this.props.color} dim={UNIT/20} tip={tip}/>;
     }
     let title = (this.props.tick) ? "drag to set starting "+NODES[this.props.node] : "drag to set next "+NODES[this.props.node]; 
+    if (this.props.transition) {
+      title = "drag to set starting "+NODES[this.props.node];
+    }
     let dimmer = "#333333";
     let circles = null;
     if (this.localState.beingDragged && !isNaN(x) && !isNaN(y)) {

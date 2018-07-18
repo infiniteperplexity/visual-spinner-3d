@@ -39,3 +39,13 @@ Bugs:
 - Speed display doesn't always round the way you'd like it to
 - Make it possible to add more props, or delete them.
 - Quite possibly should keep over spin and stuff like that.
+
+- So...is there *any* way to make custom transitions easier?  Because they're the gnarly part right now.
+	- Intelligent defaults: by default, use combinate?  That could save a lot of effort but...
+		...it's a bit tricky to program.
+		...it's a bit astonishing.
+	- Make it possible to "reverse drag", such that child nodes are locked in place while parent nodes move.
+		...you could make that mandatory for transitions.
+			...that also gets rid of the "discarding" issue.
+		...you could make it just a control-drag thing, for normal moves.
+	- You could put some helpful tips on the screen.  For example, show starting and ending values for that node.
