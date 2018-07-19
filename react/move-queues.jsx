@@ -1,5 +1,5 @@
 let debugScroll;
-class QueuePanel extends React.Component {
+class QueuePanel extends React.PureComponent {
   componentDidUpdate = ()=>{
     this._scroll.scrollLeft = this.props.scrolled;
   }
@@ -38,7 +38,7 @@ class QueuePanel extends React.Component {
     );
   }
 }
-class MoveQueue extends React.Component {
+class MoveQueue extends React.PureComponent {
   render() {
     if (parseInt(this.props.propid)>=this.props.props.length) {
       return null;
@@ -77,7 +77,7 @@ class MoveQueue extends React.Component {
   }
 }
 
-class NewMove extends React.Component {
+class NewMove extends React.PureComponent {
   handleClick = (e)=> {
     this.props.addMovesToEnd(this.props.propid);
     let _scroll = this.props.scrollTarget._scroll;
@@ -97,7 +97,7 @@ class NewMove extends React.Component {
   }
 }
 
-class PropPanel extends React.Component {
+class PropPanel extends React.PureComponent {
   render() {
     return <div style={{
       height: "90px",
@@ -107,7 +107,7 @@ class PropPanel extends React.Component {
     </div>
   }
 }
-class MoveItem extends React.Component {
+class MoveItem extends React.PureComponent {
   constructor(props, context) {
     super(props, context);
     this.WIDTH = 90;
@@ -236,7 +236,7 @@ class MoveItem extends React.Component {
     return canv;
   }
 }
-class Transition extends React.Component {
+class Transition extends React.PureComponent {
   constructor(props, context) {
     super(props, context);
     this.dim = 7;
@@ -300,7 +300,7 @@ class Transition extends React.Component {
 }
 
 let {svg2hex, hex2svg} = VS3D.Colors;
-class ColorPicker extends React.Component {
+class ColorPicker extends React.PureComponent {
   handleChange = (e)=> {
     player.stop();
     let colors = [...this.props.colors];
@@ -320,7 +320,7 @@ class ColorPicker extends React.Component {
   }
 }
 
-class ModelPicker extends React.Component {
+class ModelPicker extends React.PureComponent {
   handleChange = (e)=> {
     player.stop();
     let models = [...this.props.models];

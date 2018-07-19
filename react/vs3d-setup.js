@@ -25,9 +25,12 @@ for (let i=0; i<NPROPS; i++) {
 	prop.setHandAngle(ANGLES[i]);
 }
 
+let panelTicks = -1;
+let framePanel;
 function afterReactMounts() {
 	renderer = new VS3D.ThreeRenderer(document.getElementById("display"), 350, 350);
-	store.dispatch({type: "SET_FRAME", frame: player.tick});
+	// store.dispatch({type: "SET_FRAME", frame: player.tick});
+	framePanel = document.getElementById("panelTicks");
 	player.update = function(positions) {
 		playEngineTick(this.tick, this.props, positions);
 	}

@@ -54,7 +54,7 @@ function NodeMarker(props, context) {
 
 
 let _debounce = false;
-class PropNode extends React.Component {
+class PropNode extends React.PureComponent {
   constructor(props, context) {
     super(props, context);
     // this stuff is technically "state" but it will never force re-rendering
@@ -84,16 +84,19 @@ class PropNode extends React.Component {
     if (this.props.frozen) {
       return;
     }
-    if (event.button!==undefined) {
-      console.log("mouse button");
-      console.log(event);
-      console.log(event.button);
-    }
+    // if (this.props.transition && [VS3D.HAND, VS3D.GRIP, VS3D.HEAD].includes(this.props.node)) {
+    //   return;
+    // }
+    // if (event.button!==undefined) {
+    //   console.log("mouse button");
+    //   console.log(event);
+    //   console.log(event.button);
+    // }
     // !!! should also check for right-click
-    if (event.ctrlKey) {
-      alert("control key is down!");
-      this.localState.ctrlKey = true;
-    }
+    // if (event.ctrlKey) {
+    //   alert("control key is down!");
+    //   this.localState.ctrlKey = true;
+    // }
     if (!this.props.propSelectAllowed(this.props.propid)) {
       let past = 0;
       for (let move of this.props.moves[this.props.propid]) {
@@ -152,6 +155,9 @@ class PropNode extends React.Component {
     if (this.props.frozen) {
       return;
     }
+    // if (this.props.transition && [VS3D.HAND, VS3D.GRIP, VS3D.HEAD].includes(this.props.node)) {
+    //   return;
+    // }
     // note: harmless violation of React state management practices
     this.localState.point.x = event.clientX;
     this.localState.point.y = event.clientY;
@@ -204,21 +210,21 @@ class PropNode extends React.Component {
         y = y2;
         z = z2;
       }
-      if (this.props.transition || this.localState.ctrlKey) {
-        // !!! need to do something for GRIP
-        if ([VS3D.HEAD, VS3D.HAND].includes[this.props.node]) {
-          return;
-        }
-        // this.props.setNodePosition({
-        this.props.offsetNodePosition({
-          propid: this.props.propid,
-          node: this.props.node,
-          x: x,
-          y: y,
-          z: z,
-          plane: plane
-        });
-      } else {
+      // if (this.props.transition || this.localState.ctrlKey) {
+      //   // !!! need to do something for GRIP
+      //   if ([VS3D.HEAD, VS3D.HAND, VS3D.GRIP].includes[this.props.node]) {
+      //     return;
+      //   }
+      //   // this.props.setNodePosition({
+      //   this.props.offsetNodePosition({
+      //     propid: this.props.propid,
+      //     node: this.props.node,
+      //     x: x,
+      //     y: y,
+      //     z: z,
+      //     plane: plane
+      //   });
+      // } else {
         this.props.setNodePosition({
           propid: this.props.propid,
           node: this.props.node,
@@ -227,7 +233,7 @@ class PropNode extends React.Component {
           z: z,
           plane: plane
         });
-      }
+      // }
     }
   }
   handleDoubleClick = (event) => {
@@ -326,26 +332,26 @@ class PropNode extends React.Component {
         </g>
       ;
     }
-    if (this.props.transition) {
-      if (this.props.node<VS3D.HAND) {
-        return (<g 
-          ref={(e)=>(this.element=e)}
-          transform={"translate("+round(x,1)+","+round(y,1)+")"}
-          onDoubleClick={this.handleDoubleClick}
-          onMouseDown={this.handleMouseDown}
-          onMouseUp={this.handleMouseUp}
-          onMouseMove={this.handleMouseMove}
-          onMouseLeave={this.handleMouseLeave}
-        >
-          <title>{title}</title>
-          {circles}
-          {tether}
-          {child}
-          {shape}
-          {marker}
-        </g>);
-      }
-    }
+    // if (this.props.transition) {
+    //   if (this.props.node<VS3D.HAND) {
+    //     return (<g 
+    //       ref={(e)=>(this.element=e)}
+    //       transform={"translate("+round(x,1)+","+round(y,1)+")"}
+    //       onDoubleClick={this.handleDoubleClick}
+    //       onMouseDown={this.handleMouseDown}
+    //       onMouseUp={this.handleMouseUp}
+    //       onMouseMove={this.handleMouseMove}
+    //       onMouseLeave={this.handleMouseLeave}
+    //     >
+    //       <title>{title}</title>
+    //       {circles}
+    //       {tether}
+    //       {child}
+    //       {shape}
+    //       {marker}
+    //     </g>);
+    //   }
+    // }
     return (
       <g 
         ref={(e)=>(this.element=e)}
@@ -367,12 +373,12 @@ class PropNode extends React.Component {
   }
 }
 
-class NodeTrails extends React.Component {
-  // no need for nesting
-  render() {
-    let {index} = this.props.getActiveMove();
-    let previous = (index===0) ? this.props.starters[this.props.propid] : this.props.moves[this.props.propid][index-1];  
-    let trail = <line x1={} y1={} x2={X0} y2={Y0} stroke={this.props.color} strokeDasharray="4"/>;
-    return trail;
-  }
-}
+// class NodeTrails extends React.Component {
+//   // no need for nesting
+//   render() {
+//     let {index} = this.props.getActiveMove();
+//     let previous = (index===0) ? this.props.starters[this.props.propid] : this.props.moves[this.props.propid][index-1];  
+//     let trail = <line x1={} y1={} x2={X0} y2={Y0} stroke={this.props.color} strokeDasharray="4"/>;
+//     return trail;
+//   }
+// }

@@ -90,7 +90,7 @@ function reducer(state, action) {
       } // mean slightly different things
     };
   }
-  if (!["SET_TICK","SET_TOP","SET_PROPS"].includes(action.type)) {
+  if (!["SET_TOP","SET_PROPS", "SET_FRAME"].includes(action.type)) {
     console.log(action);
   }
   switch (action.type) {

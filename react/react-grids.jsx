@@ -15,12 +15,13 @@ function handleDoubleClick() {
   setInterval(()=>(doubleClickHandled=false),0);
 }
 
-class App extends React.Component {
+class App extends React.PureComponent {
   componentDidMount() {
     afterReactMounts();
   }
   render() {
     let props = this.props;
+    let {frame, ...noframe} = props;
     return (
       <div className="grid app" style={{height: "720px"}}>
         <div className="grid header">
@@ -42,18 +43,18 @@ class App extends React.Component {
           <div />
         </div>
         <div className="grid top">
-          <Grid dragID="SVG" {...props} />
-          <MovePanel className="frame" {...props} />
+          <Grid dragID="SVG" {...noframe} />
+          <MovePanel className="frame" {...noframe} />
           <div id="display"/>
-          <DurationEditor {...props}/>
-          <PlaneMenu {...props}/>
+          <DurationEditor {...noframe}/>
+          <PlaneMenu {...noframe}/>
           <ControlPanel {...props} />
         </div>
         <div className="grid bottom" style={{
           marginTop: "15px",
           padding: "5px"
         }}>
-          <QueuePanel {...props}/>
+          <QueuePanel {...noframe}/>
         </div>
       </div>
       

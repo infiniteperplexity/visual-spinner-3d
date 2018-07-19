@@ -5,7 +5,7 @@ let ACC = "8,4 0,2 0,6 8,4 8,0 16,4 8,8, 8,4";
 let DEC = "8,4 0,0 0,8 8,4 8,2 16,4 8,6, 8,4";
 let LINEAR = "0,2 8,2 8,0 16,4 8,8 8,6 0,6 0,2";
 
-class DurationEditor extends React.Component {
+class DurationEditor extends React.PureComponent {
   handleDurationChange = (n)=>{
     let {move} = this.props.getActiveMove();
     let duration = beats(move)*BEAT;
@@ -93,7 +93,7 @@ class DurationEditor extends React.Component {
     );
   }
 }
-class MovePanel extends React.Component {
+class MovePanel extends React.PureComponent {
   render() {
     let propid = this.props.getActivePropId();
     let move;
@@ -156,7 +156,7 @@ class MovePanel extends React.Component {
   }
 }
 
-class MoveControl extends React.Component {
+class MoveControl extends React.PureComponent {
   handleMouseDown = (e)=>{    
     if (this.props.frozen) {
       return;
@@ -400,7 +400,7 @@ function SpeedMeter(props, context) {
   );
 }
 
-class SpeedButton extends React.Component {
+class SpeedButton extends React.PureComponent {
   constructor(props, context) {
     super(props, context);
     this.state = {

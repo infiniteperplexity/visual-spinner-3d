@@ -26,29 +26,27 @@ function gotoTick(tick) {
 
 let _cusps = {};
 let _cusps2 = [];
+let endwraps;
 function playEngineTick(tick, wrappers, positions) {
   if (tick===-1) {
     tick = 0;
   }
   store.dispatch({type: "SET_FRAME", frame: tick});
-  if (_cusps[tick]) {
+  if (_cusps[tick] || !endwraps) {
     store.dispatch({type: "SET_TICK", tick: tick});
     let index = _cusps2.indexOf(tick);
     let next = (index>=_cusps2.length-1) ? tick : _cusps2[index+1];
     store.dispatch({type: "SET_TICK2", tick2: next-1});
     setPropNodesByTick(next-1);
+    endwraps = clone(wrappers);
+    endwraps.map(e=>{
+      e.nudge = -e.nudge;
+      e.alpha = 0.6;
+    });
   }
-  let {moves, tick2, props} = store.getState();
-  if (tick2===-1) {
-    tick2 = 0;
-  }
+  let {moves, props, tick2} = store.getState();
   let ends = props.map((_,i)=>spin(moves[i],tick2+1));
   positions = positions.concat(ends);
-  let endwraps = clone(wrappers);
-  endwraps.map(e=>{
-    e.nudge = -e.nudge;
-    e.alpha = 0.6;
-  });
   wrappers = wrappers.concat(endwraps);
   renderer.render(wrappers, positions);
 }
@@ -301,6 +299,9 @@ function setPlane(plane) {
 }
 
 function setFrozen(val) {
+  if (!val) {
+    endwraps = undefined;
+  }
   store.dispatch({type: "SET_FROZEN", frozen: val});
 }
 

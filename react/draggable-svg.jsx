@@ -1,5 +1,5 @@
 let Draggables = {};
-class DragSVG extends React.Component {
+class DragSVG extends React.PureComponent {
   constructor(props, context) {
     super(props, context);
     Draggables[props.dragID] = this;

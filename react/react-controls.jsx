@@ -1,4 +1,4 @@
-class ControlPanel extends React.Component {
+class ControlPanel extends React.PureComponent {
   constructor(props, context) {
     super(props, context);
     this.RATE = 15;
@@ -14,7 +14,7 @@ class ControlPanel extends React.Component {
     this.props.updateEngine();
     this.props.validateTransition();
     this.props.setFrozen(true);
-    player.goto(this.props.tick);
+    player.goto(this.props.frame);
     player.play();
   }
   handlePause = (e)=>{  
@@ -78,7 +78,7 @@ class ControlPanel extends React.Component {
   }
 }
 
-class PlaneMenu extends React.Component {
+class PlaneMenu extends React.PureComponent {
   handleChange = (e)=>{
     if (this.props.frozen) {
       return;
@@ -97,7 +97,7 @@ class PlaneMenu extends React.Component {
 }
 
 
-class ImportButton extends React.Component {
+class ImportButton extends React.PureComponent {
   handleInput = (json)=>{
     this.props.loadJSON(json);
   }
