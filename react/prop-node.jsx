@@ -394,17 +394,12 @@ class PropNode extends React.PureComponent {
         tether: null,
         child: null
       });
-    } else if (false) {
-      return ({
-        tether: null,
-        child: null
-      });
     }
     let n = this._node-1;
-    if (n===HELPER && this.props.locks.helper) {
+    if (n===HAND && this.props.locks.helper) {
       n-=1;
     } else 
-    if (n===GRIP && this.props.locks.grip) {
+    if (n===HEAD && this.props.locks.grip) {
       n-=1;
     }
     // duplicate code!
