@@ -24,7 +24,7 @@ let AppComponent = ReactRedux.connect(
       // moving the node around 
       setNode: setNodePosition,
       setNodePosition: setNodePosition,
-      offsetNodePosition: offsetNodePosition,
+      reversedNodePosition: reversedNodePosition,
       
       pushState: pushStoreState,
       pushStoreState: pushStoreState,
@@ -91,7 +91,7 @@ function reducer(state, action) {
     };
   }
   if (!["SET_TOP","SET_PROPS", "SET_FRAME"].includes(action.type)) {
-    console.log(action);
+    // console.log(action);
   }
   switch (action.type) {
     case "SET_STATE":

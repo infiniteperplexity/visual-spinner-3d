@@ -220,21 +220,37 @@ function setNodePosition({propid, node, x, y, z}) {
   store.dispatch({type: "SET_PROPS", props: props});
 }
 
-function offsetNodePosition({propid, node, x, y, z}) {
+function reversedNodePosition({propid, node, x, y, z}) {
   propid = parseInt(propid);
   let s = vector$spherify({x: x, y: y, z: z});
   let props = clone(store.getState().props);
-  let former = props[propid][NODES[node]];
-  props[propid][NODES[node]] = s;
-  let {x: x0, y: y0, z: z0} = sphere$vectorize(former);
-  let next = props[propid][NODES[node+1]];
-  let {x: xn, y: yn, z: zn} = sphere$vectorize(next);
-  let s2 = vector$spherify({
-    x: xn - x + x0,
-    y: yn - y + y0,
-    z: zn - z + z0    
+  // get drag offsets
+  let base = props[propid][NODES[node]];
+  let {x: x0, y: y0, z: z0} = sphere$vectorize(base);
+  let dx = x - x0;
+  let dy = y - y0;
+  let dz = z - z0;
+  // the body node gets offset by the dragged amount
+  let body = props[propid].body;
+  let {x: xb, y: yb, z: zb} = sphere$vectorize(body);
+  console.log(xb, yb, zb);
+  let nbody = vector$spherify({
+    x: xb + dx,
+    y: yb + dy,
+    z: zb + dz
   });
-  props[propid][NODES[node+1]] = s2;
+  props[propid].body = nbody;
+  // the child node gets offset by the reverse amount
+  if (node!==HEAD) {
+    let child = props[propid][NODES[node+1]]; 
+    let {x: xc, y: yc, z: zc} = sphere$vectorize(child);
+    let nchild = vector$spherify({
+      x: xc - dx,
+      y: yc - dy,
+      z: zc - dz
+    });
+    props[propid][NODES[node+1]] = nchild;
+  }
   setActiveNode(node);
   store.dispatch({type: "SET_PROPS", props: props});
 }
