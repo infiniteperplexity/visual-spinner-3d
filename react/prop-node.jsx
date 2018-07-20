@@ -288,6 +288,11 @@ class PropNode extends React.PureComponent {
       v = sphere$vectorize(s);
     } else {
       let n = (this.props.reversed) ? this._node+1 : this._node;
+      if (n===HELPER && this.props.locks.helper) {
+        n+=1;
+      } else if (n===GRIP && this.props.locks.grip) {
+        n+=1;
+      }
       v = sphere$vectorize(prop[NODES[n]]);
       if (this.props.reversed) {
         v.x = -v.x;
@@ -389,21 +394,27 @@ class PropNode extends React.PureComponent {
     return {tether: tether, child: child};
   }
   handleParentNode = ()=>{
+    console.log(NODES[this._node]);
     if (this._node<=0) {
+      return ({
+        tether: null,
+        child: null
+      });
+    } else if (this._node===PIVOT && this.props.locks.body) {
       return ({
         tether: null,
         child: null
       });
     }
     let n = this._node-1;
-    if (n===HAND && this.props.locks.helper) {
+    if (n===HELPER && this.props.locks.helper) {
       n-=1;
     } else 
-    if (n===HEAD && this.props.locks.grip) {
+    if (n===GRIP && this.props.locks.grip) {
       n-=1;
     }
     // duplicate code!
-    let node2 = this.props.props[this.props.propid][NODES[n]];
+    let node2 = this.props.props[this.props.propid][NODES[this._node]];
     let v2 = sphere$vectorize(node2);
     let x2, y2;
     let plane = this.props.plane;
@@ -418,15 +429,12 @@ class PropNode extends React.PureComponent {
       y2 = -v2.z * UNIT;
     }
     let style = {stroke: "gray"};
-    // not a duplicate
-    if (n===GRIP) {
-      style.strokeWidth = 3;
-    } else if (n===HAND && this.props.locks.grip) {
+    if (this._node===HEAD) {
       style.strokeWidth = 3;
     } else {
       style.strokeDasharray="5,5";
     }
-    let tether = <line x1={X0} y1={Y0} x2={X0+x2} y2={Y0+y2} style={style} />
+    let tether = <line x1={X0} y1={Y0} x2={X0-x2} y2={Y0-y2} style={style} />
     let child = <PropNode {...this.props} node={n} />;
     return {tether: tether, child: child};
   }
