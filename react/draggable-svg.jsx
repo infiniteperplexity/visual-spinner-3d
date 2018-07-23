@@ -25,6 +25,10 @@ class DragSVG extends React.PureComponent {
       this.localState.dragging.handleMouseUp.call(this.localState.dragging, event);
     }
   }
+  avoidContextMenu = (event) =>{
+    event.preventDefault();
+    return false;
+  }
   render() {
     return (
       <svg
@@ -33,6 +37,7 @@ class DragSVG extends React.PureComponent {
         onMouseMove={this.handleMouseMove}
         onMouseUp={this.handleMouseUp}
         onMouseLeave={this.handleMouseLeave}
+        onContextMenu={this.avoidContextMenu}
       >
         {this.props.children}
       </svg>

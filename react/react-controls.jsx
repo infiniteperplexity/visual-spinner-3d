@@ -62,6 +62,7 @@ class ControlPanel extends React.PureComponent {
     this.props.setFrozen(false);
     player.reset();
     this.props.gotoTick(-1);
+    this.props.setScrolled(0);
   }
   render() {
     // need to figure out how to handle ticks.
@@ -72,7 +73,7 @@ class ControlPanel extends React.PureComponent {
         <button onClick={this.handleRewind}>&lt;</button>
         <input id="panelTicks" type="number" style={{width:"80px"}} onChange={this.handleFrame} onInput={this.handleFrame} value={this.props.frame}/>
         <button onClick={this.handleForward}>&gt;</button>
-        <button onClick={this.handleReset}>Reset</button>
+        <button onClick={this.handleReset}>Back to Start</button>
       </div>
     );
   }

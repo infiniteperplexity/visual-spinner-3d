@@ -332,9 +332,26 @@ function SpeedMeter(props, context) {
   let speed = Math.round(Math.abs(va));
   let title = spins + " rotations";
   // deal with linear motion
-  if (va===undefined && vl!==undefined) {
+  if (spins===0 || (va===undefined && vl!==undefined)) {
+    la = Math.round(la);
+    if (isNaN(la)) {
+      let {r, r1, a, vr, vr1} = move[node];
+      if (nearly(r, r1)) {
+        vl = 0;
+        vl1 = 0;
+        la = 0;
+      } else if (r1>r) {
+        vl = vr;
+        vl1 = vr1;
+        la = a;
+      } else {
+        vl = vr;
+        vl1 = vr1;
+        la = angle(-a);
+      }
+    }
     spins = 0;
-    title = "linear ("+Math.round(la)+" degrees)";
+    title = "linear ("+angle(Math.round(la))+" degrees)";
     if (!nearly(vl, vl1)) {
       if (Math.abs(vl)>Math.abs(vl1)) {
         speed = Math.round(Math.abs(vl1));
@@ -363,7 +380,7 @@ function SpeedMeter(props, context) {
   }
   let stroke = "lightgray";
   let spinshape = <path d={ARROW} transform={spintransform} fill={color} stroke="lightgray"/>;
-  let accshape = <polygon transform={acctransform} points={(Math.abs(va1)<Math.abs(va)) ? DEC : ACC} fill={color} stroke={stroke}/>;
+  let accshape = <polygon transform={acctransform} points={(Math.abs(va1)<Math.abs(va) || vl1<vl) ? DEC : ACC} fill={color} stroke={stroke}/>;
   let spintext = <text textAnchor="middle" x={5} y={29} style={{fontSize: "10px"}}>{spins}</text>;
   let acctext = <text textAnchor="middle" x={Math.abs(va1)<Math.abs(va) ? 46 : 30} y={29} style={{fontSize: "10px"}}>{speed}</text>;
   if (zeroish(spins)) {
@@ -381,13 +398,8 @@ function SpeedMeter(props, context) {
       }
     }
   }
-  if (nearly(va, va1)) {
-    if (zeroish(spins)) {
-      accshape = null;
-      acctext = null;
-    } else {
-      accshape = <polygon transform="translate(34,19)" points="0,0 0,12, 12,6" fill={color} stroke={stroke}/>;
-    }
+  if (nearly(va, va1) && !zeroish(va)) {
+    accshape = <polygon transform="translate(34,19)" points="0,0 0,12, 12,6" fill={color} stroke={stroke}/>;
   }
   return (
     <svg height={49} width={80}>

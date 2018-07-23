@@ -53,6 +53,14 @@ function NodeMarker(props, context) {
 }
 
 
+
+    // 0  : No button or un-initialized
+    // 1  : Primary button (usually left)
+    // 2  : Secondary button (usually right)
+    // 4  : Auxilary button (usually middle or mouse wheel button)
+    // 8  : 4th button (typically the "Browser Back" button)
+    // 16 : 5th button (typically the "Browser Forward" button)
+
 let _debounce = false;
 class PropNode extends React.PureComponent {
   constructor(props, context) {
@@ -64,7 +72,7 @@ class PropNode extends React.PureComponent {
       yoffset: 0,
       point: null,
       matrix: null
-    }   
+    }
   }
   componentDidMount() {
     let e = this.element;
@@ -83,9 +91,23 @@ class PropNode extends React.PureComponent {
     if (this.props.frozen) {
       return;
     }
+    if (event.buttons===2) {
+      this.props.setModifier(true);
+    } else if (!event.ctrlKey) {
+      this.props.setModifier(false);
+    }
     if (!this.props.propSelectAllowed(this.props.propid)) {
-      this.handleSnapTo();
-      return;
+      let past = 0;
+      for (let move of this.props.moves[this.props.propid]) {
+        if (past+beats(move)*BEAT > this.props.tick2) {
+          this.props.validateTransition();
+          this.props.activateProp(this.props.propid);
+          this.props.gotoTick(past);
+          return;
+        } else {
+          past += beats(move)*BEAT;
+        }
+      }
     }
     if (Draggables[this.props.dragID].localState.dragging === null) { 
       this.localState.beingDragged = true;
@@ -95,15 +117,16 @@ class PropNode extends React.PureComponent {
     this.localState.point.x = event.clientX;
     this.localState.point.y = event.clientY;
     let p = this.localState.point.matrixTransform(this.localState.matrix);
-    let node = this.props.props[this.props.propid][NODES[this._node]];
+    let node = this.props.props[this.props.propid][NODES[this.props.node]];
     let v = sphere$vectorize(node);
     let x = v.x * UNIT;
     let y = v.y * UNIT;
+    this.localState.origin = clone(this.props.props[this.props.propid]);
     this.localState.xoffset = p.x - x;
     this.localState.yoffset = p.y + y;
     // do I need to debounce this sucker??
     if (!_debounce) {
-      this.props.setActiveNode(this._node);
+      this.props.setActiveNode(this.props.node);
       _debounce = true;
       setTimeout(()=>(_debounce=false),0);
       this.props.activateProp(this.props.propid);
@@ -113,28 +136,41 @@ class PropNode extends React.PureComponent {
     if (this.props.frozen) {
       return;
     }
+    if (!event.ctrlKey) {
+      this.props.setModifier(false);
+    }
     event.preventDefault();
-    // this.localState.ctrlKey = false;
     if (this.localState.beingDragged && !this.props.validate && this.props.propSelectAllowed(this.props.propid)) {
-      this.handleModifyMove();
+      // !!! doesn't work right sometimes, with modifier
+      this.props.modifyMoveUsingNode({
+        node: NODES[this.props.node],
+        propid: this.props.propid,
+      });
     }
     this.localState.beingDragged = false;
     Draggables[this.props.dragID].localState.dragging = null;
   }
   handleMouseLeave = (event) => {
-    // if (this.localState.beingDragged) {
-    //   this.handleMouseUp(event);
-    // }
+    //this.handleMouseUp(event);
   }
   handleMouseMove = (event) => {
     event.preventDefault();
     if (this.props.frozen) {
       return;
     }
-    // note: harmless violation of React state management practices
-    this.localState.point.x = event.clientX;
-    this.localState.point.y = event.clientY;
     if (this.localState.beingDragged) {
+      // note: harmless violation of React state management practices
+      this.localState.point.x = event.clientX;
+      this.localState.point.y = event.clientY;
+      // nodes should be decoupled during transitions and when the control key is down
+      let decoupled = this.props.modifier || this.props.transition;
+      if (event.buttons===2) {
+        this.props.setModifier(true);
+        decoupled = true;
+      } else if (!event.ctrlKey) {
+        this.props.setModifier(false);
+        decoupled = this.props.transition;
+      }
       let p = this.localState.point.matrixTransform(this.localState.matrix);
       let x, y, z;
       let plane = this.props.plane;
@@ -152,12 +188,13 @@ class PropNode extends React.PureComponent {
         z = (-p.y+this.localState.yoffset)/UNIT;
       }
       let {r, a, b} = vector$spherify({x: x, y: y, z: z});
-      if (this.props.reversed && this._node===HAND && this.props.locks.head) {
-        r = 1;
-      } else if (!this.props.reversed && this._node===HEAD && this.props.locks.head) {
+      if (this.props.node===HEAD && this.props.locks.head) {
         r = 1;
       } else {
-          r = round(r, 0.5) || 0.01;
+        r = round(r, 0.5) || 0.01;
+      }
+      if (this.props.transition && [HEAD, HAND, GRIP].includes(this.props.node) && r>0.01) {
+        return;
       }
       // how fine-grained is the rounding on angles?
       const FRACTION = 4;
@@ -175,29 +212,49 @@ class PropNode extends React.PureComponent {
       let z2 = round(z, 0.5);
       let d1 = (x1-x)*(x1-x)+(y1-y)*(y1-y)+(z1-z)*(z1-z);
       let d2 = (x2-x)*(x2-x)+(y2-y)*(y2-y)+(z2-z)*(z2-z);
-      if (d1<=d2) {
+      if ((this.props.node===HEAD && this.props.locks.head) || d1<=d2) {
         x = x1;
         y = y1;
         z = z1;
-      } else if (this.props.reversed && this._node===HAND && this.props.locks.head) {
-        x = x1;
-        y = y1;
-        z = z1;
-      } else if (!this.props.reversed && this._node===HEAD && this.props.locks.head) {
-        x = x1;
-        y = y1;
-        z = z1;
+      } else if (decoupled && this.props.locks.head && (this.props.node===GRIP || (this.props.node===HAND && this.props.locks.grip))) {
+        // this is a placeholder...generally we want to respect the "head" lock even when decoupled
+        x = x2;
+        y = y2;
+        z = z2;
       } else {
         x = x2;
         y = y2;
         z = z2;
       }
-      this.handleMoveNode({
+      this.props.setNodePosition({
+        propid: this.props.propid,
+        node: this.props.node,
         x: x,
         y: y,
         z: z,
         plane: plane
       });
+      if (decoupled && this.props.node!==HEAD) {
+        let child = this.props.node+1;
+        if (child===HELPER && this.props.locks.helper) {
+          child+=1;
+        } else if (child===GRIP && this.props.locks.grip) {
+          child+=1;
+        }
+        let origin = this.localState.origin;
+        let {x: x0, y: y0, z: z0} = sphere$vectorize(origin[NODES[this.props.node]]);
+        let dx = x - x0;
+        let dy = y - y0;
+        let {x: xc, y: yc, z: zc} = sphere$vectorize(origin[NODES[child]]);
+        this.props.setNodePosition({
+          propid: this.props.propid,
+          node: child,
+          x: xc-dx,
+          y: yc-dy,
+          z: zc,
+          plane: plane
+        });
+      }
     }
   }
   handleDoubleClick = (event) => {
@@ -207,99 +264,14 @@ class PropNode extends React.PureComponent {
       console.log("double clicked");
     }
   }
-  render() {
-    if (this.props.node===undefined) {
-      if (this.props.reversed) {
-        this._node = HEAD;
-      } else {
-        this._node = (this.props.locks.body) ? PIVOT : BODY;
-      }
-    } else {
-      this._node = this.props.node;
-    }
-    let {x, y} = this.handleTranslate();
-    let node = this.props.props[this.props.propid][NODES[this._node]];
-    let {tether, child} = (this.props.reversed) ? this.handleParentNode() : this.handleChildNode();
-    let shape;
-    // should actually be the GRIP node?
-    if (this._node===BODY) {
-      shape = <BodyNode x={X0} y={Y0} fill={this.props.color} dim={UNIT/12} />
-    } else if (this._node===PIVOT) {
-      shape = <PivotNode x={X0} y={Y0} fill={this.props.color} dim={UNIT/10}/>
-    } else if (this._node===HELPER) {
-      shape = <HelperNode x={X0} y={Y0} fill={this.props.color} dim={UNIT/10} />
-    } else if (this._node===HAND && !this.props.locks.grip) {
-      shape = <HandNode x={X0} y={Y0} fill={this.props.color} dim={UNIT/10} />
-    } else if (this._node===GRIP || this._node===HAND) {
-      shape = <GripNode x={X0} y={Y0} fill={this.props.color} dim={UNIT/16} />
-    } else if (this._node===HEAD) {
-      shape = <HeadNode x={X0} y={Y0} fill={this.props.color} dim={UNIT/8} />
-    }
-    let marker = null;
-    if (zeroish(node.r, 0.015) && this.props.activeNode===this._node && this.props.getActivePropId()===this.props.propid) {
-      // !!!! I can't really do this with node.a
-      let tip = "zero " +NODES[this._node]+" at angle "+node.a;
-      let trans = "rotate(" + node.a + " "+X0+" "+Y0+")";
-      marker = <NodeMarker x={X0} y={Y0} transform={trans} fill={this.props.color} dim={UNIT/20} tip={tip}/>;
-    }
-    let title = (this.props.tick) ? "drag to set starting "+NODES[this._node] : "drag to set next "+NODES[this._node]; 
-    if (this.props.transition) {
-      title = "drag to set starting "+NODES[this._node];
-    }
-    let dimmer = "#333333";
-    let circles = null;
-    if (this.localState.beingDragged && !isNaN(x) && !isNaN(y)) {
-      let xc = X0-x;
-      let yc = Y0-y;
-      // I need some way to round this off to zero.
-      circles = 
-        <g>
-          <circle cx={xc} cy={yc} r={HALF} fill="none" stroke={dimmer} />  
-          <circle cx={xc} cy={yc} r={UNIT} fill="none" stroke={dimmer} />
-          <circle cx={xc} cy={yc} r={1.5*UNIT} fill="none" stroke={dimmer} />
-          <circle cx={xc} cy={yc} r={2*UNIT} fill="none" stroke={dimmer} />
-        </g>
-      ;
-    }
-    return (
-      <g 
-        ref={(e)=>(this.element=e)}
-        transform={"translate("+x+","+y+")"}
-        onDoubleClick={this.handleDoubleClick}
-        onMouseDown={this.handleMouseDown}
-        onMouseUp={this.handleMouseUp}
-        onMouseMove={this.handleMouseMove}
-        onMouseLeave={this.handleMouseLeave}
-      >
-        <title>{title}</title>
-        {circles}
-        {tether}
-        {shape}
-        {child}
-        {marker}
-      </g>
-    );
+  avoidContextMenu = (e)=>{
+    e.preventDefault();
+    return false;
   }
-  handleTranslate = ()=>{
-    let v;
-    let prop = this.props.props[this.props.propid];
-    if (this.props.reversed && this._node===HEAD) {
-      let s = cumulate(NODES.map(node=>prop[node]));
-      v = sphere$vectorize(s);
-    } else {
-      let n = (this.props.reversed) ? this._node+1 : this._node;
-      if (n===HELPER && this.props.locks.helper) {
-        n+=1;
-      } else if (n===GRIP && this.props.locks.grip) {
-        n+=1;
-      }
-      v = sphere$vectorize(prop[NODES[n]]);
-      if (this.props.reversed) {
-        v.x = -v.x;
-        v.y = -v.y;
-        v.z = -v.z;
-      }
-    }
+  render() {
+    let decoupled = this.props.modifier || this.props.transition;
+    let node = this.props.props[this.props.propid][NODES[this.props.node]];
+    let v = sphere$vectorize(node);
     let x, y;
     let plane = this.props.plane;
     if (plane==="WALL") {
@@ -312,160 +284,128 @@ class PropNode extends React.PureComponent {
       x = v.x * UNIT;
       y = -v.z * UNIT;
     }
-    return {x: x, y: y};
-  }
-  handleSnapTo = ()=> {      
-    let past = 0;
-    for (let move of this.props.moves[this.props.propid]) {
-      if (past+beats(move)*BEAT > this.props.tick2) {
-        this.props.validateTransition();
-        this.props.activateProp(this.props.propid);
-        this.props.gotoTick(past);
-        return;
-      } else {
-        past += beats(move)*BEAT;
+    if (isNaN(x) || isNaN(y)) {
+      x = 0;
+      y = 0;
+    }
+    let tether = null;
+    let child = null;
+    if (this.props.node<NODES.length-1) {
+      let n = this.props.node+1;
+      if (n===HELPER && this.props.locks.helper) {
+        n+=1;
+      } else if (n===GRIP && this.props.locks.grip) {
+        n+=1;
       }
+      let node2 = this.props.props[this.props.propid][NODES[n]];
+      let v2 = sphere$vectorize(node2);
+      let x2, y2;
+      if (plane==="WALL") {
+        x2 = v2.x * UNIT;
+        y2 = -v2.y * UNIT;
+      } else if (plane==="WHEEL") {
+        x2 = -v2.z * UNIT;
+        y2 = -v2.y * UNIT;
+      } else if (plane==="FLOOR") {
+        x2 = v2.x * UNIT;
+        y2 = -v2.z * UNIT;
+      }
+      // fix NaN
+      if (isNaN(x2) || isNaN(y2)) {
+        x2 = 0;
+        y2 = 0;
+      }
+      let style = {stroke: "gray"};
+      if (n===HEAD) {
+        style.strokeWidth = 3;
+      } else {
+        style.strokeDasharray="5,5";
+      }
+      if (decoupled) {
+        style.strokeDasharray="2";
+      }
+      tether = <line x1={X0} y1={Y0} x2={X0+x2} y2={Y0+y2} style={style} />
+      child = <PropNode {...this.props} node={n} />;
+
     }
-  }
-  handleModifyMove = ()=>{
-    this.props.modifyMoveUsingNode({
-      node: NODES[this._node],
-      propid: this.props.propid,
-    });
-  }
-  handleMoveNode = ({x, y, z, plane})=>{
-    if (this.props.reversed) {
-      this.props.reversedNodePosition({
-        propid: this.props.propid,
-        node: this._node,
-        x: x,
-        y: y,
-        z: z,
-        plane: plane
-      });
-    } else {
-      this.props.setNodePosition({
-        propid: this.props.propid,
-        node: this._node,
-        x: x,
-        y: y,
-        z: z,
-        plane: plane
-      });
+    let shape;
+    // should actually be the GRIP node?
+    if (this.props.node===BODY) {
+      shape = <BodyNode x={X0} y={Y0} fill={this.props.color} dim={UNIT/12} />
+    } else if (this.props.node===PIVOT) {
+      shape = shape = <PivotNode x={X0} y={Y0} fill={this.props.color} dim={UNIT/10}/>
+    } else if (this.props.node===HELPER) {
+      shape = <HelperNode x={X0} y={Y0} fill={this.props.color} dim={UNIT/10} />
+    } else if (this.props.node===HAND && !this.props.locks.grip) {
+      shape = <HandNode x={X0} y={Y0} fill={this.props.color} dim={UNIT/10} />
+    } else if (this.props.node===GRIP || this.props.node===HAND) {
+      shape = <GripNode x={X0} y={Y0} fill={this.props.color} dim={UNIT/16} />
+    } else if (this.props.node===HEAD) {
+      shape = <HeadNode x={X0} y={Y0} fill={this.props.color} dim={UNIT/8} />
     }
-  }
-  handleChildNode = ()=>{
-    if (this._node>=NODES.length-1) {
-      return ({
-        tether: null,
-        child: null
-      });
+    let marker = null;
+    // !!! should I also do this somehow for decoupling?
+    if (zeroish(node.r, 0.015) && this.props.activeNode===this.props.node && this.props.getActivePropId()===this.props.propid) {
+      // !!!! I can't really do this with node.a
+      let a = node.a;
+      if (isNaN(a)) {
+        a = 0;
+      }
+      let tip = "zero " +NODES[this.props.node]+" at angle "+a;
+      let trans = "rotate(" + a + " "+X0+" "+Y0+")";
+      marker = <NodeMarker x={X0} y={Y0} transform={trans} fill={this.props.color} dim={UNIT/20} tip={tip}/>;
     }
-    let n = this._node+1;
-    if (n===HELPER && this.props.locks.helper) {
-      n+=1;
-    } else if (n===GRIP && this.props.locks.grip) {
-      n+=1;
+    let title = (this.props.tick) ? "drag to set starting "+NODES[this.props.node] : "drag to set next "+NODES[this.props.node]; 
+    if (this.props.transition) {
+      title = "drag to set starting "+NODES[this.props.node];
     }
-    let node2 = this.props.props[this.props.propid][NODES[n]];
-    let v2 = sphere$vectorize(node2);
-    let x2, y2;
-    let plane = this.props.plane;
-    if (plane==="WALL") {
-      x2 = v2.x * UNIT;
-      y2 = -v2.y * UNIT;
-    } else if (plane==="WHEEL") {
-      x2 = -v2.z * UNIT;
-      y2 = -v2.y * UNIT;
-    } else if (plane==="FLOOR") {
-      x2 = v2.x * UNIT;
-      y2 = -v2.z * UNIT;
+    let dimmer = "#333333";
+    let circles = null;
+    if (this.localState.beingDragged && !isNaN(x) && !isNaN(y)) {
+      let xc = round(X0-x,1);
+      let yc = round(Y0-y,1);
+      // I need some way to round this off to zero.
+      circles = 
+        <g>
+          <circle cx={xc} cy={yc} r={HALF} fill="none" stroke={dimmer} />  
+          <circle cx={xc} cy={yc} r={UNIT} fill="none" stroke={dimmer} />
+          <circle cx={xc} cy={yc} r={1.5*UNIT} fill="none" stroke={dimmer} />
+          <circle cx={xc} cy={yc} r={2*UNIT} fill="none" stroke={dimmer} />
+        </g>
+      ;
     }
-    let style = {stroke: "gray"};
-    if (n===HEAD) {
-      style.strokeWidth = 3;
-    } else {
-      style.strokeDasharray="5,5";
-    }
-    console.log(NODES[this._node]);
-    console.log(X0, x2, Y0, y2);  
-    let tether = <line x1={X0} y1={Y0} x2={X0+x2} y2={Y0+y2} style={style} />
-    let child = <PropNode {...this.props} node={n} />;
-    return {tether: tether, child: child};
-  }
-  handleParentNode = ()=>{
-    console.log(NODES[this._node]);
-    if (this._node<=0) {
-      return ({
-        tether: null,
-        child: null
-      });
-    } else if (this._node===PIVOT && this.props.locks.body) {
-      return ({
-        tether: null,
-        child: null
-      });
-    }
-    let n = this._node-1;
-    if (n===HELPER && this.props.locks.helper) {
-      n-=1;
-    } else 
-    if (n===GRIP && this.props.locks.grip) {
-      n-=1;
-    }
-    // duplicate code!
-    let node2 = this.props.props[this.props.propid][NODES[this._node]];
-    let v2 = sphere$vectorize(node2);
-    let x2, y2;
-    let plane = this.props.plane;
-    if (plane==="WALL") {
-      x2 = v2.x * UNIT;
-      y2 = -v2.y * UNIT;
-    } else if (plane==="WHEEL") {
-      x2 = -v2.z * UNIT;
-      y2 = -v2.y * UNIT;
-    } else if (plane==="FLOOR") {
-      x2 = v2.x * UNIT;
-      y2 = -v2.z * UNIT;
-    }
-    let style = {stroke: "gray"};
-    if (this._node===HEAD) {
-      style.strokeWidth = 3;
-    } else {
-      style.strokeDasharray="5,5";
-    }
-    let tether = <line x1={X0} y1={Y0} x2={X0-x2} y2={Y0-y2} style={style} />
-    let child = <PropNode {...this.props} node={n} />;
-    return {tether: tether, child: child};
+    return (
+      <g transform={"translate("+x+","+y+")"}>
+        {tether}
+        {decoupled ? child : null}
+        <g 
+          ref={(e)=>(this.element=e)}
+          
+          onDoubleClick={this.handleDoubleClick}
+          onMouseDown={this.handleMouseDown}
+          onMouseUp={this.handleMouseUp}
+          onMouseMove={this.handleMouseMove}
+          onMouseLeave={this.handleMouseLeave}
+          onContextMenu={this.avoidContextMenu}
+        >
+          <title>{title}</title>
+          {circles}
+          {shape}
+          {marker}
+        </g>
+        {decoupled ? null : child}
+        
+      </g>
+    );
   }
 }
 
-
-// So...
-// actual coordinates
-// body: -1, 0
-// pivot: -1, -1
-// helper: 0, -1
-// hand: 0, -2
-// grip: -1, -2
-// head: -1, -3
-// ~
-// relative coordinates
-// -1, 0 (body)
-// 0, -1 (pivot)
-// 1, 0 (helper)
-// 0, -1 (hand)
-// -1, 0 (grip)
-// 0, -1 (head)
-// ~
-// reversed coordinates
-// -1, -3 (cumulated) (render head)
-// 0, 1 (-head) (render grip)
-// 1, 0 (-grip) (render hand)
-// 0, 1 (-hand) (render helper)
-// -1, 0 (-helper) (render pivot)
-// 0, 1 (-pivot) (render body)
-
-// So...how can we deal with this?
-  // the order of traversal for a prop is completely arbitrary.
-  // so it's probably best to make handleTranslate the workhorse method
+// class NodeTrails extends React.Component {
+//   // no need for nesting
+//   render() {
+//     let {index} = this.props.getActiveMove();
+//     let previous = (index===0) ? this.props.starters[this.props.propid] : this.props.moves[this.props.propid][index-1];  
+//     let trail = <line x1={} y1={} x2={X0} y2={Y0} stroke={this.props.color} strokeDasharray="4"/>;
+//     return trail;
+//   }
+// }

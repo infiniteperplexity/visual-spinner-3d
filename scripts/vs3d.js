@@ -1741,7 +1741,7 @@ function Player(renderer) {
 				window.URL.revokeObjectURL(url);
 			}, 0);
 		} 
-		return fname;
+		return p;
 	}
 
 // ****************************************************************************

@@ -24,7 +24,7 @@ let AppComponent = ReactRedux.connect(
       // moving the node around 
       setNode: setNodePosition,
       setNodePosition: setNodePosition,
-      reversedNodePosition: reversedNodePosition,
+      decoupledNodePosition: decoupledNodePosition,
       
       pushState: pushStoreState,
       pushStoreState: pushStoreState,
@@ -57,7 +57,8 @@ let AppComponent = ReactRedux.connect(
       validateLocks: validateLocks,
 
       loadJSON: loadJSON,
-      fileInput: fileInput
+      fileInput: fileInput,
+      setModifier: setModifier
   })
 )(App);
 
@@ -71,6 +72,7 @@ function reducer(state, action) {
       colors: clone(COLORS),
       models: player.props.map(p=>"poi"),
       starters: player.props.map(p=>resolve(fit(p.prop, new Move({beats: 0})))),
+      modifier: false,
       tick: -1,
       tick2: -1,
       frame: -1,
@@ -146,6 +148,8 @@ function reducer(state, action) {
       return {...state, frozen: action.frozen};
     case "SET_LOCKS":
       return {...state, locks: action.locks};
+    case "SET_MODIFIER":
+      return {...state, modifier: action.modifier};
     case "SET_SCROLLED":
       return {...state, scrolled: action.scrolled};
     default:

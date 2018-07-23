@@ -220,36 +220,38 @@ function setNodePosition({propid, node, x, y, z}) {
   store.dispatch({type: "SET_PROPS", props: props});
 }
 
-function reversedNodePosition({propid, node, x, y, z}) {
+function setModifier(val) {
+  store.dispatch({type: "SET_MODIFIER", modifier: val})
+}
+function decoupledNodePosition({propid, node, dx, dy, dz}) {
   propid = parseInt(propid);
-  let s = vector$spherify({x: x, y: y, z: z});
   let props = clone(store.getState().props);
-  // get drag offsets
-  let base = props[propid][NODES[node]];
-  let {x: x0, y: y0, z: z0} = sphere$vectorize(base);
-  let dx = x - x0;
-  let dy = y - y0;
-  let dz = z - z0;
   // the body node gets offset by the dragged amount
   let body = props[propid].body;
   let {x: xb, y: yb, z: zb} = sphere$vectorize(body);
-  console.log(xb, yb, zb);
   let nbody = vector$spherify({
     x: xb + dx,
     y: yb + dy,
     z: zb + dz
   });
-  props[propid].body = nbody;
+  props[propid].body = nbody;  
   // the child node gets offset by the reverse amount
   if (node!==HEAD) {
-    let child = props[propid][NODES[node+1]]; 
+    let n = node+1;
+    let {locks} = store.getState();
+    if (locks.helper && node===PIVOT) {
+      n+=1;
+    } else if (locks.grip && node===HAND) {
+      n+=1;
+    }
+    let child = props[propid][NODES[n]]; 
     let {x: xc, y: yc, z: zc} = sphere$vectorize(child);
     let nchild = vector$spherify({
       x: xc - dx,
       y: yc - dy,
       z: zc - dz
     });
-    props[propid][NODES[node+1]] = nchild;
+    props[propid][NODES[n]] = nchild;
   }
   setActiveNode(node);
   store.dispatch({type: "SET_PROPS", props: props});
@@ -289,17 +291,18 @@ function setColors(colors) {
 }
 
 function setModels(models) {
-  store.dispatch({type: "SET_MODELS", models: models});
-  let {props} = store.getState();
-  for (let i=0; i<props.length; i++) {
-    let prop = new VS3D.PropWrapper();
-    prop.model = models[i];
-    for (let key of ["color","fire","alpha","nudge","prop","moves","fitted"]) {
-      prop[key] = player.props[i][key];
-    }
-    player.props[i] = prop;
-  }
-  updateEngine();
+  // !!!! Too buggy
+  // store.dispatch({type: "SET_MODELS", models: models});
+  // let {props} = store.getState();
+  // for (let i=0; i<props.length; i++) {
+  //   let prop = new VS3D.PropWrapper();
+  //   prop.model = models[i];
+  //   for (let key of ["color","fire","alpha","nudge","prop","moves","fitted"]) {
+  //     prop[key] = player.props[i][key];
+  //   }
+  //   player.props[i] = prop;
+  // }
+  // updateEngine();
 }
 
 
@@ -372,6 +375,7 @@ function loadJSON(json) {
       }
     }
     let state = {
+      filename: saveState.filename,
       props: clone(player.props.map(p=>p.prop)),
       moves: clone(player.props.map(p=>p.moves)),
       starters: player.props.map(p=>resolve(fit(p.prop, new Move({beats: 0})))),

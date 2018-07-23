@@ -1,11 +1,13 @@
 const KEYCODES = {
   DELETE: 46,
-  BACKSPACE: 8
+  BACKSPACE: 8,
+  CONTROL: 17
 }
 
 window.addEventListener("keydown", handleKeyDown);
-	function handleKeyDown(e) {
-	if ([KEYCODES.DELETE, KEYCODES.BACKSPACE].includes(e.keyCode)) {
+window.addEventListener("keyup", handleKeyUp);
+function handleKeyDown(e) {
+	if ([KEYCODES.DELETE, KEYCODES.BACKSPACE].includes(e.which)) {
 	  	e.preventDefault();
 	  	let {transition, tick} = store.getState();
 	  	if (transition) {
@@ -14,5 +16,12 @@ window.addEventListener("keydown", handleKeyDown);
 	  		deleteMove();
 	  	}
 	  	gotoTick(store.getState().tick);
+	} else if (e.which===KEYCODES.CONTROL) {
+		setModifier(true);
+	}
+}
+function handleKeyUp(e) {
+	if (e.which===KEYCODES.CONTROL) {
+		setModifier(false);
 	}
 }

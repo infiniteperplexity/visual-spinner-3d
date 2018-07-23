@@ -61,8 +61,8 @@ class MoveQueue extends React.PureComponent {
     );
     return (
       <ul style={{
+        minWidth: "100%",
         listStyleType: "none",
-        width: "100%",
         borderStyle: "solid",
         borderWidth: "1px",
         borderColor: "lightgray",
@@ -124,6 +124,7 @@ class MoveItem extends React.PureComponent {
   }
   handleMouseDown = (e)=>{
     player.stop();
+    this.props.validateTransition();
     this.props.setTop(this.props.propid);
     this.props.gotoTick(this.props.ticks);
   }

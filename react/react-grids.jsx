@@ -76,7 +76,7 @@ function Grid(props, context) {
   }
   let registry = [];
   for (let key of props.order) {
-    registry.push(<PropNode key={key} propid={key} reversed={true} color={props.colors[key]} {...props} />);
+    registry.push(<PropNode key={key} propid={key} node={(props.locks.body) ? PIVOT : BODY} color={props.colors[key]} {...props} />);
   }
   let top = "UP";
   let bottom = "DOWN";

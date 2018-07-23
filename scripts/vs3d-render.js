@@ -79,6 +79,7 @@ VS3D = (function(VS3D) {
 			// clean up removed props or altered
 			// does not properly detected altered if mutated in place
 			if (!wrappers.includes(prop)) {
+				// this is kind of a mess
 				let shapes = this.models[i];
 				shapes.renderOrder = i;
 				this.scene.remove(shapes);
