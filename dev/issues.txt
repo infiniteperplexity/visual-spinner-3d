@@ -37,5 +37,3 @@ Bugs:
 - Maybe let locking a node zeroify it?
 - Make it possible to add more props, or delete them.
 - Quite possibly should carry over spins and stuff like that.
-
-- CSS Animations:

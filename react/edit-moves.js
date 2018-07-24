@@ -382,7 +382,7 @@ function deleteTransition() {
         a1: move[node].a1
       };
     }
-  });    
+  }); 
   moves = clone(moves);
   moves[propid][index] = resolve(move);
   store.dispatch({type: "SET_MOVES", moves: moves});
@@ -426,6 +426,7 @@ function deleteMove() {
   if (moves[propid].length<=1) {
     return;
   }
+  let last = moves[propid].length;
   pushStoreState();
   let {index} = getActiveMove();
   if (transitions[propid][index]) {
@@ -456,6 +457,30 @@ function deleteMove() {
     moves[propid][index] = second;
   }
   store.dispatch({type: "SET_MOVES", moves: moves});
+  if (index<last-1) {
+    // if it's not the last move on this prop, stay in roughly the same spot
+    let i=0;
+    let past=0;
+    while (i<index) {
+      past+=beats(moves[propid][i])*BEAT;
+      i+=1;
+    }
+    gotoTick(past);
+  } else {
+    // otherwise, go to the end of the longest move
+    let b = beats(moves[propid])*BEAT;
+    let longest = propid;
+    for (let i=moves.length-1; i>=0; i--) {
+      if (beats(moves[i])*BEAT>b) {
+        longest = i;
+      }
+    }
+    if (longest!==propid) {
+      store.dispatch({type: "SET_TOP", propid: longest});
+    }
+    let len = moves[longest].length;
+    gotoTick(beats(moves[longest])*BEAT - beats(moves[longest][len-1])*BEAT);
+  }
 }
 
 function insertNewMove() {

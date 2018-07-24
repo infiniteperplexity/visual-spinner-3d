@@ -150,7 +150,7 @@ class MovePanel extends React.PureComponent {
         <MoveControl node="helper" move={move} propid={propid} {...this.props}/>
         <MoveControl node="pivot" move={move} propid={propid} {...this.props}/>
         <MoveControl node="body" move={move} propid={propid} {...this.props}/>
-        <div>bend twist</div>
+        <div>bend, twist (not yet implemented)</div>
       </div>
     );
   }
