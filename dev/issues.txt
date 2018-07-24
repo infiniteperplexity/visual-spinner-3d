@@ -1,8 +1,6 @@
 Engine:
 - Allow optional planes per node, upon the first time I need it.
-- Are defaults injected in the right places?  Probably not, given that object spread is the single biggest performance hog.  Much less of a problem now that I cache the fitted moes.
-- linear movement is now broken and I barely care to fix it.
-- not sure if radial acceleration units are correct
+- Are defaults injected in the right places?  Probably not, given that object spread is the single biggest performance hog.  Much less of a problem now that I cache the fitted moves.
 - Various fitting methods still don't handle plane breaks.
 - GRIP is mostly untested.
 - GRIP seems to display wrong for FLOOR plane, dunno why, something with bearings and angles.  Or maybe it's the optional planes per node?
@@ -37,3 +35,39 @@ Bugs:
 - Maybe let locking a node zeroify it?
 - Make it possible to add more props, or delete them.
 - Quite possibly should carry over spins and stuff like that.
+
+- Other planes are mostly untested.
+- Grip is mostly untested.
+
+Planes:
+	- extending moves doesn't extend the plane.
+	- Seems to snap back.
+	- Seems dangerously breakable to show moves in the wrong plane.
+	- Probably need some kind of alert that like "hey, this ending is not compatible at all with the prior plane"
+	- Idea: special iconography for plane break?
+
+
+addMovesToEnd:
+	- Do you add based on the selected plane or the last plane?
+	- What if things are incompatible?
+
+modifyMoveUsingNode:
+	- What do you do when the plane differs from the existing one?
+		- Redo every single node?
+	- What if things are incompatible?
+
+setDuration:
+	- Just need to propagate it.
+
+modifySpins, modifyAcceleration:
+	- Just need to propagate it.
+
+validateTransition and deleteTransition might get crazy.
+
+deleteMove could create inconsistencies.
+
+insertMove could create inconsistencies.
+
+copyDraggedMove could create inconsistencies.
+
+setPropNodesByTick probably needs to account for plane

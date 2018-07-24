@@ -6,7 +6,7 @@ function addMovesToEnd(propid) {
   pushStoreState();
   validateTransition();
   setTopPropById(propid);
-  let {moves, starters} = store.getState();
+  let {moves, starters, plane} = store.getState();
   moves = [...moves];
   let ticks = (moves[propid].length===0) ? 0 : beats(moves[propid])*BEAT;
   for (let i=0; i<moves.length; i++) {
@@ -16,6 +16,9 @@ function addMovesToEnd(propid) {
     } else if (beats(moves[i])*BEAT<=ticks) {
       let previous = moves[i][moves[i].length-1];
       let move = {beats: 1};
+      // PLANE: let move = {beats: 1, p: plane};
+      // PLANE: should this add based on the current plane, or the ending plane?
+      // PLANE: should it freak out if it's an "incompatible" plane with the prior move?
       // otherwise, copy radius and angle, but use previous ending speed as starting speed
       NODES.map(node=> {
         move[node] = {};
@@ -38,7 +41,6 @@ function addMovesToEnd(propid) {
 function modifyMoveUsingNode({node, propid}) {
   player.stop();
   propid = parseInt(propid);
-  const ROUNDMIN = 0.2;
   pushStoreState();
   let {props, moves, starters, plane, tick, transition, transitions} = store.getState();
   let prop = props[propid]
@@ -46,10 +48,11 @@ function modifyMoveUsingNode({node, propid}) {
   let r = prop[node].r;
   // don't update if nothing changed, or if it's a transition
   let current = (tick===-1) ? starters[propid] : submove(moves[propid], tick).move;
+  // PLANE: Might this be handled totally differently if the planes differ?
   if (!transition && !(nearly(current[node].r1, r) && nearly(current[node].a1, a))) {
     current = clone(current);
     let old = current[node];
-          // should I try to snag spin at this point???
+    // should I try to snag spin at this point???
     let updated = {
       r: (tick===-1) ? r : old.r,
       r1: r,
@@ -135,6 +138,7 @@ function setDuration({propid, ticks}) {
   } else {
     let beats = ticks / BEAT;
     let updated = {beats: beats};
+    // PLANE: Need to propagate plane
     for (let node of NODES) {
       updated[node] = {
         r: move[node].r,
@@ -185,6 +189,7 @@ function modifySpins({propid, node, n}) {
     return;
   }
   move = clone(move);
+  // PLANE: Need to propagate plane
   let updated = {
     r: move[node].r,
     r1: move[node].r1,

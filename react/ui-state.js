@@ -145,9 +145,6 @@ function setPropNodesByTick(tick) {
   updateEngine();
 }
 
-// function nextCusp(propid) {
-
-// }
 function propSelectAllowed(propid) {
   propid = parseInt(propid);
   let active = getActivePropId();
@@ -308,6 +305,9 @@ function setModels(models) {
 
 
 function setPlane(plane) {
+  if (plane!=="WALL") {
+    alert("warning: all functionality outside the wall plane is poorly tested and buggy.");
+  }
   if (plane==="WALL") {
     renderer.setCameraPosition(0,0,8);
   } else if (plane==="WHEEL") {
@@ -457,3 +457,5 @@ function fileInput(callback) {
 function setScrolled(scrolled) {
   store.dispatch({type: "SET_SCROLLED", scrolled: scrolled})
 }
+
+

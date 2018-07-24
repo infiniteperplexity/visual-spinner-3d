@@ -41,6 +41,21 @@ function HeadNode(props, context) {
   return <circle cx={x} cy={y} r={dim*2} stroke="gray" strokeWidth="1" fill={fill} />;
 }
 
+function WrongPlaneNode(props, context) {
+  let {x, y, fill, dim} = props;
+  return (
+    <path 
+      d={
+      "M "+(x-dim)+","+y+
+      "A "+dim+","+dim+" 0 0,0 "+x+","+(y-dim)+
+      "A "+dim+","+dim+" 0 0,0 "+(x+dim)+","+y+
+      "A "+dim+","+dim+" 0 0,0 "+x+","+(y+dim)+
+      "A "+dim+","+dim+" 0 0,0 "+(x-dim)+","+y
+      }
+    fill={fill} stroke="gray" strokeWidth="1" />
+  );
+}
+
 function NodeMarker(props, context) {
   let {x, y, fill, dim, tip, transform} = props;
   y-=UNIT/4;
