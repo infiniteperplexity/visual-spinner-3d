@@ -202,27 +202,25 @@ class PropNode extends React.PureComponent {
       let z2 = round(z, 0.5);
       let d1 = (x1-x)*(x1-x)+(y1-y)*(y1-y)+(z1-z)*(z1-z);
       let d2 = (x2-x)*(x2-x)+(y2-y)*(y2-y)+(z2-z)*(z2-z);
-      // !!! tricky logic here...rounding possibilities based on distance to head
       if (decoupled && this.props.locks.head && (this.props.node===GRIP || (this.props.node===HAND && this.props.locks.grip))) {
-        // let {x: xh, y: yh, z: zh} = sphere$vectorize(this.localState.origin.head);
-        // let dx = x-xh;
-        // let dy = y-yh;
-        // let dz = z-zh;
-        // let s = vector$spherify({x: dx, y: dy, z: dz});
-        // a = round(s.a, rounding);
-        // b = round(s.b, rounding);
-        // v = sphere$vectorize({r: 1, a: a, b: b});
-        // // this does a loop of radius 1 around the hand's parent node
-        // console.log("!!!");
-        // console.log(xh);
-        // console.log(v.x);
-        // // this doesn't work...do I need to make it completely absolute first?
-        // x1 = xh-v.x;
-        // x2 = x1;
-        // y1 = yh-v.y;
-        // y2 = y1;
-        // z1 = zh-v.z;
-        // z2 = z1;
+        // respect the tether look in decoupled mode
+        // I think this 
+        let origin = this.localState.origin;
+        let headsum = (this.props.node===HAND) ? cumulate([origin.hand, origin.grip, origin.head]) : cumulate([origin.grip, origin.head]);
+        let {x: xh, y: yh, z: zh} = sphere$vectorize(headsum);
+        let dx = x-xh;
+        let dy = y-yh;
+        let dz = z-zh;
+        let s = vector$spherify({x: dx, y: dy, z: dz});
+        a = round(s.a, rounding);
+        b = round(s.b, rounding);
+        v = sphere$vectorize({r: 1, a: a, b: b});
+        x1 = xh + v.x;
+        x2 = x1;
+        y1 = yh + v.y;
+        y2 = y1;
+        z1 = zh + v.z;
+        z2 = z1;
       }
       if ((this.props.node===HEAD && this.props.locks.head) || d1<=d2) {
         x = x1;
