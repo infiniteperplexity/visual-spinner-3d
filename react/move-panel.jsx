@@ -228,14 +228,16 @@ class MoveControl extends React.PureComponent {
     } else if (node==="head") {
       graphic = <HeadNode x={SVG} y={SVG} dim={SVG/5} fill={color}/>;
     }
-    let move;
+    let move, index, previous;
     if (this.props.tick>-1) {
-      move = submove(this.props.moves[propid], this.props.tick).move;
+      let sub = submove(this.props.moves[propid], this.props.tick);
+      move = sub.move;
+      index = sub.index;
+      previous = (index===0) ? this.props.starters[propid] : this.props.moves[propid][index-1];
     }
-    // let stroke = (color==="#ffffff") ? "lightgray" : color;
     let stroke = "lightgray";
     let buttons = (locked || this.props.tick===-1 || this.props.transition) ? null : [
-        <SpeedMeter key="0" move={move} color={color} node={node}/>,
+        <SpeedMeter key="0" move={move} previous={previous} color={color} node={node}/>,
         <SpeedButton key="1" onClick={this.handleCounter} title="less clockwise / more counterclockwise">
           <path d={ARROW} transform="scale(-1, 1) translate(-20, 5)" fill={color} stroke={stroke}/>
         </SpeedButton>,
@@ -307,12 +309,13 @@ class MoveControl extends React.PureComponent {
 
 // okay...we need some stuff here to deal with linear motion
 function SpeedMeter(props, context) {
-  let {move, node, color} = props;
+  let {move, node, color, previous} = props;
   let va = move[node] ? move[node].va : 0;
   let va1 = move[node] ? move[node].va1 : va;
   let spin = beats(move)/4;
   let spins = Math.ceil(Math.abs(0.5*(va+va1)*spin));
-  let {vl, vl1, la} = move[node];
+  let {r, r1, vl, vl1, la} = move[node];
+  let rprev = previous[node].r1;
   let spintransform = "translate(9, 17)";
   if ((va+va1)<0) {
     spintransform = "scale(-1, 1) translate(-25, 17)";
@@ -331,8 +334,14 @@ function SpeedMeter(props, context) {
   };
   let speed = Math.round(Math.abs(va));
   let title = spins + " rotations";
-  // deal with linear motion
-  if (spins===0 || (va===undefined && vl!==undefined)) {
+  if (zeroish(r,0.02) && zeroish(r1,0.02) && zeroish(rprev, 0.02)) {
+    spins = 0;
+    va = 0;
+    va1 = 0;
+    vl = 0;
+    vl1 = 0;
+    title = "0 spins, speed 0";
+  } else if (spins===0 || (va===undefined && vl!==undefined)) {
     la = Math.round(la);
     if (isNaN(la)) {
       let {r, r1, a, vr, vr1} = move[node];
@@ -360,7 +369,7 @@ function SpeedMeter(props, context) {
         speed = Math.round(Math.abs(vl));
         title += ", accelerating from speed " + speed;
       }
-    } else if (zeroish(vl)) {
+    } else if (zeroish(vl, 0.02)) {
       speed = 0;
       title = "0 rotations, speed 0";
     } else {
@@ -375,6 +384,8 @@ function SpeedMeter(props, context) {
       speed = Math.round(Math.abs(va));
       title += ", accelerating from speed " + speed;
     }
+  } else if (zeroish(speed)) {
+    title = "0 spins, speed 0";
   } else {
     title += ", speed " + speed;
   }
@@ -386,7 +397,7 @@ function SpeedMeter(props, context) {
   if (zeroish(spins)) {
     spinshape = null;
     if (vl!==undefined) {
-      if (zeroish(vl) && zeroish(vl1)) {
+      if (zeroish(vl, 0.02) && zeroish(vl1, 0.02)) {
         accshape = null;
         acctext = null;
       } else {

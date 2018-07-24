@@ -14,7 +14,7 @@ class QueuePanel extends React.PureComponent {
     </PropPanel>);
     let queues = this.props.props.map((_,i)=><MoveQueue key={i} propid={i} scrollTarget={this} {...this.props}/>);
     return (
-      <div>
+      <div style={{whiteSpace: "nowrap"}}>
         <div style={{
           display: "inline-block"
         }}>
@@ -205,8 +205,9 @@ class MoveItem extends React.PureComponent {
   }
   render() {
     let move = this.props.move;
-    let width = this.WIDTH*beats(this.props.move);
-    width = width || this.WIDTH;
+    let b = beats(this.props.move);
+    b = b || 1;
+    let width = this.WIDTH*b + 0.5*b-1;
     let title = "codes a segment of movement";
     if (this.props.ticks===-1) {
       title = "codes the starting positions for all nodes";
@@ -223,11 +224,11 @@ class MoveItem extends React.PureComponent {
         onMouseDown={(e)=>this.handleMouseDown(e)}
         title={title}
         style={{
-          borderRadius: (this.props.ticks===-1) ? "50%" : "10%",
+          borderRadius: (this.props.ticks===-1) ? "50%" : "8px",
           borderStyle: "solid",
           borderWidth: "1px",
           marginRight: (this.props.ticks===-1) ? "-1px" : "0",
-          marginLeft:(this.props.ticks===-1) ? "0" : (this.props.ticks===0) ? "1px" : "-9.5px",
+          marginLeft:(this.props.ticks===-1) ? "0" : (this.props.ticks===0) ? "1px" : "-11px",
           display: "inline-block",
           overflowX: "hidden",
           backgroundColor: (this.props.tick===this.props.ticks) ? "cyan" : "white"
@@ -240,7 +241,7 @@ class MoveItem extends React.PureComponent {
 class Transition extends React.PureComponent {
   constructor(props, context) {
     super(props, context);
-    this.dim = 7;
+    this.dim = 9;
     this.margin = 90/2 - this.dim/2;
     this.state = {highlight: false};
   }

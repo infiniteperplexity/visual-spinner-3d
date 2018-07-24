@@ -53,14 +53,6 @@ function NodeMarker(props, context) {
 }
 
 
-
-    // 0  : No button or un-initialized
-    // 1  : Primary button (usually left)
-    // 2  : Secondary button (usually right)
-    // 4  : Auxilary button (usually middle or mouse wheel button)
-    // 8  : 4th button (typically the "Browser Back" button)
-    // 16 : 5th button (typically the "Browser Forward" button)
-
 let _debounce = false;
 class PropNode extends React.PureComponent {
   constructor(props, context) {
@@ -93,8 +85,8 @@ class PropNode extends React.PureComponent {
     }
     if (event.buttons===2) {
       this.props.setModifier(true);
-    } else if (!event.ctrlKey) {
-      this.props.setModifier(false);
+    } else {
+      this.props.setModifier(event.ctrlKey);
     }
     if (!this.props.propSelectAllowed(this.props.propid)) {
       let past = 0;
@@ -136,9 +128,7 @@ class PropNode extends React.PureComponent {
     if (this.props.frozen) {
       return;
     }
-    if (!event.ctrlKey) {
-      this.props.setModifier(false);
-    }
+    this.props.setModifier(event.ctrlKey);
     event.preventDefault();
     if (this.localState.beingDragged && !this.props.validate && this.props.propSelectAllowed(this.props.propid)) {
       // !!! doesn't work right sometimes, with modifier
@@ -193,7 +183,7 @@ class PropNode extends React.PureComponent {
       } else {
         r = round(r, 0.5) || 0.01;
       }
-      if (this.props.transition && [HEAD, HAND, GRIP].includes(this.props.node) && r>0.01) {
+      if (([HEAD, GRIP].includes(this.props.node) || (this.props.node===HAND && this.props.locks.grip)) && this.props.transition && r>0.01) {
         return;
       }
       // how fine-grained is the rounding on angles?
@@ -206,21 +196,38 @@ class PropNode extends React.PureComponent {
       let x1 = v.x;
       let y1 = v.y;
       let z1 = v.z;
-      // alternate, grid-based rounding
+      // alternate, grid-based roundings
       let x2 = round(x, 0.5);
       let y2 = round(y, 0.5);
       let z2 = round(z, 0.5);
       let d1 = (x1-x)*(x1-x)+(y1-y)*(y1-y)+(z1-z)*(z1-z);
       let d2 = (x2-x)*(x2-x)+(y2-y)*(y2-y)+(z2-z)*(z2-z);
+      // !!! tricky logic here...rounding possibilities based on distance to head
+      if (decoupled && this.props.locks.head && (this.props.node===GRIP || (this.props.node===HAND && this.props.locks.grip))) {
+        // let {x: xh, y: yh, z: zh} = sphere$vectorize(this.localState.origin.head);
+        // let dx = x-xh;
+        // let dy = y-yh;
+        // let dz = z-zh;
+        // let s = vector$spherify({x: dx, y: dy, z: dz});
+        // a = round(s.a, rounding);
+        // b = round(s.b, rounding);
+        // v = sphere$vectorize({r: 1, a: a, b: b});
+        // // this does a loop of radius 1 around the hand's parent node
+        // console.log("!!!");
+        // console.log(xh);
+        // console.log(v.x);
+        // // this doesn't work...do I need to make it completely absolute first?
+        // x1 = xh-v.x;
+        // x2 = x1;
+        // y1 = yh-v.y;
+        // y2 = y1;
+        // z1 = zh-v.z;
+        // z2 = z1;
+      }
       if ((this.props.node===HEAD && this.props.locks.head) || d1<=d2) {
         x = x1;
         y = y1;
         z = z1;
-      } else if (decoupled && this.props.locks.head && (this.props.node===GRIP || (this.props.node===HAND && this.props.locks.grip))) {
-        // this is a placeholder...generally we want to respect the "head" lock even when decoupled
-        x = x2;
-        y = y2;
-        z = z2;
       } else {
         x = x2;
         y = y2;
@@ -376,11 +383,11 @@ class PropNode extends React.PureComponent {
     }
     return (
       <g transform={"translate("+x+","+y+")"}>
+        {circles}
         {tether}
         {decoupled ? child : null}
         <g 
-          ref={(e)=>(this.element=e)}
-          
+          ref={(e)=>(this.element=e)}  
           onDoubleClick={this.handleDoubleClick}
           onMouseDown={this.handleMouseDown}
           onMouseUp={this.handleMouseUp}
@@ -388,8 +395,7 @@ class PropNode extends React.PureComponent {
           onMouseLeave={this.handleMouseLeave}
           onContextMenu={this.avoidContextMenu}
         >
-          <title>{title}</title>
-          {circles}
+          <title>{title}</title>  
           {shape}
           {marker}
         </g>
@@ -399,13 +405,3 @@ class PropNode extends React.PureComponent {
     );
   }
 }
-
-// class NodeTrails extends React.Component {
-//   // no need for nesting
-//   render() {
-//     let {index} = this.props.getActiveMove();
-//     let previous = (index===0) ? this.props.starters[this.props.propid] : this.props.moves[this.props.propid][index-1];  
-//     let trail = <line x1={} y1={} x2={X0} y2={Y0} stroke={this.props.color} strokeDasharray="4"/>;
-//     return trail;
-//   }
-// }

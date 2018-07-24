@@ -287,22 +287,23 @@ function setColors(colors) {
     }
     player.props[i] = prop;
   }
+  renderer.refresh(player.props);
   updateEngine();
 }
 
 function setModels(models) {
-  // !!!! Too buggy
-  // store.dispatch({type: "SET_MODELS", models: models});
-  // let {props} = store.getState();
-  // for (let i=0; i<props.length; i++) {
-  //   let prop = new VS3D.PropWrapper();
-  //   prop.model = models[i];
-  //   for (let key of ["color","fire","alpha","nudge","prop","moves","fitted"]) {
-  //     prop[key] = player.props[i][key];
-  //   }
-  //   player.props[i] = prop;
-  // }
-  // updateEngine();
+  store.dispatch({type: "SET_MODELS", models: models});
+  let {props} = store.getState();
+  for (let i=0; i<props.length; i++) {
+    let prop = new VS3D.PropWrapper();
+    prop.model = models[i];
+    for (let key of ["color","fire","alpha","nudge","prop","moves","fitted"]) {
+      prop[key] = player.props[i][key];
+    }
+    player.props[i] = prop;
+  }
+  renderer.refresh(player.props);
+  updateEngine();
 }
 
 

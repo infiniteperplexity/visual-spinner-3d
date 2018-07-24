@@ -1124,8 +1124,9 @@ let VS3D = {}; //
 		return (sphere$nearly(	cumulate([s.body, s.pivot, s.helper, s.hand, s.grip]),
 								cumulate([m.body, m.pivot, m.helper, m.hand, m.grip]),  delta)
 				&& 
-				sphere$nearly(	cumulate([s.grip, s.head]),
-								cumulate([m.grip, m.head]), delta)
+				sphere$nearly(s.head, m.head, delta)
+				// sphere$nearly(	cumulate([s.grip, s.head]),
+				// 				cumulate([m.grip, m.head]), delta)
 		);
 	}
 

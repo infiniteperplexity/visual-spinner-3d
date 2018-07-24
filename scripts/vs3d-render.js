@@ -34,7 +34,6 @@ VS3D = (function(VS3D) {
 		this.camera = new THREE.PerspectiveCamera(this.fov, this.width/this.height);
 		this.setCameraPosition(0,0,8);
 		this.scene.fog = new THREE.FogExp2( 0x000000, 0.0128 );
-		this.registry = [];
 		this.models = [];
 		this.tick = 0;
 	}
@@ -72,35 +71,25 @@ VS3D = (function(VS3D) {
 		this.renderer.render(this.scene, this.camera);
 	};
 
+	// !!!should this take new props now
+	ThreeRenderer.prototype.refresh = function(wrappers) {
+		for (let shape of this.models) {
+			this.scene.remove(shape);
+		}
+		this.models = [];
+		for (let wrapper of wrappers) {
+			let shapes = this.builder[wrapper.model](wrapper);
+			this.models.push(shapes);
+			this.scene.add(shapes);
+		}
+	}
+
 	ThreeRenderer.prototype.render = function(wrappers, positions) {
-		let removes = [];
-		for (let i=0; i<this.registry.length; i++) {
-			let prop = this.registry[i];
-			// clean up removed props or altered
-			// does not properly detected altered if mutated in place
-			if (!wrappers.includes(prop)) {
-				// this is kind of a mess
-				let shapes = this.models[i];
-				shapes.renderOrder = i;
-				this.scene.remove(shapes);
-				removes.push(i);
-			}
+		if (this.models.length!==wrappers.length) {
+			this.refresh(wrappers);
 		}
-		this.models = this.models.filter((_,i)=>!removes.includes(i));
-		this.registry = this.registry.filter((_,i)=>!removes.includes(i));
-		// add new props
-		for (let prop of wrappers) {
-			if (!this.registry.includes(prop)) {
-				this.registry.push(prop);
-				let shapes = this.builder[prop.model](prop);
-				this.models.push(shapes);
-				this.scene.add(shapes);
-			}
-		}
-		// update all prop locations
 		for (let i=0; i<wrappers.length; i++) {
-			let idx = this.registry.indexOf(wrappers[i]);
-			this.update(this.models[idx], positions[i], wrappers[i].nudge);
+			this.update(this.models[i], positions[i], wrappers[i].nudge)
 		}
 		this.renderer.render(this.scene, this.camera);
 	}

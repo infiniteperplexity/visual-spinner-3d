@@ -34,14 +34,8 @@ Bugs:
 
 - Do we need "insert a new move"?
 - Look for ugly speed labels of various kinds
-- Cumulative width is a bit off sometimes.
 - Maybe let locking a node zeroify it?
 - Make it possible to add more props, or delete them.
 - Quite possibly should carry over spins and stuff like that.
 
-- Re-implement prop model choosing
-
-
 - CSS Animations:
-	- 
-
