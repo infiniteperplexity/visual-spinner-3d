@@ -4,6 +4,7 @@ let ARROW = "M15.85,7.85l-3,3c-0.19,0.2-0.51,0.2-0.7,0l-3-3C9,7.71,8.96,7.5,9.04
 let ACC = "8,4 0,2 0,6 8,4 8,0 16,4 8,8, 8,4";
 let DEC = "8,4 0,0 0,8 8,4 8,2 16,4 8,6, 8,4";
 let LINEAR = "0,2 8,2 8,0 16,4 8,8 8,6 0,6 0,2";
+let BREAK = "M0,2 4,2 4,6 0,6 0,2 M6,2 8,2 8,0 16,4 8,8 8,6 6,6 6,2"
 
 class DurationEditor extends React.PureComponent {
   handleDurationChange = (n)=>{
@@ -193,6 +194,12 @@ class MoveControl extends React.PureComponent {
     }
     this.props.modifyAcceleration({propid: this.props.propid, node: this.props.node, n: -1});
   }
+  handleAbrupt = (e)=>{
+    // this.props.setAbruptTransition({
+    //   propid: this.props.propid,
+    //   node: this.props.node
+    // });
+  }
   render() {
     const SVG = 25;
     let graphic;
@@ -249,9 +256,11 @@ class MoveControl extends React.PureComponent {
         </SpeedButton>,
         <SpeedButton key="4" onClick={this.handleSlowDown} title="starts faster / ends slower">
           <polygon points={DEC} transform="translate(5, 9)" fill={color} stroke={stroke}/>
+        </SpeedButton>,
+        <SpeedButton key="5" onClick={this.handleAbrupt} title={/*"snap-to from previous"*/ "not yet enabled"}>
+          <path d={BREAK} transform="translate(5,9)" fill={color} stroke={stroke}/>
         </SpeedButton>
     ];
-    // <polygon points={DEC} transform="scale(-1, 1) translate(-20, 9)" fill={color} stroke="lightgray"/>
     let tether1 = {stroke: "gray"};
     let tether2 = {stroke: "gray"};
     if (node==="head") {
@@ -307,8 +316,8 @@ class MoveControl extends React.PureComponent {
 }
 
 
-// okay...we need some stuff here to deal with linear motion
 function SpeedMeter(props, context) {
+  // this code is a bit of a sh*tshow
   let {move, node, color, previous} = props;
   let va = move[node] ? move[node].va : 0;
   let va1 = move[node] ? move[node].va1 : va;

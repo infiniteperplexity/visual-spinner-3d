@@ -146,11 +146,23 @@ class PropNode extends React.PureComponent {
     this.props.setModifier(event.ctrlKey);
     event.preventDefault();
     if (this.localState.beingDragged && !this.props.validate && this.props.propSelectAllowed(this.props.propid)) {
-      // !!! doesn't work right sometimes, with modifier
       this.props.modifyMoveUsingNode({
         node: NODES[this.props.node],
         propid: this.props.propid,
       });
+      // it should be okay to modify this even if we're not sure whether modifier was set
+      if (this.props.node<HEAD) {
+        let n = this.props.node+1;
+        if (this.props.node===HAND && this.props.locks.grip) {
+          n+=1;
+        } else if (this.props.node===PIVOT && this.props.locks.helper) {
+          n+=1;
+        }
+        this.props.modifyMoveUsingNode({
+          node: NODES[n],
+          propid: this.props.propid
+        });
+      }
     }
     this.localState.beingDragged = false;
     Draggables[this.props.dragID].localState.dragging = null;
@@ -278,11 +290,11 @@ class PropNode extends React.PureComponent {
     }
   }
   handleDoubleClick = (event) => {
-    if (doubleClickHandled===false) {
-      event.preventDefault();
-      handleDoubleClick();
-      console.log("double clicked");
-    }
+    // if (doubleClickHandled===false) {
+    //   event.preventDefault();
+    //   handleDoubleClick();
+    //   console.log("double clicked");
+    // }
   }
   avoidContextMenu = (e)=>{
     e.preventDefault();
@@ -401,7 +413,6 @@ class PropNode extends React.PureComponent {
         {decoupled ? child : null}
         <g 
           ref={(e)=>(this.element=e)}  
-          onDoubleClick={this.handleDoubleClick}
           onMouseDown={this.handleMouseDown}
           onMouseUp={this.handleMouseUp}
           onMouseMove={this.handleMouseMove}

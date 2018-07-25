@@ -364,6 +364,38 @@ function validateTransition() {
   }
 }
 
+function setAbruptTransition({propid, node}) {
+  // so this works for *adding* an abrupt transition
+  let {transitions, tick, moves} = store.getState();
+  let {move, index} = getMovesAtTick(tick)[propid];
+  let transition = transitions[propid][index];
+  if (!transition) {
+    transition = {};
+    move = clone(move);
+    NODES.map(n=>{
+      transition[n] = {
+        r: move[n].r,
+        r1: move[n].r,
+        a: move[n].a,
+        a1: move[n].a    
+      }
+    });
+  }
+  transition[node] = {
+    r: move[node].r1,
+    r1: move[node].r1,
+    a: move[node].a1,
+    a1: move[node].a1
+  };
+  transitions = clone(transitions);
+  transitions[propid][index] = transition;
+  store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
+  moves = clone(moves);
+  move[node] = clone(transition[node]);
+  moves[propid][index] = resolve(move);
+  store.dispatch({type: "SET_MOVES", moves: moves});
+}
+
 function deleteTransition() {
   player.stop();
   pushStoreState();
@@ -371,7 +403,6 @@ function deleteTransition() {
   let {transitions, moves, tick} = store.getState();
   transitions = clone(transitions);
   let {move, index} = getActiveMove();
-  alert("testing");
   delete transitions[propid][index];
   store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
   move = clone(move);

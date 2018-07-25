@@ -26,7 +26,7 @@ class App extends React.PureComponent {
       <div className="grid app" style={{height: "720px"}}>
         <div className="grid header">
           <div>
-            <button onClick={(e)=>{
+            <button title="save sequence as JSON file" onClick={(e)=>{
               e.preventDefault();
               if (this.props.frozen) {
                 return;
@@ -103,6 +103,7 @@ function Grid(props, context) {
       <text x={X0} y={UNIT*(UNITS-0.5)+tweak} textAnchor="middle" stroke={stroke} fill={stroke} style={{fontFamily: "monospace"}}>{bottom}</text>
       <text x={HALF} y={Y0+tweak} textAnchor="middle" stroke={stroke} fill={stroke} style={{fontFamily: "monospace"}}>{left}</text>
       {registry}
+      <title>Click to drag a node and its children; right-click or CTRL-click to drag nodes independently</title>
     </DragSVG>
   );
 }

@@ -8,7 +8,6 @@ Engine:
 - Over and under-solving are causing recurring problems.
 - Might want to actually make PIVOT named SHOULDER and so on.
 - Does resolve() keep spin?
-- I feel like that "special handling for last frame in a move" thing is playing with fire
 
 
 Apps:
@@ -71,3 +70,9 @@ insertMove could create inconsistencies.
 copyDraggedMove could create inconsistencies.
 
 setPropNodesByTick probably needs to account for plane
+
+Problem that arose using editor.
+
+(often failing to update moves) - could this be due to double clicks?  if so, it's fixed...need to watch out for this.
+(getting a weird error at this part...NaN shoulder speed, when it should have been sliding (radius change))..best solution would be to refactor the code
+(custom transition failed to update a shoulder point)

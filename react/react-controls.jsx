@@ -88,7 +88,7 @@ class PlaneMenu extends React.PureComponent {
   }
   render() {
     return (
-      <select value={this.props.plane} onChange={this.handleChange}>
+      <select title="change plane" value={this.props.plane} onChange={this.handleChange}>
         <option value="WALL">Wall Plane</option>
         <option value="WHEEL">Wheel Plane</option>
         <option value="FLOOR">Floor Plane</option>
@@ -107,6 +107,6 @@ class ImportButton extends React.PureComponent {
     this.props.fileInput(this.handleInput.bind(this));
   }
   render() {
-    return <button onClick={this.handleClick}>Import</button>
+    return <button title="import a saved JSON sequence" onClick={this.handleClick}>Import</button>
   }
 }

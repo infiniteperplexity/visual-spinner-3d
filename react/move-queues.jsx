@@ -49,7 +49,7 @@ class MoveQueue extends React.PureComponent {
     // push the half-things onto here...
     for (let i=0; i<moves.length; i++) {
       if (i>0) {
-        list.push(<Transition key={i-0.5} n={i} ticks={ticks} move={moves[i]} {...this.props}/>);
+        list.push(<TransitionPoint key={i-0.5} n={i} ticks={ticks} move={moves[i]} {...this.props}/>);
       }
       list.push(<MoveItem key={i} n={i} ticks={ticks} move={moves[i]} {...this.props}/>);
       ticks += beats(moves[i])*BEAT;
@@ -87,7 +87,8 @@ class NewMove extends React.PureComponent {
   }
   render() {
     return (
-      <button 
+      <button
+        title="add new move(s) to end" 
         ref={e=>(this._element=e)}
         style={{
           marginLeft: "1px"
@@ -238,7 +239,9 @@ class MoveItem extends React.PureComponent {
     return canv;
   }
 }
-class Transition extends React.PureComponent {
+
+
+class TransitionPoint extends React.PureComponent {
   constructor(props, context) {
     super(props, context);
     this.dim = 9;
@@ -285,6 +288,7 @@ class Transition extends React.PureComponent {
           width: this.dim,
           borderStyle: "solid",
           borderWidth: "1px",
+          borderColor: (color==="#ffffff") ? "gray" : "black",
           marginBottom: this.margin+"px",
           left: "-5.25px",
           display: "inline-block",
@@ -294,7 +298,7 @@ class Transition extends React.PureComponent {
           // borderTopRightRadius: "50%",
           // borderBottomRightRadius: "50%",
           borderRadius: "50%",
-          backgroundColor: color
+          backgroundColor: (color==="#ffffff") ? "#dddddd" : color
         }}
       />
     );
@@ -316,6 +320,7 @@ class ColorPicker extends React.PureComponent {
               style={{
                 marginLeft: "1px"
               }}
+              title="change color of prop"
               onChange={this.handleChange}
               value={svg2hex(this.props.colors[this.props.propid])}/>
     );
@@ -331,7 +336,7 @@ class ModelPicker extends React.PureComponent {
   }
   render() {
     return (
-      <select onChange={this.handleChange} 
+      <select title="change model for prop" onChange={this.handleChange} 
         style={{width: "64px"}}
         value={this.props.models[this.props.propid]}>
         <option value="poi">Poi</option>

@@ -535,14 +535,8 @@ let VS3D = {}; //
 			}
 			let past = 0;
 			let i = 0;
-			// one weird exception, for the very final beat
-			if (t===beats(move)*BEAT) {
-				let m = move[move.length-1];
-				return spin(m, beats(m)*BEAT, dummy);
-			}
 			while (past<=t) {
 				let ticks = beats(move[i])*BEAT;
-				// if (past+ticks>=t) {
 				if (past+ticks>t) {
 					return spin(move[i], t-past, dummy);
 				} else {

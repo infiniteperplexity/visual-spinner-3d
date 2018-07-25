@@ -47,6 +47,7 @@ function playEngineTick(tick, wrappers, positions) {
   let {moves, props, tick2} = store.getState();
   let ends = props.map((_,i)=>spin(moves[i],tick2+1));
   positions = positions.concat(ends);
+  // positions = ends.concat(positions);
   wrappers = wrappers.concat(endwraps);
   renderer.render(wrappers, positions);
 }
@@ -66,13 +67,15 @@ function skipToEngineTick(frame) {
   }
   let {props, moves} = store.getState();
   let begins = props.map((_,i)=>spin(moves[i], frame));
-  let positions = props.concat(begins);
+  // let positions = props.concat(begins);
+  let positions = begins.concat(props);
   let ends = clone(player.props);
   ends.map(e=>{
     e.nudge = -e.nudge;
     e.alpha = 0.6;
   });
-  let wrappers = ends.concat(player.props);
+  // let wrappers = ends.concat(player.props);
+  let wrappers = player.props.concat(ends);
   renderer.render(wrappers, positions);
 }
 
@@ -87,13 +90,15 @@ function renderEngine() {
     /*** Otherwise, do some swapping and cloning to get wrappers and positions for beginnings and endings ***/
       /* Rendering transitions treats the current beginning as the beginning and the editing buffer as the ending */
     let begins = props.map((_,i)=>spin(moves[i],tick));
-    let positions = props.concat(begins);
+    // let positions = props.concat(begins);
+    let positions = begins.concat(props);
     let ends = clone(player.props);
     ends.map(e=>{
       e.nudge = -e.nudge;
       e.alpha = 0.6;
     });
-    let wrappers = ends.concat(player.props);
+    // let wrappers = ends.concat(player.props);
+    let wrappers = player.props.concat(ends);
     renderer.render(wrappers, positions);
   }
 }
@@ -136,9 +141,11 @@ function setPropNodesByTick(tick) {
   let state = store.getState();
   let props;
   if (tick===-1) {
-    props = state.starters.map(s=>spin(s, 0))
+    props = state.starters.map(s=>dummy(s, 0))
   } else {
-    props = state.moves.map(m=>dummy(m, tick+1));
+    let subs = getMovesAtTick(tick);
+    props = subs.map(({move, tick})=>dummy(move, tick+1));
+    // props = state.moves.map(m=>dummy(m, tick+1));
   }
   ;
   store.dispatch({type: "SET_PROPS", props: props});
@@ -414,6 +421,7 @@ function loadJSON(json) {
     }
     store.dispatch({type: "SET_STATE", state: state});
     validateSequences();
+    renderer.refresh(player.props);
     pushStoreState();
     gotoTick(-1);
   } catch (e) {
@@ -457,5 +465,4 @@ function fileInput(callback) {
 function setScrolled(scrolled) {
   store.dispatch({type: "SET_SCROLLED", scrolled: scrolled})
 }
-
 

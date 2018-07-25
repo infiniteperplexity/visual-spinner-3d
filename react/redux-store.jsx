@@ -38,6 +38,7 @@ let AppComponent = ReactRedux.connect(
       setTransition: editTransition,
       editTransition: editTransition,
       validateTransition: validateTransition,
+      setAbruptTransition: setAbruptTransition,
       insertNewMove: insertNewMove,
       copyDraggedMove: copyDraggedMove,
 
