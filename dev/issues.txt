@@ -77,3 +77,6 @@ Problem that arose using editor.
 (custom transition failed to update a shoulder point)
 
 - I'd like a ticker type thing across the bottom or top or something...talk to Brigid.
+
+- should we ever be seeing speed zero? probaly refactor that damn code
+- need to rethink how "validateTransitions" works, now that we freeze certain nodes.

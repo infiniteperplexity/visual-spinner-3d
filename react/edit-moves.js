@@ -62,6 +62,7 @@ function modifyMoveUsingNode({node, propid}) {
     // update one node based on the change
     current[node] = updated;
     current = resolve(current);
+    // should probably wipe out exsiting transitions for this node?
     let next = null;
     // if we modified the starting positions
     if (tick===-1) {
@@ -74,6 +75,18 @@ function modifyMoveUsingNode({node, propid}) {
       // don't worry about transitions; we will discard them
       if (index<moves[propid].length-1) {
         next = clone(moves[propid][index+1]);
+      }
+      if (index>0 && transitions[propid][index]) {
+        transitions = clone(transitions);
+        // let previous = moves[propid][index-1][node];
+        // transitions[propid][index][node] = {
+        //   r: previous.r1,
+        //   r1: previous.r1,
+        //   a: previous.a1,
+        //   a1: previous.a1
+        // };
+        transitions[propid][index] = null;
+        store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
       }
     }
     if (next) {
@@ -102,8 +115,8 @@ function modifyMoveUsingNode({node, propid}) {
       if (next) {
         moves[propid][index+1] = next;
         if (transitions[propid][index+1]) {
-          transitions = clone(transitions);
-          delete transitions[propid][index+1];
+          /// !!! maybe just for the current node?
+          transitions[propid][index] = null;
           store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
         }
       }
