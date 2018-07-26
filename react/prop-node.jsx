@@ -113,6 +113,7 @@ class PropNode extends React.PureComponent {
           return;
         } else {
           past += beats(move)*BEAT;
+          return;
         }
       }
     }
@@ -143,8 +144,13 @@ class PropNode extends React.PureComponent {
     if (this.props.frozen) {
       return;
     }
-    this.props.setModifier(event.ctrlKey);
+    this.props.setModifier(event.crlKey);
     event.preventDefault();
+    let dragged = Draggables[this.props.dragID].localState.dragging;
+    if (dragged && dragged!==this) {
+      dragged.handleMouseUp.call(dragged, event);
+      return;
+    }
     if (this.localState.beingDragged && !this.props.validate && this.props.propSelectAllowed(this.props.propid)) {
       this.props.modifyMoveUsingNode({
         node: NODES[this.props.node],

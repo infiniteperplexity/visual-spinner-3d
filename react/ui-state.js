@@ -396,7 +396,7 @@ function loadJSON(json) {
       plane: "WALL",
       frozen: false,
       transition: false,
-      transitions: player.props.map(p=>({})),
+      transitions: player.props.map(p=>([])),
       locks: {
         helper: true,
         grip: true,

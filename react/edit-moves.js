@@ -309,7 +309,7 @@ function validateTransition() {
         // undo the custom transition
         // console.log("The transition perfectly matches the end of the preceding move, so it will be deleted.");
         transitions = clone(transitions);
-        delete transitions[propid][index];
+        transitions[propid][index] = null;
         store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
         move = clone(move);
         NODES.map(node=>{
@@ -403,7 +403,7 @@ function deleteTransition() {
   let {transitions, moves, tick} = store.getState();
   transitions = clone(transitions);
   let {move, index} = getActiveMove();
-  delete transitions[propid][index];
+  transitions[propid][index] = null;
   store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
   move = clone(move);
   let position = moves[propid][index-1];
@@ -428,7 +428,7 @@ function deleteTransition() {
 function validateSequences() {
   let {props, moves, transitions} = store.getState();
   moves = clone(moves);
-  transitions = props.map(p=>({}));
+  transitions = props.map(p=>([]));
   for (let i=0; i<props.length; i++) {
     for (let j=1; j<moves[i].length; j++) {
       let previous = moves[i][j-1];
@@ -465,11 +465,9 @@ function deleteMove() {
   let last = moves[propid].length;
   pushStoreState();
   let {index} = getActiveMove();
-  if (transitions[propid][index]) {
-    transitions = clone(transitions);
-    delete transitions[propid][index];
-    store.dispatch({type: "SET_TRANSITIONS", transitions: tranistions});
-  }  
+  transitions = clone(transitions);
+  transitions[propid].splice(index,1);
+  store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});  
   moves = clone(moves);
   moves[propid] = moves[propid].filter((_,i)=>(i!==index));
   if (index<moves[propid].length) {
@@ -521,8 +519,9 @@ function deleteMove() {
 
 function insertNewMove() {
   let propid = getActivePropId();
-  let {moves, starters, tick2} = store.getState();
+  let {moves, starters, tick2, transitions} = store.getState();
   moves = clone(moves);
+  transitions = clone(transitions);
   if (tick2===-1) {
     let starter = starters[propid];
     let created = {
@@ -537,6 +536,7 @@ function insertNewMove() {
       }
     });
     moves[propid].unshift(created);
+    transitions[propid].unshift(null);
   } else {
     let {move, index} = getActiveMove();
     let created = {
@@ -551,13 +551,17 @@ function insertNewMove() {
       }
     });
     moves.splice(index, 0, created);
+    transitions.splice(index, 0, null);
   }
   store.dispatch({type: "SET_MOVES", moves: moves});
+  store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
+
 }
 
 function copyDraggedMove(move, propid, i) {
-  let {moves, starters} = store.getState();
+  let {moves, starters, transitions} = store.getState();
   moves = clone(moves);
+  transitions = clone(transitions);
   let previous = (i===-1) ? starters[propid] : moves[propid][i];
   if (i<moves[propid].length-1) {
     NODES.map(node=>{
@@ -594,4 +598,6 @@ function copyDraggedMove(move, propid, i) {
   }
   moves[propid].splice(i+1, 0, resolve(move));
   store.dispatch({type: "SET_MOVES", moves: moves});
+  transitions[propid].splice(i+1, 0, null);
+  store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
 }

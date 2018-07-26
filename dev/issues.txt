@@ -73,6 +73,7 @@ setPropNodesByTick probably needs to account for plane
 
 Problem that arose using editor.
 
-(often failing to update moves) - could this be due to double clicks?  if so, it's fixed...need to watch out for this.
 (getting a weird error at this part...NaN shoulder speed, when it should have been sliding (radius change))..best solution would be to refactor the code
 (custom transition failed to update a shoulder point)
+
+- I'd like a ticker type thing across the bottom or top or something...talk to Brigid.

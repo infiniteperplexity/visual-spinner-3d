@@ -84,7 +84,7 @@ function reducer(state, action) {
       scrolled: 0,
       transition: false,
       // sparse array
-      transitions: player.props.map(p=>({})),
+      transitions: player.props.map(p=>([])),
       locks: {
         body: true,
         helper: true,
