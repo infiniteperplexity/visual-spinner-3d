@@ -265,24 +265,26 @@ function modifyAcceleration({propid, node, n}) {
   }
   let {vl, vl1, la} = move[node];
   if (vl!==undefined || vl1!==undefined) {
-    if (zeroish(vl) && n>0) {
+    if ((zeroish(vl1, 0.02) || vl1<0) && n>0) {
       return;
-    } else if (zeroish(vl1) && n<0) {
-      return;
-    } else if ((Math.abs(vl)>=BOUNDS || nearly(Math.abs(vl),BOUNDS)) && n<0) {
+    } else if ((zeroish(vl, 0.02) || vl<0) && n<0) {
       return;
     }
-    vl -= n;
     move = clone(move);
     let updated = {
       r: move[node].r,
       r1: move[node].r1,
       a: move[node].a,
       a1: move[node].a1,
-      vl: vl,
       la: la
     };
+    if (n<0) {
+      updated.vl = Math.max(vl+n, 0);
+    } else {
+      updated.vl1 = Math.max(vl1-n, 0)
+    }
     move[node] = updated;
+    console.log(resolve(move)[node]);
   } else {
     move = clone(move);
     let updated = {

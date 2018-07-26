@@ -12,11 +12,30 @@ class QueuePanel extends React.PureComponent {
       <br />
       <ModelPicker propid={i} {...this.props}/>
     </PropPanel>);
+    let scale = [];
+    let max = 10;
+    for (let move of this.props.moves) {
+      max = Math.max(max, beats(move)+1);
+    }
+    for (let i=0; i<max; i++) {
+      scale.push(<li key={i} style={{
+        display: "inline-block",
+        borderRight:"1px solid lightgray",
+        color: "lightgray",
+        fontSize: "10px",
+        textAlign: "right",
+        paddingRight: "2px",
+        width: "87.9px",
+        marginLeft: (i===0) ? "-37px" : "0px"
+      }}>{i*BEAT}</li>);
+    }
+    
     let queues = this.props.props.map((_,i)=><MoveQueue key={i} propid={i} scrollTarget={this} {...this.props}/>);
     return (
       <div style={{whiteSpace: "nowrap"}}>
         <div style={{
-          display: "inline-block"
+          display: "inline-block",
+          paddingTop: "22px"
         }}>
           {panels}
         </div>
@@ -25,6 +44,7 @@ class QueuePanel extends React.PureComponent {
           onScroll={this.handleScroll}
           style={{
             width: "981px",
+            borderLeft: "1px solid lightgray",
             borderRight: "1px solid lightgray",
             overflowX: "scroll",
             whiteSpace: "nowrap",
@@ -32,6 +52,10 @@ class QueuePanel extends React.PureComponent {
             verticalAlign: "top"
           }}
         >
+          <ul style={{
+            margin: "0px",
+            height: "20px"
+          }}>{scale}</ul>
           {queues}
         </div>
       </div>
@@ -61,10 +85,11 @@ class MoveQueue extends React.PureComponent {
     );
     return (
       <ul style={{
-        minWidth: "100%",
         listStyleType: "none",
+        borderTop: "1px",
         borderStyle: "solid",
-        borderWidth: "1px",
+        borderLeft: "0px",
+        borderRight: "0px",
         borderColor: "lightgray",
         borderBottom: "0px",
         padding: "3px",

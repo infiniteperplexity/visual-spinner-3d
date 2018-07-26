@@ -315,111 +315,104 @@ class MoveControl extends React.PureComponent {
   }
 }
 
-
 function SpeedMeter(props, context) {
-  // this code is a bit of a sh*tshow
   let {move, node, color, previous} = props;
-  let va = move[node] ? move[node].va : 0;
-  let va1 = move[node] ? move[node].va1 : va;
-  let spin = beats(move)/4;
-  let spins = Math.ceil(Math.abs(0.5*(va+va1)*spin));
-  let {r, r1, vl, vl1, la} = move[node];
-  let rprev = previous[node].r1;
-  let spintransform = "translate(9, 17)";
-  if ((va+va1)<0) {
-    spintransform = "scale(-1, 1) translate(-25, 17)";
-  }
-  let acctransform = "translate(34,21)";
-  if (Math.abs(va1)<Math.abs(va)) {
-    acctransform = "translate(27, 21)";
-  }
-  let niceNames = {
-    body: "body",
-    pivot: "shoulder",
-    helper: "elbow",
-    hand: "hand",
-    grip: "handle",
-    head: "head"
-  };
-  let speed = Math.round(Math.abs(va));
-  let title = spins + " rotations";
-  if (zeroish(r,0.02) && zeroish(r1,0.02) && zeroish(rprev, 0.02)) {
-    spins = 0;
-    va = 0;
-    va1 = 0;
-    vl = 0;
-    vl1 = 0;
-    title = "0 spins, speed 0";
-  } else if (spins===0 || (va===undefined && vl!==undefined)) {
-    la = Math.round(la);
-    if (isNaN(la)) {
-      let {r, r1, a, vr, vr1} = move[node];
-      if (nearly(r, r1)) {
-        vl = 0;
-        vl1 = 0;
-        la = 0;
-      } else if (r1>r) {
-        vl = vr;
-        vl1 = vr1;
-        la = a;
-      } else {
-        vl = vr;
-        vl1 = vr1;
-        la = angle(-a);
-      }
-    }
-    spins = 0;
-    title = "linear ("+angle(Math.round(la))+" degrees)";
-    if (!nearly(vl, vl1)) {
-      if (Math.abs(vl)>Math.abs(vl1)) {
-        speed = Math.round(Math.abs(vl1));
-        title += ", decelerating to speed " + speed;
-      } else {
-        speed = Math.round(Math.abs(vl));
-        title += ", accelerating from speed " + speed;
-      }
-    } else if (zeroish(vl, 0.02)) {
-      speed = 0;
-      title = "0 rotations, speed 0";
-    } else {
-      speed = Math.round(Math.abs(vl));
-      title += ", speed " + speed;
-    }
-  } else if (!nearly(va, va1)) {
-    if (Math.abs(va)>Math.abs(va1)) {
-      speed = Math.round(Math.abs(va1));
-      title += ", decelerating to speed " + speed;
-    } else {
-      speed = Math.round(Math.abs(va));
-      title += ", accelerating from speed " + speed;
-    }
-  } else if (zeroish(speed)) {
-    title = "0 spins, speed 0";
-  } else {
-    title += ", speed " + speed;
-  }
+  let {va, va1, vr, vr1, vl, vl1, la, a, a1, r, r1} = move[node];
+  let title, speed, spinshape, spintext, accshape, acctext;
   let stroke = "lightgray";
-  let spinshape = <path d={ARROW} transform={spintransform} fill={color} stroke="lightgray"/>;
-  let accshape = <polygon transform={acctransform} points={(Math.abs(va1)<Math.abs(va) || vl1<vl) ? DEC : ACC} fill={color} stroke={stroke}/>;
-  let spintext = <text textAnchor="middle" x={5} y={29} style={{fontSize: "10px"}}>{spins}</text>;
-  let acctext = <text textAnchor="middle" x={Math.abs(va1)<Math.abs(va) ? 46 : 30} y={29} style={{fontSize: "10px"}}>{speed}</text>;
-  if (zeroish(spins)) {
-    spinshape = null;
-    if (vl!==undefined) {
-      if (zeroish(vl, 0.02) && zeroish(vl1, 0.02)) {
-        accshape = null;
-        acctext = null;
-      } else {
-        if (nearly(vl, vl1)) {
-          accshape = <polygon transform="translate(34,19)" points="0,0 0,12, 12,6" fill={color} stroke={stroke}/>;
-        }
-        spinshape = <polygon transform={"translate(11,21) rotate("+(la-90)+" 8 4)"} points={LINEAR} fill={color} stroke={stroke}/>;
-        spintext = null;
+  let cw = <path d={ARROW} transform="translate(9, 17)" fill={color} stroke="lightgray"/>;
+  let ccw = <path d={ARROW} transform="scale(-1, 1) translate(-25, 17)" fill={color} stroke="lightgray"/>;
+  let acc = <polygon transform="translate(34,21)" points={ACC} fill={color} stroke={stroke}/>;
+  let dec = <polygon transform="translate(27, 21)" points={DEC} fill={color} stroke={stroke}/>;
+  let spd = <polygon transform="translate(34,19)" points="0,0 0,12, 12,6" fill={color} stroke={stroke}/>;;
+  if (zeroish(r,0.02) && zeroish(r1,0.02) && zeroish(previous[node].r1,0.02)) {
+    // kind of debatable
+    speed = 0;
+    title = "speed 0";
+    spintext = <text textAnchor="middle" x="5" y="29" style={{fontSize: "10px"}}>0</text>;
+  } else if (vl!==undefined || vl1!==undefined || la!==undefined) {
+    title = "linear ("+angle(Math.round(la))+" degrees), ";
+    if (zeroish(vl, 0.02) && zeroish(vl1, 0.02)) {
+      speed = 0;
+      title = "speed 0";
+      spintext = <text textAnchor="middle" x="5" y="29" style={{fontSize: "10px"}}>0</text>;
+    } else {
+      spinshape = <polygon transform={"translate(11,21) rotate("+(la-90)+" 8 4)"} points={LINEAR} fill={color} stroke={stroke}/>;
+      if (nearly(vl, vl1, 0.02)) {
+        speed = Math.round(vl);
+        title += ("speed "+speed); 
+        accshape = spd;
+        acctext = <text textAnchor="middle" x={30} y={29} style={{fontSize: "10px"}}>{speed}</text>;
+      } else if (vl>vl1) {
+        speed = Math.round(vl1);
+        title += ("decelerating to "+speed); 
+        accshape = dec;
+        acctext = <text textAnchor="middle" x={46} y={29} style={{fontSize: "10px"}}>{speed}</text>;
+      } else if (vl1>vl) {
+        speed = Math.round(vl);
+        title += ("accelerating from "+speed);
+        accshape = acc;
+        acctext = <text textAnchor="middle" x={30} y={29} style={{fontSize: "10px"}}>{speed}</text>;
       }
     }
-  }
-  if (nearly(va, va1) && !zeroish(va)) {
-    accshape = <polygon transform="translate(34,19)" points="0,0 0,12, 12,6" fill={color} stroke={stroke}/>;
+  } else if ((!zeroish(vr, 0.02) || !zeroish(vr1, 0.02)) && zeroish(va, 0.02) && zeroish(va1, 0.02)) {
+    // pseudo-linear
+    if (vr+vr1>0) {
+      la = angle(a);
+    } else if (vr+vr1<0) {
+      la = angle(-a);
+    }
+    title = "linear ("+angle(Math.round(la))+" degrees), ";
+    spinshape = <polygon transform={"translate(11,21) rotate("+(la-90)+" 8 4)"} points={LINEAR} fill={color} stroke={stroke}/>;
+    if (nearly(vr, vr1, 0.02)) {
+      speed = Math.abs(Math.round(vr));
+      title += ("speed "+speed);
+      accshape = spd;
+      acctext = <text textAnchor="middle" x={30} y={29} style={{fontSize: "10px"}}>{speed}</text>;
+    } else {     
+      if (Math.abs(vr, 0.02)>Math.abs(vr1, 0.02)) {
+        speed = Math.abs(Math.round(vr1));
+        title += ("decelerating to "+speed);
+        accshape = dec;
+        acctext = <text textAnchor="middle" x={46} y={29} style={{fontSize: "10px"}}>{speed}</text>;
+      } else if (Math.abs(vr1)>Math.abs(vr)) {
+        speed = Math.abs(Math.round(vr));
+        title += ("accelerating from "+speed);
+        accshape = acc;
+        acctext = <text textAnchor="middle" x={30} y={29} style={{fontSize: "10px"}}>{speed}</text>;
+      }
+    }
+  } else if (zeroish(va, 0.02) && zeroish(va1, 0.02)) {
+    speed = 0;
+    title = "speed 0";
+    spintext = <text textAnchor="middle" x="5" y="29" style={{fontSize: "10px"}}>0</text>;
+  } else {
+    title = " spins, "
+    let spin = beats(move)/4;
+    let spins = Math.ceil(Math.abs(0.5*(va+va1)*spin));
+    title = spins + title;
+    if (va+va1>0) {
+      spinshape = cw;
+    } else if (va+va1<0) {
+      spinshape = ccw;
+    }
+    if (nearly(va, va1, 0.02)) {
+      speed = Math.abs(Math.round(va));
+      title += ("speed "+speed); 
+      accshape = spd;
+      acctext = <text textAnchor="middle" x={30} y={29} style={{fontSize: "10px"}}>{speed}</text>;
+    } else if (Math.abs(va)>Math.abs(va1)) {
+      speed = Math.abs(Math.round(va1));
+      title += ("decelerating to "+speed); 
+      accshape = dec;
+      acctext = <text textAnchor="middle" x={46} y={29} style={{fontSize: "10px"}}>{speed}</text>;
+    } else if (Math.abs(va1)>Math.abs(va)) {
+      speed = Math.abs(Math.round(va));
+      title += ("accelerating from "+speed);
+      accshape = acc;
+      acctext = <text textAnchor="middle" x={30} y={29} style={{fontSize: "10px"}}>{speed}</text>;
+    }
+    spintext = <text textAnchor="middle" x="5" y="29" style={{fontSize: "10px"}}>{spins}</text>;
   }
   return (
     <svg height={49} width={80}>

@@ -50,10 +50,7 @@ class App extends React.PureComponent {
           <PlaneMenu {...noframe}/>
           <ControlPanel {...props} />
         </div>
-        <div className="grid bottom" style={{
-          marginTop: "15px",
-          padding: "5px"
-        }}>
+        <div className="grid bottom">
           <QueuePanel {...noframe}/>
         </div>
       </div>
