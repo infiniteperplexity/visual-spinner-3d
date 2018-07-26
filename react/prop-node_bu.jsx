@@ -151,18 +151,11 @@ class PropNode extends React.PureComponent {
       dragged.handleMouseUp.call(dragged, event);
       return;
     }
-    if (this.localState.beingDragged && this.props.propSelectAllowed(this.props.propid)) {
-      if (this.props.transition) {
-        this.props.modifyTransitionUsingNode({
-          node: NODES[this.props.node],
-          propid: this.props.propid,
-        });
-      } else {
-        this.props.modifyMoveUsingNode({
-          node: NODES[this.props.node],
-          propid: this.props.propid,
-        });
-      }
+    if (this.localState.beingDragged && !this.props.validate && this.props.propSelectAllowed(this.props.propid)) {
+      this.props.modifyMoveUsingNode({
+        node: NODES[this.props.node],
+        propid: this.props.propid,
+      });
       // it should be okay to modify this even if we're not sure whether modifier was set
       if (this.props.node<HEAD) {
         let n = this.props.node+1;
@@ -171,17 +164,10 @@ class PropNode extends React.PureComponent {
         } else if (this.props.node===PIVOT && this.props.locks.helper) {
           n+=1;
         }
-        if (this.props.transition) {
-          this.props.modifyTransitionUsingNode({
-            node: NODES[n],
-            propid: this.props.propid
-          });
-        } else {
-          this.props.modifyMoveUsingNode({
-            node: NODES[n],
-            propid: this.props.propid
-          });
-        }
+        this.props.modifyMoveUsingNode({
+          node: NODES[n],
+          propid: this.props.propid
+        });
       }
     }
     this.localState.beingDragged = false;

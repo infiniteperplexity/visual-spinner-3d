@@ -308,6 +308,12 @@ function modifyAcceleration({propid, node, n}) {
 /*** Set up or delete a custom transition **********************************************/
 /***************************************************************************************/
 function validateTransition() {
+
+
+
+  store.dispatch({type: "SET_TRANSITION", transition: false});
+  return;
+
   let {transition, transitions, tick, moves, props, order} = store.getState();
   if (transition) {
     let propid = order[order.length-1];
@@ -615,4 +621,87 @@ function copyDraggedMove(move, propid, i) {
   store.dispatch({type: "SET_MOVES", moves: moves});
   transitions[propid].splice(i+1, 0, null);
   store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
+}
+
+function modifyTransitionUsingNode({node, propid}) {
+  player.stop();
+  propid = parseInt(propid);
+  pushStoreState();
+  let {props, moves, transitions, plane} = store.getState();
+  let prop = props[propid];
+  let r = prop[node].r;
+  let a = sphere$planify(prop[node], VS3D[plane]);
+  let {move, index} = getActiveMove();
+  let previous = moves[propid][index-1];
+  let transition;
+  // PLANE: need to handle somehow
+  if (transitions[propid][index]) {
+    console.log("flag 1a");
+    transition = clone(transitions[propid][index]);
+  } else {
+    console.log("flag 1b");
+    transition = {
+      beats: 0,
+      plane: plane
+    }
+    NODES.map(n=>{
+      transition[node] = {
+        r: move[n].r,
+        r1: move[n].r,
+        a: move[n].a,
+        a1: move[n].a
+      };
+    });
+  }
+  transition[node] = {
+    r: r,
+    r1: r,
+    a: a,
+    a1: a
+  }
+  move = clone(move);
+  if (matches(previous, transition)) {
+    console.log("flag 2a");
+    // does this get weird due to intermediate states?  probably not, because it won't match
+    NODES.map(n=>{
+      // avoid wiping out spin, etc?
+      move[n] = {
+        r: previous[n].r1,
+        r1: previous[n].r1,
+        a: previous[n].a,
+        a1: previous[n].a1
+      };
+    });
+    move = resolve(move);
+    moves = clone(moves);
+    moves[propid][index] = move;
+    store.dispatch({type: "SET_MOVES", moves: moves});
+    transitions = clone(transitions);
+    transitions[propid][index] = null;
+    store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
+  } else if (fits(previous, transition)) {
+    console.log("flag 2b");
+    NODES.map(n=>{
+      // avoid wiping out spin, etc?
+      move[n] = {
+        r: previous[n].r1,
+        r1: previous[n].r1,
+        a: previous[n].a,
+        a1: previous[n].a1
+      };
+    });
+    move = resolve(move);
+    moves = clone(moves);
+    moves[propid][index] = move;
+    store.dispatch({type: "SET_MOVES", moves: moves});
+    transitions = clone(transitions);
+    transitions[propid][index] = transitions;
+    store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
+  }
+  else {
+    console.log("flag 2c");
+    // hopefully this is an intermediate state...if not, something has gone wrong
+  }
+  updateEngine();
+  validateLocks();
 }

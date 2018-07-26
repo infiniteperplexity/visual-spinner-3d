@@ -78,3 +78,6 @@ Problem that arose using editor.
 
 - need to rethink how "validateTransitions" works, now that we freeze certain nodes.
 	- I think the answer is that we ditch it and just have "setTransitionNode" or something.
+	- since breaking is no longer allowed, yeah.
+
+- Make sure I pushStoreState for changing moves.
