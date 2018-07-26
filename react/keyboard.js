@@ -14,8 +14,8 @@ function handleKeyDown(e) {
 	  		deleteTransition();
 	  	} else if (tick!==-1) {
 	  		deleteMove();
+	  		gotoTick(store.getState().tick);
 	  	}
-	  	gotoTick(store.getState().tick);
 	} else if (e.which===KEYCODES.CONTROL) {
 		setModifier(true);
 	}

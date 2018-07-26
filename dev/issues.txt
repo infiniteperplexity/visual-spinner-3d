@@ -76,8 +76,8 @@ Problem that arose using editor.
 (getting a weird error at this part...NaN shoulder speed, when it should have been sliding (radius change))..best solution would be to refactor the code
 (custom transition failed to update a shoulder point)
 
-- need to rethink how "validateTransitions" works, now that we freeze certain nodes.
-	- I think the answer is that we ditch it and just have "setTransitionNode" or something.
-	- since breaking is no longer allowed, yeah.
 
 - Make sure I pushStoreState for changing moves.
+- Scroll when you click a thing that's near the edge of the screen.
+- Maybe should drag using tethers, in case something gets pulled off screen?
+- Should there be a speed indicator for custom transitions?  Eh...like an asterisk or exclamation point or something?

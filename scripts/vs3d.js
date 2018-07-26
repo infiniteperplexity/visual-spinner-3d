@@ -1111,7 +1111,7 @@ let VS3D = {}; //
 	function fits(prev, move, delta) {
 		delta = delta || 0.01;
 		if (Array.isArray(move)) {
-			return fits(prev, move[0]);
+			return fits(prev, move[0], delta);
 		}
 		let s = dummy(prev);
 		let m = dummy(move, 0);
@@ -1124,16 +1124,18 @@ let VS3D = {}; //
 		);
 	}
 
-	function matches(prev, move) {
+	function matches(prev, move, delta) {
+		delta = delta || 0.01
 		if (Array.isArray(move)) {
-			return matches(prev, move[0]);
+			return matches(prev, move[0], delta);
 		}
 		prev = resolve(prev);
 		move = resolve(move);
 		for (let n of NODES) {
+			// !!!need to handle planes!
 			let node1 = prev[n];
 			let node2 = move[n];
-			if (!nearly(node1.r1, node2.r) || !angle$nearly(node1.a1, node2.a)) {
+			if (!nearly(node1.r1, node2.r, delta) || !angle$nearly(node1.a1, node2.a, delta)) {
 				return false;
 			}
 		}

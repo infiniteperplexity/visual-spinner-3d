@@ -239,9 +239,6 @@ function modifyAcceleration({propid, node, n}) {
     past+=ticks;
     i+=1;
   }
-  // right now this creates errors for linear movements
-
-
   let va = move[node] ? move[node].va : 0;
   let va1 = move[node] ? move[node].va1 : va;
   let spin = beats(move)/4;
@@ -307,84 +304,14 @@ function modifyAcceleration({propid, node, n}) {
 /***************************************************************************************/
 /*** Set up or delete a custom transition **********************************************/
 /***************************************************************************************/
+
+// getting factored out
 function validateTransition() {
-
-
-
   store.dispatch({type: "SET_TRANSITION", transition: false});
   return;
-
-  let {transition, transitions, tick, moves, props, order} = store.getState();
-  if (transition) {
-    let propid = order[order.length-1];
-    // this gets messed up only if you get into an invalid transition state
-    let {move, index} = submove(moves[propid], tick);
-    let previous = moves[propid][index-1];
-    // this is a bit weird...dummying a prop?  is that a thing?
-    let position = dummy(props[propid], 0);
-    if (matches(previous, position, 0.1)) {
-      if (!transitions[propid][index]) {
-        // console.log("The transition perfectly matches the end of the preceding move and will be discarded.");
-      } else {
-        pushStoreState();
-        // undo the custom transition
-        // console.log("The transition perfectly matches the end of the preceding move, so it will be deleted.");
-        transitions = clone(transitions);
-        transitions[propid][index] = null;
-        store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
-        move = clone(move);
-        NODES.map(node=>{
-          // don't overwrite the next node unless necessary
-          if (!(nearly(position[node].r, move[node].r) && nearly(position[node].a, move[node].a))) {
-            //try to keep spins?
-            move[node] = {
-              r: position[node].r,
-              r1: move[node].r1,
-              a: position[node].a,
-              a1: move[node].a1
-            };
-          }
-        });    
-        moves = clone(moves);
-        moves[propid][index] = resolve(move);
-        store.dispatch({type: "SET_MOVES", moves: moves});
-      }
-    } else if (fits(previous, position, 0.1)) {
-      pushStoreState();
-      console.log("The transition is an acceptable fit to the end of the preceding move and will be accepted.");
-      transitions = clone(transitions);
-      let transition = {};
-      move = clone(move);
-      NODES.map(node=>{
-        transition[node] = {
-          r: position[node].r,
-          r1: position[node].r,
-          a: position[node].a,
-          a1: position[node].a    
-        }
-        // don't overwrite the next node unless necessary
-        if (!(nearly(position[node].r, move[node].r) && nearly(position[node].a, move[node].a))) {
-          //try to keep spins?
-          move[node] = {
-            r: position[node].r,
-            r1: move[node].r1,
-            a: position[node].a,
-            a1: move[node].a1
-          };
-        }
-      });
-      transitions[propid][index] = resolve(transition);
-      store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
-      moves = clone(moves);
-      moves[propid][index] = resolve(move);
-      store.dispatch({type: "SET_MOVES", moves: moves});
-    } else {
-      alert("The transition does not fit with the end of the preceding move and will be discarded.");
-    }
-    store.dispatch({type: "SET_TRANSITION", transition: false});
-  }
 }
 
+// not currently used
 function setAbruptTransition({propid, node}) {
   // so this works for *adding* an abrupt transition
   let {transitions, tick, moves} = store.getState();
@@ -422,8 +349,11 @@ function deleteTransition() {
   pushStoreState();
   let propid = getActivePropId();
   let {transitions, moves, tick} = store.getState();
-  transitions = clone(transitions);
   let {move, index} = getActiveMove();
+  if (!transitions[propid][index]) {
+    return;
+  }
+  transitions = clone(transitions);
   transitions[propid][index] = null;
   store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
   move = clone(move);
@@ -443,7 +373,8 @@ function deleteTransition() {
   moves = clone(moves);
   moves[propid][index] = resolve(move);
   store.dispatch({type: "SET_MOVES", moves: moves});
-  store.dispatch({type: "SET_TRANSITION", transition: false});
+  editTransition();
+  // store.dispatch({type: "SET_TRANSITION", transition: false});
 }
 
 function validateSequences() {
@@ -636,16 +567,14 @@ function modifyTransitionUsingNode({node, propid}) {
   let transition;
   // PLANE: need to handle somehow
   if (transitions[propid][index]) {
-    console.log("flag 1a");
     transition = clone(transitions[propid][index]);
   } else {
-    console.log("flag 1b");
     transition = {
       beats: 0,
       plane: plane
     }
     NODES.map(n=>{
-      transition[node] = {
+      transition[n] = {
         r: move[n].r,
         r1: move[n].r,
         a: move[n].a,
@@ -660,48 +589,36 @@ function modifyTransitionUsingNode({node, propid}) {
     a1: a
   }
   move = clone(move);
-  if (matches(previous, transition)) {
-    console.log("flag 2a");
+  transitions = clone(transitions);
+  if (matches(previous, transition, 0.02)) {
     // does this get weird due to intermediate states?  probably not, because it won't match
     NODES.map(n=>{
       // avoid wiping out spin, etc?
       move[n] = {
         r: previous[n].r1,
-        r1: previous[n].r1,
-        a: previous[n].a,
-        a1: previous[n].a1
+        r1: move[n].r1,
+        a: previous[n].a1,
+        a1: move[n].a1
       };
     });
-    move = resolve(move);
-    moves = clone(moves);
-    moves[propid][index] = move;
-    store.dispatch({type: "SET_MOVES", moves: moves});
-    transitions = clone(transitions);
     transitions[propid][index] = null;
-    store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
-  } else if (fits(previous, transition)) {
-    console.log("flag 2b");
+  } else {
     NODES.map(n=>{
       // avoid wiping out spin, etc?
       move[n] = {
-        r: previous[n].r1,
-        r1: previous[n].r1,
-        a: previous[n].a,
-        a1: previous[n].a1
+        r: transition[n].r1,
+        r1: move[n].r1,
+        a: transition[n].a1,
+        a1: move[n].a1
       };
     });
-    move = resolve(move);
-    moves = clone(moves);
-    moves[propid][index] = move;
-    store.dispatch({type: "SET_MOVES", moves: moves});
-    transitions = clone(transitions);
-    transitions[propid][index] = transitions;
-    store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
+    transitions[propid][index] = transition;
   }
-  else {
-    console.log("flag 2c");
-    // hopefully this is an intermediate state...if not, something has gone wrong
-  }
+  move = resolve(move);
+  moves = clone(moves);
+  moves[propid][index] = move;
+  store.dispatch({type: "SET_MOVES", moves: moves});
+  store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
   updateEngine();
   validateLocks();
 }
