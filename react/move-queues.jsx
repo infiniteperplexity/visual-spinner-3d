@@ -76,27 +76,16 @@ class MoveQueue extends React.PureComponent {
       if (i>0) {
         list.push(<TransitionPoint key={i-0.5} n={i} ticks={ticks} move={moves[i]} {...this.props}/>);
       }
-      list.push(<MoveItem key={i} n={i} ticks={ticks} move={moves[i]} {...this.props}/>);
+      list.push(<MoveItem key={i} n={i} queue={this} ticks={ticks} move={moves[i]} {...this.props}/>);
       ticks += beats(moves[i])*BEAT;
     }
-    // list.push(<div key={-2}
-    //   draggable={true}
-    //   onDragStart={(e)=>{e.dataTransfer.setData("text", JSON.stringify({hello: "world"}));}}
-    //   style={{
-    //     width: "90px",
-    //     height: "90px",
-    //     display: "inline-block",
-    //     position: "relative",
-    //     left: "-90px"
-    //   }}
-    // ></div>);
     list.push(
       <div key={list.length} style={{verticalAlign: "top", display: "inline-block"}}>
         <NewMove {...this.props}/>
       </div>
     );
     return (
-      <ul style={{
+      <ul ref={e=>this._dragTarget=e} style={{
         listStyleType: "none",
         borderTop: "1px",
         borderStyle: "solid",
@@ -160,11 +149,19 @@ class MoveItem extends React.PureComponent {
   }
   handleMouseDown = (e)=>{
     player.stop();
-    if (this.props.multiselect) {
-      
-    }
+    // if (e.shiftKey) {
+    //   this.props.setMultiSelect(true);
+    // } else {
+    //   this.props.setMultiSelect(false);
+    // }
     this.props.validateTransition();
     this.props.setTop(this.props.propid);
+    // if (e.shiftKey) {
+      
+    // }
+    // if (this.props.multiselect) {
+      
+    // }
     this.props.gotoTick(this.props.ticks);
 
   }
@@ -220,16 +217,9 @@ class MoveItem extends React.PureComponent {
   handleDragStart =(e)=>{
     let json = this.props.move;
     if (this.props.multiselect) {
-      
     }
-    // create a scaled-down version of / icon for the selection
-    // let canv = document.createElement("canvas");
-    // canv.width = 180;
-    // canv.height = 180;
-    // let ctx = canv.getContext("2d");
-    // ctx.fillStyle = "red";
-    // ctx.fillRect(0,0,180,180);
-    // e.dataTransfer.setDragImage(canv, 250, 250);
+    // let test = this.props.queue._dragTarget.cloneNode();
+    // e.dataTransfer.setDragImage(test,0,0);
     e.dataTransfer.setData("text", JSON.stringify(json));
   }
   handleDragOver =(e)=>{
@@ -244,18 +234,17 @@ class MoveItem extends React.PureComponent {
     // remove the visual indicator
 
   }
+  handleDragEnd = (e)=>{
+
+  }
   handleDrop = (e)=>{
     e.preventDefault();
     let json = e.dataTransfer.getData("text");
     let move = JSON.parse(json);
     // insert move after target
     this.props.copyDraggedMove(move, this.props.propid, parseInt(this.props.n));
-    let _scroll = this.props.scrollTarget._scroll;
-    if (this.canvas.getBoundingClientRect().x>950) {
-      this.props.setScrolled(_scroll.scrollWidth);
-    }
     // probably goto that tick as well?
-    //this.props.gotoTick(this.props.tick+beats(this.props.move)*BEAT);
+    this.props.gotoTick(this.props.tick+beats(this.props.move)*BEAT);
   }
   render() {
     let move = this.props.move;

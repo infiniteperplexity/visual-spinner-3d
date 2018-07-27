@@ -76,7 +76,7 @@ function reducer(state, action) {
       models: player.props.map(p=>"poi"),
       starters: player.props.map(p=>resolve(fit(p.prop, new Move({beats: 0})))),
       modifier: false,
-      multiselect: false,
+      multiselect: null,
       tick: -1,
       tick2: -1,
       frame: -1,
