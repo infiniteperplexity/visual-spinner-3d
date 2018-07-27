@@ -78,3 +78,29 @@ setPropNodesByTick probably needs to account for plane
 - Should there be a speed indicator for custom transitions?  Eh...like an asterisk or exclamation point or something?
 
 - we could have a separate mode for multi-selection...kind of grid-based?
+
+- I'm warming up to multi-select.
+	- Using control button, I think.  or shift.
+	- Do we always select a rectangular region?  Or at least, have a consistent begin and end tick?  I believe so.  Otherwise dragging and dropping doesn't make much sense.
+	- Do we allow any modification?  I really think not.  Yeah, show no buttons.  Only delete and drag.
+
+Do we want to tackle the planes issue?  Gotta some time.  What are some of the issues?
+- It's visually difficult to parse.  So any time we look at a node that's "out-of-plane", we probably wanna show that "foldy" thing.
+- There's a bunch of code to update even assuming no complications.
+- Is there always the possibility of bending to get to the right node?  Ugh...that makes me cringe.
+	- No, but there's always the possibility of doing some weird-ass plane to get there, right?
+	- But not necessarily for the planes to be the same for all nodes, I think.  Basically, it gets really crazy.
+	- Do we wanna say that plane breaks and plane bends *require* custom transition points?  Do we just allow "broken" moves?
+	- I guess there's just this fundamental assumption thus far, that the engine can solve anything.  But it can't solve 3D moves, like *at all* at this point.
+	- The one saving grace is that if you've set it up correctly, it *will* work.
+	- So...maybe in this case, we show a big colored X at the transition point?  which shows that its' broken.
+	- We'll want to store a "plane breaks" data structure.
+	- The two props can be in different planes, so selecting an out-of-plane prop should automatically shift planes.
+	- So...I'm pretty sure you *do* have to custom-define the transitions.  There's no way it can figure out where to start on its own, right?  Or rather...well...okay yes it can, *if* you've set things up correctly.  It can spin through the plane looking for a match.  But that's like, really inconvenient.
+
+
+
+
+- Speed of 0.5 is rounding to zero.
+- Playing should scroll stuff.
+- Sure would be nice to remove zero nodes from the saved files.
