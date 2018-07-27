@@ -30,7 +30,7 @@ class QueuePanel extends React.PureComponent {
       }}>{i*BEAT}</li>);
     }
     
-    let queues = this.props.props.map((_,i)=><MoveQueue key={i} propid={i} scrollTarget={this} {...this.props}/>);
+    let queues = this.props.props.map((_,i)=><MoveQueue key={i} propid={i} {...this.props}/>);
     return (
       <div style={{whiteSpace: "nowrap"}}>
         <div style={{
@@ -62,6 +62,7 @@ class QueuePanel extends React.PureComponent {
     );
   }
 }
+
 class MoveQueue extends React.PureComponent {
   render() {
     if (parseInt(this.props.propid)>=this.props.props.length) {
@@ -78,6 +79,17 @@ class MoveQueue extends React.PureComponent {
       list.push(<MoveItem key={i} n={i} ticks={ticks} move={moves[i]} {...this.props}/>);
       ticks += beats(moves[i])*BEAT;
     }
+    // list.push(<div key={-2}
+    //   draggable={true}
+    //   onDragStart={(e)=>{e.dataTransfer.setData("text", JSON.stringify({hello: "world"}));}}
+    //   style={{
+    //     width: "90px",
+    //     height: "90px",
+    //     display: "inline-block",
+    //     position: "relative",
+    //     left: "-90px"
+    //   }}
+    // ></div>);
     list.push(
       <div key={list.length} style={{verticalAlign: "top", display: "inline-block"}}>
         <NewMove {...this.props}/>
@@ -105,10 +117,6 @@ class MoveQueue extends React.PureComponent {
 class NewMove extends React.PureComponent {
   handleClick = (e)=> {
     this.props.addMovesToEnd(this.props.propid);
-    let _scroll = this.props.scrollTarget._scroll;
-    if (this._element.getBoundingClientRect().x>950) {
-      this.props.setScrolled(_scroll.scrollWidth);
-    }
   }
   render() {
     return (
@@ -133,6 +141,7 @@ class PropPanel extends React.PureComponent {
     </div>
   }
 }
+
 class MoveItem extends React.PureComponent {
   constructor(props, context) {
     super(props, context);
@@ -141,6 +150,7 @@ class MoveItem extends React.PureComponent {
     this.TETHER = 16;
     this.HEAD = 6;
     this.HAND = 3;
+    this.SCROLL = 810;
   }
   handleMouseEnter = (e)=>{
     this.renderContext("lightcyan");
@@ -150,9 +160,13 @@ class MoveItem extends React.PureComponent {
   }
   handleMouseDown = (e)=>{
     player.stop();
+    if (this.props.multiselect) {
+      
+    }
     this.props.validateTransition();
     this.props.setTop(this.props.propid);
     this.props.gotoTick(this.props.ticks);
+
   }
   componentDidMount() {
     this.renderContext();
@@ -173,6 +187,9 @@ class MoveItem extends React.PureComponent {
     let x1 = Math.cos(head.a1*VS3D.UNIT-Math.PI/2)*head.r1*this.TETHER;
     let y1 = Math.sin(head.a1*VS3D.UNIT-Math.PI/2)*head.r1*this.TETHER;
     ctx.fillStyle = bg;
+    if (this.props.multiselect) {
+
+    }
     if (this.props.tick2>=this.props.ticks) {
       if (this.props.tick2===-1 || this.props.tick2<(this.props.ticks+BEAT*beats(this.props.move))) {
         if (!this.props.transition) {
@@ -202,6 +219,17 @@ class MoveItem extends React.PureComponent {
   }
   handleDragStart =(e)=>{
     let json = this.props.move;
+    if (this.props.multiselect) {
+      
+    }
+    // create a scaled-down version of / icon for the selection
+    // let canv = document.createElement("canvas");
+    // canv.width = 180;
+    // canv.height = 180;
+    // let ctx = canv.getContext("2d");
+    // ctx.fillStyle = "red";
+    // ctx.fillRect(0,0,180,180);
+    // e.dataTransfer.setDragImage(canv, 250, 250);
     e.dataTransfer.setData("text", JSON.stringify(json));
   }
   handleDragOver =(e)=>{
@@ -320,9 +348,12 @@ class TransitionPoint extends React.PureComponent {
           overflowX: "hidden",
           position: "relative",
           zIndex: "1",
-          // borderTopRightRadius: "50%",
-          // borderBottomRightRadius: "50%",
           borderRadius: "50%",
+          // to make it a diamond...not very visually apparent
+          // transform: "rotate(45deg)",
+          // height: this.dim*0.7,
+          // width: this.dim*0.7,
+          // left: "-6px",
           backgroundColor: (color==="#ffffff") ? "#dddddd" : color
         }}
       />

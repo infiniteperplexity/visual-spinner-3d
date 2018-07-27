@@ -2,9 +2,8 @@ Engine:
 - Allow optional planes per node, upon the first time I need it.
 - Are defaults injected in the right places?  Probably not, given that object spread is the single biggest performance hog.  Much less of a problem now that I cache the fitted moves.
 - Various fitting methods still don't handle plane breaks (fits does check it correctly, but not bends)
-- GRIP is mostly untested.
+- GRIP is untested in combination with BENT and TWIST.
 - GRIP seems to display wrong for FLOOR plane, dunno why, something with bearings and angles.  Or maybe it's the optional planes per node?
-- Consider implementing BEND as a node.
 - Over and under-solving are causing recurring problems.
 - Might want to actually make PIVOT named SHOULDER and so on.
 - Does resolve() keep spin?
@@ -36,7 +35,6 @@ Bugs:
 - Quite possibly should carry over spins and stuff like that.
 
 - Other planes are mostly untested.
-- Grip is mostly untested.
 
 Planes:
 	- extending moves doesn't extend the plane.
@@ -98,9 +96,12 @@ Do we want to tackle the planes issue?  Gotta some time.  What are some of the i
 	- The two props can be in different planes, so selecting an out-of-plane prop should automatically shift planes.
 	- So...I'm pretty sure you *do* have to custom-define the transitions.  There's no way it can figure out where to start on its own, right?  Or rather...well...okay yes it can, *if* you've set things up correctly.  It can spin through the plane looking for a match.  But that's like, really inconvenient.
 
+	Are there other approachs:
+	1) Try to force it to solve no matter what.
+		A) Using bends.
+
+	2) Freak out while you're in an inconsistent state.
+	3) Not allow plane breaks.
 
 
-
-- Speed of 0.5 is rounding to zero.
-- Playing should scroll stuff.
 - Sure would be nice to remove zero nodes from the saved files.

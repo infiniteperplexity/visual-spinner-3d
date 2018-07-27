@@ -315,6 +315,7 @@ class MoveControl extends React.PureComponent {
   }
 }
 
+
 function SpeedMeter(props, context) {
   let {move, node, color, previous} = props;
   let {va, va1, vr, vr1, vl, vl1, la, a, a1, r, r1} = move[node];
@@ -339,20 +340,20 @@ function SpeedMeter(props, context) {
     } else {
       spinshape = <polygon transform={"translate(11,21) rotate("+(la-90)+" 8 4)"} points={LINEAR} fill={color} stroke={stroke}/>;
       if (nearly(vl, vl1, 0.02)) {
-        speed = Math.round(vl);
+        speed = round(vl, 0.5);
         title += ("speed "+speed); 
         accshape = spd;
-        acctext = <text textAnchor="middle" x={30} y={29} style={{fontSize: "10px"}}>{speed}</text>;
+        acctext = <text textAnchor="middle" x={29} y={29} style={{fontSize: (parseInt(speed)===speed) ? "10px" : "8px"}}>{speed}</text>;
       } else if (vl>vl1) {
-        speed = Math.round(vl1);
+        speed = round(vl1, 0.5);
         title += ("decelerating to "+speed); 
         accshape = dec;
-        acctext = <text textAnchor="middle" x={46} y={29} style={{fontSize: "10px"}}>{speed}</text>;
+        acctext = <text textAnchor="middle" x={46} y={29} style={{fontSize: (parseInt(speed)===speed) ? "10px" : "8px"}}>{speed}</text>;
       } else if (vl1>vl) {
-        speed = Math.round(vl);
+        speed = round(vl, 0.5);
         title += ("accelerating from "+speed);
         accshape = acc;
-        acctext = <text textAnchor="middle" x={30} y={29} style={{fontSize: "10px"}}>{speed}</text>;
+        acctext = <text textAnchor="middle" x={29} y={29} style={{fontSize: (parseInt(speed)===speed) ? "10px" : "8px"}}>{speed}</text>;
       }
     }
   } else if ((!zeroish(vr, 0.02) || !zeroish(vr1, 0.02)) && zeroish(va, 0.02) && zeroish(va1, 0.02)) {
@@ -365,21 +366,21 @@ function SpeedMeter(props, context) {
     title = "linear ("+angle(Math.round(la))+" degrees), ";
     spinshape = <polygon transform={"translate(11,21) rotate("+(la-90)+" 8 4)"} points={LINEAR} fill={color} stroke={stroke}/>;
     if (nearly(vr, vr1, 0.02)) {
-      speed = Math.abs(Math.round(vr));
+      speed = Math.abs(round(vr, 0.5));
       title += ("speed "+speed);
       accshape = spd;
-      acctext = <text textAnchor="middle" x={30} y={29} style={{fontSize: "10px"}}>{speed}</text>;
+      acctext = <text textAnchor="middle" x={29} y={29} style={{fontSize: (parseInt(speed)===speed) ? "10px" : "8px"}}>{speed}</text>;
     } else {     
       if (Math.abs(vr, 0.02)>Math.abs(vr1, 0.02)) {
-        speed = Math.abs(Math.round(vr1));
+        speed = Math.abs(round(vr1, 0.5));
         title += ("decelerating to "+speed);
         accshape = dec;
-        acctext = <text textAnchor="middle" x={46} y={29} style={{fontSize: "10px"}}>{speed}</text>;
+        acctext = <text textAnchor="middle" x={46} y={29} style={{fontSize: (parseInt(speed)===speed) ? "10px" : "8px"}}>{speed}</text>;
       } else if (Math.abs(vr1)>Math.abs(vr)) {
-        speed = Math.abs(Math.round(vr));
+        speed = Math.abs(round(vr, 0.5));
         title += ("accelerating from "+speed);
         accshape = acc;
-        acctext = <text textAnchor="middle" x={30} y={29} style={{fontSize: "10px"}}>{speed}</text>;
+        acctext = <text textAnchor="middle" x={29} y={29} style={{fontSize: (parseInt(speed)===speed) ? "10px" : "8px"}}>{speed}</text>;
       }
     }
   } else if (zeroish(va, 0.02) && zeroish(va1, 0.02)) {
@@ -397,20 +398,20 @@ function SpeedMeter(props, context) {
       spinshape = ccw;
     }
     if (nearly(va, va1, 0.02)) {
-      speed = Math.abs(Math.round(va));
+      speed = Math.abs(round(va, 0.5));
       title += ("speed "+speed); 
       accshape = spd;
-      acctext = <text textAnchor="middle" x={30} y={29} style={{fontSize: "10px"}}>{speed}</text>;
+      acctext = <text textAnchor="middle" x={29} y={29} style={{fontSize: "10px"}}>{speed}</text>;
     } else if (Math.abs(va)>Math.abs(va1)) {
-      speed = Math.abs(Math.round(va1));
+      speed = Math.abs(round(va1, 0.5));
       title += ("decelerating to "+speed); 
       accshape = dec;
       acctext = <text textAnchor="middle" x={46} y={29} style={{fontSize: "10px"}}>{speed}</text>;
     } else if (Math.abs(va1)>Math.abs(va)) {
-      speed = Math.abs(Math.round(va));
+      speed = Math.abs(round(va, 0.5));
       title += ("accelerating from "+speed);
       accshape = acc;
-      acctext = <text textAnchor="middle" x={30} y={29} style={{fontSize: "10px"}}>{speed}</text>;
+      acctext = <text textAnchor="middle" x={29} y={29} style={{fontSize: "10px"}}>{speed}</text>;
     }
     spintext = <text textAnchor="middle" x="5" y="29" style={{fontSize: "10px"}}>{spins}</text>;
   }

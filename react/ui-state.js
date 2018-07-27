@@ -5,6 +5,7 @@ function getActiveMove() {
   return submove(moves[propid], tick);
 }
 
+const SCROLL = 810;
 // might rename to just apply to the UI
 function gotoTick(tick) {
   validateTransition();
@@ -19,6 +20,10 @@ function gotoTick(tick) {
   setPropNodesByTick(tick2);
   updateEngine();
   validateLocks();
+  if (tick2>SCROLL) {
+    console.log(tick2-SCROLL);
+    setScrolled(tick2 - SCROLL);
+  }
 }
 
 
@@ -38,6 +43,9 @@ function playEngineTick(tick, wrappers, positions) {
     let next = (index>=_cusps2.length-1) ? tick : _cusps2[index+1];
     store.dispatch({type: "SET_TICK2", tick2: next-1});
     setPropNodesByTick(next-1);
+    if (next-1>SCROLL) {
+      setScrolled(next-1 - SCROLL);
+    } 
     endwraps = clone(wrappers);
     endwraps.map(e=>{
       e.nudge = -e.nudge;
@@ -332,6 +340,9 @@ function setFrozen(val) {
   store.dispatch({type: "SET_FROZEN", frozen: val});
 }
 
+function setMultiSelect(val) {
+  store.dispatch({type: "SET_MULTISELECT", multiselect: val});
+}
 function setLock(node, val) {
   let {locks} = store.getState();
   locks = clone(locks);

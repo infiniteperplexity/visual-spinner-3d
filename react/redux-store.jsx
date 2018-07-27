@@ -60,7 +60,8 @@ let AppComponent = ReactRedux.connect(
 
       loadJSON: loadJSON,
       fileInput: fileInput,
-      setModifier: setModifier
+      setModifier: setModifier,
+      setMultiSelect: setMultiSelect
   })
 )(App);
 
@@ -75,6 +76,7 @@ function reducer(state, action) {
       models: player.props.map(p=>"poi"),
       starters: player.props.map(p=>resolve(fit(p.prop, new Move({beats: 0})))),
       modifier: false,
+      multiselect: false,
       tick: -1,
       tick2: -1,
       frame: -1,
@@ -154,8 +156,10 @@ function reducer(state, action) {
       return {...state, modifier: action.modifier};
     case "SET_SCROLLED":
       return {...state, scrolled: action.scrolled};
+    case "SET_MULTISELECT":
+      return {...state, multiselect: action.multiselect};
     default:
-      console.log("whatever for now");
+      throw new Error("wrong type of store action: "+action.type);
       return state;
   }
 }
