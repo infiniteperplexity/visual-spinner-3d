@@ -174,30 +174,30 @@ class MoveControl extends React.PureComponent {
     if (this.props.frozen) {
       return;
     }
-    this.props.pushStoreState();
     this.props.modifySpins({propid: this.props.propid, node: this.props.node, n: +1});
+    this.props.pushStoreState();
   }
   handleCounter = (e)=>{
       if (this.props.frozen) {
       return;
     }
-    this.props.pushStoreState();
     this.props.modifySpins({propid: this.props.propid, node: this.props.node, n: -1});
+    this.props.pushStoreState();
   }
   
   handleSpeedUp = (e)=>{
     if (this.props.frozen) {
       return;
     }
-    this.props.pushStoreState();
     this.props.modifyAcceleration({propid: this.props.propid, node: this.props.node, n: +1});
+    this.props.pushStoreState();
   }
   handleSlowDown = (e)=>{
     if (this.props.frozen) {
       return;
     }
-    this.props.pushStoreState();
     this.props.modifyAcceleration({propid: this.props.propid, node: this.props.node, n: -1});
+    this.props.pushStoreState();
   }
   handleAbrupt = (e)=>{
     // this.props.pushStoreState();

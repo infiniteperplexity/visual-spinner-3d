@@ -6,7 +6,8 @@ function addMovesToEnd(propid) {
   validateTransition();
   setTopPropById(propid);
   let {moves, starters, plane} = store.getState();
-  moves = [...moves];
+  moves = clone(moves);
+  // moves = [...moves];
   let ticks = (moves[propid].length===0) ? 0 : beats(moves[propid])*BEAT;
   for (let i=0; i<moves.length; i++) {
     if (moves[i].length===0) {

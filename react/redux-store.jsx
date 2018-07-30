@@ -178,6 +178,7 @@ ReactDOM.render(
 
 window.onpopstate = function(event) {
   console.log("state popping");
+  console.log(event);
     if (event.state) {
       console.log("popping length: " + event.state.storeState.moves[0].length);
       restoreStoreState(event.state.storeState);

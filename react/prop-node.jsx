@@ -152,7 +152,7 @@ class PropNode extends React.PureComponent {
       return;
     }
     if (this.localState.beingDragged && this.props.propSelectAllowed(this.props.propid)) {
-      this.props.pushStoreState();
+      // this.props.pushStoreState();
       if (this.props.transition) {
         this.props.modifyTransitionUsingNode({
           node: NODES[this.props.node],
@@ -184,6 +184,7 @@ class PropNode extends React.PureComponent {
           });
         }
       }
+      this.props.pushStoreState();
     }
     this.localState.beingDragged = false;
     Draggables[this.props.dragID].localState.dragging = null;

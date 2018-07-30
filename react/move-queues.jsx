@@ -105,8 +105,8 @@ class MoveQueue extends React.PureComponent {
 
 class NewMove extends React.PureComponent {
   handleClick = (e)=> {
-    this.props.pushStoreState();
     this.props.addMovesToEnd(this.props.propid);
+    this.props.pushStoreState();
   }
   render() {
     return (
@@ -242,8 +242,8 @@ class MoveItem extends React.PureComponent {
     let json = e.dataTransfer.getData("text");
     let move = JSON.parse(json);
     // insert move after target
-    this.props.pushStoreState();
     this.props.copyDraggedMove(move, this.props.propid, parseInt(this.props.n));
+    this.props.pushStoreState();
     // probably goto that tick as well?
     this.props.gotoTick(this.props.ticks+beats(this.props.move)*BEAT);
   }
@@ -358,8 +358,8 @@ class ColorPicker extends React.PureComponent {
     let colors = [...this.props.colors];
     let color = hex2svg(e.target.value);
     colors[this.props.propid] = e.target.value;
-    this.props.pushStoreState();
     this.props.setColors(colors);
+    this.props.pushStoreState();
   }
   render() {
     return (
@@ -379,8 +379,8 @@ class ModelPicker extends React.PureComponent {
     player.stop();
     let models = [...this.props.models];
     models[this.props.propid] = e.target.value;
-    this.props.pushStoreState();
     this.props.setModels(models);
+    this.props.pushStoreState();
   }
   render() {
     return (

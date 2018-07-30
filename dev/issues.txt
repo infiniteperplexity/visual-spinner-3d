@@ -108,6 +108,3 @@ Do we want to tackle the planes issue?  Gotta some time.  What are some of the i
 
 - Multiselect should be able to delete multiple segments.
 - Multiselect should be able to copy multiple segments.
-- Something goes wrong with pushing state under the following circumstances:
-	- It seems to be only the last thing pushed.
-	- It seems to be only if it's adding a move.  It reproduces with deleting a move as well.
