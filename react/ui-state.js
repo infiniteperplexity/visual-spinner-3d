@@ -270,7 +270,6 @@ function decoupledNodePosition({propid, node, dx, dy, dz}) {
 }
 
 function pushStoreState() {
-  console.log("pushing length: " + store.getState().moves[0].length);
   window.history.pushState({storeState: clone(store.getState())}, "emptyTitle");
 }
 
@@ -518,6 +517,21 @@ function clearMultiSelect() {
   store.dispatch({type: "SET_MULTISELECT", multiselect: null});
 }
 
-function checkHistory() {
-  console.log("history length is "+window.history.state.storeState.moves[0].length);
+function getMultiSelected() {
+  let {multiselect, moves} = store.getState();
+  let {propid, tick, tick2} = multiselect;
+  let past = 0;
+  let indexes = [];
+  for (let i=0; i<moves[propid].length; i++) {
+    let b = BEAT*beats(moves[propid][i]);
+    if (past>=tick && past+b-1<=tick2) {
+      indexes.push(i);
+    }
+    past+=b;
+  }
+  return {
+    propid: propid,
+    from: indexes[0],
+    to: indexes[indexes.length-1]
+  };
 }

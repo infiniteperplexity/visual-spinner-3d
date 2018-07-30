@@ -6,6 +6,7 @@ let AppComponent = ReactRedux.connect(
     getActivePropId: getActivePropId,
     getMovesAtTick: getMovesAtTick,
     getActiveMove: getActiveMove,
+    getMultiSelected: getMultiSelected,
     ...state
   }),
   (dispatch)=>({
@@ -64,7 +65,8 @@ let AppComponent = ReactRedux.connect(
       setMultiSelect: setMultiSelect,
 
       addMultiSelect: addMultiSelect,
-      clearMultiSelect: clearMultiSelect
+      clearMultiSelect: clearMultiSelect,
+      copyDraggedMultiple: copyDraggedMultiple
   })
 )(App);
 
@@ -100,7 +102,7 @@ function reducer(state, action) {
     };
   }
   if (!["SET_TOP","SET_PROPS", "SET_FRAME"].includes(action.type)) {
-    console.log(action);
+    // console.log(action);
   }
   switch (action.type) {
     case "SET_STATE":
@@ -177,12 +179,9 @@ ReactDOM.render(
 );
 
 window.onpopstate = function(event) {
-  console.log("state popping");
-  console.log(event);
-    if (event.state) {
-      console.log("popping length: " + event.state.storeState.moves[0].length);
-      restoreStoreState(event.state.storeState);
-    }
+  if (event.state) {
+    restoreStoreState(event.state.storeState);
+  }
 };
 
 window.history.replaceState({storeState: store.getState()}, "emptyTitle", window.location);

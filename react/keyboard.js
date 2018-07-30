@@ -15,8 +15,8 @@ function handleKeyDown(e) {
 	  		pushStoreState();
 	  		deleteTransition();
 	  	} else if (multiselect) {
-	  		console.log("whatever");// do a thing
-	  	} if (tick!==-1) {
+	  		deleteMultiple();
+	  	} else if (tick!==-1) {
 	  		pushStoreState();
 	  		deleteMove();
 	  		gotoTick(store.getState().tick);

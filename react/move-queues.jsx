@@ -148,6 +148,11 @@ class MoveItem extends React.PureComponent {
   handleMouseLeave = (e)=>{
     this.renderContext("white");
   }
+  handleMouseUp = (e)=>{
+    if (this.props.multiselect && !e.ctrlKey) {
+      this.props.clearMultiSelect();
+    }
+  }
   handleMouseDown = (e)=>{
     player.stop();
     if (e.ctrlKey) {
@@ -156,10 +161,13 @@ class MoveItem extends React.PureComponent {
         index: this.props.n
       });
     } else {
-      this.props.clearMultiSelect();
-      this.props.validateTransition();
-      this.props.setTop(this.props.propid);
-      this.props.gotoTick(this.props.ticks);
+      let multiselect = this.props.multiselect;
+      if (!multiselect || this.props.propid!==multiselect.propid || this.props.n<multiselect.from || this.props.n>multiselect.to) {
+        this.props.clearMultiSelect();
+        this.props.validateTransition();
+        this.props.setTop(this.props.propid);
+        this.props.gotoTick(this.props.ticks);
+      }
     }
   }
   componentDidMount() {
@@ -217,10 +225,14 @@ class MoveItem extends React.PureComponent {
   handleDragStart =(e)=>{
     let json = this.props.move;
     if (this.props.multiselect) {
-    }
-    // let test = this.props.queue._dragTarget.cloneNode();
+      // let test = this.props.queue._dragTarget.cloneNode();
     // e.dataTransfer.setDragImage(test,0,0);
-    e.dataTransfer.setData("text", JSON.stringify(json));
+      e.dataTransfer.setData("text", JSON.stringify({
+        multiselect: this.props.multiselect
+      }));
+    } else {
+      e.dataTransfer.setData("text", JSON.stringify(json));
+    }
   }
   handleDragOver =(e)=>{
     // allow drop
@@ -241,8 +253,13 @@ class MoveItem extends React.PureComponent {
     e.preventDefault();
     let json = e.dataTransfer.getData("text");
     let move = JSON.parse(json);
-    // insert move after target
-    this.props.copyDraggedMove(move, this.props.propid, parseInt(this.props.n));
+    if (move.multiselect) {
+      this.props.copyDraggedMultiple(this.props.propid, parseInt(this.props.n));
+      this.props.clearMultiSelect();
+    } else {
+      // insert move after target
+      this.props.copyDraggedMove(move, this.props.propid, parseInt(this.props.n));
+    }
     this.props.pushStoreState();
     // probably goto that tick as well?
     this.props.gotoTick(this.props.ticks+beats(this.props.move)*BEAT);

@@ -460,6 +460,66 @@ function deleteMove() {
   }
 }
 
+function deleteMultiple() {
+  player.stop();
+  let {moves, transitions} = store.getState();
+  let {propid, from, to} = getMultiSelected();
+  clearMultiSelect();
+  moves = clone(moves);
+  let last = moves[propid].length;
+  moves = clone(moves);
+  moves[propid] = moves[propid].filter((_,i)=>(i<from || i>to));
+  transitions = clone(transitions);
+  transitions[propid] = transitions[propid].filter((_,i)=>(i<from || i>to));
+  store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});  
+  let index = from;
+  if (index<moves[propid].length) {
+    let first;
+    if (from===0) {
+      first = starters[propid];
+    } else {
+      first = moves[propid][index-1];
+    }
+    let second = moves[propid][index];
+    for (let node of NODES) {
+      // keep spins?
+      second[node] = {
+        a: first[node].a1,
+        a1: second[node].a1,
+        r: first[node].r1,
+        r1: second[node].r1
+      }
+    }
+    second = resolve(second);
+    moves[propid][index] = second;
+  }
+  store.dispatch({type: "SET_MOVES", moves: moves});
+  if (index<last-1) {
+    // if it's not the last move on this prop, stay in roughly the same spot
+    let i=0;
+    let past=0;
+    while (i<index) {
+      past+=beats(moves[propid][i])*BEAT;
+      i+=1;
+    }
+    gotoTick(past);
+  } else {
+    // otherwise, go to the end of the longest move
+    let b = beats(moves[propid])*BEAT;
+    let longest = propid;
+    for (let i=moves.length-1; i>=0; i--) {
+      if (beats(moves[i])*BEAT>b) {
+        longest = i;
+      }
+    }
+    if (longest!==propid) {
+      store.dispatch({type: "SET_TOP", propid: longest});
+    }
+    let len = moves[longest].length;
+    gotoTick(beats(moves[longest])*BEAT - beats(moves[longest][len-1])*BEAT);
+  }
+}
+
 function insertNewMove() {
   let propid = getActivePropId();
   let {moves, starters, tick2, transitions} = store.getState();
@@ -531,6 +591,7 @@ function copyDraggedMove(move, propid, i) {
     NODES.map(node=>{
       move[node].a = previous[node].a1;
       move[node].r = previous[node].r1;
+      // do I really want all nodes, or just speeds?
       if (move[node].a1) {
         delete move[node].a1;
       }
@@ -542,6 +603,48 @@ function copyDraggedMove(move, propid, i) {
   moves[propid].splice(i+1, 0, resolve(move));
   store.dispatch({type: "SET_MOVES", moves: moves});
   transitions[propid].splice(i+1, 0, null);
+  store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
+}
+
+
+function copyDraggedMultiple(propid, i) {
+  let {moves, starters, transitions} = store.getState();
+  let {from, to, propid: propid1} = getMultiSelected();
+  moves = clone(moves);
+  let move1 = clone(moves[propid1][from]);
+  let move2 = moves[propid1][to];
+  transitions = clone(transitions);
+  let previous = (i===-1) ? starters[propid] : moves[propid][i];
+  NODES.map(node=>{
+    // shouldn't mess with nodes if we don't have to
+    move1[node] = {
+      a: previous[node].a1,
+      a1: move1[node].a1,
+      r: previous[node].r1,
+      r1: move1[node].r1
+    };
+  });
+  move1 = resolve(move1);
+  if (i<moves[propid].length-1) {
+    let next = clone(moves[propid][i+1]);
+    NODES.map(node=>{
+      // shouldn't mess with nodes if we don't have to
+      next[node] = {
+        a: move2[node].a1,
+        a1: next[node].a1,
+        r: move2[node].r1,
+        r1: next[node].r1
+      }
+    });
+    moves[propid][i+1] = resolve(next);
+  }
+  let inserts = clone(moves[propid1].slice(from, to+1));
+  let trans = clone(transitions[propid1].slice(from+1, to+1));
+  trans.unshift(null);
+  inserts[0] = move1;
+  moves[propid].splice(i+1, 0, ...inserts);
+  store.dispatch({type: "SET_MOVES", moves: moves});
+  transitions[propid].splice(i+1, 0, ...trans);
   store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
 }
 
