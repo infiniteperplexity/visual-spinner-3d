@@ -105,6 +105,7 @@ class MoveQueue extends React.PureComponent {
 
 class NewMove extends React.PureComponent {
   handleClick = (e)=> {
+    this.props.pushStoreState();
     this.props.addMovesToEnd(this.props.propid);
   }
   render() {
@@ -149,21 +150,17 @@ class MoveItem extends React.PureComponent {
   }
   handleMouseDown = (e)=>{
     player.stop();
-    // if (e.shiftKey) {
-    //   this.props.setMultiSelect(true);
-    // } else {
-    //   this.props.setMultiSelect(false);
-    // }
-    this.props.validateTransition();
-    this.props.setTop(this.props.propid);
-    // if (e.shiftKey) {
-      
-    // }
-    // if (this.props.multiselect) {
-      
-    // }
-    this.props.gotoTick(this.props.ticks);
-
+    if (e.ctrlKey) {
+      this.props.addMultiSelect({
+        propid: this.props.propid,
+        index: this.props.n
+      });
+    } else {
+      this.props.clearMultiSelect();
+      this.props.validateTransition();
+      this.props.setTop(this.props.propid);
+      this.props.gotoTick(this.props.ticks);
+    }
   }
   componentDidMount() {
     this.renderContext();
@@ -185,9 +182,12 @@ class MoveItem extends React.PureComponent {
     let y1 = Math.sin(head.a1*VS3D.UNIT-Math.PI/2)*head.r1*this.TETHER;
     ctx.fillStyle = bg;
     if (this.props.multiselect) {
-
-    }
-    if (this.props.tick2>=this.props.ticks) {
+      let multi = this.props.multiselect;
+      let tick2 = this.props.ticks + BEAT*beats(this.props.move)-1;
+      if (this.props.propid===multi.propid && this.props.ticks>=multi.tick && tick2<=multi.tick2) {
+        ctx.fillStyle = "cyan";
+      }
+    } else if (this.props.tick2>=this.props.ticks) {
       if (this.props.tick2===-1 || this.props.tick2<(this.props.ticks+BEAT*beats(this.props.move))) {
         if (!this.props.transition) {
           ctx.fillStyle = "cyan";
@@ -242,6 +242,7 @@ class MoveItem extends React.PureComponent {
     let json = e.dataTransfer.getData("text");
     let move = JSON.parse(json);
     // insert move after target
+    this.props.pushStoreState();
     this.props.copyDraggedMove(move, this.props.propid, parseInt(this.props.n));
     // probably goto that tick as well?
     this.props.gotoTick(this.props.ticks+beats(this.props.move)*BEAT);
@@ -357,6 +358,7 @@ class ColorPicker extends React.PureComponent {
     let colors = [...this.props.colors];
     let color = hex2svg(e.target.value);
     colors[this.props.propid] = e.target.value;
+    this.props.pushStoreState();
     this.props.setColors(colors);
   }
   render() {
@@ -377,6 +379,7 @@ class ModelPicker extends React.PureComponent {
     player.stop();
     let models = [...this.props.models];
     models[this.props.propid] = e.target.value;
+    this.props.pushStoreState();
     this.props.setModels(models);
   }
   render() {

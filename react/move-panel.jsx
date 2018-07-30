@@ -10,6 +10,7 @@ class DurationEditor extends React.PureComponent {
   handleDurationChange = (n)=>{
     let {move} = this.props.getActiveMove();
     let duration = beats(move)*BEAT;
+    this.props.pushStoreState();
     this.props.setDuration({
       propid: this.props.getActivePropId(),
       ticks: Math.max(0.5*BEAT, duration+n*BEAT)
@@ -173,12 +174,14 @@ class MoveControl extends React.PureComponent {
     if (this.props.frozen) {
       return;
     }
+    this.props.pushStoreState();
     this.props.modifySpins({propid: this.props.propid, node: this.props.node, n: +1});
   }
   handleCounter = (e)=>{
       if (this.props.frozen) {
       return;
     }
+    this.props.pushStoreState();
     this.props.modifySpins({propid: this.props.propid, node: this.props.node, n: -1});
   }
   
@@ -186,15 +189,18 @@ class MoveControl extends React.PureComponent {
     if (this.props.frozen) {
       return;
     }
+    this.props.pushStoreState();
     this.props.modifyAcceleration({propid: this.props.propid, node: this.props.node, n: +1});
   }
   handleSlowDown = (e)=>{
     if (this.props.frozen) {
       return;
     }
+    this.props.pushStoreState();
     this.props.modifyAcceleration({propid: this.props.propid, node: this.props.node, n: -1});
   }
   handleAbrupt = (e)=>{
+    // this.props.pushStoreState();
     // this.props.setAbruptTransition({
     //   propid: this.props.propid,
     //   node: this.props.node

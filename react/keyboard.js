@@ -12,10 +12,12 @@ function handleKeyDown(e) {
 	  	e.preventDefault();
 	  	let {transition, tick, multiselect} = store.getState();
 	  	if (transition) {
+	  		pushStoreState();
 	  		deleteTransition();
 	  	} else if (multiselect) {
 	  		console.log("whatever");// do a thing
 	  	} if (tick!==-1) {
+	  		pushStoreState();
 	  		deleteMove();
 	  		gotoTick(store.getState().tick);
 	  	}

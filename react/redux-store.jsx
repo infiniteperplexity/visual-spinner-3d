@@ -61,7 +61,10 @@ let AppComponent = ReactRedux.connect(
       loadJSON: loadJSON,
       fileInput: fileInput,
       setModifier: setModifier,
-      setMultiSelect: setMultiSelect
+      setMultiSelect: setMultiSelect,
+
+      addMultiSelect: addMultiSelect,
+      clearMultiSelect: clearMultiSelect
   })
 )(App);
 
@@ -97,7 +100,7 @@ function reducer(state, action) {
     };
   }
   if (!["SET_TOP","SET_PROPS", "SET_FRAME"].includes(action.type)) {
-    // console.log(action);
+    console.log(action);
   }
   switch (action.type) {
     case "SET_STATE":
@@ -174,9 +177,10 @@ ReactDOM.render(
 );
 
 window.onpopstate = function(event) {
+  console.log("state popping");
     if (event.state) {
-      store.dispatch({type: "restoreState", state: event.state.storeState});
-      store.dispatch({type: "renderEngine"});
+      console.log("popping length: " + event.state.storeState.moves[0].length);
+      restoreStoreState(event.state.storeState);
     }
 };
 

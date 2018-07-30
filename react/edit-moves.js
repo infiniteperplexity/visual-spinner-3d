@@ -3,7 +3,6 @@
 /***************************************************************************************/
 function addMovesToEnd(propid) {
   player.stop();
-  pushStoreState();
   validateTransition();
   setTopPropById(propid);
   let {moves, starters, plane} = store.getState();
@@ -41,7 +40,6 @@ function addMovesToEnd(propid) {
 function modifyMoveUsingNode({node, propid}) {
   player.stop();
   propid = parseInt(propid);
-  pushStoreState();
   let {props, moves, starters, plane, tick, transition, transitions} = store.getState();
   let prop = props[propid]
   let a = sphere$planify(prop[node], VS3D[plane]);
@@ -143,7 +141,6 @@ function modifyMoveUsingNode({node, propid}) {
 
 function setDuration({propid, ticks}) {
   player.stop();
-  pushStoreState();
   let {moves, tick} = store.getState();
   let {move, index} = getMovesAtTick(tick)[propid];
   if (beats(move)*BEAT===ticks) {
@@ -171,7 +168,6 @@ function setDuration({propid, ticks}) {
 /***************************************************************************************/
 function modifySpins({propid, node, n}) {
   player.stop();
-  pushStoreState();
   const BOUNDS = 2;
   let {tick, moves} = store.getState();
   let {move, index} = submove(moves[propid], tick);
@@ -214,7 +210,6 @@ function modifySpins({propid, node, n}) {
   moves = clone(moves);
   moves[propid][index] = resolve(move);
   store.dispatch({type: "SET_MOVES", moves: moves});
-  pushStoreState();
   updateEngine();
 }
 
@@ -223,7 +218,6 @@ function modifySpins({propid, node, n}) {
 /***************************************************************************************/
 function modifyAcceleration({propid, node, n}) {
   player.stop();
-  pushStoreState();
   let BOUNDS = 8;
   // make sure we align to the beginning of the move
   let {tick, moves} = store.getState();
@@ -281,7 +275,6 @@ function modifyAcceleration({propid, node, n}) {
       updated.vl1 = Math.max(vl1-n, 0)
     }
     move[node] = updated;
-    console.log(resolve(move)[node]);
   } else {
     move = clone(move);
     let updated = {
@@ -297,7 +290,6 @@ function modifyAcceleration({propid, node, n}) {
   moves = clone(moves);
   moves[propid][index] = resolve(move);
   store.dispatch({type: "SET_MOVES", moves: moves});
-  pushStoreState();
   updateEngine();
 }
 
@@ -346,7 +338,6 @@ function setAbruptTransition({propid, node}) {
 
 function deleteTransition() {
   player.stop();
-  pushStoreState();
   let propid = getActivePropId();
   let {transitions, moves, tick} = store.getState();
   let {move, index} = getActiveMove();
@@ -415,7 +406,6 @@ function deleteMove() {
     return;
   }
   let last = moves[propid].length;
-  pushStoreState();
   let {index} = getActiveMove();
   transitions = clone(transitions);
   transitions[propid].splice(index,1);
@@ -557,7 +547,6 @@ function copyDraggedMove(move, propid, i) {
 function modifyTransitionUsingNode({node, propid}) {
   player.stop();
   propid = parseInt(propid);
-  pushStoreState();
   let {props, moves, transitions, plane} = store.getState();
   let prop = props[propid];
   let r = prop[node].r;

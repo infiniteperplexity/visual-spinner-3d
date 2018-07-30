@@ -152,6 +152,7 @@ class PropNode extends React.PureComponent {
       return;
     }
     if (this.localState.beingDragged && this.props.propSelectAllowed(this.props.propid)) {
+      this.props.pushStoreState();
       if (this.props.transition) {
         this.props.modifyTransitionUsingNode({
           node: NODES[this.props.node],

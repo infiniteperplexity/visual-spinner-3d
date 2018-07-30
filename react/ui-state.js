@@ -270,10 +270,12 @@ function decoupledNodePosition({propid, node, dx, dy, dz}) {
 }
 
 function pushStoreState() {
+  console.log("pushing length: " + store.getState().moves[0].length);
   window.history.pushState({storeState: clone(store.getState())}, "emptyTitle");
 }
 
 function restoreStoreState(state) {
+  console.log("restoring state");
   store.dispatch({type: "SET_STATE", state: state});
 }
 
@@ -477,3 +479,45 @@ function setScrolled(scrolled) {
   store.dispatch({type: "SET_SCROLLED", scrolled: scrolled})
 }
 
+function addMultiSelect({propid, index}) {
+  let t = 0;
+  let t2 = 0;
+  let {multiselect, tick, tick2, moves} = store.getState();
+  for (let i=0; i<=index; i++) {
+    t = t2;
+    t2+=(beats(moves[propid][i])*BEAT);
+  }
+  if (propid!==getActivePropId()) {
+    multiselect = null;
+  }
+  if (!multiselect) {
+    if (tick===-1) {
+      tick = 0;
+    }
+    if (tick2===-1) {
+      tick2 = 0;
+    }
+    multiselect = {
+      propid: propid,
+      tick: tick,
+      tick2: tick2
+    };
+  }
+  if (multiselect.tick>t) {
+    multiselect.tick = t;
+  }
+  if (multiselect.tick2<t2) {
+    multiselect.tick2 = t2;
+  }
+  store.dispatch({type: "SET_TOP", propid: propid});
+  store.dispatch({type: "SET_MULTISELECT", multiselect: multiselect});
+}
+
+// clear this out, mostly to clean up for doing some other interface action
+function clearMultiSelect() {
+  store.dispatch({type: "SET_MULTISELECT", multiselect: null});
+}
+
+function checkHistory() {
+  console.log("history length is "+window.history.state.storeState.moves[0].length);
+}
