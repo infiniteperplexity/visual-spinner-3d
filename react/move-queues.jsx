@@ -244,7 +244,7 @@ class MoveItem extends React.PureComponent {
     // insert move after target
     this.props.copyDraggedMove(move, this.props.propid, parseInt(this.props.n));
     // probably goto that tick as well?
-    this.props.gotoTick(this.props.tick+beats(this.props.move)*BEAT);
+    this.props.gotoTick(this.props.ticks+beats(this.props.move)*BEAT);
   }
   render() {
     let move = this.props.move;
