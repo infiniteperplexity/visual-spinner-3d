@@ -155,14 +155,14 @@ class MoveItem extends React.PureComponent {
   }
   handleMouseDown = (e)=>{
     player.stop();
-    if (e.ctrlKey) {
+    if (e.ctrlKey && this.props.ticks!==-1) {
       this.props.addMultiSelect({
         propid: this.props.propid,
         index: this.props.n
       });
     } else {
       let multiselect = this.props.multiselect;
-      if (!multiselect || this.props.propid!==multiselect.propid || this.props.n<multiselect.from || this.props.n>multiselect.to) {
+      if (this.props.ticks===-1 || !multiselect || this.props.propid!==multiselect.propid || this.props.ticks<multiselect.tick || this.props.ticks>multiselect.tick2) {     
         this.props.clearMultiSelect();
         this.props.validateTransition();
         this.props.setTop(this.props.propid);

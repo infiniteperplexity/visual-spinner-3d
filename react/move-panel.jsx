@@ -48,7 +48,10 @@ class DurationEditor extends React.PureComponent {
       "Prop 4"
     ];
     let buttons = null;
-    if (tick===-1) {
+    if (this.props.multiselect) {
+      let m = this.props.multiselect;
+      content = pnames[propid]+", multiple moves from ticks "+m.tick+"-"+m.tick2;
+    } else if (tick===-1) {
       content = pnames[propid]+", starting position";
     } else if (this.props.transition) {
       content = pnames[propid]+", transition at tick "+tick;
@@ -119,6 +122,8 @@ class MovePanel extends React.PureComponent {
       txt = "tick 0";
     } else if (this.props.transition) {
       txt = "tick "+this.props.tick;
+    } else if (this.props.multiselect) {
+      // is anything really needed here?
     } else {
       txt = "tick "+this.props.tick+" to "+(this.props.tick+beats(move)*BEAT-1);
       buttons = <div>
@@ -132,7 +137,6 @@ class MovePanel extends React.PureComponent {
     let duration = <div style={{
       color: "black"
     }}>
-      {txt}
       {buttons}
     </div>;
     // placeholder
@@ -249,7 +253,7 @@ class MoveControl extends React.PureComponent {
       previous = (index===0) ? this.props.starters[propid] : this.props.moves[propid][index-1];
     }
     let stroke = "lightgray";
-    let buttons = (locked || this.props.tick===-1 || this.props.transition) ? null : [
+    let buttons = (locked || this.props.tick===-1 || this.props.transition || this.props.multiselect) ? null : [
         <SpeedMeter key="0" move={move} previous={previous} color={color} node={node}/>,
         <SpeedButton key="1" onClick={this.handleCounter} title="less clockwise / more counterclockwise">
           <path d={ARROW} transform="scale(-1, 1) translate(-20, 5)" fill={color} stroke={stroke}/>

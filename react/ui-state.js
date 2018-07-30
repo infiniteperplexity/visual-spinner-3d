@@ -161,6 +161,9 @@ function setPropNodesByTick(tick) {
 }
 
 function propSelectAllowed(propid) {
+  if (store.getState().multiselect) {
+    return false;
+  }
   propid = parseInt(propid);
   let active = getActivePropId();
   if (propid===active) {
@@ -510,6 +513,7 @@ function addMultiSelect({propid, index}) {
   }
   store.dispatch({type: "SET_TOP", propid: propid});
   store.dispatch({type: "SET_MULTISELECT", multiselect: multiselect});
+  setPropNodesByTick(multiselect.tick2);
 }
 
 // clear this out, mostly to clean up for doing some other interface action

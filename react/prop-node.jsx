@@ -104,6 +104,7 @@ class PropNode extends React.PureComponent {
       this.props.setModifier(event.ctrlKey);
     }
     if (!this.props.propSelectAllowed(this.props.propid)) {
+      this.props.clearMultiSelect();
       let past = 0;
       for (let move of this.props.moves[this.props.propid]) {
         if (past+beats(move)*BEAT > this.props.tick2) {

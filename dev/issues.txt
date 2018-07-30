@@ -106,5 +106,7 @@ Do we want to tackle the planes issue?  Gotta some time.  What are some of the i
 
 - Sure would be nice to remove zero nodes from the saved files.
 
-- Multiselect should be able to delete multiple segments.
-- Multiselect should be able to copy multiple segments.
+
+- Need to make sure multiselect doesn't mess other operations up.
+- Need to think about what multiselect should show?
+	- We could make it so addMulti sets the nodes by tick2.
