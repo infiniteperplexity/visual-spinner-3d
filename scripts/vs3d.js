@@ -1392,8 +1392,8 @@ function Player(renderer) {
 			if (this._stopped) {
 				return;
 			}
-			setTimeout(_play, 1);
-			this.goto(this.tick+1);
+			setTimeout(_play, this.speed);
+			this.goto(this.tick+this.rate);
 		}
 		_play();
 	};
