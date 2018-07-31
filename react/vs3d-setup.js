@@ -38,3 +38,5 @@ function afterReactMounts() {
 	renderEngine();
 	let controls = new VS3D.Controls(player);
 }
+
+

@@ -1387,11 +1387,42 @@ function Player(renderer) {
 	}
 	Player.prototype.play = function() {
 		this.stop();
-		this._interval = setInterval(()=>{
-			this.goto(this.tick+this.rate);
-		}, this.speed);
+		this._stopped = false;
+		let _play = ()=>{
+			if (this._stopped) {
+				return;
+			}
+			setTimeout(_play, 1);
+			this.goto(this.tick+1);
+		}
+		_play();
+	};
+		
+	Player.prototype.animate = function() {
+		this.stop();
+		this._stopped = false;
+		let fps = 60;
+		let then, now, between;
+		// let that = this;
+		then = Date.now();
+		let _animate = ()=>{
+			if (this._stopped) {
+				return;
+			}
+			requestAnimationFrame(_animate);
+			now = Date.now();
+			between = (now-then)*fps/1000;
+			this.goto(this.tick+Math.round(between));
+			// this.goto(this.tick+1);
+			then = Date.now();
+		}
+		_animate();
 	}
+
+	// Player.prototype.play = Player.prototype.animate;
+
 	Player.prototype.stop = function() {
+		this._stopped = true;
 		clearInterval(this._interval);
 	}
 
