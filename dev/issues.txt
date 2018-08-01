@@ -107,6 +107,9 @@ Do we want to tackle the planes issue?  Gotta some time.  What are some of the i
 - Sure would be nice to remove zero nodes from the saved files.
 
 
-- Need to make sure multiselect doesn't mess other operations up.
-- Need to think about what multiselect should show?
-	- We could make it so addMulti sets the nodes by tick2.
+
+Next steps:
+	- Add multi-plane support to React.
+	- Clean up cross-browser compatibility.
+	- Deal with TWIST in the engine.
+		- How do we even deal with this?  So...we have a formula that works in many planes.

@@ -433,7 +433,7 @@ let VS3D = {}; //
 
 
 	// takes a bearing and a plane
-	// returns the angle at that bearing between the plane and the longitude lines
+	// returns the angle at the bearing between the plane and the longitude lines
 	function angle$longitude(b, p) {
 		p = p || WALL;
 		let {x, y, z} = p;
