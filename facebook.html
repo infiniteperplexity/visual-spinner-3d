@@ -1,0 +1,188 @@
+<!--Distributed under GNU Public License version 3-->
+<!DOCTYPE html>
+<html><head>
+<style>
+body {background-color: #99CCFF}
+</style>
+
+
+
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>MP4 timecoder for VS3D, by Glenn Wright)</title>
+<script src="scripts/vs3d.js"></script>
+<script src="scripts/vs3d-moves.js"></script>
+<script src="scripts/three.min.js"></script>
+<script src="scripts/vs3d-render.js"></script>
+<script>
+
+function init() {
+	vidControls();
+}
+
+let frozen = true;
+let video, timecoder, controls;
+function vidControls() {
+	video = document.getElementById("video");
+	video.ontimeupdate = updateTimeCoder;
+    timecoder = new VS3D.TimeCoder();
+    timecoder.getTime = function() {    	
+    	if (!video.currentTime) {
+    		return 0;
+    	}
+    	let t = parseFloat(VS3D.round(video.currentTime, 1/this.RATE).toFixed(3));
+    	return t;
+    }
+    timecoder.setTime = function(t) {
+    	video.currentTime = t;
+    	this.update();
+    }
+	controls = document.getElementById("controls");
+	input = document.getElementById("frame");
+	timecoder.update = function() {
+    	input.value = this.getTime();
+    	let codes = document.getElementById("timecodes");
+		codes.innerHTML = "<option value='null'>(timecodes)</option>";
+		let selected = false;
+		for (let code of this.timecodes) {
+			let node = document.createElement("option");
+			node.innerHTML = code;
+			node.value = code;
+			if (VS3D.nearly(parseFloat(code), this.getTime(), 1/this.RATE)) {
+				node.selected = true;
+				selected = true;
+			}
+			codes.appendChild(node);
+		}
+		if (!selected) {
+			codes.firstChild.selected = true;
+		}
+    }
+    frozen = false;
+    timecoder.update();
+}
+
+function updateTimeCoder() {
+	timecoder.update();
+}
+function gotoTimeCode() {
+	if (frozen) {
+		return;
+	}
+	let val = document.getElementById("timecodes").value;
+	timecoder.setTime(parseFloat(val));
+}
+
+function addTimeCode() {
+	if (frozen) {
+		return;
+	}
+	timecoder.add();
+}
+
+function removeTimeCode() {
+	if (frozen) {
+		return;
+	}
+	timecoder.remove();
+}
+function backFrame() {
+	if (frozen) {
+		return;
+	}
+	timecoder.setTime(Math.max(0, timecoder.getTime()-1/timecoder.RATE));
+}
+function forwardFrame() {
+	if (frozen) {
+		return;
+	}
+	timecoder.setTime(timecoder.getTime()+1/timecoder.RATE);
+}
+function chooseTime() {
+	if (frozen) {
+		return;
+	}
+	let val = input.value;
+	if (parseFloat(val)===parseFloat(String(parseFloat(val)))) {
+		timecoder.setTime(parseFloat(val));
+	}
+}
+
+function cueVideo() {
+	let mp4 = document.getElementById("mp4");
+	mp4.onclick = ()=>{
+		let files = mp4.files;
+		if (files[0]) {
+			let path = files[0].name;
+			video.src = path;
+		}
+	}
+	mp4.click();
+}
+
+function stringify() {
+	VS3D.save(timecoder.timecodes);
+}
+
+function loadJSON() {
+	let json = document.getElementById("json");
+	json.onchange = ()=>{
+		let files = json.files;
+		let reader = new FileReader();
+		reader.onload = (f)=>{
+			if (reader.result) {
+				try {
+					let timecodes = JSON.parse(reader.result);
+					console.log(timecodes);
+					timecoder.timecodes = timecodes;
+					timecoder.update();
+				} catch (e) {
+					throw e;
+				}
+			}
+		}
+		if (files[0]) {
+			reader.readAsText(files[0]);
+		}
+	}
+	json.click();
+}
+
+function loadFacebook() {
+	let url = prompt("Enter the video URL, then right-click the popup to download:");
+	if (url) {
+		let popup = window.open(url.replace("www.","m."), '_blank', 'width=500,height=500');
+	}
+}
+
+</script>
+</head>
+<body onload="init();">
+<header>
+</header>
+<div id="grid">
+	<div>
+		<div id="header">
+			<button onClick="cueVideo();">Load MP4</button>
+			<input id="mp4" type="file" accept="video/mp4" style="display: none"></input>
+			<button onClick="stringify();">Save Timecodes</button>
+			<button onClick = "loadJSON();">Load Timecodes</button>
+			<button onClick="loadFacebook()">Facebook Video</button>
+			<input id="json" type="file" accept="application/json" style="display: none"></input>
+		</div>
+		<video id="video" height="400px" controls src="comborific.mp4" type="video/mp4">
+			Your browser does not support HTML5 video.
+		</video>
+		<div id="controls">
+			<select onChange="gotoTimeCode();" id="timecodes">
+			</select>
+			<button onClick="addTimeCode();">Add timecode.</button>
+			<button onClick="removeTimeCode();">Remove timecode.</button>
+			<button onClick="backFrame();">&lt;=</button>
+			<input id="frame" onInput="chooseTime();" type="text" size="6"></input>
+			<button onClick="forwardFrame();">=&gt;</button>
+		</div>
+	</div>
+</div>
+</grid>
+</body></html>
+
