@@ -33,7 +33,7 @@ class ControlPanel extends React.PureComponent {
     player.stop();
     player.goto(player.tick-this.RATE);
     this.props.skipToEngineTick(player.tick);
-  };
+  }
   handleFrame = (e)=>{
     for (let move of store.getState().moves) {
       if (move.length===0) {
@@ -76,6 +76,19 @@ class ControlPanel extends React.PureComponent {
         <button onClick={this.handleReset}>Back to Start</button>
       </div>
     );
+    // return (
+    //   <div>
+    //     <select><option>(timecodes)</option></select>
+    //     <button>Load</button>
+    //     <button>Import</button>
+    //     <button>Save</button>
+    //     <button>Add</button>
+    //     <button>Remove</button>
+    //     <button>&lt;</button>
+    //     <input type="number" />
+    //     <button>&gt;</button>
+    //   </div>
+    // );
   }
 }
 
@@ -108,5 +121,36 @@ class ImportButton extends React.PureComponent {
   }
   render() {
     return <button title="import a saved JSON sequence" onClick={this.handleClick}>Import</button>
+  }
+}
+
+class DisplayPanel extends React.PureComponent {
+  handleEngine = ()=>{
+    this.props.setDisplayEngine();
+  }
+  handleYouTube = ()=>{
+    this.props.setDisplayYouTube();
+  }
+  handleMP4 = ()=>{
+    this.props.setDisplayMP4();
+  }
+  handleFacebook = ()=>{
+    let url = prompt("Enter the video URL, then right-click the popup to download:");
+    if (url) {
+      let popup = window.open(url.replace("www.","m."), '_blank', 'width=500,height=500');
+    }
+  }
+  render() {
+    return <div/>;
+    // return (
+    //   <div>
+    //     <button>VisualSpinner3D</button>
+    //     <span style={{marginLeft: "20px"}}>
+    //       <button>YouTube</button>
+    //       <button>*.mp4</button>
+    //       <button onClick={this.handleFacebook}>Facebook</button>
+    //     </span>
+    //   </div>
+    // );
   }
 }

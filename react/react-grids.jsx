@@ -22,6 +22,9 @@ class App extends React.PureComponent {
   render() {
     let props = this.props;
     let {frame, ...noframe} = props;
+    
+
+    
     return (
       <div className="grid app" style={{height: "720px"}}>
         <div className="grid header">
@@ -40,7 +43,7 @@ class App extends React.PureComponent {
             }}>{this.props.filename}</span>
           </div>
           <div />
-          <div />
+          <DisplayPanel {...noframe}/>
         </div>
         <div className="grid top">
           <Grid dragID="SVG" {...noframe} />

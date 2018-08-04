@@ -539,3 +539,15 @@ function getMultiSelected() {
     to: indexes[indexes.length-1]
   };
 }
+
+function setDisplayEngine() {
+  store.dispatch({type: "SET_DISPLAY", display: "engine"});
+}
+
+function setDisplayYouTube() {
+  store.dispatch({type: "SET_DISPLAY", display: "youtube"});
+}
+
+function setDisplayMP4() {
+  store.dispatch({type: "SET_DISPLAY", display: "mp4"});
+}
