@@ -41,11 +41,13 @@ class App extends React.PureComponent {
           </div>
           <div />
           <button style={{
-            marginLeft: "250px",
+            // marginLeft: "250px",
             width: "100px",
             title: (props.video) ? "disable video tools" : "enable video tools",
             backgroundColor: (props.video) ? "cyan" : "lightgray"
-          }} onClick={props.toggleVideoTools}>Video Tools</button>
+          }} 
+            onClick={props.toggleVideoTools}
+            title={"show/hide video tools (shortcut: Tab key)"}>Video Tools</button>
         </div>
         <div className="grid top">
           <Grid dragID="SVG" {...noframe} />

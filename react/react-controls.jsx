@@ -149,18 +149,20 @@ class VideoTools extends React.PureComponent {
           <div id="youtube" style={{
             display: (this.props.youtube) ? "block" : "none"}}/>
         </div>
+        <button title="save timecodes as JSON text file" onClick={saveTimeCodes}>Save</button>
+        <button title="load timecodes from JSON text file" onClick={loadTimeCodes}>Load</button>
         <select id="timecodes" onChange={gotoTimeCode}>
           <option>(timecodes)</option>
         </select>
-        <button onClick={addTimeCode}>Add timecode</button>
-        <button onClick={removeTimeCode}>Remove timecode</button>
-        <button onClick={backVideoFrame} >&lt;</button>
-        <input id="vframes" type="text" size="6" value={timecoder.getTime() || 0} onChange={this.handleChange}></input>
+        <button title="add a timecode" onClick={addTimeCode}>Add</button>
+        <button title="remove current timecode" onClick={removeTimeCode}>Remove</button>
+        <button style={{marginLeft: "10px"}} onClick={backVideoFrame} >&lt;</button>
+        <input id="vframes" type="text" size="4" value={timecoder.getTime() || 0} onChange={this.handleChange}></input>
         <button onClick={forwardVideoFrame}>&gt;</button>
         <div style={{float: "right"}}>
-          <button onClick={cueYouTubeVideo}>YouTube</button>
-          <button onClick={cueMP4Video}>*.mp4</button>
-          <button onClick={popupFacebook}>Facebook</button>
+          <button title="load a YouTube video using the YouTube API" onClick={cueYouTubeVideo}>YouTube</button>
+          <button title="load an *.mp4 video from your computer" onClick={cueMP4Video}>*.mp4</button>
+          <button title="pop up a downloadable version of a Facebook video" onClick={popupFacebook}>Facebook</button>
         </div>
       </div>
     );

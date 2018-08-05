@@ -2,7 +2,8 @@ const KEYCODES = {
   DELETE: 46,
   BACKSPACE: 8,
   CONTROL: 17,
-  SHIFT: 16
+  SHIFT: 16,
+  TAB: 9
 }
 
 window.addEventListener("keydown", handleKeyDown);
@@ -23,10 +24,12 @@ function handleKeyDown(e) {
 	  	}
 	} else if (e.which===KEYCODES.CONTROL) {
 		setModifier(true);
+	} else if (e.which===KEYCODES.TAB && !e.altKey) {
+		toggleVideoTools();
 	}
-	else if (e.which===KEYCODES.SHIFT) {
-		// don't do it yet.
-	}
+	// else if (e.which===KEYCODES.SHIFT) {
+	// 	// don't do it yet.
+	// }
 }
 function handleKeyUp(e) {
 	if (e.which===KEYCODES.CONTROL) {
@@ -34,4 +37,4 @@ function handleKeyUp(e) {
 	} else if (e.which===KEYCODES.SHIFT) {
 		// don't do it yet.
 	}
-}
+}	

@@ -555,3 +555,35 @@ function toggleVideoTools() {
   let {video} = store.getState();
   store.dispatch({type: "SET_VIDEO", video: !video});
 }
+
+function saveTimeCodes() {
+  let fname = store.getState().filename;
+  VS3D.save(timecoder.timecodes,"timecodes_"+fname);
+}
+
+function loadTimeCodes() {
+  let json = document.createElement("input");
+  json.type = "file";
+  json.accept = "application/json";
+  json.style.display = "none";
+  json.onchange = ()=>{
+    let files = json.files;
+    let reader = new FileReader();
+    reader.onload = (f)=>{
+      if (reader.result) {
+        try {
+          let timecodes = JSON.parse(reader.result);
+          console.log(timecodes);
+          timecoder.timecodes = timecodes;
+          timecoder.update();
+        } catch (e) {
+          throw e;
+        }
+      }
+    }
+    if (files[0]) {
+      reader.readAsText(files[0]);
+    }
+  }
+  json.click();
+}
