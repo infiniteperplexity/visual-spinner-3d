@@ -122,18 +122,12 @@ class VideoTools extends React.PureComponent {
   handleChange = (e)=>{
     chooseTime(e.target.value);
   }
-  render() {
-    let vid;
-    if (this.props.mp4) {
-      vid = (<video id="video" height="400px" controls src={this.props.mp4} type="video/mp4" height="350px" width="700px">
-        Your browser does not support HTML5 video.
-      </video>);
-    } else if (this.props.youtube) {
-      vid = <div id="youtube"></div>
-      if (ytPlayer) {
-        ytPlayer.cueVideoById(this.props.youtube);
-      }
+  componentDidUpdate = ()=>{
+    if (ytPlayer && this.props.youtube) {
+      ytPlayer.cueVideoById(this.props.youtube);
     }
+  }
+  render() {
     return (
       <div className="gridover"
         style={{
@@ -148,9 +142,14 @@ class VideoTools extends React.PureComponent {
           zIndex: +1
       }}>
         <div style={{backgroundColor: "black", paddingTop: "3px"}}>
-          {vid}
+          <video id="video" height="400px" controls src={this.props.mp4} type="video/mp4" height="350px" width="700px"
+            style={{display: (this.props.mp4) ? "block" : "none"}}>
+            Your browser does not support HTML5 video.
+          </video>
+          <div id="youtube" style={{
+            display: (this.props.youtube) ? "block" : "none"}}/>
         </div>
-        <select id="timecodes">
+        <select id="timecodes" onChange={gotoTimeCode}>
           <option>(timecodes)</option>
         </select>
         <button onClick={addTimeCode}>Add timecode</button>

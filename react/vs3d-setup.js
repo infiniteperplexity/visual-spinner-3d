@@ -42,7 +42,7 @@ function afterReactMounts() {
 	timecoder.getTime = function() {
 		let t;
 		if (store.getState().mp4) {    	
-	    	if (!document.getElementById("video").currentTime) {
+	    	if (!document.getElementById("video") || !document.getElementById("video").currentTime) {
 	    		return 0;
 	    	}
     		t = parseFloat(VS3D.round(document.getElementById("video").currentTime, 1/this.RATE).toFixed(3));
@@ -143,7 +143,7 @@ function chooseTime() {
 	if (vidFrozen) {
 		return;
 	}
-	let val = input.value;
+	let val = document.getElementById("vframes").value;
 	if (parseFloat(val)===parseFloat(String(parseFloat(val)))) {
 		timecoder.setTime(parseFloat(val));
 	}
@@ -163,6 +163,7 @@ function cueYouTubeVideo() {
 			ytPlayer.cueVideoById(url);
 			setDisplayMP4(null);
 			setDisplayYouTube(url);
+			document.getElementById("youtube").style.display = "block";
 		} catch(e) {
 			alert("invalid url");
 		}
@@ -174,14 +175,18 @@ function cueMP4Video() {
   	input.type = "file";
   	input.accept = "video/mp4";
   	input.style.display = "none";
-  	input.onclick = ()=>{
-    	let files = input.files;
+	input.onchange = ()=>{
+		let files = input.files;
 	    if (files[0]) {
 	      	let path = files[0].name;
+	      	if (ytPlayer) {
+	      		ytPlayer.clearVideo();
+	      	}
 	      	setDisplayYouTube(null);
 	      	setDisplayMP4(path);
+	      	document.getElementById("youtube").style.display = "none";
 	    }
-	};
+	}
   	input.click();
 }
 
