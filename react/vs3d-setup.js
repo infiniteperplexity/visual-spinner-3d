@@ -61,23 +61,44 @@ function afterReactMounts() {
     		ytPlayer.seekTo(t);
     		setTimeout(()=>this.update(),100);
     		setTimeout(()=>ytPlayer.pauseVideo(),1000);
+    		document.getElementById("vframes").value = t.toFixed(3);
     	}
     	this.update();
     }
-    setTimeout(()=>{
-		ytPlayer = new YT.Player('youtube', {
-	        width: '700',
-	        height: '350',
-	        videoId: 'bHQqvYy5KYo',
-	        events: {
-	        	onReady: ()=>{
-	        		frozen = false;
-	        		updateTimeCoder();
-	        	},
-	        	onStateChange: updateTimeCoder
-	        }
-	    });
-	},5000);
+    timecoder.update = function() {
+    	document.getElementById("vframes").value = this.getTime();
+    	let codes = document.getElementById("timecodes");
+		codes.innerHTML = "<option value='null'>(timecodes)</option>";
+		let selected = false;
+		for (let code of this.timecodes) {
+			let node = document.createElement("option");
+			node.innerHTML = code;
+			node.value = code;
+			if (VS3D.nearly(parseFloat(code), this.getTime(), 1/this.RATE)) {
+				node.selected = true;
+				selected = true;
+			}
+			codes.appendChild(node);
+		}
+		if (!selected) {
+			codes.firstChild.selected = true;
+		}
+    }
+}
+
+window.onYouTubeIframeAPIReady = function() {
+	ytPlayer = new YT.Player('youtube', {
+	    width: '700',
+	    height: '350',
+	    videoId: 'bHQqvYy5KYo',
+	    events: {
+	      	onReady: ()=>{
+	        	vidFrozen = false;
+	        	updateTimeCoder();
+	        },
+	        onStateChange: updateTimeCoder
+	    }
+	});
 }
 
 function updateTimeCoder() {
@@ -155,9 +176,7 @@ function cueMP4Video() {
   	input.style.display = "none";
   	input.onclick = ()=>{
     	let files = input.files;
-    	console.log("flag 1");
 	    if (files[0]) {
-	    	console.log("flag 2");
 	      	let path = files[0].name;
 	      	setDisplayYouTube(null);
 	      	setDisplayMP4(path);

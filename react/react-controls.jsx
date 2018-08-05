@@ -156,7 +156,7 @@ class VideoTools extends React.PureComponent {
         <button onClick={addTimeCode}>Add timecode</button>
         <button onClick={removeTimeCode}>Remove timecode</button>
         <button onClick={backVideoFrame} >&lt;</button>
-        <input id="tcframes" type="text" size="6" value={timecoder.getTime()} onChange={this.handleChange}></input>
+        <input id="vframes" type="text" size="6" value={timecoder.getTime() || 0} onChange={this.handleChange}></input>
         <button onClick={forwardVideoFrame}>&gt;</button>
         <div style={{float: "right"}}>
           <button onClick={cueYouTubeVideo}>YouTube</button>

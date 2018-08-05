@@ -549,6 +549,9 @@ function setDisplayMP4(mp4) {
 }
 
 function toggleVideoTools() {
+  if (vidFrozen) {
+    return;
+  }
   let {video} = store.getState();
   store.dispatch({type: "SET_VIDEO", video: !video});
 }
