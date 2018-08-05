@@ -540,14 +540,15 @@ function getMultiSelected() {
   };
 }
 
-function setDisplayEngine() {
-  store.dispatch({type: "SET_DISPLAY", display: "engine"});
+function setDisplayYouTube(youtube) {
+  store.dispatch({type: "SET_YOUTUBE", youtube: youtube});
 }
 
-function setDisplayYouTube() {
-  store.dispatch({type: "SET_DISPLAY", display: "youtube"});
+function setDisplayMP4(mp4) {
+  store.dispatch({type: "SET_MP4", mp4: mp4});
 }
 
-function setDisplayMP4() {
-  store.dispatch({type: "SET_DISPLAY", display: "mp4"});
+function toggleVideoTools() {
+  let {video} = store.getState();
+  store.dispatch({type: "SET_VIDEO", video: !video});
 }

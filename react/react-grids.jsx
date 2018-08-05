@@ -22,9 +22,6 @@ class App extends React.PureComponent {
   render() {
     let props = this.props;
     let {frame, ...noframe} = props;
-    
-
-    
     return (
       <div className="grid app" style={{height: "720px"}}>
         <div className="grid header">
@@ -43,7 +40,12 @@ class App extends React.PureComponent {
             }}>{this.props.filename}</span>
           </div>
           <div />
-          <DisplayPanel {...noframe}/>
+          <button style={{
+            marginLeft: "250px",
+            width: "100px",
+            title: (props.video) ? "disable video tools" : "enable video tools",
+            backgroundColor: (props.video) ? "cyan" : "lightgray"
+          }} onClick={props.toggleVideoTools}>Video Tools</button>
         </div>
         <div className="grid top">
           <Grid dragID="SVG" {...noframe} />
@@ -52,6 +54,7 @@ class App extends React.PureComponent {
           <DurationEditor {...noframe}/>
           <PlaneMenu {...noframe}/>
           <ControlPanel {...props} />
+          <VideoTools {...props} />
         </div>
         <div className="grid bottom">
           <QueuePanel {...noframe}/>
@@ -107,4 +110,3 @@ function Grid(props, context) {
     </DragSVG>
   );
 }
-              

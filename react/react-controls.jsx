@@ -76,19 +76,6 @@ class ControlPanel extends React.PureComponent {
         <button onClick={this.handleReset}>Back to Start</button>
       </div>
     );
-    // return (
-    //   <div>
-    //     <select><option>(timecodes)</option></select>
-    //     <button>Load</button>
-    //     <button>Import</button>
-    //     <button>Save</button>
-    //     <button>Add</button>
-    //     <button>Remove</button>
-    //     <button>&lt;</button>
-    //     <input type="number" />
-    //     <button>&gt;</button>
-    //   </div>
-    // );
   }
 }
 
@@ -124,16 +111,8 @@ class ImportButton extends React.PureComponent {
   }
 }
 
-class DisplayPanel extends React.PureComponent {
-  handleEngine = ()=>{
-    this.props.setDisplayEngine();
-  }
-  handleYouTube = ()=>{
-    this.props.setDisplayYouTube();
-  }
-  handleMP4 = ()=>{
-    this.props.setDisplayMP4();
-  }
+
+class VideoTools extends React.PureComponent {
   handleFacebook = ()=>{
     let url = prompt("Enter the video URL, then right-click the popup to download:");
     if (url) {
@@ -141,16 +120,42 @@ class DisplayPanel extends React.PureComponent {
     }
   }
   render() {
-    return <div/>;
-    // return (
-    //   <div>
-    //     <button>VisualSpinner3D</button>
-    //     <span style={{marginLeft: "20px"}}>
-    //       <button>YouTube</button>
-    //       <button>*.mp4</button>
-    //       <button onClick={this.handleFacebook}>Facebook</button>
-    //     </span>
-    //   </div>
-    // );
+    let vid = (
+      <video id="video" height="400px" controls src="comborific.mp4" type="video/mp4" height="350px" width="700px">
+        Your browser does not support HTML5 video.
+      </video>
+    );
+    return (
+      <div className="gridover"
+        style={{
+          display: (this.props.video) ? "block" : "none",
+          borderStyle: "solid",
+          borderColor: "lightgray",
+          borderWidth: "1px",
+          backgroundColor: "white",
+          width: "705px",
+          height: "393px",
+          position: "absolute",
+          zIndex: +1
+      }}>
+        <div style={{backgroundColor: "black", paddingTop: "3px"}}>
+          {vid}
+        </div>
+        <select id="timecodes">
+          <option>(timecodes)</option>
+        </select>
+        <button onClick={addTimeCode}>Add timecode</button>
+        <button onClick={removeTimeCode}>Remove timecode</button>
+        <button onClick={backFrame} >&lt;</button>
+        <input id="tcframes" type="text" size="6"></input>
+        <button onClick={forwardFrame}>&gt;</button>
+        <div style={{float: "right"}}>
+          <button onClick={cueYouTubeVideo}>YouTube</button>
+          <button onClick={cueMP4Video}>*.mp4</button>
+          <button onClick={popupFacebook}>Facebook</button>
+        </div>
+        <input id="mp4" type="file" accept="video/mp4" style={{display: "none"}}/>
+      </div>
+    );
   }
 }

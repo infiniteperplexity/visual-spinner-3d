@@ -68,7 +68,7 @@ let AppComponent = ReactRedux.connect(
       clearMultiSelect: clearMultiSelect,
       copyDraggedMultiple: copyDraggedMultiple,
 
-      setDisplayEngine: setDisplayEngine,
+      toggleVideoTools: toggleVideoTools,
       setDisplayYouTube: setDisplayYouTube,
       setDisplayMP4: setDisplayMP4
   })
@@ -86,7 +86,9 @@ function reducer(state, action) {
       starters: player.props.map(p=>resolve(fit(p.prop, new Move({beats: 0})))),
       modifier: false,
       multiselect: null,
-      display: "engine",
+      video: false,
+      youtube: "bHQqvYy5KYo",
+      mp4: null,
       tick: -1,
       tick2: -1,
       frame: -1,
@@ -168,8 +170,12 @@ function reducer(state, action) {
       return {...state, scrolled: action.scrolled};
     case "SET_MULTISELECT":
       return {...state, multiselect: action.multiselect};
-    case "SET_DISPLAY":
-      return {...state, display: display};
+    case "SET_VIDEO":
+      return {...state, video: action.video};
+    case "SET_YOUTUBE":
+      return {...state, youtube: action.youtube};
+    case "SET_MP4":
+      return {...state, mp4: action.mp4};
     default:
       throw new Error("wrong type of store action: "+action.type);
       return state;
