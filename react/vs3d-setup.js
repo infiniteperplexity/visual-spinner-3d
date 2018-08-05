@@ -39,7 +39,6 @@ function afterReactMounts() {
 	}
 	gotoTick(-1);
 	renderEngine();
-	let controls = new VS3D.Controls(player);
 	timecoder.getTime = function() {
 		let t;
 		if (store.getState().mp4) {    	
@@ -48,10 +47,10 @@ function afterReactMounts() {
 	    	}
     		t = parseFloat(VS3D.round(document.getElementById("video").currentTime, 1/this.RATE).toFixed(3));
     	} else {
-    		if (!ytPlayer.getCurrentTime) {
+    		if (!ytPlayer || !ytPlayer.getCurrentTime) {
     			return 0;
     		}
-	    	t = parseFloat(VS3D.round(player.getCurrentTime(), 1/this.RATE).toFixed(3));
+	    	t = parseFloat(VS3D.round(ytPlayer.getCurrentTime(), 1/this.RATE).toFixed(3));
 	   	}
     	return t;
     }
@@ -66,7 +65,7 @@ function afterReactMounts() {
     	this.update();
     }
     setTimeout(()=>{
-		ytPlayer = new YT.Player('player', {
+		ytPlayer = new YT.Player('youtube', {
 	        width: '700',
 	        height: '350',
 	        videoId: 'bHQqvYy5KYo',
@@ -78,7 +77,7 @@ function afterReactMounts() {
 	        	onStateChange: updateTimeCoder
 	        }
 	    });
-	},500);
+	},5000);
 }
 
 function updateTimeCoder() {
@@ -107,13 +106,13 @@ function removeTimeCode() {
 	}
 	timecoder.remove();
 }
-function backFrame() {
+function backVideoFrame() {
 	if (vidFrozen) {
 		return;
 	}
 	timecoder.setTime(Math.max(0, timecoder.getTime()-1/timecoder.RATE));
 }
-function forwardFrame() {
+function forwardVideoFrame() {
 	if (vidFrozen) {
 		return;
 	}
@@ -141,6 +140,8 @@ function cueYouTubeVideo() {
 		url = url[url.length-1];
 		try {
 			ytPlayer.cueVideoById(url);
+			setDisplayMP4(null);
+			setDisplayYouTube(url);
 		} catch(e) {
 			alert("invalid url");
 		}
@@ -148,15 +149,21 @@ function cueYouTubeVideo() {
 }
 
 function cueMP4Video() {
-  let mp4 = document.getElementById("mp4");
-  mp4.onclick = ()=>{
-    let files = mp4.files;
-    if (files[0]) {
-      let path = files[0].name;
-      document.getElementById("video").src = path;
-    }
-  }
-  mp4.click();
+	let input = document.createElement("input");
+  	input.type = "file";
+  	input.accept = "video/mp4";
+  	input.style.display = "none";
+  	input.onclick = ()=>{
+    	let files = input.files;
+    	console.log("flag 1");
+	    if (files[0]) {
+	    	console.log("flag 2");
+	      	let path = files[0].name;
+	      	setDisplayYouTube(null);
+	      	setDisplayMP4(path);
+	    }
+	};
+  	input.click();
 }
 
 function popupFacebook() {

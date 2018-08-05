@@ -119,12 +119,21 @@ class VideoTools extends React.PureComponent {
       let popup = window.open(url.replace("www.","m."), '_blank', 'width=500,height=500');
     }
   }
+  handleChange = (e)=>{
+    chooseTime(e.target.value);
+  }
   render() {
-    let vid = (
-      <video id="video" height="400px" controls src="comborific.mp4" type="video/mp4" height="350px" width="700px">
+    let vid;
+    if (this.props.mp4) {
+      vid = (<video id="video" height="400px" controls src={this.props.mp4} type="video/mp4" height="350px" width="700px">
         Your browser does not support HTML5 video.
-      </video>
-    );
+      </video>);
+    } else if (this.props.youtube) {
+      vid = <div id="youtube"></div>
+      if (ytPlayer) {
+        ytPlayer.cueVideoById(this.props.youtube);
+      }
+    }
     return (
       <div className="gridover"
         style={{
@@ -146,15 +155,14 @@ class VideoTools extends React.PureComponent {
         </select>
         <button onClick={addTimeCode}>Add timecode</button>
         <button onClick={removeTimeCode}>Remove timecode</button>
-        <button onClick={backFrame} >&lt;</button>
-        <input id="tcframes" type="text" size="6"></input>
-        <button onClick={forwardFrame}>&gt;</button>
+        <button onClick={backVideoFrame} >&lt;</button>
+        <input id="tcframes" type="text" size="6" value={timecoder.getTime()} onChange={this.handleChange}></input>
+        <button onClick={forwardVideoFrame}>&gt;</button>
         <div style={{float: "right"}}>
           <button onClick={cueYouTubeVideo}>YouTube</button>
           <button onClick={cueMP4Video}>*.mp4</button>
           <button onClick={popupFacebook}>Facebook</button>
         </div>
-        <input id="mp4" type="file" accept="video/mp4" style={{display: "none"}}/>
       </div>
     );
   }
