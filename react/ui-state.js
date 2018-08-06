@@ -21,7 +21,6 @@ function gotoTick(tick) {
   updateEngine();
   validateLocks();
   if (tick2>SCROLL) {
-    console.log(tick2-SCROLL);
     setScrolled(tick2 - SCROLL);
   }
 }
