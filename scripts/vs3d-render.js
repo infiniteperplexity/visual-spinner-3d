@@ -265,6 +265,33 @@ VS3D = (function(VS3D) {
 		return new THREE.Group();
 	}
 
+	ThreeRenderer.prototype.builder.buugeng = function(prop) {
+		let {color, alpha} = prop;
+		let shape = new THREE.Shape();
+		// need path for a buugeng here
+		shape.holes = [];
+		let extrudeSettings = {
+			steps: 2,
+			depth: 5,
+			bevelEnabled: true,
+			bevelThickness: 1,
+			bevelSize: 1,
+			bevelSegments: 1
+		};
+		let geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+		let material = new THREE.MeshLambertMaterial({color: color});
+		if (alpha<1) {
+			for (let child in group.children) {
+				material.transparent = true;
+				material.opacity = alpha;
+			}
+		}
+		let blade = new THREE.Mesh(geometry, material);
+		let group = new THREE.Group();
+		group.add(blade);
+		return group;
+	}
+
 	VS3D.ThreeRenderer = ThreeRenderer;
 
 	let Colors = {};
