@@ -91,6 +91,8 @@ function reducer(state, action) {
       youtube: null,
       // mp4: null,
       mp4: "comborific.mp4",
+      timecodes: {},
+      seconds: -1,
       tick: -1,
       tick2: -1,
       frame: -1,

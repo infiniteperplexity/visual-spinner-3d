@@ -113,3 +113,23 @@ Next steps:
 	- Clean up cross-browser compatibility.
 	- Deal with TWIST in the engine.
 		- How do we even deal with this?  So...we have a formula that works in many planes.
+	- The timecoder stuff isn't all that well-suited to what I actually want.
+		- If I refactor it, I would probably fully integrate it into React/Redux.
+		- In addition to that...you'd want the following functionality:
+			1) Add a timecode right here, corresponding to the current tick2.
+				1a) That raises the possibility of inconsistencies...which we should maybe just ignore for now.
+			2) Delete the current timecode.
+			3) Skip to the timecode for the current tick2.
+				3a) Could interpolate a guess if necessary.
+			4) Skip to the tick2 for the current timecode.
+			5) In that case, you don't want a drop-down menu, really.  You want a skip ahead/back button.
+
+So like... <= <- [] -> => YT MP4 IG FB
+And that's if we want to attach the timecodes to the JSON file, which is probably a good idea.  Cuts down on the mess.
+And...rather than indexing it, you do it by tick.  So like...{url: , format: , tick: timestamp, tick: timestamp, etc.}
+So...where do I store this?  It's inconvenient because everything so far is stored in an array, separately per prop, but this is for the thing as a whole.  So maybe...we want to have a thing called, like...
+{
+	timecodes: blah,
+	props:blah,
+	moves: blah
+}
