@@ -8,6 +8,7 @@ function getActiveMove() {
 const SCROLL = 810;
 // might rename to just apply to the UI
 function gotoTick(tick) {
+  let {scrolled} = store.getState();
   validateTransition();
   store.dispatch({type: "SET_TICK", tick: tick});
   let tick2 = -1;
@@ -20,8 +21,10 @@ function gotoTick(tick) {
   setPropNodesByTick(tick2);
   updateEngine();
   validateLocks();
-  if (tick2>SCROLL) {
+  if (tick2>SCROLL && (tick2 - SCROLL)>scrolled) {
     setScrolled(tick2 - SCROLL);
+  } else if (tick2<scrolled) {
+    setScrolled(tick2-45);
   }
 }
 
