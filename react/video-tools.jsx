@@ -99,15 +99,17 @@ function addTimeCode() {
   let {timecodes, tick2, seconds} = store.getState();
   timecodes = clone(timecodes);
   tick2+=1;
-  timecodes[tick2] = parseFloat(seconds.toFixed(2));
-  store.dispatch({type: "SET_TIMECODES", timecodes: timecodes});
+  if (timecodes[tick2]===undefined || confirm("replace current timecode?")) {
+    timecodes[tick2] = parseFloat(seconds.toFixed(2));
+    store.dispatch({type: "SET_TIMECODES", timecodes: timecodes});
+  }
 }
 
 function removeTimeCode() {
   let {timecodes, tick2} = store.getState();
   timecodes = clone(timecodes);
   tick2+=1;
-  if (timecodes[tick2]) {
+  if (timecodes[tick2]!==undefined) {
     delete timecodes[tick2];
   }
   store.dispatch({type: "SET_TIMECODES", timecodes: timecodes});
