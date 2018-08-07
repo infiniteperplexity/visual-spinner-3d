@@ -133,3 +133,5 @@ So...where do I store this?  It's inconvenient because everything so far is stor
 	props:blah,
 	moves: blah
 }
+
+does copying the moves tarting with antispin work right

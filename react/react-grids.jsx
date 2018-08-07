@@ -27,12 +27,7 @@ class App extends React.PureComponent {
         <div className="grid header">
           <div>
             <button title="save sequence as JSON file" onClick={(e)=>{
-              e.preventDefault();
-              if (this.props.frozen) {
-                return;
-              }
-              props.updateEngine();
-              setFileName(save(player.props, this.props.filename));
+              props.saveJSON();
             }}>Save</button>
             <ImportButton {...props} />
             <span style={{

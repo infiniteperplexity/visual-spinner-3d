@@ -180,6 +180,10 @@ function reducer(state, action) {
       return {...state, youtube: action.youtube};
     case "SET_MP4":
       return {...state, mp4: action.mp4};
+    case "SET_SECONDS":
+      return {...state, seconds: seconds};
+    case "SET_TIMECODES":
+      return {...state, timecodes: timecodes};
     default:
       throw new Error("wrong type of store action: "+action.type);
       return state;

@@ -8,7 +8,7 @@ function getActiveMove() {
 const SCROLL = 810;
 // might rename to just apply to the UI
 function gotoTick(tick) {
-  let {scrolled} = store.getState();
+  let {scrolled, timecodes} = store.getState();
   validateTransition();
   store.dispatch({type: "SET_TICK", tick: tick});
   let tick2 = -1;
@@ -25,6 +25,9 @@ function gotoTick(tick) {
     setScrolled(tick2 - SCROLL);
   } else if (tick2<scrolled) {
     setScrolled(tick2-45);
+  }
+  if (timecodes[tick2]!==undefined) {
+    gotoSeconds(timecodes[tick2]);
   }
 }
 
@@ -388,16 +391,37 @@ function validateLocks() {
 function setFileName(fname) {
   store.dispatch({type: "SET_FILENAME", filename: fname});
 }
+
+function saveJSON() {
+  let {frozen, timecodes, moves, filename} = store.getState();
+  if (frozen) {
+    return;
+  }
+  updateEngine();
+  let obj = {
+    timecodes: timecodes,
+    props: player.props
+  }
+  setFileName(save(obj), filename);
+}
+
 function loadJSON(json) {
   let saveState = clone(store.getState());
   let savedProps = clone(player.props);
   try {
-    let props = parse(json);
+    let {timecodes, props} = parse(json);
     for (let i=0; i<props.length; i++) {
       player.props[i] = new PropWrapper();
       for (let key in props[i]) {
         player.props[i][key] = props[i][key];
       }
+    }
+    let mp4 = null;
+    let youtube = null;
+    if (timecodes.format==="mp4") {
+      mp4 = timecodes.url;
+    } else if (timecodes.format==="youtube") {
+      youtube = timecodes.url;
     }
     let state = {
       filename: saveState.filename,
@@ -409,8 +433,13 @@ function loadJSON(json) {
       tick: -1,
       tick2: -1,
       frame: -1,
+      seconds: -1,
       order: player.props.map((_,i)=>(player.props.length-i-1)),
       plane: "WALL",
+      video: false
+      youtube: youtube,
+      mp4: mp4,
+      timecodes: timecodes,
       frozen: false,
       transition: false,
       transitions: player.props.map(p=>([])),
