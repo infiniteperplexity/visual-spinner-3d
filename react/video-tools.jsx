@@ -14,8 +14,7 @@ window.onYouTubeIframeAPIReady = function() {
   });
 }
 
-class VideoTools extends React.Component {
-// class VideoTools extends React.PureComponent {
+class VideoTools extends React.PureComponent {
   handleFacebook = ()=>{
     let url = prompt("Enter the video URL, then right-click the popup to download:");
     if (url) {
@@ -23,8 +22,7 @@ class VideoTools extends React.Component {
     }
   }
   handleYouTube = ()=>{
-    alert("sorry, this functionality is currently too buggy");
-    // this.props.cueYouTubeVideo();
+    this.props.cueYouTubeVideo();
   }
   handleMP4 = ()=>{
     this.props.cueMP4Video();
@@ -52,17 +50,9 @@ class VideoTools extends React.Component {
     // remove the current timecode
   }
 
-  componentDidUpdate = ()=>{
-    if (ytPlayer && this.props.youtube) {
+  componentDidUpdate = (prev)=>{
+    if (ytPlayer && this.props.youtube && prev.youtube!==this.props.youtube) {
       ytPlayer.cueVideoById(this.props.youtube);
-    }
-  }
-  shouldComponentUpdate = (nextProps, nextState)=>{
-    let {video, youtube, mp4} = nextProps;
-    if (video!==this.props.video || youtube!==this.props.youtube || mp4!==this.props.mp4) {
-      return true;
-    } else {
-      return false;
     }
   }
   render() {
@@ -85,10 +75,10 @@ class VideoTools extends React.Component {
             onTimeUpdate={this.props.updateTimeCoder}>
             Your browser does not support HTML5 video.
           </video>
-          <YouTube youtube={this.props.youtube}/>
+          <div id="youtube" style={{display: (this.props.youtube) ? "block" : "none"}}/>
         </div>
         <button style={{marginLeft: "10px"}} onClick={this.handleBackFrame} >&lt;</button>
-        <SecondsBox seconds={this.props.seconds} handleChange={this.handleChange}/>
+        <input type="text" size="4" value={this.props.seconds.toFixed(3)} onChange={this.handleChange}></input>
         <button onClick={this.handleForwardFrame}>&gt;</button>
         <div style={{float: "right"}}>
           <button title="load a YouTube video using the YouTube API" onClick={this.handleYouTube}>YouTube</button>
@@ -98,14 +88,6 @@ class VideoTools extends React.Component {
       </div>
     );
   }
-}
-
-function SecondsBox(props, context) {
-  return <input type="text" size="4" value={props.seconds.toFixed(3)} onChange={props.handleChange}></input>
-}
-function YouTube(props, context) {
-  console.log("testing");
-  return <div id="youtube" style={{display: (props.youtube) ? "block" : "none"}}/>
 }
 
 function addTimeCode(seconds) {
@@ -135,13 +117,11 @@ function gotoSeconds(seconds) {
     }
   } else if (youtube) {
     if (ytPlayer) {
-      console.log("seeking to");
       ytPlayer.seekTo(seconds);
       setTimeout(()=>{
-        console.log(ytPlayer.getCurrentTime());
+        seconds = VS3D.round(ytPlayer.getCurrentTime(),0.05);
         store.dispatch({type: "SET_SECONDS", seconds: seconds});
       },100);
-      // seconds = VS3D.round(ytPlayer.getCurrentTime(),0.05);
       setTimeout(()=>ytPlayer.pauseVideo(),1000);
     }  
   }
@@ -159,7 +139,7 @@ function updateTimeCoder(event) {
       } else {
         seconds = VS3D.round(ytPlayer.getCurrentTime(),0.05);
         seconds = ytPlayer.getCurrentTime();
-        // store.dispatch({type: "SET_SECONDS", seconds: seconds});
+        store.dispatch({type: "SET_SECONDS", seconds: seconds});
       }
   }
   
