@@ -436,7 +436,7 @@ function loadJSON(json) {
       seconds: -1,
       order: player.props.map((_,i)=>(player.props.length-i-1)),
       plane: "WALL",
-      video: false
+      video: false,
       youtube: youtube,
       mp4: mp4,
       timecodes: timecodes,
@@ -569,52 +569,4 @@ function getMultiSelected() {
     from: indexes[0],
     to: indexes[indexes.length-1]
   };
-}
-
-function setDisplayYouTube(youtube) {
-  store.dispatch({type: "SET_YOUTUBE", youtube: youtube});
-}
-
-function setDisplayMP4(mp4) {
-  store.dispatch({type: "SET_MP4", mp4: mp4});
-}
-
-function toggleVideoTools() {
-  if (vidFrozen) {
-    return;
-  }
-  let {video} = store.getState();
-  store.dispatch({type: "SET_VIDEO", video: !video});
-}
-
-function saveTimeCodes() {
-  let fname = store.getState().filename;
-  VS3D.save(timecoder.timecodes,"timecodes_"+fname);
-}
-
-function loadTimeCodes() {
-  let json = document.createElement("input");
-  json.type = "file";
-  json.accept = "application/json";
-  json.style.display = "none";
-  json.onchange = ()=>{
-    let files = json.files;
-    let reader = new FileReader();
-    reader.onload = (f)=>{
-      if (reader.result) {
-        try {
-          let timecodes = JSON.parse(reader.result);
-          console.log(timecodes);
-          timecoder.timecodes = timecodes;
-          timecoder.update();
-        } catch (e) {
-          throw e;
-        }
-      }
-    }
-    if (files[0]) {
-      reader.readAsText(files[0]);
-    }
-  }
-  json.click();
 }

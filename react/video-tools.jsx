@@ -28,19 +28,14 @@ class VideoTools extends React.PureComponent {
     this.props.cueMP4Video();
   }
   handleChange = (e)=>{
-    this.props.gotoSeconds(e.target.value);
+    this.props.gotoSeconds(parseFloat(e.target.value));
     // do we need code to send this to the correct tick2? 
   }
   handleForwardFrame = ()=>{
-    // move seconds forward
-    if (this.props.mp4) {
-
-    } else if (this.props.youtube) {
-
-    }
+    this.props.gotoSeconds(this.props.seconds+0.05);
   }
   handleBackFrame = ()=>{
-    // move seconds backward
+    this.props.gotoSeconds(this.props.seconds-0.05);
   }
   handleNextCode = ()=>{
     // move forward to the next timecode
@@ -76,19 +71,17 @@ class VideoTools extends React.PureComponent {
       }}>
         <div style={{backgroundColor: "black", paddingTop: "3px"}}>
           <video id="video" height="400px" controls src={this.props.mp4} type="video/mp4" height="350px" width="700px"
-            style={{display: (this.props.mp4) ? "block" : "none"}}>
+            style={{display: (!this.props.youtube) ? "block" : "none"}}
+            onTimeUpdate={this.props.updateTimeCoder}>
             Your browser does not support HTML5 video.
           </video>
           <div id="youtube" style={{
             display: (this.props.youtube) ? "block" : "none"}}/>
         </div>
-        <button title="add a timecode" onClick={this.handleAddCode}>Add</button>
-        <button title="remove current timecode" onClick={this.handleRemoveCode}>Remove</button>
-        <button title="to previous timecode" onClick={this.handleBackCode}>&lt;&lt;</button>
-        <button title="to next timecode timecode" onClick={this.handleNextCode}>&gt;&gt;</button>
+
         <button style={{marginLeft: "10px"}} onClick={this.handleBackFrame} >&lt;</button>
-        <input id="vframes" type="text" size="4" value={this.props.seconds || 0} onChange={this.handleChange}></input>
-        <button onClick={this.handleNextFrame}>&gt;</button>
+        <input type="text" size="4" value={this.props.seconds.toFixed(3)} onChange={this.handleChange}></input>
+        <button onClick={this.handleForwardFrame}>&gt;</button>
         <div style={{float: "right"}}>
           <button title="load a YouTube video using the YouTube API" onClick={this.handleYouTube}>YouTube</button>
           <button title="load an *.mp4 video from your computer" onClick={this.handleMP4}>*.mp4</button>
@@ -103,21 +96,49 @@ function addTimeCode(seconds) {
   let {timecodes} = store.getState();
   timecodes = clone(timecodes);
 
-  store.;dispatch({type: "SET_STATE", timecodes: timecodes});
+  store.dispatch({type: "SET_TIMECODES", timecodes: timecodes});
 }
 
 function removeTimeCode(seconds) {
   let {timecodes} = store.getState();
   timecodes = clone(timecodes);
 
-  store.;dispatch({type: "SET_STATE", timecodes: timecodes});
+  store.dispatch({type: "SET_TIMECODES", timecodes: timecodes});
 }
 
 function gotoSeconds(seconds) {
-  if (this.props.mp4) {
+  seconds = Math.max(0,seconds);
+  seconds = VS3D.round(seconds, 0.05);
+  let {mp4, youtube} = store.getState();
+  if (mp4) {
+    let video = document.getElementById("video");
+    if (video) {
+      video.currentTime = seconds;
+      seconds = VS3D.round(video.currentTime,0.05);
+      store.dispatch({type: "SET_SECONDS", seconds: seconds});
+    }
+  } else if (youtube) {
+    if (ytPlayer) {
+      ytPlayer.seekTo(seconds);
+      seconds = VS3D.round(ytPlayer.getCurrentTime(),0.05);
+      setTimeout(()=>ytPlayer.pauseVideo(),1000);
+      store.dispatch({type: "SET_SECONDS", seconds: seconds});
+    }  
+  }
+}
 
-  } else if (this.props.youtube) {
-      
+function updateTimeCoder(event) {
+  let {mp4, youtube} = store.getState();
+  let seconds;
+  if (mp4) {
+    seconds = VS3D.round(event.target.currentTime,0.05);
+  } else if (youtube) {
+      if (!ytPlayer || !ytPlayer.getCurrentTime()) {
+        seconds = 0;
+      } else {
+        // seconds = VS3D.round(ytPlayer.getCurrentTime(),0.05);
+        seconds = ytPlayer.getCurrentTime();
+      }
   }
   store.dispatch({type: "SET_SECONDS", seconds: seconds});
 }
@@ -126,16 +147,18 @@ function gotoSeconds(seconds) {
 function setYouTube(youtube) {
   let {timecodes} = store.getState();
   timecodes = clone(timecodes);
-
-  store.;dispatch({type: "SET_STATE", timecodes: timecodes});
+  timecodes.format = "youtube";
+  timecodes.url = youtube;
+  store.dispatch({type: "SET_TIMECODES", timecodes: timecodes});
   store.dispatch({type: "SET_YOUTUBE", youtube: youtube});
 }
 
 function setMP4(mp4) {
   let {timecodes} = store.getState();
   timecodes = clone(timecodes);
-
-  store.;dispatch({type: "SET_STATE", timecodes: timecodes});
+  timecodes.format = "mp4";
+  timecodes.url = mp4;
+  store.dispatch({type: "SET_TIMECODES", timecodes: timecodes});
   store.dispatch({type: "SET_MP4", mp4: mp4});
 }
 
@@ -160,8 +183,8 @@ function cueYouTubeVideo() {
     url = url[url.length-1];
     try {
       ytPlayer.cueVideoById(url);
-      setDisplayMP4(null);
-      setDisplayYouTube(url);
+      setMP4(null);
+      setYouTube(url);
       document.getElementById("youtube").style.display = "block";
     } catch(e) {
       alert("invalid url");
@@ -171,9 +194,9 @@ function cueYouTubeVideo() {
 
 function cueMP4Video() {
   let input = document.createElement("input");
-    input.type = "file";
-    input.accept = "video/mp4";
-    input.style.display = "none";
+  input.type = "file";
+  input.accept = "video/mp4";
+  input.style.display = "none";
   input.onchange = ()=>{
     let files = input.files;
       if (files[0]) {
@@ -181,8 +204,8 @@ function cueMP4Video() {
           if (ytPlayer) {
             ytPlayer.clearVideo();
           }
-          setDisplayYouTube(null);
-          setDisplayMP4(path);
+          setYouTube(null);
+          setMP4(path);
           document.getElementById("youtube").style.display = "none";
       }
   }
@@ -205,6 +228,12 @@ function popupFacebook() {
 */
 
 /*
+
+
+        <button title="add a timecode" onClick={this.handleAddCode}>Add</button>
+        <button title="remove current timecode" onClick={this.handleRemoveCode}>Remove</button>
+        <button title="to previous timecode" onClick={this.handleBackCode}>&lt;&lt;</button>
+        <button title="to next timecode timecode" onClick={this.handleNextCode}>&gt;&gt;</button>
 
 So...let's talk about how the functionality works...three/four major things, right?
 

@@ -59,6 +59,7 @@ let AppComponent = ReactRedux.connect(
       checkLocks: validateLocks,
       validateLocks: validateLocks,
 
+      saveJSON: saveJSON,
       loadJSON: loadJSON,
       fileInput: fileInput,
       setModifier: setModifier,
@@ -69,8 +70,10 @@ let AppComponent = ReactRedux.connect(
       copyDraggedMultiple: copyDraggedMultiple,
 
       toggleVideoTools: toggleVideoTools,
-      setDisplayYouTube: setDisplayYouTube,
-      setDisplayMP4: setDisplayMP4
+      cueMP4Video: cueMP4Video,
+      cueYouTubeVideo: cueYouTubeVideo,
+      gotoSeconds: gotoSeconds,
+      updateTimeCoder: updateTimeCoder
   })
 )(App);
 
@@ -90,9 +93,9 @@ function reducer(state, action) {
       // youtube: "bHQqvYy5KYo",
       youtube: null,
       // mp4: null,
-      mp4: "comborific.mp4",
+      mp4: null,
       timecodes: {},
-      seconds: -1,
+      seconds: 0,
       tick: -1,
       tick2: -1,
       frame: -1,
@@ -181,9 +184,9 @@ function reducer(state, action) {
     case "SET_MP4":
       return {...state, mp4: action.mp4};
     case "SET_SECONDS":
-      return {...state, seconds: seconds};
+      return {...state, seconds: action.seconds};
     case "SET_TIMECODES":
-      return {...state, timecodes: timecodes};
+      return {...state, timecodes: action.timecodes};
     default:
       throw new Error("wrong type of store action: "+action.type);
       return state;
