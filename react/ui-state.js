@@ -26,9 +26,11 @@ function gotoTick(tick) {
   } else if (tick2<scrolled) {
     setScrolled(tick2-45);
   }
+  tick2+=1;
   if (timecodes[tick2]!==undefined) {
     gotoSeconds(timecodes[tick2]);
   }
+  // could potentially do interpolation here, but let's just not
 }
 
 
@@ -433,7 +435,7 @@ function loadJSON(json) {
       tick: -1,
       tick2: -1,
       frame: -1,
-      seconds: -1,
+      seconds: 0,
       order: player.props.map((_,i)=>(player.props.length-i-1)),
       plane: "WALL",
       video: false,

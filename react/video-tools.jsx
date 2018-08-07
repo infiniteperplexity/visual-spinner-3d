@@ -44,9 +44,11 @@ class VideoTools extends React.PureComponent {
     // move back to the previous timecode
   }
   handleAddCode = ()=>{
+    this.props.addTimeCode();
     // add a new timecode
   }
   handleRemoveCode = ()=>{
+    this.props.removeTimeCode();
     // remove the current timecode
   }
 
@@ -77,7 +79,9 @@ class VideoTools extends React.PureComponent {
           </video>
           <div id="youtube" style={{display: (this.props.youtube) ? "block" : "none"}}/>
         </div>
-        <button style={{marginLeft: "10px"}} onClick={this.handleBackFrame} >&lt;</button>
+        <button title="add a timecode" onClick={this.handleAddCode}>Add Timecode</button>
+        <button title="remove current timecode" onClick={this.handleRemoveCode}>Remove Timecode</button>
+        <button style={{marginLeft: "60px"}} onClick={this.handleBackFrame} >&lt;</button>
         <input type="text" size="4" value={this.props.seconds.toFixed(3)} onChange={this.handleChange}></input>
         <button onClick={this.handleForwardFrame}>&gt;</button>
         <div style={{float: "right"}}>
@@ -90,17 +94,21 @@ class VideoTools extends React.PureComponent {
   }
 }
 
-function addTimeCode(seconds) {
-  let {timecodes} = store.getState();
+function addTimeCode() {
+  let {timecodes, tick2, seconds} = store.getState();
   timecodes = clone(timecodes);
-
+  tick2+=1;
+  timecodes[tick2] = parseFloat(seconds.toFixed(2));
   store.dispatch({type: "SET_TIMECODES", timecodes: timecodes});
 }
 
-function removeTimeCode(seconds) {
-  let {timecodes} = store.getState();
+function removeTimeCode() {
+  let {timecodes, tick2} = store.getState();
   timecodes = clone(timecodes);
-
+  tick2+=1;
+  if (timecodes[tick2]) {
+    delete timecodes[tick2];
+  }
   store.dispatch({type: "SET_TIMECODES", timecodes: timecodes});
 }
 
@@ -221,13 +229,7 @@ function popupFacebook() {
   }
 }
 
-/*
 
-- refactor out all the timecoder stuff to use Redux state.
-- create a new interface that has ticks but no saving or loading.
-- revamp the JSON format.
-
-*/
 
 /*
 
@@ -237,11 +239,14 @@ function popupFacebook() {
         <button title="to previous timecode" onClick={this.handleBackCode}>&lt;&lt;</button>
         <button title="to next timecode timecode" onClick={this.handleNextCode}>&gt;&gt;</button>
 
-So...let's talk about how the functionality works...three/four major things, right?
+*/
 
-Forward/Back seconds.
-Forward/Back timecodes.
-Add/remove codes.
+/*
 
+- for now, going to seconds never updates tick.
+- timecodes are associations between ticks and seconds.
+  - if you're crazy, you could have two ticks with the same seconds, but never the reverse, right?
+
+- so adding a removing timecodes is very, very simple.
 
 */

@@ -133,7 +133,4 @@ So...where do I store this?  It's inconvenient because everything so far is stor
 	props:blah,
 	moves: blah
 }
-
-does copying the moves starting with antispin work right
-
-Any type of re-render on the YouTube iframe ruins it...I guess I could solve that by...preventing re-renders?
+Okay now we just need a visual cue for timecodes.

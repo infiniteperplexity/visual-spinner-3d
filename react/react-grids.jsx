@@ -22,6 +22,12 @@ class App extends React.PureComponent {
   render() {
     let props = this.props;
     let {frame, ...noframe} = props;
+    let vstyle = {
+      title: (props.video) ? "disable video tools" : "enable video tools",
+    };
+    if (props.video) {
+      vstyle.backgroundColor = "cyan";
+    }
     return (
       <div className="grid app" style={{height: "720px"}}>
         <div className="grid header">
@@ -34,15 +40,12 @@ class App extends React.PureComponent {
               paddingLeft: "25px"
             }}>{this.props.filename}</span>
           </div>
-          <div />
-          <button style={{
-            // marginLeft: "250px",
-            width: "100px",
-            title: (props.video) ? "disable video tools" : "enable video tools",
-            backgroundColor: (props.video) ? "cyan" : "lightgray"
-          }} 
+          <div>
+            <button style={vstyle} 
             onClick={props.toggleVideoTools}
             title={"show/hide video tools (shortcut: Tab key)"}>Video Tools</button>
+          </div>
+          <div />
         </div>
         <div className="grid top">
           <Grid dragID="SVG" {...noframe} />

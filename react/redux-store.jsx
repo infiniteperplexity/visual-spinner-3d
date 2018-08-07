@@ -73,7 +73,9 @@ let AppComponent = ReactRedux.connect(
       cueMP4Video: cueMP4Video,
       cueYouTubeVideo: cueYouTubeVideo,
       gotoSeconds: gotoSeconds,
-      updateTimeCoder: updateTimeCoder
+      updateTimeCoder: updateTimeCoder,
+      addTimeCode: addTimeCode,
+      removeTimeCode: removeTimeCode
   })
 )(App);
 

@@ -221,6 +221,23 @@ class MoveItem extends React.PureComponent {
     ctx.closePath();
     ctx.stroke();
     ctx.fill();
+    if (this.props.timecodes[this.props.ticks+BEAT*beats(this.props.move)]!==undefined || (this.props.ticks===-1 && this.props.timecodes[0]!==undefined)) {
+      // visual indicator for timecode
+
+      ctx.fillStyle = "none";
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "gray";
+      ctx.beginPath();
+      ctx.arc(width/2,height/2,4,0,2*Math.PI);
+      ctx.closePath();
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.lineWidth = 1;
+      ctx.moveTo(width/2, height/2-2);
+      ctx.lineTo(width/2, height/2);
+      ctx.lineTo(width/2+2, height/2);
+      ctx.stroke();
+    }
   }
   handleDragStart =(e)=>{
     let json = this.props.move;
