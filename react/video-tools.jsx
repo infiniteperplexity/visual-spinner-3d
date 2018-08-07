@@ -81,7 +81,8 @@ class VideoTools extends React.PureComponent {
         </div>
         <button title="add a timecode" onClick={this.handleAddCode}>Add Timecode</button>
         <button title="remove current timecode" onClick={this.handleRemoveCode}>Remove Timecode</button>
-        <button style={{marginLeft: "60px"}} onClick={this.handleBackFrame} >&lt;</button>
+        <span style={{marginLeft: "60px"}} />
+        <button onClick={this.handleBackFrame} >&lt;</button>
         <input type="text" size="4" value={this.props.seconds.toFixed(3)} onChange={this.handleChange}></input>
         <button onClick={this.handleForwardFrame}>&gt;</button>
         <div style={{float: "right"}}>

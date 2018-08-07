@@ -133,4 +133,6 @@ So...where do I store this?  It's inconvenient because everything so far is stor
 	props:blah,
 	moves: blah
 }
-Okay now we just need a visual cue for timecodes.
+
+- do I like that timecode visual cue?
+- it's definitely distracting to copy moves and not preserve acceleration and such
