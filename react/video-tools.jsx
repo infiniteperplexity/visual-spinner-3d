@@ -14,7 +14,8 @@ window.onYouTubeIframeAPIReady = function() {
   });
 }
 
-class VideoTools extends React.PureComponent {
+class VideoTools extends React.Component {
+// class VideoTools extends React.PureComponent {
   handleFacebook = ()=>{
     let url = prompt("Enter the video URL, then right-click the popup to download:");
     if (url) {
@@ -22,7 +23,8 @@ class VideoTools extends React.PureComponent {
     }
   }
   handleYouTube = ()=>{
-    this.props.cueYouTubeVideo();
+    alert("sorry, this functionality is currently too buggy");
+    // this.props.cueYouTubeVideo();
   }
   handleMP4 = ()=>{
     this.props.cueMP4Video();
@@ -55,6 +57,14 @@ class VideoTools extends React.PureComponent {
       ytPlayer.cueVideoById(this.props.youtube);
     }
   }
+  shouldComponentUpdate = (nextProps, nextState)=>{
+    let {video, youtube, mp4} = nextProps;
+    if (video!==this.props.video || youtube!==this.props.youtube || mp4!==this.props.mp4) {
+      return true;
+    } else {
+      return false;
+    }
+  }
   render() {
     return (
       <div className="gridover"
@@ -75,12 +85,10 @@ class VideoTools extends React.PureComponent {
             onTimeUpdate={this.props.updateTimeCoder}>
             Your browser does not support HTML5 video.
           </video>
-          <div id="youtube" style={{
-            display: (this.props.youtube) ? "block" : "none"}}/>
+          <YouTube youtube={this.props.youtube}/>
         </div>
-
         <button style={{marginLeft: "10px"}} onClick={this.handleBackFrame} >&lt;</button>
-        <input type="text" size="4" value={this.props.seconds.toFixed(3)} onChange={this.handleChange}></input>
+        <SecondsBox seconds={this.props.seconds} handleChange={this.handleChange}/>
         <button onClick={this.handleForwardFrame}>&gt;</button>
         <div style={{float: "right"}}>
           <button title="load a YouTube video using the YouTube API" onClick={this.handleYouTube}>YouTube</button>
@@ -90,6 +98,14 @@ class VideoTools extends React.PureComponent {
       </div>
     );
   }
+}
+
+function SecondsBox(props, context) {
+  return <input type="text" size="4" value={props.seconds.toFixed(3)} onChange={props.handleChange}></input>
+}
+function YouTube(props, context) {
+  console.log("testing");
+  return <div id="youtube" style={{display: (props.youtube) ? "block" : "none"}}/>
 }
 
 function addTimeCode(seconds) {
@@ -119,10 +135,14 @@ function gotoSeconds(seconds) {
     }
   } else if (youtube) {
     if (ytPlayer) {
+      console.log("seeking to");
       ytPlayer.seekTo(seconds);
-      seconds = VS3D.round(ytPlayer.getCurrentTime(),0.05);
+      setTimeout(()=>{
+        console.log(ytPlayer.getCurrentTime());
+        store.dispatch({type: "SET_SECONDS", seconds: seconds});
+      },100);
+      // seconds = VS3D.round(ytPlayer.getCurrentTime(),0.05);
       setTimeout(()=>ytPlayer.pauseVideo(),1000);
-      store.dispatch({type: "SET_SECONDS", seconds: seconds});
     }  
   }
 }
@@ -132,15 +152,17 @@ function updateTimeCoder(event) {
   let seconds;
   if (mp4) {
     seconds = VS3D.round(event.target.currentTime,0.05);
+    store.dispatch({type: "SET_SECONDS", seconds: seconds});
   } else if (youtube) {
       if (!ytPlayer || !ytPlayer.getCurrentTime()) {
         seconds = 0;
       } else {
-        // seconds = VS3D.round(ytPlayer.getCurrentTime(),0.05);
+        seconds = VS3D.round(ytPlayer.getCurrentTime(),0.05);
         seconds = ytPlayer.getCurrentTime();
+        // store.dispatch({type: "SET_SECONDS", seconds: seconds});
       }
   }
-  store.dispatch({type: "SET_SECONDS", seconds: seconds});
+  
 }
 
 
