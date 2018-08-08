@@ -438,7 +438,7 @@ function loadJSON(json) {
       seconds: 0,
       order: player.props.map((_,i)=>(player.props.length-i-1)),
       plane: "WALL",
-      video: false,
+      video: 0,
       youtube: youtube,
       mp4: mp4,
       timecodes: timecodes,

@@ -60,14 +60,14 @@ class VideoTools extends React.PureComponent {
     return (
       <div className="gridover"
         style={{
-          display: (this.props.video) ? "block" : "none",
+          display: (this.props.video===0) ? "none" : "block",
           borderStyle: "solid",
           borderColor: "lightgray",
           borderWidth: "1px",
           backgroundColor: "white",
           width: "705px",
           height: "393px",
-          left: (this.props.vidleft) ? "-355px" : "0px",
+          left: (this.props.video===-1) ? "-355px" : "0px",
           position: "absolute",
           zIndex: +1
       }}>
@@ -180,7 +180,14 @@ function toggleVideoTools() {
     return;
   }
   let {video} = store.getState();
-  store.dispatch({type: "SET_VIDEO", video: !video});
+  if (video===0) {
+    video = 1;
+  } else if (video===1) {
+    video = -1;
+  } else if (video===-1) {
+    video = 0;
+  }
+  store.dispatch({type: "SET_VIDEO", video: video});
 }
 
 

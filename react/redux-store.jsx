@@ -91,7 +91,7 @@ function reducer(state, action) {
       starters: player.props.map(p=>resolve(fit(p.prop, new Move({beats: 0})))),
       modifier: false,
       multiselect: null,
-      video: false,
+      video: 0,
       // youtube: "bHQqvYy5KYo",
       youtube: null,
       // mp4: null,
@@ -107,7 +107,6 @@ function reducer(state, action) {
       frozen: false,
       scrolled: 0,
       transition: false,
-      vidleft: false,
       // sparse array
       transitions: player.props.map(p=>([])),
       locks: {
@@ -190,8 +189,6 @@ function reducer(state, action) {
       return {...state, seconds: action.seconds};
     case "SET_TIMECODES":
       return {...state, timecodes: action.timecodes};
-    case "SET_VIDLEFT":
-      return {...state, vidleft: action.vidleft};
     default:
       throw new Error("wrong type of store action: "+action.type);
       return state;

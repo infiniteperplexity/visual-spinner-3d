@@ -16,10 +16,6 @@ let Y0 = HALF*UNITS;
 // }
 
 class App extends React.PureComponent {
-  handleDoubleClick = (e)=>{
-    store.dispatch({type: "SET_VIDLEFT", vidleft: !this.props.vidleft});
-    store.dispatch({type: "SET_VIDEO", video: true});
-  }
   componentDidMount() {
     afterReactMounts();
   }
@@ -47,7 +43,6 @@ class App extends React.PureComponent {
           <div>
             <button style={vstyle} 
             onClick={props.toggleVideoTools}
-            onDoubleClick={this.handleDoubleClick}
             title={"show/hide video tools (shortcut: Tab key)"}>Video Tools</button>
           </div>
           <div />
