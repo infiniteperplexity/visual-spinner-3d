@@ -51,7 +51,6 @@ class VideoTools extends React.PureComponent {
     this.props.removeTimeCode();
     // remove the current timecode
   }
-
   componentDidUpdate = (prev)=>{
     if (ytPlayer && this.props.youtube && prev.youtube!==this.props.youtube) {
       ytPlayer.cueVideoById(this.props.youtube);
@@ -68,6 +67,7 @@ class VideoTools extends React.PureComponent {
           backgroundColor: "white",
           width: "705px",
           height: "393px",
+          left: (this.props.vidleft) ? "-355px" : "0px",
           position: "absolute",
           zIndex: +1
       }}>

@@ -8,6 +8,7 @@ const KEYCODES = {
 
 window.addEventListener("keydown", handleKeyDown);
 window.addEventListener("keyup", handleKeyUp);
+let doubleKey = null;
 function handleKeyDown(e) {
 	if ([KEYCODES.DELETE, KEYCODES.BACKSPACE].includes(e.which)) {
 	  	e.preventDefault();
@@ -25,11 +26,17 @@ function handleKeyDown(e) {
 	} else if (e.which===KEYCODES.CONTROL) {
 		setModifier(true);
 	} else if (e.which===KEYCODES.TAB && !e.altKey) {
-		toggleVideoTools();
+		e.preventDefault();
+		if (doubleKey && doubleKey.which===KEYCODES.TAB) {
+			let {vidleft} = store.getState();
+			store.dispatch({type: "SET_VIDLEFT", vidleft: !vidleft});
+			store.disptch({type: "SET_VIDEO", video: true});
+		} else {
+			toggleVideoTools();
+		}
 	}
-	// else if (e.which===KEYCODES.SHIFT) {
-	// 	// don't do it yet.
-	// }
+	doubleKey = e;
+	setTimeout(()=>(doubleKey=null),500);
 }
 function handleKeyUp(e) {
 	if (e.which===KEYCODES.CONTROL) {

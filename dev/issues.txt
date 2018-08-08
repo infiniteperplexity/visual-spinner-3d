@@ -136,3 +136,10 @@ So...where do I store this?  It's inconvenient because everything so far is stor
 
 - do I like that timecode visual cue?
 - it's definitely distracting to copy moves and not preserve acceleration and such
+
+
+- Very rarely I still get a non-game-ender NaN.
+- It would be really nice to be able to click through while in Video Tools mode.
+	- 'cept that's useless if we don't also have the engine visible.
+		- Crazy idea...make it so you can drag the video tools over?
+		- Make it so double-tab acts like double-click?

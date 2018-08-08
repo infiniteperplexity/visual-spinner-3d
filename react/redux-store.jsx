@@ -107,6 +107,7 @@ function reducer(state, action) {
       frozen: false,
       scrolled: 0,
       transition: false,
+      vidleft: false,
       // sparse array
       transitions: player.props.map(p=>([])),
       locks: {
@@ -189,6 +190,8 @@ function reducer(state, action) {
       return {...state, seconds: action.seconds};
     case "SET_TIMECODES":
       return {...state, timecodes: action.timecodes};
+    case "SET_VIDLEFT":
+      return {...state, vidleft: action.vidleft};
     default:
       throw new Error("wrong type of store action: "+action.type);
       return state;

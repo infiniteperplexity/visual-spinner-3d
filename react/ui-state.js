@@ -404,7 +404,7 @@ function saveJSON() {
     timecodes: timecodes,
     props: player.props
   }
-  setFileName(save(obj), filename);
+  setFileName(save(obj, filename));
 }
 
 function loadJSON(json) {
