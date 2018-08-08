@@ -228,7 +228,7 @@ class MoveItem extends React.PureComponent {
       ctx.lineWidth = 2;
       ctx.strokeStyle = "gray";
       ctx.beginPath();
-      ctx.arc(width/2,height/2,4,0,2*Math.PI);
+      ctx.arc(width/2+35,height/2-35,4,0,2*Math.PI);
       ctx.closePath();
       ctx.stroke();
       ctx.beginPath();

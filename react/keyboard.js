@@ -36,7 +36,7 @@ function handleKeyDown(e) {
 		}
 	}
 	doubleKey = e;
-	setTimeout(()=>(doubleKey=null),500);
+	setTimeout(()=>(doubleKey=null),1000);
 }
 function handleKeyUp(e) {
 	if (e.which===KEYCODES.CONTROL) {
