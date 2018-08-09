@@ -33,7 +33,17 @@ function gotoTick(tick) {
   // could potentially do interpolation here, but let's just not
 }
 
-
+function anyNonWall() {
+  let {moves} = store.getState();
+  for (let prop of moves) {
+    for (let move of prop) {
+      if (move.plane && move.plane!==VS3D.WALL) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
 
 
 let _cusps = {};

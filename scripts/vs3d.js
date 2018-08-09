@@ -472,7 +472,7 @@ let VS3D = {}; //
 
 	function Move(args) {
 		args = args || {};
-		let p = args.p || WALL;
+		let plane = args.plane || WALL;
 		let beats = (args.beats!==undefined) ? args.beats : 1;
 		let body = merge({r: 0, a: 0}, args.body);
 		let pivot = merge({r: 0, a: 0}, args.pivot);
@@ -495,7 +495,7 @@ let VS3D = {}; //
 			vb: vb,
 			grip: grip,
 			head: head,
-			p: p,
+			plane: plane,
 			beats: beats
 		}
 	}
@@ -504,7 +504,7 @@ let VS3D = {}; //
 	function movify(prop, p) {
 		p = p || WALL;
 		let move = {
-			p: p,
+			plane: p,
 			twist: 0, // need to figure this part out
 			vt: 0,
 			bent: 0,
@@ -547,7 +547,7 @@ let VS3D = {}; //
 			throw new Error();
 		}
 		let notes = move.notes;
-		let p = move.p || WALL;
+		let p = move.plane || WALL;
 		let b = (move.beats!==undefined) ? move.beats : 1;
 		let mbody = merge({r: 0, a: 0, notes: notes}, move.body);
 		let mpivot = merge({r: 0, a: 0, notes: notes}, move.pivot);
@@ -559,12 +559,12 @@ let VS3D = {}; //
 		let mvb = move.vb || 0;
 		let mgrip = merge({r: 0, a: 0, notes: notes}, move.grip);
 		let mhead = merge({r: 1, a: 0, notes: notes}, move.head);	
-		let body = spin_node({beats: b, p: p, ...mbody}, t);
-		let pivot = spin_node({beats: b, p: p, ...mpivot}, t);
-		let helper = spin_node({beats: b, p: p, ...mhelper}, t);
-		let hand = spin_node({beats: b, p: p, ...mhand}, t);
-		let grip = spin_node({beats: b, p: p, ...mgrip}, t);
-		let head = spin_node({beats: b, p: p, ...mhead}, t);
+		let body = spin_node({beats: b, plane: p, ...mbody}, t);
+		let pivot = spin_node({beats: b, plane: p, ...mpivot}, t);
+		let helper = spin_node({beats: b, plane: p, ...mhelper}, t);
+		let hand = spin_node({beats: b, plane: p, ...mhand}, t);
+		let grip = spin_node({beats: b, plane: p, ...mgrip}, t);
+		let head = spin_node({beats: b, plane: p, ...mhead}, t);
 		let twist = mtwist + mvt*t*SPEED;
 		let bent = mbent + mvb*t*SPEED;
 		let bearing = head.b;
@@ -601,24 +601,24 @@ let VS3D = {}; //
 	// *** handle spinning logic for individual nodes ***
 	function spin_node(args, t) {
 		args = alias(args);
-		let {p, beats, m} = args;
+		let {plane, beats, m} = args;
 		// explicit spin of zero codes for linear movement
 		if (args.spin===0 || args.la!==undefined || args.vl!==undefined || args.vl1!==undefined || args.al!==undefined) {
 			let moments = moments_linear(args);
-			return spin_linear({...moments, p: p}, t);
+			return spin_linear({...moments, plane: plane}, t);
 		}
 		let moments = moments_angular(args);
-		return spin_angular({...moments, p: p}, t);
+		return spin_angular({...moments, plane: plane}, t);
 	}
 
 	function spin_angular(args, t) {
 		for (let e of ["r","a","vr","va","ar","aa"]) {
 			args[e] = args[e] || 0;
 		}
-		args.p = args.p || WALL;
+		args.plane = args.plane || WALL;
 		let r = args.r + args.vr*t*SPEED/BEAT + args.ar*t*t*SPEED*SPEED/(2*BEAT);
 		let a = args.a + args.va*t*SPEED + args.aa*t*t*SPEED*SPEED/(2*BEAT);
-		let p = args.p;
+		let p = args.plane;
 		let s = {...angle$spherify(a, p), r: r};
 		return s;
 	}
@@ -633,7 +633,7 @@ let VS3D = {}; //
 		let x1 = x0 + args.vl*dx*t*SPEED/BEAT + args.al*dx*t*t*SPEED/(2*BEAT*BEAT);
 		let y1 = y0 + args.vl*dy*t*SPEED/BEAT + args.al*dy*t*t*SPEED/(2*BEAT*BEAT);
 		let {r, a} = vector$spherify(vector(x1,y1,0));
-		let p = args.p;
+		let p = args.plane;
 		let s = {...angle$spherify(a, p), r: r};
 		return s;
 	}
@@ -652,7 +652,8 @@ let VS3D = {}; //
 		speed0: "va",
 		speed1: "va1",
 		vl0: "vl",
-		spin: "spin"
+		spin: "spin",
+		p: "plane"
 	}
 	function alias(args) {
 		let nargs = {};
@@ -956,7 +957,7 @@ let VS3D = {}; //
 			grip: {r: 0, a: 0},
 			head: {r: 1, a: 0},
 			beats: beats(moves),
-			p: moves.p || WALL,
+			plane: moves.plane || WALL,
 			bent: moves.bent || 0,
 			vb: moves.vb || 0,
 			twist: moves.twist || 0,
@@ -967,10 +968,10 @@ let VS3D = {}; //
 			args = alias(args);
 			args.beats = nodes.beats;
 			if (args.spin===0 || args.la!==undefined || args.vl!==undefined || args.vl1!==undefined || args.al!==undefined) {
-				nodes[node] = {...moments_linear(args), p: args.p};
+				nodes[node] = {...moments_linear(args), plane: args.plane};
 
 			} else {
-				nodes[node] = {...moments_angular(args), p: args.p};
+				nodes[node] = {...moments_angular(args), plane: args.plane};
 			}
 			for (let prop in nodes[node]) {
 				if (zeroish(nodes[node][prop], SMALL)) {
@@ -1143,7 +1144,7 @@ let VS3D = {}; //
 			// !!!need to handle planes!
 			let node1 = prev[n];
 			let node2 = move[n];
-			if (!nearly(node1.r1, node2.r, delta) || !angle$nearly(node1.a1, node2.a, delta)) {
+			if (!vector$nearly(prev.plane, move.plane, delta) || !nearly(node1.r1, node2.r, delta) || !angle$nearly(node1.a1, node2.a, delta)) {
 				return false;
 			}
 		}
@@ -1309,9 +1310,9 @@ let VS3D = {}; //
 
 	// for now, no "t" argument
 	function extend(move) {
-		let p = move.p || WALL;
+		let plane = move.plane || WALL;
 		let resolved = resolve(move);
-		let next = movify(dummy(resolved), p);
+		let next = movify(dummy(resolved), plane);
 		for (let i=0; i<NODES.length; i++) {
 			let node = NODES[i];
 			// !!! essentially untested
@@ -1684,7 +1685,10 @@ function Player(renderer) {
 				return round(value,0.0001);
 			} else if (key==="fitted") {
 				return undefined;
-			} else {
+			} // else if (key==="plane") {
+				// do something
+			//}
+			 else {
 				return value;
 			}
 		},2);
@@ -1695,7 +1699,10 @@ function Player(renderer) {
 			if (["r","r1"].includes(key)) {
 				// return (value || TINY);
 				return value;
-			} else {
+			} // else if (key==="plane") {
+				//do something
+			//}
+			 else {
 				return value;
 			}
 		});

@@ -81,7 +81,7 @@ VS3D = (function(VS3D) {
 		"ccap",
 		{},
 		options => {
-			let {beats, hand, spin, orient, direction, p, entry} = options;
+			let {beats, hand, spin, orient, direction, plane, entry} = options;
 			let segment = Move(merge(options,{
 				beats: 1,
 				hand: {a: orient, va: spin*direction},
@@ -147,7 +147,7 @@ VS3D = (function(VS3D) {
 			petals: 4
 		},
 		options => {
-			let {beats, mode, hand, head, spin, orient, direction, petals, p, entry} = options;
+			let {beats, mode, hand, head, spin, orient, direction, petals, plane, entry} = options;
 			let v = (spin===INSPIN) ? (petals+1) : (petals-1);
 			// mode is a "soft default"
 			let hangle = (mode!==undefined) ? orient+mode : orient+head.a-hand.a;
@@ -197,7 +197,7 @@ VS3D = (function(VS3D) {
 			harmonics: 4
 		},
 		options => {
-			let {beats, mode, hand, head, bend, harmonics, orient, direction, pitch, p, entry} = options;
+			let {beats, mode, hand, head, bend, harmonics, orient, direction, pitch, plane, entry} = options;
 			//mode is a "soft default"
 			let hangle = (mode!==undefined) ? orient+mode : orient+head.a-hand.a;
 			let segment = Move(merge(options,{
@@ -221,7 +221,7 @@ VS3D = (function(VS3D) {
 			oval: 0.01
 		},
 		options => {
-			let {beats, mode, hand, head, harmonics, orient, direction, p, entry, oval} = options;
+			let {beats, mode, hand, head, harmonics, orient, direction, plane, entry, oval} = options;
 			// let's say there's no such thing as mode for now
 			let segment = Move(merge(options,{
 				beats: 1,

@@ -76,7 +76,7 @@ class MoveQueue extends React.PureComponent {
       if (i>0) {
         list.push(<TransitionPoint key={i-0.5} n={i} ticks={ticks} move={moves[i]} {...this.props}/>);
       }
-      list.push(<MoveItem key={i} n={i} queue={this} ticks={ticks} move={moves[i]} {...this.props}/>);
+      list.push(<MoveItem key={i} n={i} queue={this} ticks={ticks} move={moves[i]} previous={(i===0) ? null : moves[i-1]} {...this.props}/>);
       ticks += beats(moves[i])*BEAT;
     }
     list.push(
@@ -204,6 +204,8 @@ class MoveItem extends React.PureComponent {
         }
       }
     }
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 1;
     ctx.fillRect(0,0,width,height);
     ctx.fillStyle = color;
     ctx.beginPath();
@@ -221,9 +223,9 @@ class MoveItem extends React.PureComponent {
     ctx.closePath();
     ctx.stroke();
     ctx.fill();
+    const DISPLACE = (this.props.ticks===-1) ? 26 : 35;
     if (this.props.timecodes[this.props.ticks+BEAT*beats(this.props.move)]!==undefined || (this.props.ticks===-1 && this.props.timecodes[0]!==undefined)) {
       // visual indicator for timecode
-      const DISPLACE = (this.props.ticks===-1) ? 26 : 35;
       ctx.fillStyle = "none";
       ctx.lineWidth = 1;
       ctx.strokeStyle = "black";
@@ -237,11 +239,39 @@ class MoveItem extends React.PureComponent {
       ctx.lineTo(width/2+DISPLACE, height/2-DISPLACE);
       ctx.lineTo(width/2+DISPLACE+2, height/2-DISPLACE);
       ctx.stroke();
-      // ctx.moveTo(width/2+DISPLACE, height/2-DISPLACE-4);
-      // ctx.lineTo(width/2+DISPLACE, height/2-DISPLACE-6);
-      // ctx.lineTo(width/2+DISPLACE-2, height/2-DISPLACE-6);
-      // ctx.lineTo(width/2+DISPLACE+2, height/2-DISPLACE-6);
-      // ctx.stroke();
+    }
+    let plane = this.props.move.plane;
+    let previous = this.props.previous;
+    // !!! use X if there is a discontinuous plane break
+    if (previous && previous.plane!==plane) {
+      ctx.strokeStyle = "black";
+      ctx.lineWidth = 3;
+      let x = width/2-DISPLACE;
+      let y = height/2-DISPLACE;
+      ctx.beginPath();
+      ctx.moveTo(x-4,y-4);
+      ctx.lineTo(x+4,y+4);
+      ctx.moveTo(x+4,y-4);
+      ctx.lineTo(x-4,y+4);
+      ctx.fill();
+      ctx.stroke();
+
+    } else if (plane!==undefined && plane!==VS3D.WALL) {
+      ctx.strokeStyle = color;
+      ctx.fillStyle = "none";
+      ctx.lineWidth = 1;
+      let rx, ry;
+      if (plane===VS3D.WHEEL) {
+        rx = 2;
+        ry = 4;
+      } else if (plane===VS3D.FLOOR) {
+        rx = 4;
+        ry = 2;
+      }
+      ctx.beginPath();
+      ctx.ellipse(width/2-DISPLACE, height/2-DISPLACE, rx, ry, 0, 0, 2*Math.PI, false);
+      ctx.closePath();
+      ctx.stroke();
     }
   }
   handleDragStart =(e)=>{

@@ -7,6 +7,7 @@ let AppComponent = ReactRedux.connect(
     getMovesAtTick: getMovesAtTick,
     getActiveMove: getActiveMove,
     getMultiSelected: getMultiSelected,
+    anyNonWall: anyNonWall,
     ...state
   }),
   (dispatch)=>({
@@ -88,7 +89,7 @@ function reducer(state, action) {
       moves: clone(player.props.map(p=>p.moves)),
       colors: clone(COLORS),
       models: player.props.map(p=>"poi"),
-      starters: player.props.map(p=>resolve(fit(p.prop, new Move({beats: 0})))),
+      starters: player.props.map(p=>resolve(fit(p.prop, new Move({beats: 0, plane: VS3D.WALL})))),
       modifier: false,
       multiselect: null,
       video: 0,
