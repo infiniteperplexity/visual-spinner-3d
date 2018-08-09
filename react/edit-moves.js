@@ -51,7 +51,6 @@ function modifyMoveUsingNode({node, propid}) {
   if (!transition && !(nearly(current[node].r1, r) && nearly(current[node].a1, a))) {
     current = clone(current);
     let old = current[node];
-    // should I try to snag spin at this point???
     let updated = {
       r: (tick===-1) ? r : old.r,
       r1: r,
@@ -77,19 +76,12 @@ function modifyMoveUsingNode({node, propid}) {
       }
       if (index>0 && transitions[propid][index]) {
         transitions = clone(transitions);
-        // let previous = moves[propid][index-1][node];
-        // transitions[propid][index][node] = {
-        //   r: previous.r1,
-        //   r1: previous.r1,
-        //   a: previous.a1,
-        //   a1: previous.a1
-        // };
         transitions[propid][index] = null;
         store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
       }
     }
     if (next) {
-      // ??? should I try to keep spins here?
+      // I think it's okay to break spins and acceleration here
       next[node] = {
         r: updated.r1,
         r1: next[node].r1,
@@ -354,12 +346,14 @@ function deleteTransition() {
     // don't overwrite the next node unless necessary
     if (!(nearly(position[node].r1, move[node].r) && nearly(position[node].a1, move[node].a))) {
       //try to keep spins?
-      move[node] = {
-        r: position[node].r1,
-        r1: move[node].r1,
-        a: position[node].a1,
-        a1: move[node].a1
-      };
+      if (!nearly(move[node].a, position[node].a1) || !nearly(move[node].r, position[node].r1)) {
+        move[node] = {
+          r: position[node].r1,
+          r1: move[node].r1,
+          a: position[node].a1,
+          a1: move[node].a1
+        };
+      }
     }
   }); 
   moves = clone(moves);
@@ -423,11 +417,13 @@ function deleteMove() {
     let second = moves[propid][index];
     for (let node of NODES) {
       // keep spins?
-      second[node] = {
-        a: first[node].a1,
-        a1: second[node].a1,
-        r: first[node].r1,
-        r1: second[node].r1
+      if (!nearly(second[node].a, first[node].a1) || !nearly(second[node].r, first[node].r1)) {
+        second[node] = {
+          a: first[node].a1,
+          a1: second[node].a1,
+          r: first[node].r1,
+          r1: second[node].r1
+        }
       }
     }
     second = resolve(second);
@@ -483,11 +479,13 @@ function deleteMultiple() {
     let second = moves[propid][index];
     for (let node of NODES) {
       // keep spins?
-      second[node] = {
-        a: first[node].a1,
-        a1: second[node].a1,
-        r: first[node].r1,
-        r1: second[node].r1
+      if (!nearly(second[node].a, first[node].a1) || !nearly(second[node].r, first[node].r1)) {
+        second[node] = {
+          a: first[node].a1,
+          a1: second[node].a1,
+          r: first[node].r1,
+          r1: second[node].r1
+        }
       }
     }
     second = resolve(second);
@@ -569,34 +567,40 @@ function copyDraggedMove(move, propid, i) {
   if (i<moves[propid].length-1) {
     NODES.map(node=>{
     // shouldn't mess with nodes if we don't have to
-      move[node] = {
-        a: previous[node].a1,
-        a1: move[node].a1,
-        r: previous[node].r1,
-        r1: move[node].r1
-      };
+      if (!nearly(move[node].a, previous[node].a1) || !nearly(move[node].r, previous[node].r1)) {
+        move[node] = {
+          a: previous[node].a1,
+          a1: move[node].a1,
+          r: previous[node].r1,
+          r1: move[node].r1
+        };
+      }
     });
     let next = clone(moves[propid][i+1]);
     NODES.map(node=>{
       // shouldn't mess with nodes if we don't have to
-      next[node] = {
-        a: move[node].a1,
-        a1: next[node].a1,
-        r: move[node].r1,
-        r1: next[node].r1
+      if (!nearly(next[node].a, move[node].a1) || !nearly(next[node].r, move[node].r1)) {
+        next[node] = {
+          a: move[node].a1,
+          a1: next[node].a1,
+          r: move[node].r1,
+          r1: next[node].r1
+        }
       }
     });
     moves[propid][i+1] = resolve(next);
   } else {
     NODES.map(node=>{
-      move[node].a = previous[node].a1;
-      move[node].r = previous[node].r1;
-      // do I really want all nodes, or just speeds?
-      if (move[node].a1) {
-        delete move[node].a1;
-      }
-      if (move[node].r1) {
-        delete move[node].r1;
+      // shouldn't mess with nodes if we don't have to
+      if (!nearly(move[node].a, previous[node].a1) || !nearly(move[node].r, previous[node].r1)) {
+        move[node].a = previous[node].a1;
+        move[node].r = previous[node].r1;
+        if (move[node].a1) {
+          delete move[node].a1;
+        }
+        if (move[node].r1) {
+          delete move[node].r1;
+        }
       }
     });
   }
@@ -617,25 +621,29 @@ function copyDraggedMultiple(propid, i) {
   let previous = (i===-1) ? starters[propid] : moves[propid][i];
   NODES.map(node=>{
     // shouldn't mess with nodes if we don't have to
-    move1[node] = {
-      a: previous[node].a1,
-      a1: move1[node].a1,
-      r: previous[node].r1,
-      r1: move1[node].r1
-    };
+    if (!nearly(move1[node].a, previous[node].a1) || !nearly(move1[node].r, previous[node].r1)) {
+      move1[node] = {
+        a: previous[node].a1,
+        a1: move1[node].a1,
+        r: previous[node].r1,
+        r1: move1[node].r1
+      };
+    }
   });
   move1 = resolve(move1);
   if (i<moves[propid].length-1) {
     let next = clone(moves[propid][i+1]);
-    NODES.map(node=>{
-      // shouldn't mess with nodes if we don't have to
-      next[node] = {
-        a: move2[node].a1,
-        a1: next[node].a1,
-        r: move2[node].r1,
-        r1: next[node].r1
-      }
-    });
+    if (!nearly(next[node].a, move2[node].a1) || !nearly(next[node].r, move2[node].r1)) {
+      NODES.map(node=>{
+        // shouldn't mess with nodes if we don't have to
+        next[node] = {
+          a: move2[node].a1,
+          a1: next[node].a1,
+          r: move2[node].r1,
+          r1: next[node].r1
+        }
+      });
+    }
     moves[propid][i+1] = resolve(next);
   }
   let inserts = clone(moves[propid1].slice(from, to+1));
@@ -687,23 +695,27 @@ function modifyTransitionUsingNode({node, propid}) {
     // does this get weird due to intermediate states?  probably not, because it won't match
     NODES.map(n=>{
       // avoid wiping out spin, etc?
-      move[n] = {
-        r: previous[n].r1,
-        r1: move[n].r1,
-        a: previous[n].a1,
-        a1: move[n].a1
-      };
+      if (!nearly(move[node].a, previous[node].a1) || !nearly(move[node].r, previous[node].r1)) {
+        move[n] = {
+          r: previous[n].r1,
+          r1: move[n].r1,
+          a: previous[n].a1,
+          a1: move[n].a1
+        };
+      }
     });
     transitions[propid][index] = null;
   } else {
     NODES.map(n=>{
       // avoid wiping out spin, etc?
-      move[n] = {
-        r: transition[n].r1,
-        r1: move[n].r1,
-        a: transition[n].a1,
-        a1: move[n].a1
-      };
+      if (!nearly(move[node].a, transition[node].a1) || !nearly(move[node].r, transition[node].r1)) {
+        move[n] = {
+          r: transition[n].r1,
+          r1: move[n].r1,
+          a: transition[n].a1,
+          a1: move[n].a1
+        };
+      }
     });
     transitions[propid][index] = transition;
   }

@@ -692,18 +692,18 @@ let VS3D = {}; //
 			args.aa/=BEAT;
 		}
 		let {x0: r, v0: vr, a: ar, x1: r1, v1: vr1} = solve({x0: args.r, x1: args.r1, v0: args.vr, v1: args.vr1, a: args.ar, t: args.beats*BEAT});
-		let {x0: a, v0: va, a: aa, x1: a1, v1: va1} = solve_angle({x0: args.a, x1: args.a1, v0: args.va, v1: args.va1, a: args.aa, spin: args.spin, t: args.beats*BEAT});
+		let {x0: a, v0: va, a: aa, x1: a1, v1: va1, spin} = solve_angle({x0: args.a, x1: args.a1, v0: args.va, v1: args.va1, a: args.aa, spin: args.spin, t: args.beats*BEAT});
 		vr*=BEAT;
 		vr1*=BEAT;
 		ar*=(BEAT);
 		aa*=BEAT;
-		return {r: r, vr: vr, ar: ar, a: a, va: va, aa: aa, r1: r1, vr1: vr1, a1: a1, va1: va1};
+		return {r: r, vr: vr, ar: ar, a: a, va: va, aa: aa, r1: r1, vr1: vr1, a1: a1, va1: va1, spin: spin};
 	}
 
 	function moments_linear(args) {
 		args = alias(args);
 		let {a0: a, r0: r, la: la, vl0: vl, al: al, a1: a1, r1: r1, vl1: vl1} = solve_linear({a0: args.a, r0: args.r, a1: args.a1, r1: args.r1, la: args.la, vl0: args.vl, vl1: args.vl1, al: args.al, t: args.beats})
-		return {a: a, r: r, la: la, vl: vl, al: al, a1: a1, r1: r1, vl1: vl1};
+		return {a: a, r: r, la: la, vl: vl, al: al, a1: a1, r1: r1, vl1: vl1, spin: 0};
 	}
 
 	function solve(args) {
@@ -855,7 +855,15 @@ let VS3D = {}; //
 				args.x1 = x1;
 			}
 		}
+
 		let solved = solve(args);
+		if (args.spin===undefined) {
+			let speed = (solved.v0+solved.v1)/2;
+  			let spin = Math.sign(speed)*Math.ceil(Math.abs(speed*t/BEAT));
+  			solved.spin = spin;
+		} else {
+			solved.spin = args.spin;
+		}
 		solved.x1 = angle(solved.x1);
 		solved.x0 = angle(solved.x0);
 		return solved;
@@ -932,7 +940,7 @@ let VS3D = {}; //
 
 		// now all moments should be guaranteed
 		// return {a0: a0, a1: a1, r0: r0, r1: r1, la: la, vl0: vl0/BEAT, vl1: vl1/BEAT, al: al/(BEAT*BEAT), t: t};
-		return {a0: a0, a1: a1, r0: r0, r1: r1, la: la, vl0: vl0, vl1: vl1, al: al, t: t};
+		return {a0: a0, a1: a1, r0: r0, r1: r1, la: la, vl0: vl0, vl1: vl1, al: al, t: t, spin: 0};
 	}
 
 	// moves?  or just node?

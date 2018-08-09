@@ -1,0 +1,77 @@
+<!--Distributed under GNU Public License version 3-->
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body {background-color: #99CCFF}
+</style>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>VisualSpinner3D Exhibit, by Glenn Wright</title>
+</head>
+<script src="scripts/vs3d.js"></script>
+<script src="scripts/vs3d-moves.js"></script>
+<script src="scripts/three.min.js"></script>
+<script src="scripts/vs3d-render.js"></script>
+<script>
+
+	let renderer, player;
+	function init() {	
+		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
+		player = new VS3D.Player();
+		let controls = new VS3D.Controls(player);
+		renderer.div.appendChild(controls.div);
+		player.update = function(positions) {
+			renderer.render(this.props, positions);
+			controls.update(this.tick);
+		}
+		fileInput();;
+	}
+
+	function fileInput(callback) {
+		let xhttp = new XMLHttpRequest();
+		xhttp.responseType = "text";
+		let props;
+		xhttp.onreadystatechange = function() {
+    		if (this.readyState == 4 && this.status == 200) {
+    			if (JSON.parse(xhttp.responseText).props) {
+    				props = JSON.parse(xhttp.response).props;
+    				props = JSON.stringify(props);
+    				props = VS3D.parse(props);
+    			} else {
+    				props = VS3D.parse(xhttp.response)
+    			}
+       			for (let i=0; i<props.length; i++) {
+       				player.addProp(new VS3D.Prop());
+       				for (let key in props[i]) {
+       					player.props[i][key] = props[i][key];
+       				}
+       			}
+       			player.play();
+    		} else {
+    			throw new Error("what the heck are you trying to do?");
+    		}
+		};
+		let vars = getUrlVars();
+		if (vars.path) {
+			xhttp.open("GET", vars.path+".json");
+			xhttp.send();
+		}
+	}
+
+	function getUrlVars() {
+	    let vars = {};
+	    let parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+	        vars[key] = value;
+	    });
+	    return vars;
+	}
+
+
+
+</script>
+<body onload="init();">
+	<div id="display">
+	</div>
+</body>
+</html>
+

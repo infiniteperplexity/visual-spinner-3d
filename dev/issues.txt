@@ -70,17 +70,7 @@ copyDraggedMove could create inconsistencies.
 setPropNodesByTick probably needs to account for plane
 
 
-- Make sure I pushStoreState for changing moves.
-- Scroll when you click a thing that's near the edge of the screen.
-- Maybe should drag using tethers, in case something gets pulled off screen?
-- Should there be a speed indicator for custom transitions?  Eh...like an asterisk or exclamation point or something?
-
-- we could have a separate mode for multi-selection...kind of grid-based?
-
-- I'm warming up to multi-select.
-	- Using control button, I think.  or shift.
-	- Do we always select a rectangular region?  Or at least, have a consistent begin and end tick?  I believe so.  Otherwise dragging and dropping doesn't make much sense.
-	- Do we allow any modification?  I really think not.  Yeah, show no buttons.  Only delete and drag.
+- Maybe should drag using tethers, in case something gets pulled off screen?.
 
 Do we want to tackle the planes issue?  Gotta some time.  What are some of the issues?
 - It's visually difficult to parse.  So any time we look at a node that's "out-of-plane", we probably wanna show that "foldy" thing.
@@ -124,22 +114,10 @@ Next steps:
 			4) Skip to the tick2 for the current timecode.
 			5) In that case, you don't want a drop-down menu, really.  You want a skip ahead/back button.
 
-So like... <= <- [] -> => YT MP4 IG FB
-And that's if we want to attach the timecodes to the JSON file, which is probably a good idea.  Cuts down on the mess.
-And...rather than indexing it, you do it by tick.  So like...{url: , format: , tick: timestamp, tick: timestamp, etc.}
-So...where do I store this?  It's inconvenient because everything so far is stored in an array, separately per prop, but this is for the thing as a whole.  So maybe...we want to have a thing called, like...
-{
-	timecodes: blah,
-	props:blah,
-	moves: blah
-}
 
-- do I like that timecode visual cue?
-- it's definitely distracting to copy moves and not preserve acceleration and such
+
 
 
 - Very rarely I still get a non-game-ender NaN.
-- It would be really nice to be able to click through while in Video Tools mode.
-	- 'cept that's useless if we don't also have the engine visible.
-		- Crazy idea...make it so you can drag the video tools over?
-		- Make it so double-tab acts like double-click?
+
+- I do kind of need exhibit now, don't I?
