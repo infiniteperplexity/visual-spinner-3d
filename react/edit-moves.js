@@ -34,7 +34,6 @@ function addMovesToEnd(propid) {
   gotoTick(ticks);
 }
 
-
 /***************************************************************************************/
 /********** Modify a move by dragging and dropping a node ******************************/
 /***************************************************************************************/
@@ -48,6 +47,75 @@ function modifyMoveUsingNode({node, propid}) {
   // don't update if nothing changed, or if it's a transition
   let current = (tick===-1) ? starters[propid] : submove(moves[propid], tick).move;
   // PLANE: Might this be handled totally differently if the planes differ?
+  let p = VS3D[plane];
+  if (!vector$nearly(p, current.plane)) {
+    current = clone(current);
+    current.plane = p;
+    if (tick!==-1) {
+      let previous;
+      let {index} = submove(moves[propid], tick);
+      if (index===0) {
+        previous = starters[propid];
+      } else {
+        previous = moves[propid][index-1];
+      }
+      let prop = dummy(previous);
+      if (VS3D.inplane(prop, p, BODY)) {
+        // there's a purely viable plane break
+        console.log("viable plane break");
+        NODES.map((node,i)=>{
+          current[node] = {
+            a: sphere$planify(prop[node], p),
+            a1: current.a1,
+            r: prop[node].r,
+            r1: current.r1
+          };
+        });
+      } else if (VS3D.inplane(prop, p, GRIP)) {
+        // there's a viable plane break but we need to abstract differently
+        // the head node *has* to match exactly.
+        console.log("abstractable plane break");
+        current.head = {
+          a: sphere$planify(prop.head, p),
+          a1: current.a1,
+          r: prop.head.r,
+          r1: current.r
+        };
+        // the grip node's total location must be the same...we'll wipe the grip itself to zero...
+        let hand = cumulate(prop.body, prop.pivot, prop.helper, prop.hand, prop.grip);
+        hand = sphere$planify(hand, p);
+        current.hand = {
+          a: sphere$planify(hand, p),
+          a1: current.a1,
+          r: hand.r,
+          r1: current.r1
+        };
+        let rest = [BODY, PIVOT, HELPER, GRIP];
+        for (let node of rest) {
+          current[node] = {
+            a: 0,
+            a1: current.a1,
+            r: 0,
+            r1: current.r1
+          };
+        }
+      } else {
+        // no viable plane break
+        console.log("no viable plane break");
+        NODES.map((node,i)=>{
+          current[node] = {
+            a: current.a1,
+            a1: current.a1,
+            r: current.r1,
+            r1: current.r1
+          };
+        });
+      }
+      current = resolve(current);
+    } else {
+      console.log("starting position, no plane break needed");
+    }
+  }
   if (!transition && !(nearly(current[node].r1, r) && nearly(current[node].a1, a))) {
     current = clone(current);
     let old = current[node];

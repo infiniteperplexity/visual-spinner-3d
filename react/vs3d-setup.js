@@ -1,7 +1,7 @@
 let renderer, store;
 const {
 	dummy, fit, fits, matches, 
-	angle, nearly, zeroish, vector$spherify, sphere$vectorize, sphere$planify, angle$spherify,
+	angle, nearly, zeroish, vector$spherify, sphere$vectorize, sphere$planify, angle$spherify, vector$nearly,
 	clone, merge,
 	round,
 	BEAT,

@@ -76,7 +76,7 @@ class MoveQueue extends React.PureComponent {
       if (i>0) {
         list.push(<TransitionPoint key={i-0.5} n={i} ticks={ticks} move={moves[i]} {...this.props}/>);
       }
-      list.push(<MoveItem key={i} n={i} queue={this} ticks={ticks} move={moves[i]} previous={(i===0) ? null : moves[i-1]} {...this.props}/>);
+      list.push(<MoveItem key={i} n={i} queue={this} ticks={ticks} move={moves[i]} previous={(i===0) ?  this.props.starters[this.props.propid] : moves[i-1]} {...this.props}/>);
       ticks += beats(moves[i])*BEAT;
     }
     list.push(
@@ -243,7 +243,7 @@ class MoveItem extends React.PureComponent {
     let plane = this.props.move.plane;
     let previous = this.props.previous;
     // !!! use X if there is a discontinuous plane break
-    if (previous && previous.plane!==plane) {
+    if (previous && !vector$nearly(previous.plane, plane) && !VS3D.inplane(dummy(previous), plane)) {
       ctx.strokeStyle = "black";
       ctx.lineWidth = 3;
       let x = width/2-DISPLACE;
@@ -255,16 +255,15 @@ class MoveItem extends React.PureComponent {
       ctx.lineTo(x-4,y+4);
       ctx.fill();
       ctx.stroke();
-
-    } else if (plane!==undefined && plane!==VS3D.WALL) {
+    } else if (plane!==undefined && !vector$nearly(plane, VS3D.WALL)) {
       ctx.strokeStyle = color;
       ctx.fillStyle = "none";
       ctx.lineWidth = 1;
       let rx, ry;
-      if (plane===VS3D.WHEEL) {
+      if (vector$nearly(plane, VS3D.WHEEL)) {
         rx = 2;
         ry = 4;
-      } else if (plane===VS3D.FLOOR) {
+      } else if (vector$nearly(plane, VS3D.FLOOR)) {
         rx = 4;
         ry = 2;
       }

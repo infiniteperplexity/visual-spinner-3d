@@ -1204,6 +1204,24 @@ let VS3D = {}; //
 		return vector$unitize(sphere$vectorize(prop.head));
 	}
 
+	function inplane(prop, plane, from, delta) {
+	  	delta = delta || 0.01;
+	  	from = from || BODY; 
+	  	for (let i=from; i<NODES.length; i++) {
+	    	let nodes = [];
+	    	for (let j=from; j<=i; j++) {
+	      		nodes.push(prop[NODES[j]]);
+	    	}
+	    	let s = cumulate(nodes);
+	    	let v = sphere$vectorize(s);
+	    	let p = vector$project(v,plane);
+	    	if (!vector$nearly(v,p,delta)) {
+	     		return false;
+	    	}
+	  	}
+	  return true;
+	}
+
 	function flatten(arr) {
 		let rtn = [];
 		for (let i=0; i<arr.length; i++) {
@@ -1837,6 +1855,7 @@ function Player(renderer) {
 	VS3D.combinate = combinate;
 	VS3D.cumulate = cumulate;
 	VS3D.axis = axis;
+	VS3D.inplane = inplane;
 	VS3D.extend = extend;
 	VS3D.dummy = dummy;
 	VS3D.MoveFactory = MoveFactory;
