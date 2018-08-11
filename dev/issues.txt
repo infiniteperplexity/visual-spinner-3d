@@ -117,4 +117,4 @@ Next steps:
 
 - Very rarely I still get a non-game-ender NaN.
 
-- I do kind of need exhibit now, don't I?
+- Should I have made it so you can't delete the first move?

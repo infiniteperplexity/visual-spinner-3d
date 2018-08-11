@@ -182,12 +182,31 @@ class MoveItem extends React.PureComponent {
     let height = this.canvas.height;
     let color =this.props.colors[this.props.propid];
     let ctx = this.canvas.getContext("2d");
-    let hand = this.props.move.hand;
-    let head = this.props.move.head;
-    let x0 = Math.cos(hand.a1*VS3D.UNIT-Math.PI/2)*hand.r1*this.ARM;
-    let y0 = Math.sin(hand.a1*VS3D.UNIT-Math.PI/2)*hand.r1*this.ARM;
-    let x1 = Math.cos(head.a1*VS3D.UNIT-Math.PI/2)*head.r1*this.TETHER;
-    let y1 = Math.sin(head.a1*VS3D.UNIT-Math.PI/2)*head.r1*this.TETHER;
+    let p = this.props.move.plane || VS3D.WALL;
+    let move = dummy(this.props.move);
+    let hand = cumulate([move.body, move.pivot, move.helper, move.hand, move.grip]);
+    // if (vector$nearly(p, VS3D.FLOOR)) {
+    //   console.log(move.body);
+    //   console.log(move.pivot);
+    //   console.log(move.helper);
+    //   console.log(move.hand);
+    //   console.log(move.grip);
+    //   console.log(hand);
+    // }
+    let head = move.head;
+    hand = {a: sphere$planify(hand, p), r: hand.r};
+    head = {a: sphere$planify(head, p), r: head.r};
+    let x0 = Math.cos(hand.a*VS3D.UNIT-Math.PI/2)*hand.r*this.ARM;
+    let y0 = Math.sin(hand.a*VS3D.UNIT-Math.PI/2)*hand.r*this.ARM;
+    let x1 = Math.cos(head.a*VS3D.UNIT-Math.PI/2)*head.r*this.TETHER;
+    let y1 = Math.sin(head.a*VS3D.UNIT-Math.PI/2)*head.r*this.TETHER;
+    if (vector$nearly(p, VS3D.WHEEL)) {
+      x0 = -x0;
+      x1 = -x1;
+    } else if (vector$nearly(p, VS3D.FLOOR)) {
+      y0 = -y0;
+      y1 = -y1;
+    }
     ctx.fillStyle = bg;
     if (this.props.multiselect) {
       let multi = this.props.multiselect;
@@ -243,7 +262,7 @@ class MoveItem extends React.PureComponent {
     let plane = this.props.move.plane;
     let previous = this.props.previous;
     // !!! use X if there is a discontinuous plane break
-    if (previous && !vector$nearly(previous.plane, plane) && !VS3D.inplane(dummy(previous), plane)) {
+    if (previous && !vector$nearly(previous.plane, plane) && !VS3D.inplane(dummy(previous), plane, GRIP)) {
       ctx.strokeStyle = "black";
       ctx.lineWidth = 3;
       let x = width/2-DISPLACE;

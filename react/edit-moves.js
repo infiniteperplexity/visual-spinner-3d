@@ -71,6 +71,7 @@ function modifyMoveUsingNode({node, propid}) {
             r1: current.r1
           };
         });
+      // does this actually work?
       } else if (VS3D.inplane(prop, p, GRIP)) {
         // there's a viable plane break but we need to abstract differently
         // the head node *has* to match exactly.
@@ -82,21 +83,20 @@ function modifyMoveUsingNode({node, propid}) {
           r1: current.r
         };
         // the grip node's total location must be the same...we'll wipe the grip itself to zero...
-        let hand = cumulate(prop.body, prop.pivot, prop.helper, prop.hand, prop.grip);
-        hand = sphere$planify(hand, p);
+        let hand = cumulate([prop.body, prop.pivot, prop.helper, prop.hand, prop.grip]);
         current.hand = {
           a: sphere$planify(hand, p),
           a1: current.a1,
           r: hand.r,
           r1: current.r1
         };
-        let rest = [BODY, PIVOT, HELPER, GRIP];
+        let rest = ["body","pivot","helper","grip"];
         for (let node of rest) {
           current[node] = {
             a: 0,
-            a1: current.a1,
+            a1: current[node].a1,
             r: 0,
-            r1: current.r1
+            r1: current[node].r1
           };
         }
       } else {
