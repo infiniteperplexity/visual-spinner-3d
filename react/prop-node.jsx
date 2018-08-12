@@ -127,9 +127,20 @@ class PropNode extends React.PureComponent {
     this.localState.point.y = event.clientY;
     let p = this.localState.point.matrixTransform(this.localState.matrix);
     let node = this.props.props[this.props.propid][NODES[this.props.node]];
+    // !!!! I think this part is messed up outside of wall plane
+    let plane = this.props.plane;
     let v = sphere$vectorize(node);
-    let x = v.x * UNIT;
-    let y = v.y * UNIT;
+    let x, y;
+    if (plane==="WALL") {
+      x = v.x * UNIT;
+      y = v.y * UNIT;
+    } else if (plane==="WHEEL") {
+      x = -v.z * UNIT;
+      y = v.y * UNIT;
+    } else if (plane==="FLOOR") {
+      x = v.x * UNIT;
+      y = v.z * UNIT;
+    }
     this.localState.origin = clone(this.props.props[this.props.propid]);
     this.localState.xoffset = p.x - x;
     this.localState.yoffset = p.y + y;
@@ -227,7 +238,9 @@ class PropNode extends React.PureComponent {
         y = 0;
         z = (-p.y+this.localState.yoffset)/UNIT;
       }
-      let {r, a, b} = vector$spherify({x: x, y: y, z: z});
+      // let {r, a, b} = vector$spherify({x: x, y: y, z: z});
+      let s = vector$spherify({x: x, y: y, z: z});
+      let {r, a, b} = s;
       if (this.props.node===HEAD && this.props.locks.head) {
         r = 1;
       } else {
@@ -240,9 +253,12 @@ class PropNode extends React.PureComponent {
       const FRACTION = 4;
       let rounding = round(Math.PI/(FRACTION*VS3D.UNIT),1);
       // !!! this may be a bit fishy, actually.  shouldn't the rounding happen in-plane?
-      a = round(a, rounding);
-      b = round(b, rounding);
-      let v = sphere$vectorize({r: r, a: a, b: b});
+      // ****new
+      let ang = sphere$planify(s, VS3D[plane]);
+      ang = round(ang, rounding);
+      let v = angle$spherify(ang, VS3D[plane]);
+      v.r = r;
+      v = sphere$vectorize(v);
       let x1 = v.x;
       let y1 = v.y;
       let z1 = v.z;
@@ -262,9 +278,11 @@ class PropNode extends React.PureComponent {
         let dy = y-yh;
         let dz = z-zh;
         let s = vector$spherify({x: dx, y: dy, z: dz});
-        a = round(s.a, rounding);
-        b = round(s.b, rounding);
-        v = sphere$vectorize({r: 1, a: a, b: b});
+        ang = sphere$planify(s, VS3D[plane]);
+        ang = round(ang, rounding);
+        v = angle$spherify(ang, VS3D[plane]);
+        v.r = 1;
+        v = sphere$vectorize(v);
         x1 = xh + v.x;
         x2 = x1;
         y1 = yh + v.y;
