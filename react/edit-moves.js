@@ -34,6 +34,63 @@ function addMovesToEnd(propid) {
   gotoTick(ticks);
 }
 
+function handlePlaneChange(previous, current, p) {
+  let prop = dummy(previous);
+  if (VS3D.inplane(prop, p, BODY)) {
+    // there's a purely viable plane break
+    console.log("viable plane break");
+    NODES.map((node,i)=>{
+      current[node] = {
+        a: sphere$planify(prop[node], p),
+        a1: current.a1,
+        r: prop[node].r,
+        r1: current.r1
+      };
+    });
+    // does this actually work?
+  } else if (VS3D.inplane(prop, p, GRIP)) {
+    // there's a viable plane break but we need to abstract differently
+    // the head node *has* to match exactly.
+    console.log("abstractable plane break");
+    current.head = {
+      a: sphere$planify(prop.head, p),
+      a1: current.a1,
+      r: prop.head.r,
+      r1: current.r
+    };
+    // the grip node's total location must be the same...we'll wipe the grip itself to zero...
+    let hand = cumulate([prop.body, prop.pivot, prop.helper, prop.hand, prop.grip]);
+    current.hand = {
+      a: sphere$planify(hand, p),
+      a1: current.a1,
+      r: hand.r,
+      r1: current.r1
+    };
+    let rest = ["body","pivot","helper","grip"];
+    for (let node of rest) {
+      current[node] = {
+        a: 0,
+        a1: current[node].a1,
+        r: 0,
+        r1: current[node].r1
+      };
+    }
+  } else {
+      // no viable plane break
+    console.log("no viable plane break");
+    NODES.map((node,i)=>{
+      current[node] = {
+        a: current.a1,
+        a1: current.a1,
+        r: current.r1,
+        r1: current.r1
+      };
+    });
+  }
+  current = resolve(current);
+  return current;
+}
+
 /***************************************************************************************/
 /********** Modify a move by dragging and dropping a node ******************************/
 /***************************************************************************************/
@@ -48,6 +105,7 @@ function modifyMoveUsingNode({node, propid}) {
   let current = (tick===-1) ? starters[propid] : submove(moves[propid], tick).move;
   // PLANE: Might this be handled totally differently if the planes differ?
   let p = VS3D[plane];
+  // !!!!! Wait a second...can there we be in transition *mode* at this point?
   if (!vector$nearly(p, current.plane)) {
     current = clone(current);
     current.plane = p;
@@ -59,59 +117,13 @@ function modifyMoveUsingNode({node, propid}) {
       } else {
         previous = moves[propid][index-1];
       }
-      let prop = dummy(previous);
-      if (VS3D.inplane(prop, p, BODY)) {
-        // there's a purely viable plane break
-        console.log("viable plane break");
-        NODES.map((node,i)=>{
-          current[node] = {
-            a: sphere$planify(prop[node], p),
-            a1: current.a1,
-            r: prop[node].r,
-            r1: current.r1
-          };
-        });
-      // does this actually work?
-      } else if (VS3D.inplane(prop, p, GRIP)) {
-        // there's a viable plane break but we need to abstract differently
-        // the head node *has* to match exactly.
-        console.log("abstractable plane break");
-        current.head = {
-          a: sphere$planify(prop.head, p),
-          a1: current.a1,
-          r: prop.head.r,
-          r1: current.r
-        };
-        // the grip node's total location must be the same...we'll wipe the grip itself to zero...
-        let hand = cumulate([prop.body, prop.pivot, prop.helper, prop.hand, prop.grip]);
-        current.hand = {
-          a: sphere$planify(hand, p),
-          a1: current.a1,
-          r: hand.r,
-          r1: current.r1
-        };
-        let rest = ["body","pivot","helper","grip"];
-        for (let node of rest) {
-          current[node] = {
-            a: 0,
-            a1: current[node].a1,
-            r: 0,
-            r1: current[node].r1
-          };
-        }
-      } else {
-        // no viable plane break
-        console.log("no viable plane break");
-        NODES.map((node,i)=>{
-          current[node] = {
-            a: current.a1,
-            a1: current.a1,
-            r: current.r1,
-            r1: current.r1
-          };
-        });
+      // wipe out any existing custom transition
+      if (transitions[propid][index]) {
+        transitions = clone(transitions);
+        transitions[propid][index] = null;
+        store.dispatch({type: "SET_TRANISTIONS", transitions: transitions});
       }
-      current = resolve(current);
+      current = handlePlaneChange(previous, current, p);
     } else {
       console.log("starting position, no plane break needed");
     }
@@ -208,8 +220,8 @@ function setDuration({propid, ticks}) {
     return;
   } else {
     let beats = ticks / BEAT;
-    let updated = {beats: beats};
-    // PLANE: Need to propagate plane
+    let plane = move.plane || VS3D.WALL;
+    let updated = {beats: beats, plane: plane};
     for (let node of NODES) {
       updated[node] = {
         r: move[node].r,
@@ -400,7 +412,7 @@ function setAbruptTransition({propid, node}) {
 function deleteTransition() {
   player.stop();
   let propid = getActivePropId();
-  let {transitions, moves, tick} = store.getState();
+  let {transitions, moves, tick, plane} = store.getState();
   let {move, index} = getActiveMove();
   if (!transitions[propid][index]) {
     return;
@@ -410,20 +422,25 @@ function deleteTransition() {
   store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
   move = clone(move);
   let position = moves[propid][index-1];
-  NODES.map(node=>{
-    // don't overwrite the next node unless necessary
-    if (!(nearly(position[node].r1, move[node].r) && nearly(position[node].a1, move[node].a))) {
-      //try to keep spins?
-      if (!nearly(move[node].a, position[node].a1) || !nearly(move[node].r, position[node].r1)) {
-        move[node] = {
-          r: position[node].r1,
-          r1: move[node].r1,
-          a: position[node].a1,
-          a1: move[node].a1
-        };
+  // PLANE: need to handle plane
+  if (!vector$nearly(position.plane, move.plane)) {
+    move = handlePlaneChange(position, move, move.plane);
+  } else {
+    NODES.map(node=>{
+      // don't overwrite the next node unless necessary
+      if (!(nearly(position[node].r1, move[node].r) && nearly(position[node].a1, move[node].a))) {
+        //try to keep spins?
+        if (!nearly(move[node].a, position[node].a1) || !nearly(move[node].r, position[node].r1)) {
+          move[node] = {
+            r: position[node].r1,
+            r1: move[node].r1,
+            a: position[node].a1,
+            a1: move[node].a1
+          };
+        }
       }
-    }
-  }); 
+    });
+  }
   moves = clone(moves);
   moves[propid][index] = resolve(move);
   store.dispatch({type: "SET_MOVES", moves: moves});
@@ -483,14 +500,18 @@ function deleteMove() {
       first = moves[propid][index-1];
     }
     let second = moves[propid][index];
-    for (let node of NODES) {
-      // keep spins?
-      if (!nearly(second[node].a, first[node].a1) || !nearly(second[node].r, first[node].r1)) {
-        second[node] = {
-          a: first[node].a1,
-          a1: second[node].a1,
-          r: first[node].r1,
-          r1: second[node].r1
+    if (!vector$nearly(first.plane, second.plane)) {
+      second = handlePlanechange(first, second, second.plane);
+    } else {
+      for (let node of NODES) {
+        // keep spins?
+        if (!nearly(second[node].a, first[node].a1) || !nearly(second[node].r, first[node].r1)) {
+          second[node] = {
+            a: first[node].a1,
+            a1: second[node].a1,
+            r: first[node].r1,
+            r1: second[node].r1
+          }
         }
       }
     }
@@ -545,14 +566,18 @@ function deleteMultiple() {
       first = moves[propid][index-1];
     }
     let second = moves[propid][index];
-    for (let node of NODES) {
-      // keep spins?
-      if (!nearly(second[node].a, first[node].a1) || !nearly(second[node].r, first[node].r1)) {
-        second[node] = {
-          a: first[node].a1,
-          a1: second[node].a1,
-          r: first[node].r1,
-          r1: second[node].r1
+    if (!vector$nearly(first.plane, second.plane)) {
+      second = handlePlanechange(first, second, second.plane);
+    } else {
+      for (let node of NODES) {
+        // keep spins?
+        if (!nearly(second[node].a, first[node].a1) || !nearly(second[node].r, first[node].r1)) {
+          second[node] = {
+            a: first[node].a1,
+            a1: second[node].a1,
+            r: first[node].r1,
+            r1: second[node].r1
+          }
         }
       }
     }
