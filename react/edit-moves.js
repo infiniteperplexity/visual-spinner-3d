@@ -15,11 +15,7 @@ function addMovesToEnd(propid) {
       moves[i] = [merge(starters[i], {beats: 1})];
     } else if (beats(moves[i])*BEAT<=ticks) {
       let previous = moves[i][moves[i].length-1];
-      let move = {beats: 1};
-      // PLANE: let move = {beats: 1, p: plane};
-      // PLANE: should this add based on the current plane, or the ending plane?
-      // PLANE: should it freak out if it's an "incompatible" plane with the prior move?
-      // otherwise, copy radius and angle, but use previous ending speed as starting speed
+      let move = {beats: 1, plane: previous.plane || VS3D.WALL};
       NODES.map(node=> {
         move[node] = {};
         move[node].r = previous[node].r1;
@@ -162,12 +158,16 @@ function modifyMoveUsingNode({node, propid}) {
     }
     if (next) {
       // I think it's okay to break spins and acceleration here
-      next[node] = {
-        r: updated.r1,
-        r1: next[node].r1,
-        a: updated.a1,
-        a1: next[node].a1
-      };
+      if (!vector$nearly(current.plane, next.plane)) {
+        next = handlePlaneChange(current, next, next.plane);
+      } else {
+        next[node] = {
+          r: updated.r1,
+          r1: next[node].r1,
+          a: updated.a1,
+          a1: next[node].a1
+        };
+      }
       next = resolve(next);
     }
     if (tick===-1) {
@@ -376,39 +376,6 @@ function validateTransition() {
   return;
 }
 
-// not currently used
-function setAbruptTransition({propid, node}) {
-  // so this works for *adding* an abrupt transition
-  let {transitions, tick, moves} = store.getState();
-  let {move, index} = getMovesAtTick(tick)[propid];
-  let transition = transitions[propid][index];
-  if (!transition) {
-    transition = {};
-    move = clone(move);
-    NODES.map(n=>{
-      transition[n] = {
-        r: move[n].r,
-        r1: move[n].r,
-        a: move[n].a,
-        a1: move[n].a    
-      }
-    });
-  }
-  transition[node] = {
-    r: move[node].r1,
-    r1: move[node].r1,
-    a: move[node].a1,
-    a1: move[node].a1
-  };
-  transitions = clone(transitions);
-  transitions[propid][index] = transition;
-  store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
-  moves = clone(moves);
-  move[node] = clone(transition[node]);
-  moves[propid][index] = resolve(move);
-  store.dispatch({type: "SET_MOVES", moves: moves});
-}
-
 function deleteTransition() {
   player.stop();
   let propid = getActivePropId();
@@ -445,9 +412,9 @@ function deleteTransition() {
   moves[propid][index] = resolve(move);
   store.dispatch({type: "SET_MOVES", moves: moves});
   editTransition();
-  // store.dispatch({type: "SET_TRANSITION", transition: false});
 }
 
+// !!!! This will get really complicated in the plane-change case
 function validateSequences() {
   let {props, moves, transitions} = store.getState();
   moves = clone(moves);
@@ -457,7 +424,21 @@ function validateSequences() {
       let previous = moves[i][j-1];
       let move = moves[i][j];
       // we could also force the moves to resolve() at this point...
-      if (!matches(previous, move, 0.1)) {
+      if (!vector$nearly(previous.plane, move.plane)) {
+        let deflt = handlePlaneChange(previous, move, move.plane);
+        if (!matches(deflt, move, 0.1)) {
+          let transition = {};
+          NODES.map(node=>{
+            transition[node] = {
+              r: move[node].r,
+              r1: move[node].r,
+              a: move[node].a,
+              a1: move[node].a,
+            };
+          });
+          transitions[i][j] = transition;
+        }
+      } else if (!matches(previous, move, 0.1)) {
         if (fits(previous, move, 0.1)) {
           let transition = {};
           NODES.map(node=>{
@@ -611,91 +592,62 @@ function deleteMultiple() {
   }
 }
 
-function insertNewMove() {
-  let propid = getActivePropId();
-  let {moves, starters, tick2, transitions} = store.getState();
-  moves = clone(moves);
-  transitions = clone(transitions);
-  if (tick2===-1) {
-    let starter = starters[propid];
-    let created = {
-      beats: 1
-    };
-    NODES.map(node=>{
-      created[node] = {
-        a: starter[node].a1,
-        a1: starter[node].a1,
-        r: starter[node].r1,
-        r1: starter[node].r1
-      }
-    });
-    moves[propid].unshift(created);
-    transitions[propid].unshift(null);
-  } else {
-    let {move, index} = getActiveMove();
-    let created = {
-      beats: 1
-    };
-    NODES.map(node=>{
-      created[node] = {
-        a: move[node].a1,
-        a1: move[node].a1,
-        r: move[node].r1,
-        r1: move[node].r1
-      }
-    });
-    moves.splice(index, 0, created);
-    transitions.splice(index, 0, null);
-  }
-  store.dispatch({type: "SET_MOVES", moves: moves});
-  store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
-
-}
-
 function copyDraggedMove(move, propid, i) {
   let {moves, starters, transitions} = store.getState();
   moves = clone(moves);
   transitions = clone(transitions);
   let previous = (i===-1) ? starters[propid] : moves[propid][i];
   if (i<moves[propid].length-1) {
-    NODES.map(node=>{
-    // shouldn't mess with nodes if we don't have to
-      if (!nearly(move[node].a, previous[node].a1) || !nearly(move[node].r, previous[node].r1)) {
-        move[node] = {
-          a: previous[node].a1,
-          a1: move[node].a1,
-          r: previous[node].r1,
-          r1: move[node].r1
-        };
-      }
-    });
-    let next = clone(moves[propid][i+1]);
-    NODES.map(node=>{
+    if (!vector$nearly(previous.plane, move.plane)) {
+      move = handlePlaneChange(previous, move, move.plane);
+    } else {
+      NODES.map(node=>{
       // shouldn't mess with nodes if we don't have to
-      if (!nearly(next[node].a, move[node].a1) || !nearly(next[node].r, move[node].r1)) {
-        next[node] = {
-          a: move[node].a1,
-          a1: next[node].a1,
-          r: move[node].r1,
-          r1: next[node].r1
+        if (!nearly(move[node].a, previous[node].a1) || !nearly(move[node].r, previous[node].r1)) {
+          move[node] = {
+            a: previous[node].a1,
+            a1: move[node].a1,
+            r: previous[node].r1,
+            r1: move[node].r1
+          };
         }
-      }
-    });
+      });
+    }
+    let next = clone(moves[propid][i+1]);
+    if (!vector$nearly(move.plane, next.plane)) {
+      next = handlePlaneChange(move, next, next.plane);
+    } else {
+      NODES.map(node=>{
+        // shouldn't mess with nodes if we don't have to
+        if (!nearly(next[node].a, move[node].a1) || !nearly(next[node].r, move[node].r1)) {
+          next[node] = {
+            a: move[node].a1,
+            a1: next[node].a1,
+            r: move[node].r1,
+            r1: next[node].r1
+          }
+        }
+      });
+    }
     moves[propid][i+1] = resolve(next);
   } else {
-    NODES.map(node=>{
-      // shouldn't mess with nodes if we don't have to
-      if (!nearly(move[node].a, previous[node].a1) || !nearly(move[node].r, previous[node].r1)) {
-        move[node].a = previous[node].a1;
-        move[node].r = previous[node].r1;
-        if (move[node].a1) {
-          delete move[node].a1;
+    if (!vector$nearly(previous.plane, move.plane)) {
+      move = handlePlaneChange(previous, move, move.plane);
+    } else {
+      NODES.map(node=>{
+        // shouldn't mess with nodes if we don't have to
+        if (!nearly(move[node].a, previous[node].a1) || !nearly(move[node].r, previous[node].r1)) {
+          move[node].a = previous[node].a1;
+          move[node].r = previous[node].r1;
+          if (move[node].a1) {
+            delete move[node].a1;
+          }
+          if (move[node].r1) {
+            delete move[node].r1;
+          }
         }
-        if (move[node].r1) {
-          delete move[node].r1;
-        }
-      }
-    });
+      });
+    }
   }
   moves[propid].splice(i+1, 0, resolve(move));
   store.dispatch({type: "SET_MOVES", moves: moves});
@@ -712,30 +664,38 @@ function copyDraggedMultiple(propid, i) {
   let move2 = moves[propid1][to];
   transitions = clone(transitions);
   let previous = (i===-1) ? starters[propid] : moves[propid][i];
-  NODES.map(node=>{
-    // shouldn't mess with nodes if we don't have to
-    if (!nearly(move1[node].a, previous[node].a1) || !nearly(move1[node].r, previous[node].r1)) {
-      move1[node] = {
-        a: previous[node].a1,
-        a1: move1[node].a1,
-        r: previous[node].r1,
-        r1: move1[node].r1
-      };
-    }
-  });
+  if (!vector$nearly(previous.plane, move1.plane)) {
+    move1 = handlePlanbeChange(previous, move1, move1.plane);
+  } else {
+    NODES.map(node=>{
+      // shouldn't mess with nodes if we don't have to
+      if (!nearly(move1[node].a, previous[node].a1) || !nearly(move1[node].r, previous[node].r1)) {
+        move1[node] = {
+          a: previous[node].a1,
+          a1: move1[node].a1,
+          r: previous[node].r1,
+          r1: move1[node].r1
+        };
+      }
+    });
+  }
   move1 = resolve(move1);
   if (i<moves[propid].length-1) {
     let next = clone(moves[propid][i+1]);
-    if (!nearly(next[node].a, move2[node].a1) || !nearly(next[node].r, move2[node].r1)) {
-      NODES.map(node=>{
-        // shouldn't mess with nodes if we don't have to
-        next[node] = {
-          a: move2[node].a1,
-          a1: next[node].a1,
-          r: move2[node].r1,
-          r1: next[node].r1
-        }
-      });
+    if (!vector$nearly(move2.plane, next.plane)) {
+      next = handlePlaneChange(move2, next, next.plane);
+    } else {
+      if (!nearly(next[node].a, move2[node].a1) || !nearly(next[node].r, move2[node].r1)) {
+        NODES.map(node=>{
+          // shouldn't mess with nodes if we don't have to
+          next[node] = {
+            a: move2[node].a1,
+            a1: next[node].a1,
+            r: move2[node].r1,
+            r1: next[node].r1
+          }
+        });
+      }
     }
     moves[propid][i+1] = resolve(next);
   }
@@ -750,6 +710,7 @@ function copyDraggedMultiple(propid, i) {
 }
 
 function modifyTransitionUsingNode({node, propid}) {
+  // !!!! What happens here if the transition is in a differnet plane than the node?
   player.stop();
   propid = parseInt(propid);
   let {props, moves, transitions, plane} = store.getState();
@@ -757,11 +718,22 @@ function modifyTransitionUsingNode({node, propid}) {
   let r = prop[node].r;
   let a = sphere$planify(prop[node], VS3D[plane]);
   let {move, index} = getActiveMove();
+  // switch planes so that you match the move?  Maybe this should be handled earlier?
+  if (!vector$nearly(VS3D[plane], move.plane)) {
+    if (vector$nearly(move.plane, VS3D.WALL)) {
+      setPlane("WALL");
+    } else if (vector$nearly(move.plane, VS3D.WHEEL)) {
+      setPlane("WHEEL");
+    } else {
+      setPlane("FLOOR");
+    }
+  }
   let previous = moves[propid][index-1];
   let transition;
-  // PLANE: need to handle somehow
-  if (transitions[propid][index]) {
+  if (transitions[propid][index]) { //if the transition already exists, start with that
     transition = clone(transitions[propid][index]);
+  } else if (!vector$nearly(previous.plane, move.plane)) {
+    transition = handlePlaneChange(previous, move, move.plane);
   } else {
     transition = {
       beats: 0,
@@ -784,7 +756,15 @@ function modifyTransitionUsingNode({node, propid}) {
   }
   move = clone(move);
   transitions = clone(transitions);
-  if (matches(previous, transition, 0.02)) {
+  if (!vector$nearly(previous.plane, transition.plane)) {
+    move = handlePlaneChange(transition, move, move.plane);
+    let deflt = handlePlaneChange(previous, move, move.plane);
+    if (matches(deflt, transition, 0.02)) {
+      transitions[propid][index] = null;
+    } else {
+      transitions[propid][index] = transition;
+    }
+  } else if (matches(previous, transition, 0.02)) {
     // does this get weird due to intermediate states?  probably not, because it won't match
     NODES.map(n=>{
       // avoid wiping out spin, etc?
