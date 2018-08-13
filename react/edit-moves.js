@@ -482,7 +482,7 @@ function deleteMove() {
     }
     let second = moves[propid][index];
     if (!vector$nearly(first.plane, second.plane)) {
-      second = handlePlanechange(first, second, second.plane);
+      second = handlePlaneChange(first, second, second.plane);
     } else {
       for (let node of NODES) {
         // keep spins?
@@ -548,7 +548,7 @@ function deleteMultiple() {
     }
     let second = moves[propid][index];
     if (!vector$nearly(first.plane, second.plane)) {
-      second = handlePlanechange(first, second, second.plane);
+      second = handlePlaneChange(first, second, second.plane);
     } else {
       for (let node of NODES) {
         // keep spins?
@@ -665,7 +665,7 @@ function copyDraggedMultiple(propid, i) {
   transitions = clone(transitions);
   let previous = (i===-1) ? starters[propid] : moves[propid][i];
   if (!vector$nearly(previous.plane, move1.plane)) {
-    move1 = handlePlanbeChange(previous, move1, move1.plane);
+    move1 = handlePlaneChange(previous, move1, move1.plane);
   } else {
     NODES.map(node=>{
       // shouldn't mess with nodes if we don't have to
