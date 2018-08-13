@@ -8,7 +8,8 @@ function getActiveMove() {
 const SCROLL = 810;
 // might rename to just apply to the UI
 function gotoTick(tick) {
-  let {scrolled, timecodes} = store.getState();
+  let {scrolled, timecodes, starters, moves} = store.getState();
+  let tick0 = store.getState().tick2;
   validateTransition();
   store.dispatch({type: "SET_TICK", tick: tick});
   let tick2 = -1;
@@ -30,21 +31,26 @@ function gotoTick(tick) {
   if (timecodes[tick2]!==undefined) {
     gotoSeconds(timecodes[tick2]);
   }
-  // could potentially do interpolation here, but let's just not
-}
-
-function anyNonWall() {
-  let {moves} = store.getState();
-  for (let prop of moves) {
-    for (let move of prop) {
-      if (move.plane && move.plane!==VS3D.WALL) {
-        return true;
-      }
+  if (tick0!==tick2-1) {
+    let m;
+    let propid = getActivePropId();
+    if (tick2===-1) {
+      m = starters[propid];
+    } else if (tick2===0 && moves[propid].length===0) {
+      m = starters[propid];
+    } else {
+      m = getMovesAtTick(tick2-1)[propid].move;
+    }
+    if (vector$nearly(m.plane, VS3D.WALL)) {
+      setPlane("WALL");
+    } else if (vector$nearly(m.plane, VS3D.WHEEL)) {
+      setPlane("WHEEL");
+    } else if (vector$nearly(m.plane, VS3D.FLOOR)) {
+      setPlane("FLOOR");
     }
   }
-  return false;
+  // could potentially do interpolation here, but let's just not
 }
-
 
 let _cusps = {};
 let _cusps2 = [];
@@ -341,8 +347,9 @@ function setModels(models) {
 
 
 function setPlane(plane) {
-  if (plane!=="WALL") {
+  if (plane!=="WALL" && planeWarned===false) {
     alert("warning: all functionality outside the wall plane is poorly tested and buggy.");
+    planeWarned = true;
   }
   if (plane==="WALL") {
     renderer.setCameraPosition(0,0,8);

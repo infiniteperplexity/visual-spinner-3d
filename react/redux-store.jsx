@@ -7,7 +7,6 @@ let AppComponent = ReactRedux.connect(
     getMovesAtTick: getMovesAtTick,
     getActiveMove: getActiveMove,
     getMultiSelected: getMultiSelected,
-    anyNonWall: anyNonWall,
     ...state
   }),
   (dispatch)=>({
