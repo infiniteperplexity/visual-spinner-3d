@@ -141,14 +141,15 @@ class MovePanel extends React.PureComponent {
     </div>;
     // placeholder
     // duration = <div>(duration info will go here)</div>;
+    let bend = (this.props.tick===-1) ? <div /> : <BendTwistControl which="bend" color={color} {...this.props} />;
     return (
       <div style={{
         color: "lightgray",
         border: "solid",
         borderWidth: "1px",
         paddingTop: "5px",
-        paddingLeft: "5px",
-        marginBottom: "9px"
+        paddingLeft: "5px"
+        // marginBottom: "9px"
       }} className="grid movepanel">
         <MoveControl node="head" move={move} propid={propid} {...this.props}/>
         <MoveControl node="grip" move={move} propid={propid} {...this.props}/>
@@ -156,7 +157,58 @@ class MovePanel extends React.PureComponent {
         <MoveControl node="helper" move={move} propid={propid} {...this.props}/>
         <MoveControl node="pivot" move={move} propid={propid} {...this.props}/>
         <MoveControl node="body" move={move} propid={propid} {...this.props}/>
-        <div>bend, twist (not yet implemented)</div>
+        {bend}
+        <BendTwistControl which="twist" color={color} {...this.props} />
+        <PlaneControl color={color} {...this.props}/>
+      </div>
+    );
+  }
+}
+
+class PlaneControl extends React.PureComponent {
+  handleWall = ()=>{
+    if (this.props.frozen) {
+      return;
+    }
+    this.props.setPlane("WALL");
+  }
+  handleFloor = ()=>{
+    if (this.props.frozen) {
+      return;
+    }
+    this.props.setPlane("FLOOR");
+  }
+  handleWheel = ()=>{
+    if (this.props.frozen) {
+      return;
+    }
+    this.props.setPlane("WHEEL");
+  }
+  render() {
+    let p = this.props.plane;
+    let color = this.props.color;
+    let wall = <ellipse cx="12.5" cy="12.5" rx="6" ry="6" fill="white" stroke={color} strokeWidth={p==="WALL" ? 3 : 1}/>;
+    let wheel = <ellipse cx="12.5" cy="12.5" rx="3" ry="6" fill="white" stroke={color} strokeWidth={p==="WHEEL" ? 3 : 1}/>;
+    let floor = <ellipse cx="12.5" cy="12.5" rx="6" ry="3" fill="white" stroke={color} strokeWidth={p==="FLOOR" ? 3 : 1}/>;
+    let text = "Wall Plane";
+    if (p==="WHEEL") {
+      text = "Wheel Plane";
+    } else if (p==="FLOOR") {
+      text = "Floor Plane";
+    }
+    return (
+      <div>
+        <SpeedButton title={"edit in wall plane"} onClick={this.handleWall}>{wall}</SpeedButton>
+        <div style={{display: "inline-block", width: "3px"}}/>
+        <SpeedButton title={"edit in wheel plane"} onClick={this.handleWheel}>{wheel}</SpeedButton>
+        <div style={{display: "inline-block", width: "3px"}}/>
+        <SpeedButton title={"edit in floor plane"} onClick={this.handleFloor}>{floor}</SpeedButton>
+        <div style={{display: "inline-block", width: "3px"}}/>
+        <svg height="25" width="50">
+          <text style={{fontSize: "10px"}} x="25" y="17" textAnchor="middle">
+            {text}
+          </text>
+        </svg>
       </div>
     );
   }
@@ -329,6 +381,7 @@ class MoveControl extends React.PureComponent {
 function SpeedMeter(props, context) {
   let {move, node, color, previous} = props;
   let {va, va1, vr, vr1, vl, vl1, la, a, a1, r, r1} = move[node];
+  // very occasionally, null va, va1, and a1 sneak in here...forgot to resolve?
   let title, speed, spinshape, spintext, accshape, acctext;
   let stroke = "lightgray";
   let cw = <path d={ARROW} transform="translate(9, 17)" fill={color} stroke="lightgray"/>;
@@ -396,7 +449,7 @@ function SpeedMeter(props, context) {
   } else if (zeroish(va, 0.02) && zeroish(va1, 0.02)) {
     speed = 0;
     title = "speed 0";
-    spintext = <text textAnchor="middle" x="5" y="29" style={{fontSize: "10px"}}>0</text>;
+    spintext = <text textAnchor="middle" x="5" y="29" style={{fontSize: "10px"}}>{speed}</text>;
   } else {
     title = " spins, "
     let spin = beats(move)/4;
@@ -465,5 +518,30 @@ class SpeedButton extends React.PureComponent {
         {this.props.children}
       </svg>
     )
+  }
+}
+
+class BendTwistControl extends React.PureComponent {
+  render() {
+    let color = this.props.color;
+    let cw = <path d={ARROW} transform="translate(5, 5)" fill={color} stroke="lightgray"/>;
+    let ccw = <path d={ARROW} transform="scale(-1, 1) translate(-20, 5)" fill={color} stroke="lightgray"/>;
+    let text;
+    if (this.props.which==="bend") {
+      text = "bend: 0";
+    } else {
+      text = "twist: 0";
+    }
+    return (
+      <div>
+        <SpeedButton title="not yet implemented">{ccw}</SpeedButton>
+        <SpeedButton title="not yet implemented">{cw}</SpeedButton>
+        <svg height="25" width="50">
+          <text style={{fontSize: "10px"}} x="25" y="17" textAnchor="middle">
+            {text}
+          </text>
+        </svg>
+      </div>
+    );
   }
 }

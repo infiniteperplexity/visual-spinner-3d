@@ -79,24 +79,6 @@ class ControlPanel extends React.PureComponent {
   }
 }
 
-class PlaneMenu extends React.PureComponent {
-  handleChange = (e)=>{
-    if (this.props.frozen) {
-      return;
-    }
-    this.props.setPlane(e.target.value);
-  }
-  render() {
-    return (
-      <select title="change plane" value={this.props.plane} onChange={this.handleChange}>
-        <option value="WALL">Wall Plane</option>
-        <option value="WHEEL">Wheel Plane</option>
-        <option value="FLOOR">Floor Plane</option>
-      </select>
-    );
-  }
-}
-
 
 class ImportButton extends React.PureComponent {
   handleInput = (json)=>{

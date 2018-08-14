@@ -45,14 +45,13 @@ class App extends React.PureComponent {
             onClick={props.toggleVideoTools}
             title={"show/hide video tools (shortcut: Tab key)"}>Video Tools</button>
           </div>
-          <div />
+          <CameraAngle />
         </div>
         <div className="grid top">
           <Grid dragID="SVG" {...noframe} />
-          <MovePanel className="frame" {...noframe} />
+          <MovePanel {...noframe} />
           <div id="display"/>
           <DurationEditor {...noframe}/>
-          <PlaneMenu {...noframe}/>
           <ControlPanel {...props} />
           <VideoTools {...props} />
         </div>
@@ -64,7 +63,7 @@ class App extends React.PureComponent {
     );
   }
 }
-
+// <PlaneMenu {...noframe}/>
 function Grid(props, context) {
   let stroke = "dimgray";
   let dimmer = "#333333";
@@ -109,4 +108,23 @@ function Grid(props, context) {
       <title>Click to drag a node and its children; right-click or CTRL-click to drag nodes independently</title>
     </DragSVG>
   );
+}
+
+class CameraAngle extends React.Component {
+  handleChange = (e)=>{
+    let val = JSON.parse(e.target.value);
+    renderer.setCameraPosition(...val);
+  }
+  render() {
+    return (
+      <select onChange={this.handleChange} style={{marginLeft: "210px", width: "140px"}}>
+        <option value="[0,0,8]">Front View (Wall)</option>
+        <option value="[-8,0,0]">Left View (Wheel)</option>
+        <option value="[0,8,0]">Top View (Floor)</option>
+        <option value="[0,0,-8]">Rear View (Wall)</option>
+        <option value="[8,0,0]">Right View (Wheel)</option>
+        <option value="[0,-8,0]">Bottom View (Floor)</option>
+      </select>
+    );
+  }
 }

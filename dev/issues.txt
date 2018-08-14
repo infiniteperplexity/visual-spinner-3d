@@ -119,4 +119,4 @@ Next steps:
 
 - Should I have made it so you can't delete the first move?
 
-- In wheel plane, the node tends to jump to the center right when you begin dragging it.
+- Some 3d stuff unlocks the head node.
