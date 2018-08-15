@@ -8,13 +8,6 @@ const HALF = UNIT/2;
 let X0 = HALF*UNITS;
 let Y0 = HALF*UNITS;
 
-// prevent recursive handling of double-clicks
-// let doubleClickHandled = false;
-// function handleDoubleClick() {
-//   doubleClickHandled = true;
-//   setInterval(()=>(doubleClickHandled=false),0);
-// }
-
 class App extends React.PureComponent {
   componentDidMount() {
     afterReactMounts();
@@ -121,6 +114,7 @@ class CameraAngle extends React.Component {
         <option value="[0,0,8]">Front View (Wall)</option>
         <option value="[-8,0,0]">Left View (Wheel)</option>
         <option value="[0,8,0]">Top View (Floor)</option>
+        <option value="[-3,3,6]">Angled View</option>
         <option value="[0,0,-8]">Rear View (Wall)</option>
         <option value="[8,0,0]">Right View (Wheel)</option>
         <option value="[0,-8,0]">Bottom View (Floor)</option>

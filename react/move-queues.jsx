@@ -7,10 +7,12 @@ class QueuePanel extends React.PureComponent {
     this.props.setScrolled(e.target.scrollLeft);
   }
   render() {
-    let panels = this.props.props.map((_,i)=><PropPanel key={i}>
+    let panels = this.props.props.map((_,i)=><PropPanel key={i} n={i}>
       <ColorPicker propid={i} {...this.props}/>
       <br />
       <ModelPicker propid={i} {...this.props}/>
+      <br />
+      <DeleteProp propid={i} {...this.props}/>
     </PropPanel>);
     let scale = [];
     let max = 10;
@@ -38,6 +40,7 @@ class QueuePanel extends React.PureComponent {
           paddingTop: "22px"
         }}>
           {panels}
+          <NewProp {...this.props} />
         </div>
         <div 
           ref={e=>(this._scroll = e)}
@@ -124,7 +127,8 @@ class NewMove extends React.PureComponent {
 class PropPanel extends React.PureComponent {
   render() {
     return <div style={{
-      height: "90px",
+      marginTop: (this.props.n===0) ? "-5px" : "0px",
+      height: "94px",
       padding: "3px"
     }}>
       {this.props.children}
@@ -185,14 +189,6 @@ class MoveItem extends React.PureComponent {
     let p = this.props.move.plane || VS3D.WALL;
     let move = dummy(this.props.move);
     let hand = cumulate([move.body, move.pivot, move.helper, move.hand, move.grip]);
-    // if (vector$nearly(p, VS3D.FLOOR)) {
-    //   console.log(move.body);
-    //   console.log(move.pivot);
-    //   console.log(move.helper);
-    //   console.log(move.hand);
-    //   console.log(move.grip);
-    //   console.log(hand);
-    // }
     let head = move.head;
     hand = {a: sphere$planify(hand, p), r: hand.r};
     head = {a: sphere$planify(head, p), r: head.r};
@@ -259,10 +255,10 @@ class MoveItem extends React.PureComponent {
       ctx.lineTo(width/2+DISPLACE+2, height/2-DISPLACE);
       ctx.stroke();
     }
-    let plane = this.props.move.plane;
+    let plane = this.props.move.plane || VS3D.WALL;
     let previous = this.props.previous;
     // !!! use X if there is a discontinuous plane break
-    if (previous && !vector$nearly(previous.plane, plane) && !VS3D.inplane(dummy(previous), plane, GRIP)) {
+    if (previous && !vector$nearly(previous.plane || VS3D.WALL, plane) && !VS3D.inplane(dummy(previous), plane, GRIP)) {
       ctx.strokeStyle = "black";
       ctx.lineWidth = 3;
       let x = width/2-DISPLACE;
@@ -481,5 +477,26 @@ class ModelPicker extends React.PureComponent {
       </select>
     );
   }
+}
 
+class NewProp extends React.PureComponent {
+  handleAddProp = ()=>{
+    this.props.addProp();
+  }
+  render() {
+    return (
+      <button style={{marginTop: "5px"}} onClick={this.handleAddProp}>+ Prop</button>
+    );
+  }
+}
+
+class DeleteProp extends React.PureComponent {
+  handleDeleteProp = ()=>{
+    this.props.deleteProp(this.props.propid);
+  }
+  render() {
+    return (
+      <button onClick={this.handleDeleteProp}>{"- Prop"}</button>
+    );
+  }
 }

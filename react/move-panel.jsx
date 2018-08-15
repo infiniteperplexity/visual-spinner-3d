@@ -187,9 +187,24 @@ class PlaneControl extends React.PureComponent {
   render() {
     let p = this.props.plane;
     let color = this.props.color;
-    let wall = <ellipse cx="12.5" cy="12.5" rx="6" ry="6" fill="white" stroke={color} strokeWidth={p==="WALL" ? 3 : 1}/>;
-    let wheel = <ellipse cx="12.5" cy="12.5" rx="3" ry="6" fill="white" stroke={color} strokeWidth={p==="WHEEL" ? 3 : 1}/>;
-    let floor = <ellipse cx="12.5" cy="12.5" rx="6" ry="3" fill="white" stroke={color} strokeWidth={p==="FLOOR" ? 3 : 1}/>;
+    let wall = (
+      <g>
+        <ellipse cx="12.5" cy="12.5" rx="8" ry="8" fill={color} stroke="lightgray" strokeWidth={1}/>;
+        <ellipse cx="12.5" cy="12.5" rx={p==="WALL" ? 4 : 6} ry={p==="WALL" ? 4 : 6} fill="white" stroke="lightgray" strokeWidth={1}/>;
+      </g>
+    );
+    let wheel = (
+      <g>
+        <ellipse cx="12.5" cy="12.5" rx="4" ry="9" fill={color} stroke="lightgray" strokeWidth="1"/>;
+        <ellipse cx="12.5" cy="12.5" rx={p==="WHEEL" ? 1 : 2} ry={p==="WHEEL" ? 4 : 7} fill="white" stroke="lightgray" strokeWidth="1"/>;
+      </g>
+    );
+    let floor = (
+      <g>
+        <ellipse cx="12.5" cy="12.5" ry="4" rx="9" fill={color} stroke="lightgray" strokeWidth="1"/>;
+        <ellipse cx="12.5" cy="12.5" ry={p==="FLOOR" ? 1 : 2} rx={p==="FLOOR" ? 4 : 7} fill="white" stroke="lightgray" strokeWidth="1"/>;
+      </g>
+    );
     let text = "Wall Plane";
     if (p==="WHEEL") {
       text = "Wheel Plane";

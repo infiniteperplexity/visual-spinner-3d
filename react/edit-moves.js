@@ -424,8 +424,8 @@ function validateSequences() {
       let previous = moves[i][j-1];
       let move = moves[i][j];
       // we could also force the moves to resolve() at this point...
-      if (!vector$nearly(previous.plane, move.plane)) {
-        let deflt = handlePlaneChange(previous, move, move.plane);
+      if (!vector$nearly(previous.plane || VS3D.WALL, move.plane || VS3D.WALL)) {
+        let deflt = handlePlaneChange(previous, move, move.plane || VS3D.WALL);
         if (!matches(deflt, move, 0.1)) {
           let transition = {};
           NODES.map(node=>{
@@ -799,4 +799,54 @@ function modifyTransitionUsingNode({node, propid}) {
   store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
   updateEngine();
   validateLocks();
+}
+
+function addProp() {
+  let {frozen, props, starters, moves, transitions, colors, order} = store.getState();
+  if (frozen) {
+    return;
+  }
+  let i = moves.length;
+  let prop = player.addProp(new VS3D.Prop(), {color: COLORS[Math.min(i,3)]});
+  props.push(clone(prop.prop));
+  store.dispatch({type: "SET_PROPS", props: props});
+  starters.push(resolve(fit(prop, new Move({beats: 0, plane: VS3D.WALL}))));
+  store.dispatch({type: "SET_STARTERS", starters: starters});
+  if (moves[0].length>0) {
+    let move = clone(starters[i]);
+    move.beats = 1;
+    moves.push([move]);
+  } else {
+    moves.push([]);
+  }
+  store.dispatch({type: "SET_MOVES", moves: moves});
+  transitions.push([]);
+  store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
+  order.push(order.length);
+  store.dispatch({type: "SET_TOP", order: order});
+  colors.push(COLORS[Math.min(i,3)]);
+  store.dispatch({type: "SET_COLORS", colors: colors});
+  updateEngine();
+}
+
+function deleteProp(propid) {
+  let {frozen, props, starters, moves, transitions, colors, order} = store.getState();
+  if (frozen) {
+    return;
+  }
+  propid = parseInt(propid);
+  player.props = player.props.filter((_,i)=>(i!==propid));
+  props = props.filter((_,i)=>(i!==propid));
+  store.dispatch({type: "SET_PROPS", props: props});
+  starters = starters.filter((_,i)=>(i!==propid));
+  store.dispatch({type: "SET_STARTERS", starters: starters});
+  moves = moves.filter((_,i)=>(i!==propid));
+  store.dispatch({type: "SET_MOVES", moves: moves});
+  transitions = transitions.filter((_,i)=>(i!==propid));
+  store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
+  order = order.filter(e=>(e!==propid));
+  store.dispatch({type: "SET_TOP", order: order});
+  colors = colors.filter((_,i)=>(i!==propid));
+  store.dispatch({type: "SET_COLORS", colors: colors});
+  updateEngine();
 }

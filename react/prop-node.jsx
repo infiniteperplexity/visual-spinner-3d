@@ -343,6 +343,9 @@ class PropNode extends React.PureComponent {
   }
   render() {
     let decoupled = this.props.modifier || this.props.transition;
+    if (this.props.propid>=this.props.props.length) {
+      return null;
+    }
     let node = this.props.props[this.props.propid][NODES[this.props.node]];
     let v = sphere$vectorize(node);
     let x, y;

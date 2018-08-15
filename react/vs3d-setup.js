@@ -14,7 +14,7 @@ const {
 } = VS3D;
 
 const NPROPS = 2;
-const COLORS = ["red","blue"];
+const COLORS = ["red","blue","green","yellow"];
 const ANGLES = [LEFT, RIGHT];
 
 let	player = new VS3D.Player();

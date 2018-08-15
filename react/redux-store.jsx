@@ -75,7 +75,10 @@ let AppComponent = ReactRedux.connect(
       gotoSeconds: gotoSeconds,
       updateTimeCoder: updateTimeCoder,
       addTimeCode: addTimeCode,
-      removeTimeCode: removeTimeCode
+      removeTimeCode: removeTimeCode,
+
+      addProp: addProp,
+      deleteProp: deleteProp
   })
 )(App);
 
