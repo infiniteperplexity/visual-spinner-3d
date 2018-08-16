@@ -120,3 +120,13 @@ Next steps:
 - Should I have made it so you can't delete the first move?
 
 - Some 3d stuff unlocks the head node.
+
+- When I change a transition for a 3d move, it carries forward to the end.  then dragging wiped out the transition.
+
+- dragging a single node onto the end doesn't propagate the ending positojn correctly.
+
+- dragging multiple nodes propagates everything correctly except the first one
+
+- Should show the OOP nodes.
+
+- Does choosing a plane set the engine plane?  It now shouldn't.  Ah...so what actually happens is that setting prop nodes in the SVG also sets them in the engine, whereas it should do it plane-based.
