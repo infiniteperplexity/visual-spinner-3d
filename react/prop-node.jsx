@@ -269,8 +269,7 @@ class PropNode extends React.PureComponent {
       let d1 = (x1-x)*(x1-x)+(y1-y)*(y1-y)+(z1-z)*(z1-z);
       let d2 = (x2-x)*(x2-x)+(y2-y)*(y2-y)+(z2-z)*(z2-z);
       if (decoupled && this.props.locks.head && (this.props.node===GRIP || (this.props.node===HAND && this.props.locks.grip))) {
-        // respect the tether look in decoupled mode
-        // I think this 
+        // respect the tether lock in decoupled mode
         let origin = this.localState.origin;
         let headsum = (this.props.node===HAND) ? cumulate([origin.hand, origin.grip, origin.head]) : cumulate([origin.grip, origin.head]);
         let {x: xh, y: yh, z: zh} = sphere$vectorize(headsum);
@@ -318,13 +317,14 @@ class PropNode extends React.PureComponent {
         let {x: x0, y: y0, z: z0} = sphere$vectorize(origin[NODES[this.props.node]]);
         let dx = x - x0;
         let dy = y - y0;
+        let dz = z - z0;
         let {x: xc, y: yc, z: zc} = sphere$vectorize(origin[NODES[child]]);
         this.props.setNodePosition({
           propid: this.props.propid,
           node: child,
           x: xc-dx,
           y: yc-dy,
-          z: zc,
+          z: zc-dz,
           plane: plane
         });
       }

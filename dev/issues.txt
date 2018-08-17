@@ -121,8 +121,7 @@ Next steps:
 
 - Some 3d stuff unlocks the head node.
 
-- When I change a transition for a 3d move, it carries forward to the end.  then dragging wiped out the transition.
+- How should we display twist in other planes?  as in move, or as in prop?
 
-- dragging a single node onto the end doesn't propagate the ending positojn correctly.
-
-- dragging multiple nodes propagates everything correctly except the first one.
+- I guess I need to troubleshoot transitions in 3d now?
+	- this is actually looking pretty good at this point.

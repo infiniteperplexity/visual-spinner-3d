@@ -2,7 +2,7 @@ let renderer, store;
 let planeWarned = false;
 const {
 	dummy, fit, fits, matches, 
-	angle, nearly, zeroish, vector$spherify, sphere$vectorize, sphere$planify, angle$spherify, vector$nearly,
+	angle, nearly, angle$nearly, zeroish, vector$spherify, sphere$vectorize, sphere$planify, angle$spherify, vector$nearly,
 	clone, merge,
 	round,
 	BEAT,

@@ -30,30 +30,35 @@ function addMovesToEnd(propid) {
   gotoTick(ticks);
 }
 
+// !!!if I were feeling ambitious I could try to preserve spins here...
 function handlePlaneChange(previous, current, p) {
   let prop = dummy(previous);
   if (VS3D.inplane(prop, p, BODY)) {
     // there's a purely viable plane break
     console.log("viable plane break");
     NODES.map((node,i)=>{
-      current[node] = {
-        a: sphere$planify(prop[node], p),
-        a1: current[node].a1,
-        r: prop[node].r,
-        r1: current[node].r1
-      };
+      if (node!=="head" || !angle$nearly(sphere$planify(prop.head, p), current.head.a) || !nearly(prop.head.r, current.head.r)) {
+        current[node] = {
+          a: sphere$planify(prop[node], p),
+          a1: current[node].a1,
+          r: prop[node].r,
+          r1: current[node].r1
+        };
+      }
     });
     // does this actually work?
   } else if (VS3D.inplane(prop, p, GRIP)) {
     // there's a viable plane break but we need to abstract differently
     // the head node *has* to match exactly.
     console.log("abstractable plane break");
-    current.head = {
-      a: sphere$planify(prop.head, p),
-      a1: current.head.a1,
-      r: prop.head.r,
-      r1: current.head.r
-    };
+    if (!angle$nearly(sphere$planify(prop.head, p), current.head.a) || !nearly(prop.head.r, current.head.r)) {
+      current.head = {
+        a: sphere$planify(prop.head, p),
+        a1: current.head.a1,
+        r: prop.head.r,
+        r1: current.head.r1
+      };
+    }
     // the grip node's total location must be the same...we'll wipe the grip itself to zero...
     let hand = cumulate([prop.body, prop.pivot, prop.helper, prop.hand, prop.grip]);
     current.hand = {
@@ -74,14 +79,14 @@ function handlePlaneChange(previous, current, p) {
   } else {
       // no viable plane break
     console.log("no viable plane break");
-    NODES.map((node,i)=>{
-      current[node] = {
-        a: current[node].a1,
-        a1: current[node].a1,
-        r: current[node].r1,
-        r1: current[node].r1
-      };
-    });
+    // NODES.map((node,i)=>{
+    //   current[node] = {
+    //     a: current[node].a1,
+    //     a1: current[node].a1,
+    //     r: current[node].r1,
+    //     r1: current[node].r1
+    //   };
+    // });
   }
   current = resolve(current);
   return current;
@@ -127,7 +132,7 @@ function modifyMoveUsingNode({node, propid}) {
     }
   }
   // !!! so...I'm not sure if the !changed logic is good...should just clicking it be enough to change the plane?
-  if (!transition && !(nearly(current[node].r1, r) && nearly(current[node].a1, a) && !changed)) {
+  if (!transition && !(nearly(current[node].r1, r) && angle$nearly(current[node].a1, a) && !changed)) {
     current = clone(current);
     let old = current[node];
     let updated = {
@@ -428,7 +433,18 @@ function validateSequences() {
       let move = moves[i][j];
       // we could also force the moves to resolve() at this point...
       if (!vector$nearly(previous.plane || VS3D.WALL, move.plane || VS3D.WALL)) {
+        // kind of a weird way of doing this...use handlePlaneChange, but use the beginning of the move
         let deflt = handlePlaneChange(previous, move, move.plane || VS3D.WALL);
+        NODES.map(node=>{
+          let n = deflt[node];
+          deflt[node] = {
+            a: n.a,
+            a1: n.a,
+            r: n.r,
+            r1: n.r
+          };
+        });
+        deflt = resolve(deflt);
         if (!matches(deflt, move, 0.1)) {
           let transition = {};
           NODES.map(node=>{
@@ -736,11 +752,20 @@ function modifyTransitionUsingNode({node, propid}) {
   if (transitions[propid][index]) { //if the transition already exists, start with that
     transition = clone(transitions[propid][index]);
   } else if (!vector$nearly(previous.plane, move.plane)) {
-    transition = handlePlaneChange(previous, move, move.plane);
+    let prop = dummy(previous);
+    transition = {beats: 0, plane: move.plane};
+    NODES.map(node=>{
+      transition[node] = {
+        a: sphere$planify(prop[node], move.plane),
+        a1: sphere$planify(prop[node], move.plane),
+        r: prop[node].r,
+        r1: prop[node].r
+      };
+    });
   } else {
     transition = {
       beats: 0,
-      plane: plane
+      plane: VS3D[plane]
     }
     NODES.map(n=>{
       transition[n] = {
@@ -757,21 +782,40 @@ function modifyTransitionUsingNode({node, propid}) {
     a: a,
     a1: a
   }
-  move = clone(move);
   transitions = clone(transitions);
   if (!vector$nearly(previous.plane, transition.plane)) {
-    move = handlePlaneChange(transition, move, move.plane);
     let deflt = handlePlaneChange(previous, move, move.plane);
+    NODES.map(node=>{
+      let n = deflt[node];
+      deflt[node] = {
+        a: n.a,
+        a1: n.a,
+        r: n.r,
+        r1: n.r
+      };
+    });
+    deflt = resolve(deflt);
     if (matches(deflt, transition, 0.02)) {
       transitions[propid][index] = null;
     } else {
       transitions[propid][index] = transition;
+      move = clone(move);
+      NODES.map(n=>{
+        if (!angle$nearly(move[node].a, transition[node].a1) || !nearly(move[node].r, transition[node].r1)) {
+          move[n] = {
+            r: transition[n].r1,
+            r1: move[n].r1,
+            a: transition[n].a1,
+            a1: move[n].a1
+          };
+        }
+      });
     }
   } else if (matches(previous, transition, 0.02)) {
     // does this get weird due to intermediate states?  probably not, because it won't match
     NODES.map(n=>{
       // avoid wiping out spin, etc?
-      if (!nearly(move[node].a, previous[node].a1) || !nearly(move[node].r, previous[node].r1)) {
+      if (!angle$nearly(move[node].a, previous[node].a1) || !nearly(move[node].r, previous[node].r1)) {
         move[n] = {
           r: previous[n].r1,
           r1: move[n].r1,
@@ -782,9 +826,10 @@ function modifyTransitionUsingNode({node, propid}) {
     });
     transitions[propid][index] = null;
   } else {
+    move = clone(move);
     NODES.map(n=>{
       // avoid wiping out spin, etc?
-      if (!nearly(move[node].a, transition[node].a1) || !nearly(move[node].r, transition[node].r1)) {
+      if (!angle$nearly(move[node].a, transition[node].a1) || !nearly(move[node].r, transition[node].r1)) {
         move[n] = {
           r: transition[n].r1,
           r1: move[n].r1,
