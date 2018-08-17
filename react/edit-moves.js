@@ -38,9 +38,9 @@ function handlePlaneChange(previous, current, p) {
     NODES.map((node,i)=>{
       current[node] = {
         a: sphere$planify(prop[node], p),
-        a1: current.a1,
+        a1: current[node].a1,
         r: prop[node].r,
-        r1: current.r1
+        r1: current[node].r1
       };
     });
     // does this actually work?
@@ -50,17 +50,17 @@ function handlePlaneChange(previous, current, p) {
     console.log("abstractable plane break");
     current.head = {
       a: sphere$planify(prop.head, p),
-      a1: current.a1,
+      a1: current.head.a1,
       r: prop.head.r,
-      r1: current.r
+      r1: current.head.r
     };
     // the grip node's total location must be the same...we'll wipe the grip itself to zero...
     let hand = cumulate([prop.body, prop.pivot, prop.helper, prop.hand, prop.grip]);
     current.hand = {
       a: sphere$planify(hand, p),
-      a1: current.a1,
+      a1: current.hand.a1,
       r: hand.r,
-      r1: current.r1
+      r1: current.hand.r1
     };
     let rest = ["body","pivot","helper","grip"];
     for (let node of rest) {
@@ -76,10 +76,10 @@ function handlePlaneChange(previous, current, p) {
     console.log("no viable plane break");
     NODES.map((node,i)=>{
       current[node] = {
-        a: current.a1,
-        a1: current.a1,
-        r: current.r1,
-        r1: current.r1
+        a: current[node].a1,
+        a1: current[node].a1,
+        r: current[node].r1,
+        r1: current[node].r1
       };
     });
   }
