@@ -1,7 +1,10 @@
 
 function getActiveMove() {
   let propid = getActivePropId();
-  let {moves, tick} = store.getState();
+  let {moves, tick, starters} = store.getState();
+  if (tick===-1) {
+    return starters[propid];
+  }
   return submove(moves[propid], tick);
 }
 
@@ -41,7 +44,7 @@ function gotoTick(tick) {
     } else {
       m = getMovesAtTick(tick2-1)[propid].move;
     }
-    if (vector$nearly(m.plane, VS3D.WALL)) {
+    if (vector$nearly(m.plane || VS3D.WALL, VS3D.WALL)) {
       setPlane("WALL");
     } else if (vector$nearly(m.plane, VS3D.WHEEL)) {
       setPlane("WHEEL");
@@ -113,10 +116,10 @@ function skipToEngineTick(frame) {
 
 /*** Update rendering on the VS3D engine, based on the store state ***/
 function renderEngine() {
-  let {props, moves, tick} = store.getState();
+  let {props, moves, tick, starters} = store.getState();
   /*** If the initial positions are selected, render only those ***/
   if (tick===-1) {
-    renderer.render(player.props, props);
+    renderer.render(player.props, starters.map(s=>dummy(s)));
   } else {
     /*** Otherwise, do some swapping and cloning to get wrappers and positions for beginnings and endings ***/
       /* Rendering transitions treats the current beginning as the beginning and the editing buffer as the ending */
@@ -166,6 +169,12 @@ function updateEngine() {
 
 function getMovesAtTick(tick) {
   let state = store.getState();
+  if (tick<=-1) {
+    return state.starters.map(s=>({
+      move: s,
+      index: -1
+    }));
+  }
   return state.moves.map(m=>submove(m, tick));
 }
 function setPropNodesByTick(tick) {
@@ -351,13 +360,13 @@ function setPlane(plane) {
     alert("warning: all functionality outside the wall plane is poorly tested and buggy.");
     planeWarned = true;
   }
-  if (plane==="WALL") {
-    renderer.setCameraPosition(0,0,8);
-  } else if (plane==="WHEEL") {
-    renderer.setCameraPosition(8,0,0);
-  } else if (plane==="FLOOR") {
-    renderer.setCameraPosition(0,-8,0);
-  }
+  // if (plane==="WALL") {
+  //   renderer.setCameraPosition(0,0,8);
+  // } else if (plane==="WHEEL") {
+  //   renderer.setCameraPosition(8,0,0);
+  // } else if (plane==="FLOOR") {
+  //   renderer.setCameraPosition(0,-8,0);
+  // }
   store.dispatch({type: "SET_PLANE", plane: plane});
 }
 

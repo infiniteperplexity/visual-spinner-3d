@@ -101,8 +101,10 @@ function modifyMoveUsingNode({node, propid}) {
   let current = (tick===-1) ? starters[propid] : submove(moves[propid], tick).move;
   // PLANE: Might this be handled totally differently if the planes differ?
   let p = VS3D[plane];
-  // !!!!! Wait a second...can there we be in transition *mode* at this point?
+  // !!!!! Wait a second...can there we be in transition *node* at this point?
+  let changed = false;
   if (!vector$nearly(p, current.plane)) {
+    changed = true;
     current = clone(current);
     current.plane = p;
     if (tick!==-1) {
@@ -124,7 +126,8 @@ function modifyMoveUsingNode({node, propid}) {
       console.log("starting position, no plane break needed");
     }
   }
-  if (!transition && !(nearly(current[node].r1, r) && nearly(current[node].a1, a))) {
+  // !!! so...I'm not sure if the !changed logic is good...should just clicking it be enough to change the plane?
+  if (!transition && !(nearly(current[node].r1, r) && nearly(current[node].a1, a) && !changed)) {
     current = clone(current);
     let old = current[node];
     let updated = {

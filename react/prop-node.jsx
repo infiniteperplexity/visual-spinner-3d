@@ -405,8 +405,11 @@ class PropNode extends React.PureComponent {
 
     }
     let shape;
-    // should actually be the GRIP node?
-    if (this.props.node===BODY) {
+    let move = this.props.getMovesAtTick(this.props.tick2-1)[this.props.propid].move;
+    if (!vector$nearly(move.plane || VS3D.WALL, VS3D[this.props.plane])) {
+      let d = (this.props.node===HEAD) ? UNIT/4 : UNIT/8;
+      shape = <WrongPlaneNode x={X0} y={Y0} fill={this.props.color} dim={d} />
+    } else if (this.props.node===BODY) {
       shape = <BodyNode x={X0} y={Y0} fill={this.props.color} dim={UNIT/12} />
     } else if (this.props.node===PIVOT) {
       shape = shape = <PivotNode x={X0} y={Y0} fill={this.props.color} dim={UNIT/10}/>

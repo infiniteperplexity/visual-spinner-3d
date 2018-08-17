@@ -181,6 +181,9 @@ class MoveItem extends React.PureComponent {
     this.renderContext();
   }
   renderContext = (bg)=>{
+    if (this.props.move.twist) {
+      console.log(this.props.propid, this.props.n, this.props.move.twist);
+    }
     bg = bg || "white";
     let width = this.canvas.width;
     let height = this.canvas.height;

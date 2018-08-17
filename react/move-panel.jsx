@@ -141,11 +141,19 @@ class MovePanel extends React.PureComponent {
     </div>;
     // placeholder
     // duration = <div>(duration info will go here)</div>;
-    let bend = (this.props.tick===-1) ? <div /> : <BendTwistControl which="bend" color={color} {...this.props} />;
+    let bent = move.vb;
+    let twisted = dummy(move).twist;
+    let bend = (this.props.tick===-1) ? <div /> : <BendTwistControl which="bend" val={bent} color={color} {...this.props} />;
+    let twist = <BendTwistControl which="twist" color={color} val={twisted} {...this.props} />
+    let planes = <PlaneControl color={color} {...this.props}/>;
+    if (this.props.transition) {
+      bend = null;
+      twist = null;
+      planes = null;
+    }
     return (
       <div style={{
         color: "lightgray",
-        border: "solid",
         borderWidth: "1px",
         paddingTop: "5px",
         paddingLeft: "5px"
@@ -158,8 +166,8 @@ class MovePanel extends React.PureComponent {
         <MoveControl node="pivot" move={move} propid={propid} {...this.props}/>
         <MoveControl node="body" move={move} propid={propid} {...this.props}/>
         {bend}
-        <BendTwistControl which="twist" color={color} {...this.props} />
-        <PlaneControl color={color} {...this.props}/>
+        {twist}
+        {planes}
       </div>
     );
   }
@@ -189,7 +197,7 @@ class PlaneControl extends React.PureComponent {
     let color = this.props.color;
     let wall = (
       <g>
-        <ellipse cx="12.5" cy="12.5" rx="8" ry="8" fill={color} stroke="lightgray"dd strokeWidth={1}/>;
+        <ellipse cx="12.5" cy="12.5" rx="8" ry="8" fill={color} stroke="lightgray" strokeWidth={1}/>;
         <ellipse cx="12.5" cy="12.5" rx={p==="WALL" ? 4 : 6} ry={p==="WALL" ? 4 : 6} fill="white" stroke="lightgray" strokeWidth={1}/>;
       </g>
     );
@@ -543,9 +551,9 @@ class BendTwistControl extends React.PureComponent {
     let ccw = <path d={ARROW} transform="scale(-1, 1) translate(-20, 5)" fill={color} stroke="lightgray"/>;
     let text;
     if (this.props.which==="bend") {
-      text = "bend: 0";
+      text = "bend: "+this.props.val;
     } else {
-      text = "twist: 0";
+      text = "twist: "+this.props.val;
     }
     return (
       <div>
