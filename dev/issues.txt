@@ -125,3 +125,6 @@ Next steps:
 
 - I guess I need to troubleshoot transitions in 3d now?
 	- this is actually looking pretty good at this point.
+
+- Think briefly about TWIST before going to bed?  Like, how does TWIST actually work again?
+	- so...there's the "twist + twangle" line...which means "twist + longitude(head.bearing, move.plane)"
