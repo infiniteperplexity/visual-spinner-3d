@@ -128,3 +128,6 @@ Next steps:
 
 - Think briefly about TWIST before going to bed?  Like, how does TWIST actually work again?
 	- so...there's the "twist + twangle" line...which means "twist + longitude(head.bearing, move.plane)"
+
+
+- Wow...that bend stuff is uuugly...

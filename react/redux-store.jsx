@@ -47,6 +47,8 @@ let AppComponent = ReactRedux.connect(
       setDuration: setDuration,
       modifySpins: modifySpins,
       modifyAcceleration: modifyAcceleration,
+      modifyBend: modifyBend,
+      modifyTwist: modifyTwist,
 
       deleteMove: deleteMove,
 

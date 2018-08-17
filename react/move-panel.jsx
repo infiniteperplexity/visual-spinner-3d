@@ -141,10 +141,11 @@ class MovePanel extends React.PureComponent {
     </div>;
     // placeholder
     // duration = <div>(duration info will go here)</div>;
+
     let bent = move.vb;
     let twisted = dummy(move).twist;
-    let bend = (this.props.tick===-1) ? <div /> : <BendTwistControl which="bend" val={bent} color={color} {...this.props} />;
-    let twist = <BendTwistControl which="twist" color={color} val={twisted} {...this.props} />
+    let bend = (this.props.tick===-1) ? <div /> : <BendTwistControl propid={propid} which="bend" val={bent} color={color} {...this.props} />;
+    let twist = <BendTwistControl propid={propid} which="twist" color={color} val={twisted} {...this.props} />
     let planes = <PlaneControl color={color} {...this.props}/>;
     if (this.props.transition) {
       bend = null;
@@ -343,7 +344,7 @@ class MoveControl extends React.PureComponent {
           <polygon points={DEC} transform="translate(5, 9)" fill={color} stroke={stroke}/>
         </SpeedButton>,
         <SpeedButton key="5" onClick={this.handleAbrupt} title={/*"snap-to from previous"*/ "not yet enabled"}>
-          <path d={BREAK} transform="translate(5,9)" fill={color} stroke={stroke}/>
+          <path d={BREAK} transform="translate(5,9)" fill={"lightgray"} stroke={stroke}/>
         </SpeedButton>
     ];
     let tether1 = {stroke: "gray"};
@@ -545,20 +546,59 @@ class SpeedButton extends React.PureComponent {
 }
 
 class BendTwistControl extends React.PureComponent {
+  handleBendPlus = (e)=>{
+    if (this.props.frozen) {
+      return;
+    }
+    this.props.modifyBend({propid: this.props.propid, n: +0.5});
+    this.props.pushStoreState();
+  }
+  handleBendMinus = (e)=>{
+    if (this.props.frozen) {
+      return;
+    }
+    this.props.modifyBend({propid: this.props.propid, n: -0.5});
+    this.props.pushStoreState();
+  }
+  handleTwistPlus = (e)=>{
+    if (this.props.frozen) {
+      return;
+    }
+    this.props.modifyTwist({propid: this.props.propid, n: +1});
+    this.props.pushStoreState();
+  }
+  handleTwistMinus = (e)=>{
+    if (this.props.frozen) {
+      return;
+    }
+    this.props.modifyTwist({propid: this.props.propid, n: -1});
+    this.props.pushStoreState();
+  }
   render() {
     let color = this.props.color;
+    if (this.props.which==="twist") {
+      color = "lightgray";
+    }
     let cw = <path d={ARROW} transform="translate(5, 5)" fill={color} stroke="lightgray"/>;
     let ccw = <path d={ARROW} transform="scale(-1, 1) translate(-20, 5)" fill={color} stroke="lightgray"/>;
     let text;
     if (this.props.which==="bend") {
-      text = "bend: "+this.props.val;
+      let bend = -this.props.val/4;
+      text = "bend: "+bend;
     } else {
       text = "twist: "+this.props.val;
+      text = "twist: n/a";
     }
     return (
       <div>
-        <SpeedButton title="not yet implemented">{ccw}</SpeedButton>
-        <SpeedButton title="not yet implemented">{cw}</SpeedButton>
+        <SpeedButton title="bend forward"
+          onClick={(this.props.which==="bend" ? this.handleBendPlus : this.handleTwistMinus)}>
+          {ccw}
+        </SpeedButton>
+        <SpeedButton title="bend backward"
+          onClick={(this.props.which==="bend" ? this.handleBendMinus : this.handleTwistPlus)}>
+          {cw}
+        </SpeedButton>
         <svg height="25" width="50">
           <text style={{fontSize: "10px"}} x="25" y="17" textAnchor="middle">
             {text}

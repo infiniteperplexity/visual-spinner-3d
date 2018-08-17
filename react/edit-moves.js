@@ -15,11 +15,11 @@ function addMovesToEnd(propid) {
       moves[i] = [merge(starters[i], {beats: 1})];
     } else if (beats(moves[i])*BEAT<=ticks) {
       let previous = moves[i][moves[i].length-1];
-      let move = {beats: 1, plane: previous.plane || VS3D.WALL};
+      let move = {beats: 1, plane: previous.plane || VS3D.WALL, vb: previous.vb};
       NODES.map(node=> {
         move[node] = {};
         move[node].r = previous[node].r1;
-        move[node].a = previous[node].a1;
+        move[node].a = handleBend(previous[node].a1, previous.vb, node);
         move[node].va = previous[node].va1;
         move[node].va1 = previous[node].va1;
       });
@@ -30,6 +30,20 @@ function addMovesToEnd(propid) {
   gotoTick(ticks);
 }
 
+function handleBend(a1, vb, node) {
+  vb = vb || 0;
+  if (node!=="head") {
+    return a1;
+  }
+  if (vb%4===0) {
+    return a1;
+  }
+  if (Math.abs(vb%4)===2) {
+    return angle(a1+180);
+  }
+  alert("the editor encountered a bend value ("+vb+") that it cannot handle");
+  throw new Error("unexpected bend value");
+}
 // !!!if I were feeling ambitious I could try to preserve spins here...
 function handlePlaneChange(previous, current, p) {
   let prop = dummy(previous);
@@ -172,7 +186,7 @@ function modifyMoveUsingNode({node, propid}) {
         next[node] = {
           r: updated.r1,
           r1: next[node].r1,
-          a: updated.a1,
+          a: handleBend(updated.a1, current.vb, node),
           a1: next[node].a1
         };
       }
@@ -409,7 +423,7 @@ function deleteTransition() {
           move[node] = {
             r: position[node].r1,
             r1: move[node].r1,
-            a: position[node].a1,
+            a: handleBend(position[node].a1, position.vb, node),
             a1: move[node].a1
           };
         }
@@ -507,7 +521,7 @@ function deleteMove() {
         // keep spins?
         if (!nearly(second[node].a, first[node].a1) || !nearly(second[node].r, first[node].r1)) {
           second[node] = {
-            a: first[node].a1,
+            a: handleBend(first[node].a1, first.vb, node),
             a1: second[node].a1,
             r: first[node].r1,
             r1: second[node].r1
@@ -573,7 +587,7 @@ function deleteMultiple() {
         // keep spins?
         if (!nearly(second[node].a, first[node].a1) || !nearly(second[node].r, first[node].r1)) {
           second[node] = {
-            a: first[node].a1,
+            a: handleBend(first[node].a1, first.vb, node),
             a1: second[node].a1,
             r: first[node].r1,
             r1: second[node].r1
@@ -624,7 +638,7 @@ function copyDraggedMove(move, propid, i) {
       // shouldn't mess with nodes if we don't have to
         if (!nearly(move[node].a, previous[node].a1) || !nearly(move[node].r, previous[node].r1)) {
           move[node] = {
-            a: previous[node].a1,
+            a: handleBend(previous[node].a1, previous.vb, node),
             a1: move[node].a1,
             r: previous[node].r1,
             r1: move[node].r1
@@ -640,7 +654,7 @@ function copyDraggedMove(move, propid, i) {
         // shouldn't mess with nodes if we don't have to
         if (!nearly(next[node].a, move[node].a1) || !nearly(next[node].r, move[node].r1)) {
           next[node] = {
-            a: move[node].a1,
+            a: handleBend(move[node].a1, previous.vb, node),
             a1: next[node].a1,
             r: move[node].r1,
             r1: next[node].r1
@@ -656,7 +670,7 @@ function copyDraggedMove(move, propid, i) {
       NODES.map(node=>{
         // shouldn't mess with nodes if we don't have to
         if (!nearly(move[node].a, previous[node].a1) || !nearly(move[node].r, previous[node].r1)) {
-          move[node].a = previous[node].a1;
+          move[node].a = handleBend(previous[node].a1, previous.vb, node);
           move[node].r = previous[node].r1;
           if (move[node].a1) {
             delete move[node].a1;
@@ -690,7 +704,7 @@ function copyDraggedMultiple(propid, i) {
       // shouldn't mess with nodes if we don't have to
       if (!nearly(move1[node].a, previous[node].a1) || !nearly(move1[node].r, previous[node].r1)) {
         move1[node] = {
-          a: previous[node].a1,
+          a: handleBend(previous[node].a1, previous.vb, node),
           a1: move1[node].a1,
           r: previous[node].r1,
           r1: move1[node].r1
@@ -708,7 +722,7 @@ function copyDraggedMultiple(propid, i) {
         NODES.map(node=>{
           // shouldn't mess with nodes if we don't have to
           next[node] = {
-            a: move2[node].a1,
+            a: handleBend(move2[node].a1, move2.vb, node),
             a1: next[node].a1,
             r: move2[node].r1,
             r1: next[node].r1
@@ -815,11 +829,11 @@ function modifyTransitionUsingNode({node, propid}) {
     // does this get weird due to intermediate states?  probably not, because it won't match
     NODES.map(n=>{
       // avoid wiping out spin, etc?
-      if (!angle$nearly(move[node].a, previous[node].a1) || !nearly(move[node].r, previous[node].r1)) {
+      if (!angle$nearly(move[node].a, handleBend(previous[node].a1, previous.vb, node)) || !nearly(move[node].r, previous[node].r1)) {
         move[n] = {
           r: previous[n].r1,
           r1: move[n].r1,
-          a: previous[n].a1,
+          a: handleBend(previous[n].a1, previous.vb, n),
           a1: move[n].a1
         };
       }
@@ -896,5 +910,55 @@ function deleteProp(propid) {
   store.dispatch({type: "SET_TOP", order: order});
   colors = colors.filter((_,i)=>(i!==propid));
   store.dispatch({type: "SET_COLORS", colors: colors});
+  updateEngine();
+}
+
+
+function modifyTwist({propid, n}) {
+  // fill in later
+}
+
+function modifyBend({propid, n}) {
+  player.stop();
+  const BOUNDS = 2;
+  let {tick, tick2, moves} = store.getState();
+  let {move, index} = submove(moves[propid], tick);
+  // make sure we align to the beginning of the move
+  let past = 0;
+  let i = 0;
+  while (past<tick) {
+    let ticks = beats(moves[propid][i])*BEAT;
+    if (past+ticks>tick) {
+      gotoTick(past);
+      tick = past;
+    }
+    past+=ticks;
+    i+=1;
+  }
+  let bend = round(move.vb/4, 0.5);
+  if (Math.abs(bend+n)>BOUNDS) {
+    return;
+  }
+  move = clone(move);
+  bend += n;
+  move.vb = bend*4;
+  moves = clone(moves);
+  moves[propid][index] = resolve(move);
+  let next = moves[propid][index+1];
+  if (next) {
+    next = clone(next);
+    if (!fits(move, next, 0.1)) {
+      next.head = {
+        a: handleBend(move.head.a1, move.vb, "head"),
+        a1: next.head.a1,
+        r: next.head.r,
+        r1: next.head.r1
+      };
+      moves[propid][index+1] = next;
+    }
+  }
+  store.dispatch({type: "SET_MOVES", moves: moves});
+  setPropNodesByTick(tick2);
+  // this can potentially affect the next move!
   updateEngine();
 }
