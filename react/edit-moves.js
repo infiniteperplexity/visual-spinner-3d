@@ -308,7 +308,7 @@ function modifySpins({propid, node, n}) {
     let bts = beats(move);
     let solutions = [];
     let flips = [];
-      for (let i=0.5; i<=8; i+=0.5) {
+      for (let i=0.5; i<=4; i+=0.5) {
       let halfbends = Math.abs(i*beats(move)/2);
       if (halfbends%2===0) {
         solutions.push(i);
@@ -317,12 +317,17 @@ function modifySpins({propid, node, n}) {
       }
     }
     for (let i=-2; i<=2; i++) {
+      if (i===0) {
+        // probably want special handling
+      }
       let solution = VS3D.solve_angle({x0: a, x1: a1, t: BEAT*bts, spin: i});
       let flipped = VS3D.solve_angle({x0: a, x1: angle(a1+180), t: BEAT*bts, spin: i});
       solutions.push({v: solution.v0, spin: solution.spin});
       flips.push({v: flipped.v0, spin: flipped.spin});
     }
-    // I think from here we have a good start on divvying up the solution space
+    console.log(solutions);
+    console.log(flips);
+    // I'd say "reasonable" means any solution where Math.abs(v)<=4 or maybe 5 and Math.abs(vb)<=4
 
     
     return;
