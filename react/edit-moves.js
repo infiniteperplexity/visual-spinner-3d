@@ -302,19 +302,29 @@ function modifySpins({propid, node, n}) {
   let {vl} = move[node];
 
   if (move.vb && node==="head") {
-    let a2 = handleBend()
-    let bts = beats(move);
-    let bends = [];
-    let moments = VS3D.solve_angle({x0: a, x1: a1, t: BEAT*bts}); // works for any "even" bend
-    let flipped = VS3D.solve_angle({x0: a, x1: angle(a1+180), t: BEAT*bts}); // works for any "odd" bend
-    console.log(moments);
-    console.log(flipped);
-    
-
-    // this is our default
     // do an entirely different thing
     // so here's where things get a bit crazy...
       // conceptually, we want an ordered set of all the solutions, given a, a1, and sign(vb)
+    let bts = beats(move);
+    let solutions = [];
+    let flips = [];
+      for (let i=0.5; i<=8; i+=0.5) {
+      let halfbends = Math.abs(i*beats(move)/2);
+      if (halfbends%2===0) {
+        solutions.push(i);
+      } else if (halfbends%2===1) {
+        flips.push(i);
+      }
+    }
+    for (let i=-2; i<=2; i++) {
+      let solution = VS3D.solve_angle({x0: a, x1: a1, t: BEAT*bts, spin: i});
+      let flipped = VS3D.solve_angle({x0: a, x1: angle(a1+180), t: BEAT*bts, spin: i});
+      solutions.push({v: solution.v0, spin: solution.spin});
+      flips.push({v: flipped.v0, spin: flipped.spin});
+    }
+    // I think from here we have a good start on divvying up the solution space
+
+    
     return;
   }
 
