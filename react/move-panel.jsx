@@ -369,6 +369,10 @@ class MoveControl extends React.PureComponent {
       tether2.strokeDasharray="5,5";
     }
     let title;
+    if (move && node==="head" && move.vb) {
+      buttons[3] = <div key="3" />;
+      buttons[4] = <div key="4" />
+    }
     if (node==="head" && this.props.locks.head) {
       title = "Click to 'unlock' the tether, allowing its length to change.";
     } else if (node==="head") {
@@ -405,6 +409,7 @@ class MoveControl extends React.PureComponent {
 function SpeedMeter(props, context) {
   let {move, node, color, previous} = props;
   let {va, va1, vr, vr1, vl, vl1, la, a, a1, r, r1} = move[node];
+  let {vb} = move;
   // very occasionally, null va, va1, and a1 sneak in here...forgot to resolve?
   let title, speed, spinshape, spintext, accshape, acctext;
   let stroke = "lightgray";
@@ -413,7 +418,12 @@ function SpeedMeter(props, context) {
   let acc = <polygon transform="translate(34,21)" points={ACC} fill={color} stroke={stroke}/>;
   let dec = <polygon transform="translate(27, 21)" points={DEC} fill={color} stroke={stroke}/>;
   let spd = <polygon transform="translate(34,19)" points="0,0 0,12, 12,6" fill={color} stroke={stroke}/>;;
-  if (zeroish(r,0.02) && zeroish(r1,0.02) && zeroish(previous[node].r1,0.02)) {
+  if (node==="head" && vb) {
+    speed = "*";
+    title = "plane bend";
+    spinshape = (vb>0) ? ccw : cw;
+    spintext = <text textAnchor="middle" x="5" y="29" style={{fontSize: "10px"}}>{speed}</text>;
+  } else if (zeroish(r,0.02) && zeroish(r1,0.02) && zeroish(previous[node].r1,0.02)) {
     // kind of debatable
     speed = 0;
     title = "speed 0";
@@ -584,18 +594,22 @@ class BendTwistControl extends React.PureComponent {
     let text;
     if (this.props.which==="bend") {
       let bend = -this.props.val/4;
-      text = "bend: "+bend;
+      if (bend===0) {
+        text = "bend: 0";
+      } else {
+        text = (bend>0) ? "bend: +" : "bend: -";
+      }
     } else {
       text = "twist: "+this.props.val;
       text = "twist: n/a";
     }
     return (
       <div>
-        <SpeedButton title="bend forward"
+        <SpeedButton title="bend backward"
           onClick={(this.props.which==="bend" ? this.handleBendPlus : this.handleTwistMinus)}>
           {ccw}
         </SpeedButton>
-        <SpeedButton title="bend backward"
+        <SpeedButton title="bend forward"
           onClick={(this.props.which==="bend" ? this.handleBendMinus : this.handleTwistPlus)}>
           {cw}
         </SpeedButton>

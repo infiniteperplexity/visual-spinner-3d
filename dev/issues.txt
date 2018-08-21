@@ -131,3 +131,10 @@ Next steps:
 
 
 - Wow...that bend stuff is uuugly...
+
+Okay, I think we have a plane for planebending...
+	1) Any time you drag the head or grip/handle node, bend gets reset to zero.
+	2) Any time you activate the bend buttons, spin gets reset to the default.
+	3) If pitch is anything but zero, the spin buttons work differently and cycle through valid solutions using bend instead.
+	4) Acceleration could in theory still do its thing; in a perfect world it would apply to bend as well but it doesn't.
+	5) It would be really, really, really great if we could refactor this such that the ending angle makes sense.  Actually maybe handlebend fixes this.
