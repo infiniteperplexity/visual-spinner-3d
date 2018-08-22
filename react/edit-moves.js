@@ -302,81 +302,11 @@ function modifySpins({propid, node, n}) {
   let {vl} = move[node];
 
   if (move.vb && node==="head") {
-    a1 = handleBend(a1, move, "head");
-    // do something entirely different if the move has bend
-    let bts = beats(move);
-    let solutions = [];
-    for (let i=-2; i<=2; i++) {
-      let nospin = null;
-      if (angle$nearly(a, a1)) {
-        nospin = 0;
-      } else if (angle$nearly(a, angle(a1+180))) {
-        nospin = 180;
-      }
-      let solution = VS3D.solve_angle({x0: a, x1: a1, t: BEAT*bts, spin: i});
-      let flipped = VS3D.solve_angle({x0: a, x1: angle(a1+180), t: BEAT*bts, spin: i});
-      if (i===0) {
-
-      }
-      for (let j=0.5; j<=4; j+=0.5) {
-        let halfbends = Math.abs(j*beats(move)/2);
-        if (halfbends%2===0) {
-          if (Math.abs(solution.v0)<=3 && (i!==0 || nospin===0)) {
-            solutions.push({v: solution.v0, b: j, spin: i, flip: false});
-          }
-        } else if (halfbends%2===1) {
-          // the flipped solution is wrong when spin=0
-          if (Math.abs(flipped.v0)<=3 && (i!==0 || nospin===180)) {
-            solutions.push({v: flipped.v0, b: j, spin: i, flip: true});
-          }
-        }
-      }
-    }
-    solutions.sort((a,b)=>(a.v-b.v));
-    let bindex;
-    speed = va || 0;
-    for (let i=0; i<solutions.length; i++) {
-      let sol = solutions[i];
-      if (nearly(speed, sol.v) && nearly(Math.abs(move.vb), sol.b)) {
-        bindex = i;
-        break;
-      }
-    }
-    console.log(solutions);
-    console.log("current settings");
-    console.log(speed, move.vb);
-    if (bindex===undefined) {
-      alert("what??");
-
-    } else {
-      let sol;
-      if (n>0) {
-        if (bindex>=solutions.length-1) {
-          return;
-        }
-        sol = solutions[bindex+1];
-      } else if (n<0) {
-        if (bindex===0) {
-          return;
-        }
-        sol = solutions[bindex-1];
-      }
-      move = clone(move);
-      move.head = {
-        a: a,
-        a1: sol.flip ? angle(a1+180) : a1,
-        r: move.head.r,
-        r1: move.head.r1,
-        spin: sol.spin
-      };
-      move.vb = (move.vb<0) ? -sol.b : sol.b;
-      console.log("next settings");
-      console.log(sol);
-      move = resolve(move);
-      moves = clone(moves);
-      moves[propid][index] = move;
-      store.dispatch({type: "SET_MOVES", moves: moves});
-    }
+    modifyBend({
+      propid: propid,
+      bend: n,
+      pitch: 0
+    });
     return;
   }
   if (vl!==undefined) {
@@ -1011,8 +941,7 @@ function modifyTwist({propid, n}) {
   // fill in later
 }
 
-
-function modifyBend({propid, n}) {
+function modifyBend({propid, bend, pitch}) {
   player.stop();
   const BOUNDS = 2;
   let {tick, tick2, moves} = store.getState();
@@ -1030,32 +959,118 @@ function modifyBend({propid, n}) {
     i+=1;
   }
   move = clone(move);
-  let vb = move.vb || 0;
-  if ((vb<0 && n>0) || (vb>0 && n<0)) {
-    // remove plane bends and set spin to default
-    move.vb = 0;
-    move.head = {
-      a: move.head.a,
-      a1: handleBend(move.head.a1, move, "head"),
-      r: move.head.r,
-      r1: move.head.r1
-    };
-  } else if ((vb<0 && n<0) || (vb>0 && n>0)) {
-    // do nothing...arguably, could duplicate function of spin buttons
-    return;
-  } else {
-    // come up with a default bend solution with the correct pitch
-    // I'm not sure this is always the best default.
-    move.vb = 4*beats(move)*n;
-    move.head = {
-      a: move.head.a,
-      a1: move.head.a1,
-      r: move.head.r,
-      r1: move.head.r1
-    };
+  let a0 = move.head.a;
+  let a1 = handleBend(move.head.a1, move, "head");
+  let bts = beats(move);
+  let solutions = [];
+  for (let i=-2; i<=2; i++) {
+    let nospin = null;
+    if (angle$nearly(a0, a1)) {
+      nospin = 0;
+    } else if (angle$nearly(a0, angle(a1+180))) {
+      nospin = 180;
+    }
+    let solution = VS3D.solve_angle({x0: a0, x1: a1, t: BEAT*bts, spin: i});
+    let flipped = VS3D.solve_angle({x0: a0, x1: angle(a1+180), t: BEAT*bts, spin: i});
+    for (let j=0.5; j<=4; j+=0.5) {
+      let halfbends = Math.abs(j*beats(move)/2);
+      if (halfbends%2===0) {
+        if (Math.abs(solution.v0)<=3 && (i!==0 || nospin===0)) {
+          solutions.push({v: solution.v0, b: j, spin: i, flip: false});
+        }
+      } else if (halfbends%2===1) {
+        // the flipped solution is wrong when spin=0
+        if (Math.abs(flipped.v0)<=3 && (i!==0 || nospin===180)) {
+          solutions.push({v: flipped.v0, b: j, spin: i, flip: true});
+        }
+      }
+    }
   }
+  // at this point we have all valid solutions...now we just need to sort and traverse
+  if (bend) {
+    solutions.sort((a,b)=>(a.b-b.b));
+    solutions.sort((a,b)=>(a.v-b.v));
+  } else if (pitch) {
+    solutions.sort((a,b)=>(Math.abs(a.v)-Math.abs(b.v)));
+    solutions.sort((a,b)=>(a.b-b.b));
+  }
+  let bindex, solved;
+  let speed = move.head.va || 0;
+  for (let i=0; i<solutions.length; i++) {
+    let sol = solutions[i];
+    if (nearly(speed, sol.v) && nearly(Math.abs(move.vb), sol.b)) {
+      bindex = i;
+      break;
+    }
+  }
+  if (bindex===undefined && move.vb) {
+    alert("never should have gotten here in the code");
+    return;
+  }
+  if (pitch) {
+    if (!move.vb) {
+      solved = solutions[0];
+    } else if (move.vb>0) {
+      if (pitch<0) {
+        if (bindex===0) {
+          solved = {spin: undefined, flip: false, b: 0}
+        } else {
+          solved = solutions[bindex-1];
+        }
+      } else if (pitch>0) {
+        if (bindex===solutions.length-1) {
+          return;
+        } else {
+          solved = solutions[bindex+1];
+        }
+      }
+    } else if (move.vb<0) {
+      if (pitch>0) {
+        if (bindex===0) {
+          solved = {spin: undefined, flip: false, b: 0}
+        } else {
+          solved = solutions[bindex-1];
+        }
+      } else if (pitch<0) {
+        if (bindex===solutions.length-1) {
+          return;
+        } else {
+          solved = solutions[bindex+1];
+        }
+      }
+    }
+  } else if (bend) {
+    if (bend>0 && bindex===solutions.length-1) {
+      return;
+    } else if (bend<0 && bindex===0) {
+      return;
+    } else {
+      solved = solutions[bindex+bend];
+    }
+  }
+  move = clone(move);
+  move.head = {
+    a: a0,
+    a1: solved.flip ? angle(a1+180) : a1,
+    r: move.head.r,
+    r1: move.head.r1,
+    spin: solved.spin
+  };
   move = resolve(move);
+  if (move.vb===0) {
+    if (pitch>0) {
+      move.vb = solved.b;
+    } else if (pitch<0) {
+      move.vb = -solved.b;
+    } else {
+      alert("should never reach this point in the code");
+    }
+  } else {
+    move.vb = Math.sign(move.vb)*solved.b;
+  }
   moves = clone(moves);
   moves[propid][index] = move;
   store.dispatch({type: "SET_MOVES", moves: moves});
 }
+
+    

@@ -166,7 +166,7 @@ class MovePanel extends React.PureComponent {
         <MoveControl node="helper" move={move} propid={propid} {...this.props}/>
         <MoveControl node="pivot" move={move} propid={propid} {...this.props}/>
         <MoveControl node="body" move={move} propid={propid} {...this.props}/>
-        {bend}
+        {null}
         {twist}
         {planes}
       </div>
@@ -286,6 +286,22 @@ class MoveControl extends React.PureComponent {
     //   node: this.props.node
     // });
   }
+  handleBendPlus = (e)=>{
+    if (this.props.frozen) {
+      return;
+    }
+    let propid = this.props.order[this.props.order.length-1];
+    this.props.modifyBend({propid: this.props.propid, pitch: +1, bend: 0});
+    this.props.pushStoreState();
+  }
+  handleBendMinus = (e)=>{
+    if (this.props.frozen) {
+      return;
+    }
+    let propid = this.props.order[this.props.order.length-1];
+    this.props.modifyBend({propid: this.props.propid, pitch: -1, bend: 0});
+    this.props.pushStoreState();
+  }
   render() {
     const SVG = 25;
     let graphic;
@@ -342,11 +358,23 @@ class MoveControl extends React.PureComponent {
         </SpeedButton>,
         <SpeedButton key="4" onClick={this.handleSlowDown} title="starts faster / ends slower">
           <polygon points={DEC} transform="translate(5, 9)" fill={color} stroke={stroke}/>
-        </SpeedButton>,
-        <SpeedButton key="5" onClick={this.handleAbrupt} title={/*"snap-to from previous"*/ "not yet enabled"}>
-          <path d={BREAK} transform="translate(5,9)" fill={"lightgray"} stroke={stroke}/>
         </SpeedButton>
     ];
+    if (buttons && node==="head") {
+      buttons.push(
+        <SpeedButton key="5" onClick={this.handleBendPlus} title={"plane bend backward"}>
+          <path d={ARROW} transform="scale(-1, 1) translate(-20, 5)" fill={color} stroke={stroke}/>
+        </SpeedButton>
+      );
+      buttons.push(
+        <SpeedButton key="6" onClick={this.handleBendMinus} title={"plane bend forward"}>
+          <path d={ARROW} transform="translate(5, 5)" fill={color} stroke={stroke}/>
+        </SpeedButton>
+      );
+    } else if (buttons) {
+      buttons.push(<div key="5" />);
+      buttons.push(<div key="6" />);
+    }
     let tether1 = {stroke: "gray"};
     let tether2 = {stroke: "gray"};
     if (node==="head") {
@@ -419,10 +447,15 @@ function SpeedMeter(props, context) {
   let dec = <polygon transform="translate(27, 21)" points={DEC} fill={color} stroke={stroke}/>;
   let spd = <polygon transform="translate(34,19)" points="0,0 0,12, 12,6" fill={color} stroke={stroke}/>;;
   if (node==="head" && vb) {
-    speed = "*";
-    title = "plane bend "+va+" "+vb;
-    spinshape = (vb>0) ? ccw : cw;
-    spintext = <text textAnchor="middle" x="5" y="29" style={{fontSize: "10px"}}>{speed}</text>;
+    speed = round(va || 0, 0.5);
+    let bend = -round(vb, 0.5);
+    let bendcw = <path d={ARROW} transform="translate(32, 17)" fill={color} stroke="lightgray"/>;
+    let bendccw = <path d={ARROW} transform="scale(-1, 1) translate(-48, 17)" fill={color} stroke="lightgray"/>;
+    title = "plane bend ("+speed+", "+bend+")";
+    spinshape = (speed>0) ? cw : ccw;
+    spintext = <text textAnchor="middle" x="5" y="29" style={{fontSize: (parseInt(speed)===speed) ? "10px" : "8px"}}>{Math.abs(speed)}</text>;
+    acctext = <text textAnchor="middle" x="29" y="29" style={{fontSize: (parseInt(bend)===bend) ? "10px" : "8px"}}>{Math.abs(bend)}</text>;
+    accshape = (bend>0) ? bendcw : bendccw;
   } else if (zeroish(r,0.02) && zeroish(r1,0.02) && zeroish(previous[node].r1,0.02)) {
     // kind of debatable
     speed = 0;
