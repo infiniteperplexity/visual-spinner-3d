@@ -420,7 +420,7 @@ function SpeedMeter(props, context) {
   let spd = <polygon transform="translate(34,19)" points="0,0 0,12, 12,6" fill={color} stroke={stroke}/>;;
   if (node==="head" && vb) {
     speed = "*";
-    title = "plane bend";
+    title = "plane bend "+va+" "+vb;
     spinshape = (vb>0) ? ccw : cw;
     spintext = <text textAnchor="middle" x="5" y="29" style={{fontSize: "10px"}}>{speed}</text>;
   } else if (zeroish(r,0.02) && zeroish(r1,0.02) && zeroish(previous[node].r1,0.02)) {
@@ -560,14 +560,14 @@ class BendTwistControl extends React.PureComponent {
     if (this.props.frozen) {
       return;
     }
-    this.props.modifyBend({propid: this.props.propid, n: +0.5});
+    this.props.modifyBend({propid: this.props.propid, n: +1});
     this.props.pushStoreState();
   }
   handleBendMinus = (e)=>{
     if (this.props.frozen) {
       return;
     }
-    this.props.modifyBend({propid: this.props.propid, n: -0.5});
+    this.props.modifyBend({propid: this.props.propid, n: -1});
     this.props.pushStoreState();
   }
   handleTwistPlus = (e)=>{

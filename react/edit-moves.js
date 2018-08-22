@@ -149,7 +149,7 @@ function modifyMoveUsingNode({node, propid}) {
     }
   }
   // !!! so...I'm not sure if the !changed logic is good...should just clicking it be enough to change the plane?
-  if (!transition && !(nearly(current[node].r1, r) && angle$nearly(current[node].a1, a) && !changed)) {
+  if (!transition && !(nearly(current[node].r1, r) && angle$nearly(handleBend(current[node].a1, current, node), a) && !changed)) {
     current = clone(current);
     if (node==="head") {
       current.bent = 0;
@@ -302,38 +302,83 @@ function modifySpins({propid, node, n}) {
   let {vl} = move[node];
 
   if (move.vb && node==="head") {
-    // do an entirely different thing
-    // so here's where things get a bit crazy...
-      // conceptually, we want an ordered set of all the solutions, given a, a1, and sign(vb)
+    a1 = handleBend(a1, move, "head");
+    // do something entirely different if the move has bend
     let bts = beats(move);
     let solutions = [];
-    let flips = [];
-      for (let i=0.5; i<=4; i+=0.5) {
-      let halfbends = Math.abs(i*beats(move)/2);
-      if (halfbends%2===0) {
-        solutions.push(i);
-      } else if (halfbends%2===1) {
-        flips.push(i);
-      }
-    }
     for (let i=-2; i<=2; i++) {
-      if (i===0) {
-        // probably want special handling
+      let nospin = null;
+      if (angle$nearly(a, a1)) {
+        nospin = 0;
+      } else if (angle$nearly(a, angle(a1+180))) {
+        nospin = 180;
       }
       let solution = VS3D.solve_angle({x0: a, x1: a1, t: BEAT*bts, spin: i});
       let flipped = VS3D.solve_angle({x0: a, x1: angle(a1+180), t: BEAT*bts, spin: i});
-      solutions.push({v: solution.v0, spin: solution.spin});
-      flips.push({v: flipped.v0, spin: flipped.spin});
+      if (i===0) {
+
+      }
+      for (let j=0.5; j<=4; j+=0.5) {
+        let halfbends = Math.abs(j*beats(move)/2);
+        if (halfbends%2===0) {
+          if (Math.abs(solution.v0)<=3 && (i!==0 || nospin===0)) {
+            solutions.push({v: solution.v0, b: j, spin: i, flip: false});
+          }
+        } else if (halfbends%2===1) {
+          // the flipped solution is wrong when spin=0
+          if (Math.abs(flipped.v0)<=3 && (i!==0 || nospin===180)) {
+            solutions.push({v: flipped.v0, b: j, spin: i, flip: true});
+          }
+        }
+      }
+    }
+    solutions.sort((a,b)=>(a.v-b.v));
+    let bindex;
+    speed = va || 0;
+    for (let i=0; i<solutions.length; i++) {
+      let sol = solutions[i];
+      if (nearly(speed, sol.v) && nearly(Math.abs(move.vb), sol.b)) {
+        bindex = i;
+        break;
+      }
     }
     console.log(solutions);
-    console.log(flips);
-    // I'd say "reasonable" means any solution where Math.abs(v)<=4 or maybe 5 and Math.abs(vb)<=4
+    console.log("current settings");
+    console.log(speed, move.vb);
+    if (bindex===undefined) {
+      alert("what??");
 
-    
+    } else {
+      let sol;
+      if (n>0) {
+        if (bindex>=solutions.length-1) {
+          return;
+        }
+        sol = solutions[bindex+1];
+      } else if (n<0) {
+        if (bindex===0) {
+          return;
+        }
+        sol = solutions[bindex-1];
+      }
+      move = clone(move);
+      move.head = {
+        a: a,
+        a1: sol.flip ? angle(a1+180) : a1,
+        r: move.head.r,
+        r1: move.head.r1,
+        spin: sol.spin
+      };
+      move.vb = (move.vb<0) ? -sol.b : sol.b;
+      console.log("next settings");
+      console.log(sol);
+      move = resolve(move);
+      moves = clone(moves);
+      moves[propid][index] = move;
+      store.dispatch({type: "SET_MOVES", moves: moves});
+    }
     return;
   }
-
-
   if (vl!==undefined) {
     spins = 0;
   }
@@ -1000,7 +1045,8 @@ function modifyBend({propid, n}) {
     return;
   } else {
     // come up with a default bend solution with the correct pitch
-    move.vb = beats(move)*n;
+    // I'm not sure this is always the best default.
+    move.vb = 4*beats(move)*n;
     move.head = {
       a: move.head.a,
       a1: move.head.a1,
