@@ -356,16 +356,9 @@ function setModels(models) {
 
 
 function setPlane(plane) {
-  if (plane!=="WALL" && planeWarned===false) {
-    alert("warning: all functionality outside the wall plane is poorly tested and buggy.");
-    planeWarned = true;
-  }
-  // if (plane==="WALL") {
-  //   renderer.setCameraPosition(0,0,8);
-  // } else if (plane==="WHEEL") {
-  //   renderer.setCameraPosition(8,0,0);
-  // } else if (plane==="FLOOR") {
-  //   renderer.setCameraPosition(0,-8,0);
+  // if (plane!=="WALL" && planeWarned===false) {
+  //   alert("warning: all functionality outside the wall plane is poorly tested and buggy.");
+  //   planeWarned = true;
   // }
   store.dispatch({type: "SET_PLANE", plane: plane});
 }
