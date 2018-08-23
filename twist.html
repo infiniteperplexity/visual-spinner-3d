@@ -40,7 +40,7 @@ function setup() {
 	player = new VS3D.Player();
 	let controls = new VS3D.Controls(player);
 	let select = document.createElement("select");
-	for (let choice of ["WALL","WHEEL","FLOOR","WAXWH","WAXwh","waXWH","WAXFL","WAXfl","waXFL","WHXFL","WHXfl","whXFL","WAWHFL","_WALL","_WHEEL","_FLOOR"]) {
+	for (let choice of ["FLOOR","WHEEL","WALL","WAXWH","WAXwh","waXWH","WAXFL","WAXfl","waXFL","WHXFL","WHXfl","whXFL","WAWHFL","_WALL","_WHEEL","_FLOOR"]) {
 		let option = document.createElement("option");
 		option.value = choice;
 		option.innerHTML = choice;
@@ -58,10 +58,12 @@ function setup() {
 		controls.update(this.tick);
 	}
 	red = player.addProp(new VS3D.Prop(), {model: "fan", color: "red", nudge: 0.1});
-	red.moves.push({hand: {va: 1}, head: {va: 1}, plane: WALL, beats: 4});
+	red.moves.push({hand: {va: 1}, head: {va: flower}, plane: FLOOR, beats: 4});
+	setPlane(waXFL);
 	player.refresh();
 }
 
+let flower = 1;
 function setPlane(x,y,z) {
 	if (x===undefined) {
 		x = WALL.x;
@@ -76,7 +78,7 @@ function setPlane(x,y,z) {
 	player.stop();
 	red.setHandAngle(0, plane);
 	red.setHeadAngle(0, plane);
-	red.moves[0] = {hand: {a: 0, va: 1}, head: {a: 0, va: 1}, plane: plane, beats: 4, nofit: true};
+	red.moves[0] = {hand: {a: 0, va: 1}, head: {a: 0, va: flower}, plane: plane, beats: 4, nofit: true};
 	red.refit();
 	player.refresh();
 }

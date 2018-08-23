@@ -216,9 +216,9 @@ let VS3D = {}; //
 		let twangle = angle$longitude(bearing, p, dummy);
 		twist+=twangle;
 		if (!dummy) {
-			// console.log("in-plane angle is "+mhead.va*t);
-			// console.log("absolute angle is "+head.a);
-			// console.log("bearing is "+bearing);
+			console.log("in-plane angle is "+mhead.va*t);
+			console.log("absolute angle is "+head.a);
+			console.log("bearing is "+bearing);
 			// console.log("twist angle is "+twangle);
 			console.log("twist is "+twist);
 		}
