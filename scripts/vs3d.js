@@ -448,6 +448,20 @@ let VS3D = {}; //
 		return angle(a/UNIT);
 	}
 
+	function angle$longitude_old(b, p) {
+		p = p || WALL;
+		let {x, y, z} = p;
+		// thanks to Jason Ferguson for providing this formula
+		let a = Math.PI-Math.acos(arcbounds(
+			Math.cos(b*UNIT)*z - Math.sin(b*UNIT)*x
+			/ Math.sqrt(x*x+y*y+z*z)
+		));
+		if (y<0) {
+			a-=(Math.PI);
+		}
+		return angle(a/UNIT);
+	}
+
 
 
 

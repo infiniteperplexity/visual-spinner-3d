@@ -1,0 +1,95 @@
+<!--Distributed under GNU Public License version 3-->
+<!DOCTYPE html>
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Validating "Twist" in VisualSpinner3D</title>
+<style>
+	body {background-color: #99CCFF}
+	#grid {
+		display: grid;
+		grid-column-gap: 3px;
+        grid-row-gap: 3px;
+        grid-template-rows: auto;
+        grid-template-columns: 400px 400px 400px;
+	}
+	.header {
+		text-align: center;
+	}
+	input {
+		width: 30px;
+	}
+</style>
+<script src="scripts/vs3d.js"></script>
+<script src="scripts/vs3d-moves.js"></script>
+<script src="scripts/three.min.js"></script>
+<script src="scripts/vs3d-render.js"></script><script>
+
+function init() {
+	setup();
+}
+const {WALL, WHEEL, FLOOR, WAXWH, WAXwh, waXWH, WAXFL, WAXfl, waXFL, WHXFL, WHXfl, whXFL, WAWHFL} = VS3D;
+
+let renderer1, renderer2, renderer3, player, red;
+let overlays = [{beats: 4}];
+function setup() {
+	renderer1 = new VS3D.ThreeRenderer(document.getElementById("side"));
+	renderer2 = new VS3D.ThreeRenderer(document.getElementById("front"));
+	renderer3 = new VS3D.ThreeRenderer(document.getElementById("top"));
+	renderer1.setCameraPosition(8,0,0);
+	renderer3.setCameraPosition(0,8,0);
+	player = new VS3D.Player();
+	let controls = new VS3D.Controls(player);
+	let select = document.createElement("select");
+	for (let choice of ["WALL","WHEEL","FLOOR","WAXWH","WAXwh","waXWH","WAXFL","WAXfl","waXFL","WHXFL","WHXfl","whXFL","WAWHFL"]) {
+		let option = document.createElement("option");
+		option.value = choice;
+		option.innerHTML = choice;
+		select.appendChild(option);
+	}
+	select.onchange = (e)=>{
+		setPlane(VS3D[e.target.value]);
+	};
+	controls.div.appendChild(select);
+	renderer2.div.appendChild(controls.div);
+	player.update = function(positions) {
+		renderer1.render(this.props, positions);
+		renderer2.render(this.props, positions);
+		renderer3.render(this.props, positions);
+		controls.update(this.tick);
+	}
+	red = player.addProp(new VS3D.Prop(), {model: "fan", color: "red", nudge: 0.1});
+	red.moves.push({hand: {va: 1}, head: {va: 1}, plane: WALL, beats: 4});
+	player.refresh();
+}
+
+function setPlane(x,y,z) {
+	if (x===undefined) {
+		x = WALL.x;
+		y = WALL.y;
+		z = WALL.z;
+	} else if (y===undefined) {
+		y = x.y;
+		z = x.z;
+		x = x.x;
+	}
+	let plane = VS3D.vector$unitize(VS3D.plane(x,y,z));
+	player.stop();
+	red.setHandAngle(0, plane);
+	red.setHeadAngle(0, plane);
+	red.moves[0] = {hand: {a: 0, va: 1}, head: {a: 0, va: 1}, plane: plane, beats: 4, nofit: true};
+	red.refit();
+	player.refresh();
+}
+
+
+</script>
+</head>
+<body onload="init();">
+<div id="grid">
+	<div id="side"><p class="header">Side</p></div>
+	<div id="front"><p class="header">Front</div>
+	<div id="top"><p class="header">Top</p></div>
+</div>
+</body></html>
+
+

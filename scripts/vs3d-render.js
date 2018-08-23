@@ -125,13 +125,49 @@ VS3D = (function(VS3D) {
 		}
 		// BEND should be handled elsewhere
 		let twist = prop.twist;
-		shapes.rotateOnAxis(axis,twist*VS3D.UNIT);
+		shapes.rotateOnAxis(axis, twist*VS3D.UNIT);
 		shapes.rotateY(-prop.head.b*VS3D.UNIT);
 		shapes.rotateZ(-prop.head.a*VS3D.UNIT);
 		// shapes.rotateY(-(prop.head.b+prop.grip.b)*VS3D.UNIT);
 		// shapes.rotateZ(-(prop.head.a+prop.grip.a)*VS3D.UNIT);
 	}
 
+	ThreeRenderer.prototype.update_old = function(shapes, prop, nudge) {
+		nudge = nudge || 0;
+		shapes.position.x = Math.sign(this.camera.position.x)*nudge;
+		shapes.position.y = Math.sign(this.camera.position.y)*nudge;
+		shapes.position.z = Math.sign(this.camera.position.z)*nudge;
+		shapes.rotation.x = 0;
+		shapes.rotation.y = 0;
+		shapes.rotation.z = 0;
+		for (let shape of shapes.children) {
+			if (shape.userData.stretchy) {
+				shape.scale.set(1,prop.head.r,1);
+			}
+			if (shape.userData.slideish) {
+				shape.position.y = prop.head.r/2;
+			}
+			if (shape.userData.slidey) {
+				shape.position.y = prop.head.r;
+			}
+		}
+		let axis = VS3D.axis(prop);
+		for (let i=VS3D.BODY; i<VS3D.HEAD; i++) {
+			let node = VS3D.NODES[i];
+			shapes.rotateY(-prop[node].b*VS3D.UNIT);
+			shapes.rotateZ(-prop[node].a*VS3D.UNIT);
+			shapes.translateOnAxis(THREEY,+prop[node].r);
+			shapes.rotateZ(+prop[node].a*VS3D.UNIT);
+			shapes.rotateY(+prop[node].b*VS3D.UNIT);
+		}
+		// BEND should be handled elsewhere
+		let twist = prop.twist;
+		shapes.rotateOnAxis(axis, twist*VS3D.UNIT);
+		shapes.rotateY(-prop.head.b*VS3D.UNIT);
+		shapes.rotateZ(-prop.head.a*VS3D.UNIT);
+		// shapes.rotateY(-(prop.head.b+prop.grip.b)*VS3D.UNIT);
+		// shapes.rotateZ(-(prop.head.a+prop.grip.a)*VS3D.UNIT);
+	}
 	
 
 	ThreeRenderer.prototype.builder = {};
