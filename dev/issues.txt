@@ -115,26 +115,8 @@ Next steps:
 
 
 
-- Very rarely I still get a non-game-ender NaN.
+Okay...we've set up a testing framework for TWIST.  And there are more problems than I originally thought.  I'm working with the assumption that the problems are with how I defined angles, rather than with JF's formula.  But...I'm ready to check all assumptions.
 
-- Should I have made it so you can't delete the first move?
+So anyway...let's try to get the WALL plane working right, for god's sake.
 
-- Some 3d stuff unlocks the head node.
-
-- How should we display twist in other planes?  as in move, or as in prop?
-
-- I guess I need to troubleshoot transitions in 3d now?
-	- this is actually looking pretty good at this point.
-
-- Think briefly about TWIST before going to bed?  Like, how does TWIST actually work again?
-	- so...there's the "twist + twangle" line...which means "twist + longitude(head.bearing, move.plane)"
-
-
-- Wow...that bend stuff is uuugly...
-
-Okay, I think we have a plane for planebending...
-	1) Any time you drag the head or grip/handle node, bend gets reset to zero.
-	2) Any time you activate the bend buttons, spin gets reset to the default.
-	3) If pitch is anything but zero, the spin buttons work differently and cycle through valid solutions using bend instead.
-	4) Acceleration could in theory still do its thing; in a perfect world it would apply to bend as well but it doesn't.
-	5) It would be really, really, really great if we could refactor this such that the ending angle makes sense.  Actually maybe handlebend fixes this.
+Alright, so it doesn't seem to be a display issue; twist is actually calculated wrong.

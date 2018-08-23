@@ -40,7 +40,7 @@ function setup() {
 	player = new VS3D.Player();
 	let controls = new VS3D.Controls(player);
 	let select = document.createElement("select");
-	for (let choice of ["WALL","WHEEL","FLOOR","WAXWH","WAXwh","waXWH","WAXFL","WAXfl","waXFL","WHXFL","WHXfl","whXFL","WAWHFL"]) {
+	for (let choice of ["WALL","WHEEL","FLOOR","WAXWH","WAXwh","waXWH","WAXFL","WAXfl","waXFL","WHXFL","WHXfl","whXFL","WAWHFL","_WALL","_WHEEL","_FLOOR"]) {
 		let option = document.createElement("option");
 		option.value = choice;
 		option.innerHTML = choice;

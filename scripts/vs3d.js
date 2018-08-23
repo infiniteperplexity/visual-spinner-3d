@@ -1,5 +1,8 @@
 VS3D = function() {
 let VS3D = {}; //
+
+
+
 // ********************** Constants
 	// const SMALL = VS3D.SMALL = 0.001;
  //    const TINY = VS3D.TINY = 0.0001;
@@ -104,6 +107,131 @@ let VS3D = {}; //
 	const WHXfl = VS3D.WHXfl = plane(WHEEL.x*almost(NUDGE),-NUDGE,0);
 	const whXFL = VS3D.whXFL = plane(WHEEL.x*NUDGE,FLOOR.y*almost(NUDGE),0);
 	const WAWHFL = VS3D.WAWHFL = plane(WHEEL.x*Math.sqrt(1/3),FLOOR.y*Math.sqrt(1/3),WALL.z*Math.sqrt(1/3));
+
+	function bearing(b) {
+		if (b>90 && b<=270) {
+			b = angle(b-180);
+		}
+		return b;
+	}
+
+	function axis(prop) {
+		// so that I can later switch how this works if I misunderstood GRIP
+		return vector$unitize(sphere$vectorize(prop.head));
+	}
+
+    // const WALL = VS3D.WALL = plane(0,0,-1);
+    // const WHEEL = VS3D.WHEEL = plane(1,0,0);
+    // const FLOOR = VS3D.FLOOR = plane(0,-1,0);
+
+
+	function angle$longitude(b, p, dummy) {
+		p = p || WALL;
+		let {x, y, z} = p;
+		b = bearing(b);
+		// thanks to Jason Ferguson for providing this formula
+		// if (!dummy) {
+		// 	console.log("calculating longitude-related angle");
+		// 	console.log("cosine component is " + Math.cos(b*UNIT)*z);
+		// 	console.log("sine component is " + Math.sin(b*UNIT)*x);
+		// 	console.log("combined component is "+ (Math.cos(b*UNIT)*z - Math.sin(b*UNIT)*x));
+		// 	console.log("bounded component is "+arcbounds(
+		// 		Math.cos(b*UNIT)*z - Math.sin(b*UNIT)*x));
+		// 	console.log("arccosine component is "+(Math.acos(arcbounds(
+		// 		Math.cos(b*UNIT)*z - Math.sin(b*UNIT)*x))));
+		// 	console.log("square root component is " + Math.sqrt(x*x+y*y+z*z));
+		// }
+		let a = Math.PI-Math.acos(arcbounds(Math.cos(b*UNIT)*z - Math.sin(b*UNIT)*x));
+		return angle(a/UNIT);
+	}
+
+	function spin(move, t, dummy) {
+		// move = clone(move);
+		if (move.recipe) {
+			console.log("getting here is usually a bad thing");
+			return spin(build(move, new Prop()),t,dummy);
+		}
+		if (Array.isArray(move)) {
+			if (move.length===0) {
+				return new Prop();
+			}
+			let past = 0;
+			let i = 0;
+			while (past<=t) {
+				let ticks = beats(move[i])*BEAT;
+				if (past+ticks>t) {
+					return spin(move[i], t-past, dummy);
+				} else {
+					past+=ticks;
+					i=(i+1)%move.length;
+				}
+			}
+			throw new Error();
+		}
+		let notes = move.notes;
+		let p = move.plane || WALL;
+		let b = (move.beats!==undefined) ? move.beats : 1;
+		let mbody = merge({r: 0, a: 0, notes: notes}, move.body);
+		let mpivot = merge({r: 0, a: 0, notes: notes}, move.pivot);
+		let mhelper = merge({r: 0, a: 0, notes: notes}, move.helper);
+		let mhand = merge({r: 1, a: 0, notes: notes}, move.hand);
+		let mtwist = move.twist || 0;
+		let mbent = move.bent || 0;
+		let mvt = move.vt || 0;
+		let mvb = move.vb || 0;
+		let mgrip = merge({r: 0, a: 0, notes: notes}, move.grip);
+		let mhead = merge({r: 1, a: 0, notes: notes}, move.head);	
+		let body = spin_node({beats: b, plane: p, ...mbody}, t);
+		let pivot = spin_node({beats: b, plane: p, ...mpivot}, t);
+		let helper = spin_node({beats: b, plane: p, ...mhelper}, t);
+		let hand = spin_node({beats: b, plane: p, ...mhand}, t);
+		let grip = spin_node({beats: b, plane: p, ...mgrip}, t);
+		let head = spin_node({beats: b, plane: p, ...mhead}, t);
+		let twist = mtwist + mvt*t*SPEED;
+		let bent = mbent + mvb*t*SPEED;
+		let bearing = head.b;
+		// correct for cusps
+		if (angle$nearly(head.a, 0) || angle$nearly(head.a, 180)) {
+			let tiny = angle$spherify(head.a+1, p);
+			bearing = tiny.b;
+			head.b = tiny.b;
+		}
+		if (bent || move.vb) {
+			if (!dummy) {
+				console.log("correcting for bend");
+			}
+			let axis = vector$unitize(sphere$vectorize(head));
+			let tangent = vector$cross(axis,p);
+			headv = sphere$vectorize(head); 
+			head = vector$spherify(vector$rotate(headv,bent,tangent));
+			// fix bearing...toroids still flicker
+			// !!!TINIFY
+			let rotate = t*move.vb/2 || SMALL;
+			let bentp = vector$rotate(p,rotate,tangent);
+			bearing = angle$spherify(sphere$planify(head,bentp),bentp).b;
+		}
+		if (!dummy) {
+			console.log("*********************************************************");
+		}
+		let twangle = angle$longitude(bearing, p, dummy);
+		twist+=twangle;
+		if (!dummy) {
+			// console.log("in-plane angle is "+mhead.va*t);
+			// console.log("absolute angle is "+head.a);
+			// console.log("bearing is "+bearing);
+			// console.log("twist angle is "+twangle);
+			console.log("twist is "+twist);
+		}
+		return {
+			body: body,
+			pivot: pivot,
+			helper: helper,
+			hand: hand,
+			twist: twist,
+			grip: grip,
+			head: head
+		}
+	}
 
 
 // ****************************************************************************
@@ -321,7 +449,7 @@ let VS3D = {}; //
 			return ZAXIS;
 		}
 		// for all others, look for its two intersections with the wheel plane
-		// includes WHXFL and WAWHFL
+		// includes WAXFL and WAWHFL
 		let cross = vector$unitize(vector$cross(vec, WHEEL));
 		// force positive z
 		if (cross.z<0) {
@@ -434,19 +562,7 @@ let VS3D = {}; //
 
 	// takes a bearing and a plane
 	// returns the angle at the bearing between the plane and the longitude lines
-	function angle$longitude(b, p) {
-		p = p || WALL;
-		let {x, y, z} = p;
-		// thanks to Jason Ferguson for providing this formula
-		let a = Math.PI-Math.acos(arcbounds(
-			Math.cos(b*UNIT)*z - Math.sin(b*UNIT)*x
-			/ Math.sqrt(x*x+y*y+z*z)
-		));
-		if (y<0) {
-			a-=(Math.PI);
-		}
-		return angle(a/UNIT);
-	}
+
 
 	function angle$longitude_old(b, p) {
 		p = p || WALL;
@@ -537,7 +653,7 @@ let VS3D = {}; //
 // ****************************************************************************
 
 	// dummy is just a debugging convenience if you want to log only "real" spinning
-	function spin(move, t, dummy) {
+	function spin_old(move, t, dummy) {
 		// move = clone(move);
 		if (move.recipe) {
 			console.log("getting here is usually a bad thing");
@@ -1213,7 +1329,7 @@ let VS3D = {}; //
 		}
 	}	
 
-	function axis(prop) {
+	function axis_old(prop) {
 		// so that I can later switch how this works if I misunderstood GRIP
 		return vector$unitize(sphere$vectorize(prop.head));
 	}
@@ -1829,6 +1945,7 @@ function Player(renderer) {
 	VS3D.zeroish = zeroish;
 	VS3D.nearly = nearly;
 	VS3D.angle = angle;
+	VS3D.bearing = bearing;
 	VS3D.angle$nearly = angle$nearly;
 	VS3D.vector = vector;
 	VS3D.vector$nearly = vector$nearly;
