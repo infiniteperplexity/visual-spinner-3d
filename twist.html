@@ -30,7 +30,7 @@ function init() {
 const {WALL, WHEEL, FLOOR, WAXWH, WAXwh, waXWH, WAXFL, WAXfl, waXFL, WHXFL, WHXfl, whXFL, WAWHFL} = VS3D;
 
 let renderer1, renderer2, renderer3, player, red;
-let overlays = [{beats: 4}];
+
 function setup() {
 	renderer1 = new VS3D.ThreeRenderer(document.getElementById("side"));
 	renderer2 = new VS3D.ThreeRenderer(document.getElementById("front"));
@@ -58,8 +58,8 @@ function setup() {
 		controls.update(this.tick);
 	}
 	red = player.addProp(new VS3D.Prop(), {model: "fan", color: "red", nudge: 0.1});
-	red.moves.push({hand: {va: 1}, head: {va: flower}, plane: FLOOR, beats: 4});
-	setPlane(waXFL);
+	red.moves.push({recipe: "toroid", bend: -1, harmonics: 2});
+	// setPlane(WALL);
 	player.refresh();
 }
 
@@ -78,7 +78,7 @@ function setPlane(x,y,z) {
 	player.stop();
 	red.setHandAngle(0, plane);
 	red.setHeadAngle(0, plane);
-	red.moves[0] = {hand: {a: 0, va: 1}, head: {a: 0, va: flower}, plane: plane, beats: 4, nofit: true};
+	red.moves[0] = {recipe: "toroid", bend: -1, harmonics: 2};
 	red.refit();
 	player.refresh();
 }

@@ -115,8 +115,4 @@ Next steps:
 
 
 
-Okay...we've set up a testing framework for TWIST.  And there are more problems than I originally thought.  I'm working with the assumption that the problems are with how I defined angles, rather than with JF's formula.  But...I'm ready to check all assumptions.
-
-So anyway...let's try to get the WALL plane working right, for god's sake.
-
-Alright, so it doesn't seem to be a display issue; twist is actually calculated wrong.
+Alright, things are a lot closer now, but things are still murky in some diagonal planes.  I'm not sure to what extent it's an issue with rendering and to what extent it's an issue with twist.

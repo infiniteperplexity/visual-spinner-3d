@@ -108,132 +108,6 @@ let VS3D = {}; //
 	const whXFL = VS3D.whXFL = plane(WHEEL.x*NUDGE,FLOOR.y*almost(NUDGE),0);
 	const WAWHFL = VS3D.WAWHFL = plane(WHEEL.x*Math.sqrt(1/3),FLOOR.y*Math.sqrt(1/3),WALL.z*Math.sqrt(1/3));
 
-	function bearing(b) {
-		if (b>90 && b<=270) {
-			b = angle(b-180);
-		}
-		return b;
-	}
-
-	function axis(prop) {
-		// so that I can later switch how this works if I misunderstood GRIP
-		return vector$unitize(sphere$vectorize(prop.head));
-	}
-
-    // const WALL = VS3D.WALL = plane(0,0,-1);
-    // const WHEEL = VS3D.WHEEL = plane(1,0,0);
-    // const FLOOR = VS3D.FLOOR = plane(0,-1,0);
-
-
-	function angle$longitude(b, p, dummy) {
-		p = p || WALL;
-		let {x, y, z} = p;
-		b = bearing(b);
-		// thanks to Jason Ferguson for providing this formula
-		// if (!dummy) {
-		// 	console.log("calculating longitude-related angle");
-		// 	console.log("cosine component is " + Math.cos(b*UNIT)*z);
-		// 	console.log("sine component is " + Math.sin(b*UNIT)*x);
-		// 	console.log("combined component is "+ (Math.cos(b*UNIT)*z - Math.sin(b*UNIT)*x));
-		// 	console.log("bounded component is "+arcbounds(
-		// 		Math.cos(b*UNIT)*z - Math.sin(b*UNIT)*x));
-		// 	console.log("arccosine component is "+(Math.acos(arcbounds(
-		// 		Math.cos(b*UNIT)*z - Math.sin(b*UNIT)*x))));
-		// 	console.log("square root component is " + Math.sqrt(x*x+y*y+z*z));
-		// }
-		let a = Math.PI-Math.acos(arcbounds(Math.cos(b*UNIT)*z - Math.sin(b*UNIT)*x));
-		return angle(a/UNIT);
-	}
-
-	function spin(move, t, dummy) {
-		// move = clone(move);
-		if (move.recipe) {
-			console.log("getting here is usually a bad thing");
-			return spin(build(move, new Prop()),t,dummy);
-		}
-		if (Array.isArray(move)) {
-			if (move.length===0) {
-				return new Prop();
-			}
-			let past = 0;
-			let i = 0;
-			while (past<=t) {
-				let ticks = beats(move[i])*BEAT;
-				if (past+ticks>t) {
-					return spin(move[i], t-past, dummy);
-				} else {
-					past+=ticks;
-					i=(i+1)%move.length;
-				}
-			}
-			throw new Error();
-		}
-		let notes = move.notes;
-		let p = move.plane || WALL;
-		let b = (move.beats!==undefined) ? move.beats : 1;
-		let mbody = merge({r: 0, a: 0, notes: notes}, move.body);
-		let mpivot = merge({r: 0, a: 0, notes: notes}, move.pivot);
-		let mhelper = merge({r: 0, a: 0, notes: notes}, move.helper);
-		let mhand = merge({r: 1, a: 0, notes: notes}, move.hand);
-		let mtwist = move.twist || 0;
-		let mbent = move.bent || 0;
-		let mvt = move.vt || 0;
-		let mvb = move.vb || 0;
-		let mgrip = merge({r: 0, a: 0, notes: notes}, move.grip);
-		let mhead = merge({r: 1, a: 0, notes: notes}, move.head);	
-		let body = spin_node({beats: b, plane: p, ...mbody}, t);
-		let pivot = spin_node({beats: b, plane: p, ...mpivot}, t);
-		let helper = spin_node({beats: b, plane: p, ...mhelper}, t);
-		let hand = spin_node({beats: b, plane: p, ...mhand}, t);
-		let grip = spin_node({beats: b, plane: p, ...mgrip}, t);
-		let head = spin_node({beats: b, plane: p, ...mhead}, t);
-		let twist = mtwist + mvt*t*SPEED;
-		let bent = mbent + mvb*t*SPEED;
-		let bearing = head.b;
-		// correct for cusps
-		if (angle$nearly(head.a, 0) || angle$nearly(head.a, 180)) {
-			let tiny = angle$spherify(head.a+1, p);
-			bearing = tiny.b;
-			head.b = tiny.b;
-		}
-		if (bent || move.vb) {
-			if (!dummy) {
-				console.log("correcting for bend");
-			}
-			let axis = vector$unitize(sphere$vectorize(head));
-			let tangent = vector$cross(axis,p);
-			headv = sphere$vectorize(head); 
-			head = vector$spherify(vector$rotate(headv,bent,tangent));
-			// fix bearing...toroids still flicker
-			// !!!TINIFY
-			let rotate = t*move.vb/2 || SMALL;
-			let bentp = vector$rotate(p,rotate,tangent);
-			bearing = angle$spherify(sphere$planify(head,bentp),bentp).b;
-		}
-		if (!dummy) {
-			console.log("*********************************************************");
-		}
-		let twangle = angle$longitude(bearing, p, dummy);
-		twist+=twangle;
-		if (!dummy) {
-			console.log("in-plane angle is "+mhead.va*t);
-			console.log("absolute angle is "+head.a);
-			console.log("bearing is "+bearing);
-			// console.log("twist angle is "+twangle);
-			console.log("twist is "+twist);
-		}
-		return {
-			body: body,
-			pivot: pivot,
-			helper: helper,
-			hand: hand,
-			twist: twist,
-			grip: grip,
-			head: head
-		}
-	}
-
-
 // ****************************************************************************
 // ********************** Immutability Helpers ********************************
 // ****************************************************************************
@@ -420,16 +294,7 @@ let VS3D = {}; //
 		let z = vz-d*az;
 		return vector(x,y,z);
 	}
-	// function vector$tinify(vec) {
-	// 	let {x, y, z} = vec;
-	// 	x = x || TINY;
-	// 	y = y || TINY;
-	// 	z = z || TINY;
-	// 	return vector(x,y,z);
-	// }
-	// function sphere$tinify(s) {
-	// 	return sphere(s.r || TINY, s.a ,s.b);
-	// }
+
 	// calculate the angle between two vectors
 	function vector$between(v1, v2) {
 		let dot = vector$dot(v1, v2);
@@ -525,24 +390,17 @@ let VS3D = {}; //
 		}
 		let v = angle$vectorize(ang, p);
 		let s = vector$spherify(v);
+		// prevent flipping in planes with a floor component
 		if (p.y!==0 && ang>Math.PI/UNIT) {
+			s.a = angle(-s.a);
+			s.b = angle(s.b-Math.PI/UNIT);
+		// handle cusps in wall-by-wheel planes
+		} else if (p.y!==0 && p.z!==0 && ang===0) {
 			s.a = angle(-s.a);
 			s.b = angle(s.b-Math.PI/UNIT);
 		}
 		return s;
 	}
-
-	// console.log("test for cusps in angle$spherify");
-	// for (let i=0; i<360; i++) {
-	// 	let p = VS3D.WHXFL;
-	// 	let b1 = angle$spherify(i,p);
-	// 	let b2 = angle$spherify(i+1,p);
-	// 	if (!angle$nearly(b1.b, b2.b,10)) {
-	// 		console.log("cusp at "+angle(i)+", "+angle(i+1));
-	// 		console.log(Math.round(b1.a), Math.round(b1.b));
-	// 		console.log(Math.round(b2.a), Math.round(b2.b));
-	// 	}
-	// }
 
 
 	function angle$rotate(s, ang, p) {
@@ -562,22 +420,21 @@ let VS3D = {}; //
 
 	// takes a bearing and a plane
 	// returns the angle at the bearing between the plane and the longitude lines
-
-
-	function angle$longitude_old(b, p) {
+	function angle$longitude(b, p, dummy) {
 		p = p || WALL;
 		let {x, y, z} = p;
-		// thanks to Jason Ferguson for providing this formula
-		let a = Math.PI-Math.acos(arcbounds(
-			Math.cos(b*UNIT)*z - Math.sin(b*UNIT)*x
-			/ Math.sqrt(x*x+y*y+z*z)
-		));
-		if (y<0) {
-			a-=(Math.PI);
+		// needs special handling because of reference angles
+		if (y && z) {
+			b = angle(b-180);
 		}
-		return angle(a/UNIT);
+		let a = Math.PI-Math.acos(arcbounds(Math.cos(b*UNIT)*z - Math.sin(b*UNIT)*x));
+		a/=UNIT;
+		// needs special handling because of reference angles
+		if (y && z) {
+			a+=180;
+		}
+		return angle(a);
 	}
-
 
 
 
@@ -653,7 +510,7 @@ let VS3D = {}; //
 // ****************************************************************************
 
 	// dummy is just a debugging convenience if you want to log only "real" spinning
-	function spin_old(move, t, dummy) {
+	function spin(move, t, dummy) {
 		// move = clone(move);
 		if (move.recipe) {
 			console.log("getting here is usually a bad thing");
@@ -698,16 +555,21 @@ let VS3D = {}; //
 		let twist = mtwist + mvt*t*SPEED;
 		let bent = mbent + mvb*t*SPEED;
 		let bearing = head.b;
-		if (bent!==0 || move.vb!==0) {
+		// correct for cusps
+		if (angle$nearly(head.a, 0) || angle$nearly(head.a, 180)) {
+			let tiny = angle$spherify(head.a+1, p);
+			bearing = tiny.b;
+			head.b = tiny.b;
+		}
+		// cusps probably still exist for toroids
+		if (bent || move.vb) {
 			let axis = vector$unitize(sphere$vectorize(head));
 			let tangent = vector$cross(axis,p);
 			headv = sphere$vectorize(head); 
 			head = vector$spherify(vector$rotate(headv,bent,tangent));
-			// fix bearing...toroids still flicker
-			// !!!TINIFY
 			let rotate = t*move.vb/2 || SMALL;
 			let bentp = vector$rotate(p,rotate,tangent);
-			bearing = angle$spherify(sphere$planify(head,bentp),bentp).b;
+			// bearing = angle$spherify(sphere$planify(head,bentp),bentp).b;
 		}
 		let twangle = angle$longitude(bearing,p);
 		twist+=twangle;
@@ -1329,7 +1191,7 @@ let VS3D = {}; //
 		}
 	}	
 
-	function axis_old(prop) {
+	function axis(prop) {
 		// so that I can later switch how this works if I misunderstood GRIP
 		return vector$unitize(sphere$vectorize(prop.head));
 	}
@@ -1945,7 +1807,6 @@ function Player(renderer) {
 	VS3D.zeroish = zeroish;
 	VS3D.nearly = nearly;
 	VS3D.angle = angle;
-	VS3D.bearing = bearing;
 	VS3D.angle$nearly = angle$nearly;
 	VS3D.vector = vector;
 	VS3D.vector$nearly = vector$nearly;

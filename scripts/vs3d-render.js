@@ -97,7 +97,7 @@ VS3D = (function(VS3D) {
 
 	
 
-	ThreeRenderer.prototype.update_old = function(shapes, prop, nudge) {
+	ThreeRenderer.prototype.update = function(shapes, prop, nudge) {
 		nudge = nudge || 0;
 		shapes.position.x = Math.sign(this.camera.position.x)*nudge;
 		shapes.position.y = Math.sign(this.camera.position.y)*nudge;
@@ -116,7 +116,6 @@ VS3D = (function(VS3D) {
 				shape.position.y = prop.head.r;
 			}
 		}
-		let axis = VS3D.axis(prop);
 		for (let i=VS3D.BODY; i<VS3D.HEAD; i++) {
 			let node = VS3D.NODES[i];
 			shapes.rotateY(-prop[node].b*VS3D.UNIT);
@@ -125,13 +124,9 @@ VS3D = (function(VS3D) {
 			shapes.rotateZ(+prop[node].a*VS3D.UNIT);
 			shapes.rotateY(+prop[node].b*VS3D.UNIT);
 		}
-		// BEND should be handled elsewhere
-		let twist = prop.twist;
-		shapes.rotateOnAxis(axis, twist*VS3D.UNIT);
 		shapes.rotateY(-prop.head.b*VS3D.UNIT);
 		shapes.rotateZ(-prop.head.a*VS3D.UNIT);
-		// shapes.rotateY(-(prop.head.b+prop.grip.b)*VS3D.UNIT);
-		// shapes.rotateZ(-(prop.head.a+prop.grip.a)*VS3D.UNIT);
+		shapes.rotateY(-prop.twist*VS3D.UNIT);
 	}
 	
 
@@ -484,71 +479,6 @@ VS3D = (function(VS3D) {
 	}
 
 	VS3D.Colors = Colors;
-
-
-
-
-	ThreeRenderer.prototype.update = function(shapes, prop, nudge) {
-		nudge = nudge || 0;
-		shapes.position.x = Math.sign(this.camera.position.x)*nudge;
-		shapes.position.y = Math.sign(this.camera.position.y)*nudge;
-		shapes.position.z = Math.sign(this.camera.position.z)*nudge;
-		shapes.rotation.x = 0;
-		shapes.rotation.y = 0;
-		shapes.rotation.z = 0;
-		for (let shape of shapes.children) {
-			if (shape.userData.stretchy) {
-				shape.scale.set(1,prop.head.r,1);
-			}
-			if (shape.userData.slideish) {
-				shape.position.y = prop.head.r/2;
-			}
-			if (shape.userData.slidey) {
-				shape.position.y = prop.head.r;
-			}
-		}
-		// shapes.rotateZ(-prop.twist);
-		let axis = VS3D.axis(prop);
-		for (let i=VS3D.BODY; i<VS3D.HEAD; i++) {
-			let node = VS3D.NODES[i];
-			shapes.rotateY(-prop[node].b*VS3D.UNIT);
-			shapes.rotateZ(-prop[node].a*VS3D.UNIT);
-			shapes.translateOnAxis(THREEY,+prop[node].r);
-			shapes.rotateZ(+prop[node].a*VS3D.UNIT);
-			shapes.rotateY(+prop[node].b*VS3D.UNIT);
-		}
-		// BEND should be handled elsewhere
-		let twist = prop.twist*VS3D.UNIT;
-		// console.log("axis");
-		// console.log(axis.x.toFixed(3));
-		// console.log(axis.y.toFixed(3));
-		// console.log(axis.z.toFixed(3));
-		// console.log("axis of rotation");
-		// console.log(axis);
-		// I'm not sure this is correct...
-		// shapes.rotateOnAxis(axis, -twist*VS3D.UNIT);
-		
-		// shapes.rotateY(-twist);
-		let b = prop.head.b*VS3D.UNIT;
-		let a = prop.head.a*VS3D.UNIT;
-		// these guys can fix the backwardness issue, but not the other issues.
-		// a-=Math.PI;
-		// b-=Math.PI;
-
-
-		// 	a = VS3D.angle(180-prop.head.a)*VS3DUNIT;
-		// }
-		shapes.rotateY(-b);
-		// shapes.rotateY(VS3D.bearing(-prop.head.b)*VS3D.UNIT);
-		
-		shapes.rotateZ(-a);
-		shapes.rotateY(-twist);
-		
-
-		// shapes.rotateY(-(prop.head.b+prop.grip.b)*VS3D.UNIT);
-		// shapes.rotateZ(-(prop.head.a+prop.grip.a)*VS3D.UNIT);
-	}
-
 
 	return VS3D;
 })(VS3D);
