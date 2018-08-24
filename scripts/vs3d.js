@@ -561,17 +561,34 @@ let VS3D = {}; //
 			bearing = tiny.b;
 			head.b = tiny.b;
 		}
+		let twangle = angle$longitude(bearing,p);
 		// cusps probably still exist for toroids
 		if (bent || move.vb) {
 			let axis = vector$unitize(sphere$vectorize(head));
 			let tangent = vector$cross(axis,p);
 			headv = sphere$vectorize(head); 
 			head = vector$spherify(vector$rotate(headv,bent,tangent));
-			let rotate = t*move.vb/2 || SMALL;
-			let bentp = vector$rotate(p,rotate,tangent);
+			bearing = head.b;
+			// let rotate = t*move.vb/2 || SMALL;
+			// let bentp = vector$rotate(p,rotate,tangent);
+			// if (angle$nearly(head.a, 0) || angle$nearly(head.a, 180)) {
+			// 	console.log("dealing with a thing...");
+			// 	let tiny = angle$spherify(head.a+1, bentp);
+			// 	bearing = tiny.b;
+			// 	head.b = tiny.b;
+			// 	bearing = angle(bearing+180);
+			// }
+			twangle = angle$longitude(bearing, p);
 			// bearing = angle$spherify(sphere$planify(head,bentp),bentp).b;
 		}
-		let twangle = angle$longitude(bearing,p);
+		// let twangle = angle$longitude(bearing,p);
+		// if (!dummy) {
+		// 	console.log("**********************************");
+		// 	console.log("planar angle is "+(mhand.a+mhand.va*t));
+		// 	console.log("absolute angle is "+head.a);
+		// 	console.log("bearing is "+bearing);
+		// 	console.log("twist is "+twangle);
+		// }
 		twist+=twangle;
 		return {
 			body: body,

@@ -8,17 +8,14 @@ Engine:
 - Might want to actually make PIVOT named SHOULDER and so on.
 - Does resolve() keep spin?
 - Maybe linear acceleration works now?
+- Twist with plane bends is a bit fishy.  Technically speaking, it's backwards about half the time.  Which is fine for all current props, but it would mess up things like buugengs.
 
 Apps:
-- Add the exhibit in once I first need it.
+- Add video to the exhibit.
 - Would be nice if we could export this stuff in a way that's actually kind of readable.
 
 Bugs:
-- TWIST still looks wrong in parts of WHXFL plane.
-- Fan-based toroids flicker in certain spots, which may be related to the above.
-- All breaks in angle$spherify are gone, but are there maybe still cusps?
 - The refitting approach I used to save the comborific.json got a few things wrong, including twist and a handful of positions.  This may not still be the case, though.
-- SVG and WebGL occasionally get out of sync.
 
 	Nice:
 	- Might want to remove default properties when exporting.
@@ -29,90 +26,10 @@ Bugs:
 
 
 - Maybe let locking a node zeroify it?
-- Make it possible to add more props, or delete them.
 
-- Other planes are mostly untested.
-
-Planes:
-	- extending moves doesn't extend the plane.
-	- Seems to snap back.
-	- Seems dangerously breakable to show moves in the wrong plane.
-	- Probably need some kind of alert that like "hey, this ending is not compatible at all with the prior plane"
-	- Idea: special iconography for plane break?
-
-
-addMovesToEnd:
-	- Do you add based on the selected plane or the last plane?
-	- What if things are incompatible?
-
-modifyMoveUsingNode:
-	- What do you do when the plane differs from the existing one?
-		- Redo every single node?
-	- What if things are incompatible?
-
-setDuration:
-	- Just need to propagate it.
-
-modifySpins, modifyAcceleration:
-	- Just need to propagate it.
-
-validateTransition and deleteTransition might get crazy.
-
-deleteMove could create inconsistencies.
-
-insertMove could create inconsistencies.
-
-copyDraggedMove could create inconsistencies.
-
-setPropNodesByTick probably needs to account for plane
 
 
 - Maybe should drag using tethers, in case something gets pulled off screen?.
 
-Do we want to tackle the planes issue?  Gotta some time.  What are some of the issues?
-- It's visually difficult to parse.  So any time we look at a node that's "out-of-plane", we probably wanna show that "foldy" thing.
-- There's a bunch of code to update even assuming no complications.
-- Is there always the possibility of bending to get to the right node?  Ugh...that makes me cringe.
-	- No, but there's always the possibility of doing some weird-ass plane to get there, right?
-	- But not necessarily for the planes to be the same for all nodes, I think.  Basically, it gets really crazy.
-	- Do we wanna say that plane breaks and plane bends *require* custom transition points?  Do we just allow "broken" moves?
-	- I guess there's just this fundamental assumption thus far, that the engine can solve anything.  But it can't solve 3D moves, like *at all* at this point.
-	- The one saving grace is that if you've set it up correctly, it *will* work.
-	- So...maybe in this case, we show a big colored X at the transition point?  which shows that its' broken.
-	- We'll want to store a "plane breaks" data structure.
-	- The two props can be in different planes, so selecting an out-of-plane prop should automatically shift planes.
-	- So...I'm pretty sure you *do* have to custom-define the transitions.  There's no way it can figure out where to start on its own, right?  Or rather...well...okay yes it can, *if* you've set things up correctly.  It can spin through the plane looking for a match.  But that's like, really inconvenient.
-
-	Are there other approachs:
-	1) Try to force it to solve no matter what.
-		A) Using bends.
-
-	2) Freak out while you're in an inconsistent state.
-	3) Not allow plane breaks.
-
 
 - Sure would be nice to remove zero nodes from the saved files.
-
-
-
-Next steps:
-	- Add multi-plane support to React.
-	- Clean up cross-browser compatibility.
-	- Deal with TWIST in the engine.
-		- How do we even deal with this?  So...we have a formula that works in many planes.
-	- The timecoder stuff isn't all that well-suited to what I actually want.
-		- If I refactor it, I would probably fully integrate it into React/Redux.
-		- In addition to that...you'd want the following functionality:
-			1) Add a timecode right here, corresponding to the current tick2.
-				1a) That raises the possibility of inconsistencies...which we should maybe just ignore for now.
-			2) Delete the current timecode.
-			3) Skip to the timecode for the current tick2.
-				3a) Could interpolate a guess if necessary.
-			4) Skip to the tick2 for the current timecode.
-			5) In that case, you don't want a drop-down menu, really.  You want a skip ahead/back button.
-
-
-
-
-
-Alright, things are a lot closer now, but things are still murky in some diagonal planes.  I'm not sure to what extent it's an issue with rendering and to what extent it's an issue with twist.
