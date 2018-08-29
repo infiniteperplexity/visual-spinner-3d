@@ -1041,6 +1041,7 @@ let VS3D = {}; //
 
 
 	function combinate(move1, move2) {
+		console.log("I'm not so sure combinating was ever a good idea...");
 		if (arguments[2]) {
 			console.log("flag 1");
 		}
@@ -1348,16 +1349,23 @@ let VS3D = {}; //
 			let args = arr[i];
 			let fitted = merge(extend(prev), args);
 			let bent = 0;
+			let twist = 0;
 			if (prev.bent || prev.vb) {
 				bent = bent + (prev.bent || 0) + (prev.vb*beats(prev)*BEAT || 0);
 				// this took a lonnng time to figure out
 				fitted.head.a = moments_angular({...prev.head, beats: beats(prev)}).a1;
 			}
+			if (prev.twist || prev.vt) {
+				twist = (prev.twist || 0) + (prev.vt*beats(prev)*BEAT || 0);
+			}
 			bent = angle(bent);
+			twist = angle(twist);
 			let extended = {
 				...fitted,
 				vb: (args.vb!==undefined) ? args.vb : prev.vb,
 				bent: (args.bent!==undefined) ? args.bent : bent,
+				vt: (args.vt!==undefined) ? args.vt : prev.vt,
+				twist: (args.twist!==undefined) ? args.twist : twist
 			};
 			arr[i] = extended;
 		}

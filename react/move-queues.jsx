@@ -181,9 +181,6 @@ class MoveItem extends React.PureComponent {
     this.renderContext();
   }
   renderContext = (bg)=>{
-    if (this.props.move.twist) {
-      console.log(this.props.propid, this.props.n, this.props.move.twist);
-    }
     bg = bg || "white";
     let width = this.canvas.width;
     let height = this.canvas.height;
@@ -476,6 +473,7 @@ class ModelPicker extends React.PureComponent {
         <option value="poi">Poi</option>
         <option value="staff">Staff</option>
         <option value="hoop">Hoop</option>
+        <option value="minihoop">Mini Hoop</option>
         <option value="fan">Fan</option>
       </select>
     );

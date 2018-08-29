@@ -15,7 +15,8 @@ function addMovesToEnd(propid) {
       moves[i] = [merge(starters[i], {beats: 1})];
     } else if (beats(moves[i])*BEAT<=ticks) {
       let previous = moves[i][moves[i].length-1];
-      let move = {beats: 1, plane: previous.plane || VS3D.WALL, vb: previous.vb};
+      let twist = angle(BEAT*beats(previous)*previous.vt+previous.twist);
+      let move = {beats: 1, plane: previous.plane || VS3D.WALL, vb: previous.vb, twist: twist, vt: previous.vt};
       NODES.map(node=> {
         move[node] = {};
         move[node].r = previous[node].r1;
@@ -937,9 +938,7 @@ function deleteProp(propid) {
 }
 
 
-function modifyTwist({propid, n}) {
-  // fill in later
-}
+
 
 function modifyBend({propid, bend, pitch}) {
   player.stop();
@@ -1074,3 +1073,49 @@ function modifyBend({propid, bend, pitch}) {
 }
 
     
+function modifyTwist({propid, twist, vt}) {
+  player.stop();
+  const BOUNDS = 4;
+  let {tick, tick2, moves, starters, props} = store.getState();
+  let move, index;
+  if (tick===-1) {
+    move = clone(starters[propid]);
+  } else {
+    let sub = submove(moves[propid], tick);
+    move = sub.move;
+    index = sub.index;
+    // make sure we align to the beginning of the move
+    let past = 0;
+    let i = 0;
+    while (past<tick) {
+      let ticks = beats(moves[propid][i])*BEAT;
+      if (past+ticks>tick) {
+        gotoTick(past);
+        tick = past;
+      }
+      past+=ticks;
+      i+=1;
+    }
+  }
+  move = clone(move);
+  move.twist = angle(move.twist+45*twist);
+  move.vt+=(vt/2);
+  move.vt = Math.min(Math.max(move.vt, -BOUNDS), BOUNDS);
+  let prop = props[propid];
+  prop = clone(prop);
+  if (tick===-1) {
+    prop.twist = move.twist;
+    starters = clone(starters);
+    starters[propid] = move;
+    store.dispatch({type: "SET_STARTERS", starters: starters});
+  } else {
+    prop.twist = move.twist+beats(move)*90*move.vt;
+    moves = clone(moves);
+    moves[propid][index] = move;
+    store.dispatch({type: "SET_MOVES", moves: moves});
+  }
+  props = clone(props);
+  props[propid] = prop;
+  store.dispatch({type: "SET_PROPS", props: props});
+  updateEngine();
+}

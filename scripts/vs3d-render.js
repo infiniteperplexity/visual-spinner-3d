@@ -203,18 +203,42 @@ VS3D = (function(VS3D) {
 		return group;
 	}
 
-	ThreeRenderer.prototype.builder.hoop = function(prop) {
+	ThreeRenderer.prototype.builder.minihoop = function(prop) {
 		let {color, alpha} = prop;
 		let ring = new THREE.Mesh(
-			new THREE.TorusGeometry(0.8,0.05,8,32),
+			new THREE.TorusGeometry(0.5,0.05,8,32),
 			new THREE.MeshLambertMaterial({color: color})
 		);
 		let handle = new THREE.Mesh(
-			new THREE.CylinderGeometry(0.075,0.075,0.15,8),
+			new THREE.CylinderGeometry(0.075,0.075,0.1,8),
 			new THREE.MeshLambertMaterial({color: "gray"})
 		);
 		//rotateX?
-		handle.translateOnAxis(THREEY,-0.8);
+		handle.translateOnAxis(THREEY,-0.45);
+		let group = new THREE.Group();
+		if (alpha<1) {
+			ring.material.transparent = true;
+			ring.material.opacity = alpha;
+			handle.material.transparent = true;
+			handle.material.opacity = alpha;
+		}
+		group.add(ring);
+		group.add(handle);
+		return group;
+	}
+
+	ThreeRenderer.prototype.builder.hoop = function(prop) {
+		let {color, alpha} = prop;
+		let ring = new THREE.Mesh(
+			new THREE.TorusGeometry(1,0.05,8,32),
+			new THREE.MeshLambertMaterial({color: color})
+		);
+		let handle = new THREE.Mesh(
+			new THREE.CylinderGeometry(0.075,0.075,0.1,8),
+			new THREE.MeshLambertMaterial({color: "gray"})
+		);
+		//rotateX?
+		handle.translateOnAxis(THREEY,-1);
 		let group = new THREE.Group();
 		if (alpha<1) {
 			ring.material.transparent = true;
@@ -238,9 +262,8 @@ VS3D = (function(VS3D) {
 		let angle = Math.PI/4;
 		let group = new THREE.Group();
 		group.add(ring);
-		for (var i=0; i<tines; i++) {
+		for (let i=0; i<tines; i++) {
 			let c = color;
-				// let c = (i===0) ? "gray" : color;
 			tine = new THREE.Mesh(
 				new THREE.CylinderGeometry(0.05,0.05,0.8,8),
 				new THREE.MeshLambertMaterial({color: c})
@@ -248,18 +271,16 @@ VS3D = (function(VS3D) {
 			tine.rotateZ(-angle+i*angle);
 			tine.translateOnAxis(THREEY,0.6);
 		 	group.add(tine);
-		 	if (i===0) {
-		 		let cap = new THREE.Mesh(
-					new THREE.SphereGeometry(0.06,8,8),
-					new THREE.MeshLambertMaterial({color: "gray"})
-				);
-		 		cap.rotateZ(-angle+i*angle);
-				cap.translateOnAxis(THREEY,1);
-				group.add(cap);
-		 	}
+	 		let cap = new THREE.Mesh(
+				new THREE.SphereGeometry(0.07,8,8),
+				new THREE.MeshLambertMaterial({color: (i===0) ? "gray" : color})
+			);
+	 		cap.rotateZ(-angle+i*angle);
+			cap.translateOnAxis(THREEY,1);
+			group.add(cap);
 		}
 		if (alpha<1) {
-			for (let child in group.children) {
+			for (let child of group.children) {
 				child.material.transparent = true;
 				child.material.opacity = alpha;
 			}
@@ -300,7 +321,7 @@ VS3D = (function(VS3D) {
 		let group = new THREE.Group();
 		group.add(blade);
 		if (alpha<1) {
-			for (let child in group.children) {
+			for (let child of group.children) {
 				material.transparent = true;
 				material.opacity = alpha;
 			}

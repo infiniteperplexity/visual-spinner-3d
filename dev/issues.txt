@@ -7,8 +7,6 @@ Engine:
 - Over and under-solving are causing recurring problems.
 - Might want to actually make PIVOT named SHOULDER and so on.
 - Does resolve() keep spin?
-- Maybe linear acceleration works now?
-- Twist with plane bends is a bit fishy.  Technically speaking, it's backwards about half the time.  Which is fine for all current props, but it would mess up things like buugengs.
 
 Apps:
 - Add video to the exhibit.
@@ -33,3 +31,14 @@ Bugs:
 
 
 - Sure would be nice to remove zero nodes from the saved files.
+
+
+*****TWIST & VT******
+
+- Maybe we should fit twist whenever the plane doesn't change?
+
+- Oh...we can't actually re-angle a zero hand node in a transition.
+
+- Is combinating still a thing?
+
+- How does twist translate to a prop?  Like, when you twist in wall plane, how do things end in wheel or whatever?
