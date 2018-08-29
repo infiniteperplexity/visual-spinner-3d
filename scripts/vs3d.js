@@ -566,25 +566,12 @@ let VS3D = {}; //
 			// this part is correct; bend displays correctly
 			let headv = sphere$vectorize(head);
 			let axis = vector$unitize(headv);
-			// I think I had the cross product backwards
-			// let tangent = vector$cross(axis,p);
+			// does this meaning my cross product formula is backwards, or my brain is backwards?
 			let tangent = vector$cross(p, axis);
 			let ang = head.a;
 			head = vector$spherify(vector$rotate(headv,bent,tangent));
 			bearing = head.b;
-			if (ang>22.5 && ang<67.5) {
-				head.a = angle(-head.a);
-				head.b = angle(head.b-180);
-				bearing = head.b;
-			} else if (ang>112.5 && ang<157.5) {
-				head.a = angle(-head.a);
-				head.b = angle(head.b-180);
-				bearing = head.b;
-			} else if (ang>202.5 && ang<247.5) {
-				head.a = angle(-head.a);
-				head.b = angle(head.b-180);
-				bearing = head.b;
-			} else if (ang>292.5 && ang<337.5) {
+			if (bent>90 && bent<=270) {
 				head.a = angle(-head.a);
 				head.b = angle(head.b-180);
 				bearing = head.b;
