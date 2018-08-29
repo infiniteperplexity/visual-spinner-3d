@@ -60,7 +60,7 @@ function setup() {
 		controls.update(this.tick);
 	}
 	red = player.addProp(new VS3D.Prop(), {model: "fan", color: "red", nudge: 0.1});
-	red.moves.push({recipe: "toroid", harmonics: 1, bend: 1});
+	red.moves.push({recipe: "toroid", pitch: -1});
 	// red.moves.push({recipe: "toroid", harmonics: 1});
 	setPlane(WALL);
 	player.refresh();
@@ -82,7 +82,7 @@ function setPlane(x,y,z) {
 	red.setHandAngle(0, plane);
 	red.setHeadAngle(0, plane);
 	// red.moves[0] = {recipe: "flower", petals: 0, plane: plane, nofit: true};
-	red.moves[0] = {recipe: "toroid", harmonics: 1, bend: 1, plane: plane};
+	red.moves[0] = {recipe: "toroid", pitch: -1, plane: plane};
 	red.refit();
 	player.refresh();
 }

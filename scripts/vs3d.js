@@ -571,12 +571,15 @@ let VS3D = {}; //
 			let ang = head.a;
 			head = vector$spherify(vector$rotate(headv,bent,tangent));
 			bearing = head.b;
-			if (bent>90 && bent<=270) {
+			if (angle(bent)>90 && angle(bent)<=270) {
 				head.a = angle(-head.a);
 				head.b = angle(head.b-180);
 				bearing = head.b;
 			}
 			twangle = angle$longitude(bearing, tangent);
+			if (move.vb<0) {
+				twangle = angle(twangle-180);
+			}
 		}
 		twist+=twangle;
 		return {
