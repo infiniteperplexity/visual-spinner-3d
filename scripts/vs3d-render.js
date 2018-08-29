@@ -239,15 +239,24 @@ VS3D = (function(VS3D) {
 		let group = new THREE.Group();
 		group.add(ring);
 		for (var i=0; i<tines; i++) {
-				//let c = color;
-				let c = (i===0) ? "gray" : color;
-				tine = new THREE.Mesh(
+			let c = color;
+				// let c = (i===0) ? "gray" : color;
+			tine = new THREE.Mesh(
 				new THREE.CylinderGeometry(0.05,0.05,0.8,8),
 				new THREE.MeshLambertMaterial({color: c})
 			);
 			tine.rotateZ(-angle+i*angle);
 			tine.translateOnAxis(THREEY,0.6);
 		 	group.add(tine);
+		 	if (i===0) {
+		 		let cap = new THREE.Mesh(
+					new THREE.SphereGeometry(0.06,8,8),
+					new THREE.MeshLambertMaterial({color: "gray"})
+				);
+		 		cap.rotateZ(-angle+i*angle);
+				cap.translateOnAxis(THREEY,1);
+				group.add(cap);
+		 	}
 		}
 		if (alpha<1) {
 			for (let child in group.children) {
