@@ -202,7 +202,7 @@ VS3D = (function(VS3D) {
 			let hangle = (mode!==undefined) ? orient+mode : orient+head.a-hand.a;
 			let segment = Move(merge(options,{
 				beats: 1,
-				vb: -pitch*harmonics,
+				vb: pitch*harmonics,
 				hand: {a: orient, va: direction},
 				head: {a: hangle, va: bend*direction}
 			}));

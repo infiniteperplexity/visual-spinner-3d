@@ -562,33 +562,35 @@ let VS3D = {}; //
 			head.b = tiny.b;
 		}
 		let twangle = angle$longitude(bearing,p);
-		// cusps probably still exist for toroids
 		if (bent || move.vb) {
-			let axis = vector$unitize(sphere$vectorize(head));
-			let tangent = vector$cross(axis,p);
-			headv = sphere$vectorize(head); 
+			// this part is correct; bend displays correctly
+			let headv = sphere$vectorize(head);
+			let axis = vector$unitize(headv);
+			// I think I had the cross product backwards
+			// let tangent = vector$cross(axis,p);
+			let tangent = vector$cross(p, axis);
+			let ang = head.a;
 			head = vector$spherify(vector$rotate(headv,bent,tangent));
 			bearing = head.b;
-			// let rotate = t*move.vb/2 || SMALL;
-			// let bentp = vector$rotate(p,rotate,tangent);
-			// if (angle$nearly(head.a, 0) || angle$nearly(head.a, 180)) {
-			// 	console.log("dealing with a thing...");
-			// 	let tiny = angle$spherify(head.a+1, bentp);
-			// 	bearing = tiny.b;
-			// 	head.b = tiny.b;
-			// 	bearing = angle(bearing+180);
-			// }
-			twangle = angle$longitude(bearing, p);
-			// bearing = angle$spherify(sphere$planify(head,bentp),bentp).b;
+			if (ang>22.5 && ang<67.5) {
+				head.a = angle(-head.a);
+				head.b = angle(head.b-180);
+				bearing = head.b;
+			} else if (ang>112.5 && ang<157.5) {
+				head.a = angle(-head.a);
+				head.b = angle(head.b-180);
+				bearing = head.b;
+			} else if (ang>202.5 && ang<247.5) {
+				head.a = angle(-head.a);
+				head.b = angle(head.b-180);
+				bearing = head.b;
+			} else if (ang>292.5 && ang<337.5) {
+				head.a = angle(-head.a);
+				head.b = angle(head.b-180);
+				bearing = head.b;
+			}
+			twangle = angle$longitude(bearing, tangent);
 		}
-		// let twangle = angle$longitude(bearing,p);
-		// if (!dummy) {
-		// 	console.log("**********************************");
-		// 	console.log("planar angle is "+(mhand.a+mhand.va*t));
-		// 	console.log("absolute angle is "+head.a);
-		// 	console.log("bearing is "+bearing);
-		// 	console.log("twist is "+twangle);
-		// }
 		twist+=twangle;
 		return {
 			body: body,

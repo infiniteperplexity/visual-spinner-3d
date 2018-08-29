@@ -239,8 +239,8 @@ VS3D = (function(VS3D) {
 		let group = new THREE.Group();
 		group.add(ring);
 		for (var i=0; i<tines; i++) {
-				let c = color;
-			// let c = (i===0) ? "gray" : color;
+				//let c = color;
+				let c = (i===0) ? "gray" : color;
 				tine = new THREE.Mesh(
 				new THREE.CylinderGeometry(0.05,0.05,0.8,8),
 				new THREE.MeshLambertMaterial({color: c})
