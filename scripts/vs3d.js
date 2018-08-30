@@ -581,6 +581,7 @@ let VS3D = {}; //
 				twangle = angle(twangle-180);
 			}
 		}
+		
 		twist+=twangle;
 		return {
 			body: body,

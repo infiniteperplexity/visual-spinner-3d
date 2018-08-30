@@ -42,3 +42,20 @@ Bugs:
 - Is combinating still a thing?
 
 - How does twist translate to a prop?  Like, when you twist in wall plane, how do things end in wheel or whatever?
+
+****for the "direct edit" mode****
+
+(node) 	
+(linear / rotational)	
+starting / ending untwisted angle.
+starting ending radius.
+starting / ending speed.\ -> linear stuff
+starting / ending rspeed. /
+acc.
+racc.
+starting twist:
+twist speed: 
+starting bend:
+bend speed:
+duration
+plane x, y, z 		(direct edit)
