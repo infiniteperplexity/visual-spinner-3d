@@ -248,14 +248,15 @@ function modifyMoveUsingNode({node, propid}) {
 
 function setDuration({propid, ticks}) {
   player.stop();
+  store.dispatch({type: "SET_RAW", raw: null});
   let {moves, tick} = store.getState();
   let {move, index} = getMovesAtTick(tick)[propid];
   if (beats(move)*BEAT===ticks) {
     return;
   } else {
-    let beats = ticks / BEAT;
+    let bts = ticks / BEAT;
     let plane = move.plane || VS3D.WALL;
-    let updated = {beats: beats, plane: plane};
+    let updated = {beats: bts, plane: plane};
 
     for (let node of NODES) {
       updated[node] = {
@@ -271,6 +272,7 @@ function setDuration({propid, ticks}) {
     moves = clone(moves);
     moves[propid][index] = updated;
     store.dispatch({type: "SET_MOVES", moves: moves});
+    gotoTick(getActiveMove().tick);
   }
 }
 /***************************************************************************************/
@@ -1118,4 +1120,35 @@ function modifyTwist({propid, twist, vt}) {
   props[propid] = prop;
   store.dispatch({type: "SET_PROPS", props: props});
   updateEngine();
+}
+
+
+
+// hold on...the starting position for the move still exists, right?  we don't want to spoil that...I don't think.
+// so what we should actually do is...ugh, this is almost kinda hopeless.  So...let's still let it calculate speeds..
+// ...but have it set angles.
+function modifyUsingRawMove() {
+  let {raw, moves, starters} = store.getState();
+  let {index, tick} = getActiveMove();
+  raw = clone(raw);
+  raw.plane = VS3D.vector$unitize(raw.plane);
+  if (tick===-1) {
+    NODES.map(node=>{
+      raw[node].a = raw[node].a1;
+      raw[node].r = raw[node].r1;
+    });
+  } else {
+    raw = resolve(raw);
+  }
+  let propid = getActivePropId();
+  if (tick===-1) {
+    starters = clone(starters);
+    starters[propid] = raw;
+    store.dispatch({type: "SET_STARTERS", starters: starters});
+  } else {
+    moves = clone(moves);
+    moves[propid][index] = raw;
+    store.dispatch({type: "SET_MOVES", moves: moves});
+  }
+  gotoTick(tick);
 }

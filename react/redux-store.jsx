@@ -79,6 +79,10 @@ let AppComponent = ReactRedux.connect(
       addTimeCode: addTimeCode,
       removeTimeCode: removeTimeCode,
 
+      toggleRawEdit: toggleRawEdit,
+      setRawMove: setRawMove,
+      modifyUsingRawMove: modifyUsingRawMove,
+
       addProp: addProp,
       deleteProp: deleteProp
   })
@@ -97,6 +101,7 @@ function reducer(state, action) {
       modifier: false,
       multiselect: null,
       video: 0,
+      raw: null,
       // youtube: "bHQqvYy5KYo",
       youtube: null,
       // mp4: null,
@@ -194,6 +199,9 @@ function reducer(state, action) {
       return {...state, seconds: action.seconds};
     case "SET_TIMECODES":
       return {...state, timecodes: action.timecodes};
+    case "SET_RAW":
+    console.log(action.raw);
+      return {...state, raw: action.raw};
     default:
       throw new Error("wrong type of store action: "+action.type);
       return state;

@@ -3,7 +3,7 @@ function getActiveMove() {
   let propid = getActivePropId();
   let {moves, tick, starters} = store.getState();
   if (tick===-1) {
-    return starters[propid];
+    return {move: starters[propid], tick: -1, index: -1};
   }
   return submove(moves[propid], tick);
 }
@@ -11,6 +11,7 @@ function getActiveMove() {
 const SCROLL = 810;
 // might rename to just apply to the UI
 function gotoTick(tick) {
+  store.dispatch({type: "SET_RAW", raw: null});
   let {scrolled, timecodes, starters, moves} = store.getState();
   let tick0 = store.getState().tick2;
   validateTransition();
@@ -590,4 +591,17 @@ function getMultiSelected() {
     from: indexes[0],
     to: indexes[indexes.length-1]
   };
+}
+
+function toggleRawEdit() {
+  let {raw} = store.getState();
+  if (!raw) {
+    store.dispatch({type: "SET_RAW", raw: getActiveMove().move});
+  } else {
+    store.dispatch({type: "SET_RAW", raw: null});
+  }
+}
+
+function setRawMove(raw) {
+  store.dispatch({type: "SET_RAW", raw: raw});
 }

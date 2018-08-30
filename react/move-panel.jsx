@@ -141,8 +141,10 @@ class MovePanel extends React.PureComponent {
     </div>;
     let twist = <TwistControl move={move} color={color} {...this.props}/>;
     let planes = <PlaneControl color={color} {...this.props}/>;
+    let toggle = <div><button onClick={this.props.toggleRawEdit}>Edit Raw Values</button></div>;
     if (this.props.transition) {
       planes = null;
+      toggle = null;
     }
     return (
       <div style={{
@@ -158,9 +160,9 @@ class MovePanel extends React.PureComponent {
         <MoveControl node="helper" move={move} propid={propid} {...this.props}/>
         <MoveControl node="pivot" move={move} propid={propid} {...this.props}/>
         <MoveControl node="body" move={move} propid={propid} {...this.props}/>
-        {null}
         {twist}
         {planes}
+        {toggle}
       </div>
     );
   }
@@ -457,28 +459,6 @@ class MoveControl extends React.PureComponent {
       buttons.push(<div key="5" />);
       buttons.push(<div key="6" />);
     }
-    // if (buttons && node==="head"/* && ["fan", "hoop", "minihoop"].includes(this.props.models[propid])*/) {
-    //   buttons.push(
-    //     <SpeedButton key="7" top="-12px" right="-290px" onClick={this.handleTwistBackward} title={"start twist backward"}>
-    //       <path d={ARROW} transform="scale(-1, 1) translate(-20, 5)" fill={color} stroke={stroke}/>
-    //     </SpeedButton>
-    //   );
-    //   buttons.push(
-    //     <SpeedButton key="8" top="-12px" right="-265px" onClick={this.handleTwistForward} title={"start twist forward"}>
-    //       <path d={ARROW} transform="translate(5, 5)" fill={color} stroke={stroke}/>
-    //     </SpeedButton>
-    //   );
-    //   buttons.push(
-    //     <SpeedButton key="9" top="13px" right="-170px" onClick={this.handleTwistMinus} title={"twist slower"}>
-    //       <path d={ARROW} transform="scale(-1, 1) translate(-20, 5)" fill={color} stroke={stroke}/>
-    //     </SpeedButton>
-    //   );
-    //   buttons.push(
-    //     <SpeedButton key="10" top="13px" right="-140px" onClick={this.handleTwistPlus} title={"twist faster"}>
-    //       <path d={ARROW} transform="translate(5, 5)" fill={color} stroke={stroke}/>
-    //     </SpeedButton>
-    //   );
-    // }
     let tether1 = {stroke: "gray"};
     let tether2 = {stroke: "gray"};
     if (node==="head") {
@@ -695,5 +675,97 @@ class SpeedButton extends React.PureComponent {
         {this.props.children}
       </svg>
     )
+  }
+}
+
+class RawInput extends React.PureComponent {
+  handleChange = (event)=>{
+    let {move, node, val} = this.props;
+    if (isNaN(parseFloat(event.target.value))) {
+      return;
+    }
+    let raw = clone(move);
+    if (node) {
+      raw[node][val] = parseFloat(event.target.value);
+    } else {
+      raw[val] = parseFloat(event.target.value);
+    }
+    this.props.setRawMove(raw);
+  }
+  render() {
+    let {move, node, val, text} = this.props;
+    let value;
+    if (node) {
+      value = move[node][val] || 0;
+    } else {
+      value = move[val] || 0;
+    }
+    return (
+      <div style={{position: "relative"}}>
+        {text}
+        <input  type="number"
+                size="15"
+                onChange={this.handleChange}
+                style={{position: "absolute", left: "150px"}}
+                value={value}/>
+      </div>
+    );
+  }
+}
+
+class RawPanel extends React.PureComponent {
+  constructor(props, context) {
+    super(props, context);
+    this.state = {
+      node: "head",
+      linear: false
+    };
+  }
+  handleSubmit = (event)=>{
+    this.props.modifyUsingRawMove();
+  }
+  render() {
+    let propid = this.props.getActivePropId();
+    let {raw, tick, colors} = this.props;
+    let {node, linear} = this.state;
+    let niceNames = {
+      body: "Body",
+      pivot: "Shoulder",
+      helper: "Elbow",
+      hand: "Hand",
+      grip: "Grip",
+      head: "Head"
+    };
+    let txt = (tick===-1) ? "starting" : "ending";
+    let duration = (tick===-1) ? null : <RawInput move={raw} node={null} val="beats" text={"duration"} {...this.props}/>;
+    return (
+      <div className="rawpanel">
+        <svg height="40" width="100">
+          <line x1={30} y1={30} x2={80} y2={30} style={{stroke: "gray", strokeWidth: 3}} />
+          <circle cx={30} cy={30} r={10} fill="red" stroke="gray"/>
+          <circle cx={80} cy={30} r={6} fill="red" stroke="gray"/>
+        </svg>
+        <RawInput move={raw} node="head" val="a1" text={"head " +txt + " angle"} {...this.props}/>
+        <RawInput move={raw} node="head" val="r1" text={"head " +txt+ " radius"} {...this.props}/>
+        <RawInput move={raw} node="grip" val="a1" text={"grip " +txt+ " angle"} {...this.props}/>
+        <RawInput move={raw} node="grip" val="r1" text={"grip " +txt+ " radius"} {...this.props}/>
+        <RawInput move={raw} node="hand" val="a1" text={"hand " +txt+ " angle"} {...this.props}/>
+        <RawInput move={raw} node="hand" val="r1" text={"hand " +txt+ " radius"} {...this.props}/>
+        <RawInput move={raw} node="helper" val="a1" text={"elbow " +txt+ " angle"} {...this.props}/>
+        <RawInput move={raw} node="helper" val="r1" text={"elbow " +txt+ " radius"} {...this.props}/>
+        <RawInput move={raw} node="pivot" val="a1" text={"shoulder " +txt+ " angle"} {...this.props}/>
+        <RawInput move={raw} node="pivot" val="r1" text={"shoulder " +txt+ " radius"} {...this.props}/>
+        <RawInput move={raw} node="body" val="a1" text={"body " +txt+ " angle"} {...this.props}/>
+        <RawInput move={raw} node="body" val="r1" text={"body " +txt+ " radius"} {...this.props}/>
+        <hr/>
+        <RawInput move={raw} node={"plane"} val="x" text={"plane x"}/>
+        <RawInput move={raw} node={"plane"} val="y" text={"plane y"}/>
+        <RawInput move={raw} node={"plane"} val="z" text={"plane z"}/>
+        {duration}
+        <hr/>
+        <button onClick={this.handleSubmit}>Accept</button>
+        <button onClick={this.props.toggleRawEdit}>Cancel</button>
+      </div>
+    );
   }
 }

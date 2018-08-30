@@ -21,6 +21,7 @@ class App extends React.PureComponent {
     if (props.video) {
       vstyle.backgroundColor = "cyan";
     }
+    let panel = (props.raw) ? <RawPanel {...noframe} /> : <MovePanel {...noframe} />;
     return (
       <div className="grid app" style={{height: "720px"}}>
         <div className="grid header">
@@ -42,7 +43,7 @@ class App extends React.PureComponent {
         </div>
         <div className="grid top">
           <Grid dragID="SVG" {...noframe} />
-          <MovePanel {...noframe} />
+          {panel}
           <div id="display"/>
           <DurationEditor {...noframe}/>
           <ControlPanel {...props} />
