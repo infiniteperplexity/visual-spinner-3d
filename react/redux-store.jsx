@@ -200,7 +200,6 @@ function reducer(state, action) {
     case "SET_TIMECODES":
       return {...state, timecodes: action.timecodes};
     case "SET_RAW":
-    console.log(action.raw);
       return {...state, raw: action.raw};
     default:
       throw new Error("wrong type of store action: "+action.type);

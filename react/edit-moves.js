@@ -1128,19 +1128,41 @@ function modifyTwist({propid, twist, vt}) {
 // so what we should actually do is...ugh, this is almost kinda hopeless.  So...let's still let it calculate speeds..
 // ...but have it set angles.
 function modifyUsingRawMove() {
-  let {raw, moves, starters} = store.getState();
+  let {raw, moves, starters, transitions} = store.getState();
   let {index, tick} = getActiveMove();
+  let propid = getActivePropId();
   raw = clone(raw);
   raw.plane = VS3D.vector$unitize(raw.plane);
+  let next;
+  if (tick===-1) {
+    if (moves[propid].length>0) {
+      next = clone(moves[propid][0]);
+    }
+  } else {
+    if (moves[propid].length>index+1) {
+      next = clone(moves[propid][index+1]);
+    }
+  }
   if (tick===-1) {
     NODES.map(node=>{
-      raw[node].a = raw[node].a1;
-      raw[node].r = raw[node].r1;
+      raw[node] = {
+        a: raw[node].a1,
+        a1: raw[node].a1,
+        r: raw[node].r1,
+        r1: raw[node].r1
+      };
     });
   } else {
-    raw = resolve(raw);
+    NODES.map(node=>{
+      raw[node] = {
+        a: raw[node].a,
+        a1: raw[node].a1,
+        r: raw[node].r,
+        r1: raw[node].r1
+      };
+    });
   }
-  let propid = getActivePropId();
+  raw = resolve(raw);
   if (tick===-1) {
     starters = clone(starters);
     starters[propid] = raw;
@@ -1148,6 +1170,25 @@ function modifyUsingRawMove() {
   } else {
     moves = clone(moves);
     moves[propid][index] = raw;
+    store.dispatch({type: "SET_MOVES", moves: moves});
+  }
+  if (transitions[propid][index+1]) {
+    transitions = clone(transitions);
+    transitions[propid][index+1] = null;
+    store.dispatch({type: "SET_TRANSITIONS", transitions: transitions});
+  }
+  if (next) {
+    moves = clone(moves);
+    NODES.map(node=>{
+      next[node] = {
+        a: handleBend(raw[node].a1, raw, node),
+        a1: next[node].a1,
+        r: raw[node].r1,
+        r1: next[node].r1
+      };
+    });
+    next = resolve(next);
+    moves[propid][index+1] = next;
     store.dispatch({type: "SET_MOVES", moves: moves});
   }
   gotoTick(tick);
