@@ -117,13 +117,15 @@ let VS3D = {}; //
 			return obj;
 		}
 		if (Array.isArray(obj)) {
-			nobj = [...obj];
+			//nobj = [...obj];
+			nobj = obj.slice(0);
 			for (let i=0; i<nobj.length; i++) {
 				nobj[i] = clone(nobj[i]);
 			}
 			return nobj;
 		}
-		nobj = {...obj};
+		//nobj = {...obj};
+		nobj = Object.assign({},obj);
 		for (let prop in nobj) {
 		    if (typeof(nobj[prop])==="object") {
 		      	nobj[prop] = clone(nobj[prop]);
@@ -414,7 +416,7 @@ let VS3D = {}; //
 		let projected = vector$project(sphere$vectorize(s),p);
 		let v = vector$unitize(vector$rotate(projected, ang, p));
 		s = vector$spherify(v);
-		return {r: r, ...s}
+		return {r: r, a: s.a, b: s.b};
 	}
 
 
@@ -545,13 +547,20 @@ let VS3D = {}; //
 		let mvt = move.vt || 0;
 		let mvb = move.vb || 0;
 		let mgrip = merge({r: 0, a: 0, notes: notes}, move.grip);
-		let mhead = merge({r: 1, a: 0, notes: notes}, move.head);	
-		let body = spin_node({beats: b, plane: p, ...mbody}, t);
-		let pivot = spin_node({beats: b, plane: p, ...mpivot}, t);
-		let helper = spin_node({beats: b, plane: p, ...mhelper}, t);
-		let hand = spin_node({beats: b, plane: p, ...mhand}, t);
-		let grip = spin_node({beats: b, plane: p, ...mgrip}, t);
-		let head = spin_node({beats: b, plane: p, ...mhead}, t);
+		let mhead = merge({r: 1, a: 0, notes: notes}, move.head);
+		// !!!! these don't work in Edge
+		let body = spin_node(merge({beats: b, plane: p}, mbody), t);
+		let pivot = spin_node(merge({beats: b, plane: p}, mpivot), t);
+		let helper = spin_node(merge({beats: b, plane: p}, mhelper), t);
+		let hand = spin_node(merge({beats: b, plane: p}, mhand), t);
+		let grip = spin_node(merge({beats: b, plane: p}, mgrip), t);
+		let head = spin_node(merge({beats: b, plane: p}, mhead), t);
+		// let body = spin_node({beats: b, plane: p, ...mbody}, t);
+		// let pivot = spin_node({beats: b, plane: p, ...mpivot}, t);
+		// let helper = spin_node({beats: b, plane: p, ...mhelper}, t);
+		// let hand = spin_node({beats: b, plane: p, ...mhand}, t);
+		// let grip = spin_node({beats: b, plane: p, ...mgrip}, t);
+		// let head = spin_node({beats: b, plane: p, ...mhead}, t);
 		let twist = mtwist + mvt*t*SPEED;
 		let bent = mbent + mvb*t*SPEED;
 		let bearing = head.b;
@@ -607,10 +616,12 @@ let VS3D = {}; //
 		// explicit spin of zero codes for linear movement
 		if (args.spin===0 || args.la!==undefined || args.vl!==undefined || args.vl1!==undefined || args.al!==undefined) {
 			let moments = moments_linear(args);
-			return spin_linear({...moments, plane: plane}, t);
+			//return spin_linear({...moments, plane: plane}, t);
+			return spin_linear(merge(moments, {plane: plane}),t);
 		}
 		let moments = moments_angular(args);
-		return spin_angular({...moments, plane: plane}, t);
+		//return spin_angular({...moments, plane: plane}, t);
+		return spin_angular(merge(moments, {plane: plane}),t);
 	}
 
 	function spin_angular(args, t) {
@@ -621,7 +632,9 @@ let VS3D = {}; //
 		let r = args.r + args.vr*t*SPEED/BEAT + args.ar*t*t*SPEED*SPEED/(2*BEAT);
 		let a = args.a + args.va*t*SPEED + args.aa*t*t*SPEED*SPEED/(2*BEAT);
 		let p = args.plane;
-		let s = {...angle$spherify(a, p), r: r};
+		let s = angle$spherify(a, p);
+		s.r = r;
+		// let s = {...angle$spherify(a, p), r: r};
 		return s;
 	}
 
@@ -636,7 +649,9 @@ let VS3D = {}; //
 		let y1 = y0 + args.vl*dy*t*SPEED/BEAT + args.al*dy*t*t*SPEED/(2*BEAT*BEAT);
 		let {r, a} = vector$spherify(vector(x1,y1,0));
 		let p = args.plane;
-		let s = {...angle$spherify(a, p), r: r};
+		// let s = {...angle$spherify(a, p), r: r};
+		let s = angle$spherify(a, p);
+		s.r = r;
 		return s;
 	}
 
@@ -970,10 +985,11 @@ let VS3D = {}; //
 			args = alias(args);
 			args.beats = nodes.beats;
 			if (args.spin===0 || args.la!==undefined || args.vl!==undefined || args.vl1!==undefined || args.al!==undefined) {
-				nodes[node] = {...moments_linear(args), plane: args.plane};
-
+				// nodes[node] = {...moments_linear(args), plane: args.plane};
+				nodes[node] = merge(moments_linear(args),{plane: args.plane});
 			} else {
-				nodes[node] = {...moments_angular(args), plane: args.plane};
+				// nodes[node] = {...moments_angular(args), plane: args.plane};
+				nodes[node] = merge(moments_angular(args),{plane: args.plane});
 			}
 			for (let prop in nodes[node]) {
 				if (zeroish(nodes[node][prop], SMALL)) {
@@ -1354,20 +1370,27 @@ let VS3D = {}; //
 			if (prev.bent || prev.vb) {
 				bent = bent + (prev.bent || 0) + (prev.vb*beats(prev)*BEAT || 0);
 				// this took a lonnng time to figure out
-				fitted.head.a = moments_angular({...prev.head, beats: beats(prev)}).a1;
+				// fitted.head.a = moments_angular({...prev.head, beats: beats(prev)}).a1;
+				fitted.head.a = moments_angular(merge(prev.head, {beats: beats(prev)})).a1;
 			}
 			if (prev.twist || prev.vt) {
 				twist = (prev.twist || 0) + (prev.vt*beats(prev)*BEAT || 0);
 			}
 			bent = angle(bent);
 			twist = angle(twist);
-			let extended = {
-				...fitted,
+			let extended = merge(fitted,{
 				vb: (args.vb!==undefined) ? args.vb : prev.vb,
 				bent: (args.bent!==undefined) ? args.bent : bent,
 				vt: (args.vt!==undefined) ? args.vt : prev.vt,
 				twist: (args.twist!==undefined) ? args.twist : twist
-			};
+			});
+			// let extended = {
+			// 	...fitted,
+			// 	vb: (args.vb!==undefined) ? args.vb : prev.vb,
+			// 	bent: (args.bent!==undefined) ? args.bent : bent,
+			// 	vt: (args.vt!==undefined) ? args.vt : prev.vt,
+			// 	twist: (args.twist!==undefined) ? args.twist : twist
+			// };
 			arr[i] = extended;
 		}
 		// should it wrap around to the beginning automatically?
@@ -1510,7 +1533,9 @@ function Player(renderer) {
 		let nname = node[0].toUpperCase()+node.slice(1);
 		PropWrapper.prototype["set"+nname+"Angle"] = function(a,p) {
 			p = p || WALL;
-			this.prop[node] = {...angle$spherify(a,p), r: this.prop[node].r};
+			let s = angle$spherify(a,p);
+			s.r = this.prop[node].r;
+			this.prop[node] = s;
 		}
 		PropWrapper.prototype["set"+nname+"Radius"] = function(r) {
 			this.prop[node].r = r;
