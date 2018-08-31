@@ -1129,7 +1129,7 @@ function modifyTwist({propid, twist, vt}) {
 // ...but have it set angles.
 function modifyUsingRawMove() {
   let {raw, moves, starters, transitions} = store.getState();
-  let {index, tick} = getActiveMove();
+  let {move, index, tick} = getActiveMove();
   let propid = getActivePropId();
   raw = clone(raw);
   raw.plane = VS3D.vector$unitize(raw.plane);
@@ -1154,12 +1154,14 @@ function modifyUsingRawMove() {
     });
   } else {
     NODES.map(node=>{
-      raw[node] = {
-        a: raw[node].a,
-        a1: raw[node].a1,
-        r: raw[node].r,
-        r1: raw[node].r1
-      };
+      if (!angle$nearly(handleBend(move[node].a1, move, node), handleBend(raw[node].a1, raw, node)) || !nearly(move[node].r1, raw[node].r1)) {
+        raw[node] = {
+          a: raw[node].a,
+          a1: handleBend(raw[node].a1, raw, node),
+          r: raw[node].r,
+          r1: raw[node].r1
+        };
+      }
     });
   }
   raw = resolve(raw);
@@ -1180,12 +1182,14 @@ function modifyUsingRawMove() {
   if (next) {
     moves = clone(moves);
     NODES.map(node=>{
-      next[node] = {
-        a: handleBend(raw[node].a1, raw, node),
-        a1: next[node].a1,
-        r: raw[node].r1,
-        r1: next[node].r1
-      };
+      if (!angle$nearly(next[node].a, handleBend(raw[node].a1, raw, node)) || !nearly(raw[node].r1, next[node].r)) {
+        next[node] = {
+          a: handleBend(raw[node].a1, raw, node),
+          a1: next[node].a1,
+          r: raw[node].r1,
+          r1: next[node].r1
+        };
+      }
     });
     next = resolve(next);
     moves[propid][index+1] = next;

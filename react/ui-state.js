@@ -596,7 +596,9 @@ function getMultiSelected() {
 function toggleRawEdit() {
   let {raw} = store.getState();
   if (!raw) {
-    store.dispatch({type: "SET_RAW", raw: getActiveMove().move});
+    raw = getActiveMove().move;
+    raw.head.a1 = handleBend(raw.head.a1, raw, "head");
+    store.dispatch({type: "SET_RAW", raw: raw});
   } else {
     store.dispatch({type: "SET_RAW", raw: null});
   }

@@ -481,7 +481,7 @@ class MoveControl extends React.PureComponent {
       tether2.strokeDasharray="5,5";
     }
     let title;
-    if (move && node==="head" && move.vb) {
+    if (move && node==="head" && move.vb && buttons) {
       buttons[3] = <div key="3" />;
       buttons[4] = <div key="4" />
     }
