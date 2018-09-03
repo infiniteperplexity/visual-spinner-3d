@@ -76,6 +76,7 @@ VS3D = (function(VS3D) {
 	let clone = VS3D.clone;
 	let realign = VS3D.realign;
 	let angle$nearly = VS3D.angle$nearly;
+	let {nearly, zeroish} = VS3D;
 
 	recipe(
 		"ccap",
@@ -223,6 +224,7 @@ VS3D = (function(VS3D) {
 		options => {
 			let {beats, mode, hand, head, harmonics, orient, direction, plane, entry, oval} = options;
 			// let's say there's no such thing as mode for now
+			// so this guy, we combined hand and helper, but we could have just used linear movements
 			let segment = Move(merge(options,{
 				beats: 1,
 				hand: {a: orient, r: hand.r, r1: 0, va: 0},
@@ -237,14 +239,20 @@ VS3D = (function(VS3D) {
 			]);
 			// alignment is pretty weird for this move that combines hand and helper
 			if (entry!==undefined) {
+				console.log("flag 1");
 				move = realign(move,(s)=>{
-					if (s.hand.r===hand.r && angle$nearly(s.hand.a, entry, SMALL)) {
+					console.log(entry);
+					console.log(s.hand);
+					console.log(s.helper);
+					console.log(hand);
+					if (nearly(s.hand.r, hand.r, 0.1) && angle$nearly(s.hand.a, entry, 1)) {
 						return true;
-					} else if (s.hand.r===0 && angle$nearly(s.helper.a ,entry, SMALL)) {
+					} else if (zeroish(s.hand.r, 0.1) && angle$nearly(s.helper.a, entry, 1)) {
 						return true;
 					}
 					return false;
 				});
+				console.log("flag 2");
 			}	
 			return move;
 		}

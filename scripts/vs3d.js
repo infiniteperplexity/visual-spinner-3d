@@ -1025,19 +1025,26 @@ let VS3D = {}; //
 		} else {
 			if (move2.recipe) {
 				let built = build(move2, move1);
+				console.log("building a move from a recipe");
 				return built;
 			}
 			if (move2.nofit) {
+				console.log("electing not to fit a move");
 				// !!!returning the move unmodified sometimes underspecifies things
 				return clone(move2);
 			} else {
 				let aligned = clone(move2);
 				let resolved = resolve(move1);
+				// !!!!won't work so well for plane breaks
+
+				// is there a way to make this work in case of plane breaks?
+				// yes...we need to check "inplane" for a and r, then use those instead of the unmodified ones	
+
 				for (let n of NODES) {
 					aligned[n] = merge({a: resolved[n].a1, r: resolved[n].r1}, aligned[n]);
 				};
 				if (fits(move1, aligned)) {
-					//console.log("MIDDLE METHOD");
+					console.log("fitting by propagation only for unspecified");
 					return aligned;
 				}
 				let combinated = combinate(move1, move2);
@@ -1045,16 +1052,66 @@ let VS3D = {}; //
 					for (let n of NODES) {
 						combinated[n] = merge({a: resolved[n].a1, r: resolved[n].r1}, combinated[n]);
 					}
-					console.log("using recombinate method");
+					console.log("fitting using recombination");
 					return combinated;
 				}
-				console.log("fitting by method of last resort");
-				// is this actually what we want, ever?
+				console.log("basically failed to fit and kludging");
 				aligned = merge(move2, move1);
 				return aligned;
 			}
 		}
 	}
+
+	function fit_old(move1, move2) {
+		if (Array.isArray(move1)) {
+			if (move1.length===0) {
+				return clone(move2);
+			}
+			return fit(move1[move1.length-1],move2)
+		}
+		if (Array.isArray(move2)) {
+			if (move2.length===0) {
+				return [];
+			}
+			let fitted = clone(move2);
+			fitted[0] = fit(move1, move2[0]);
+			for (let i=1; i<move2.length; i++) {
+				fitted[i] = fit(fitted[i-1], fitted[i]);
+			}
+			return fitted;
+		} else {
+			if (move2.recipe) {
+				let built = build(move2, move1);
+				return built;
+			}
+			if (move2.nofit) {
+				// !!!returning the move unmodified sometimes underspecifies things
+				// return clone(move2);
+				return resolve(move2);
+			} else {
+				let aligned = clone(move2);
+				let resolved = resolve(move1);
+				for (let n of NODES) {
+					//!!! need to deal with plane bending
+					aligned[n] = merge({a: resolved[n].a1, r: resolved[n].r1}, aligned[n]);
+				};
+				if (fits(move1, aligned)) {
+					//console.log("MIDDLE METHOD");
+					return aligned;
+				}
+				console.log("fitting by propagation");
+				// is this actually what we want, ever?
+				aligned = clone(move2);
+				move2.plane = move1.plane;
+				for (let n of NODES) {
+					///!!! neeed to deal with plane bends
+					aligned[n] = merge(aligned[n], {a: resolved[n].a1, r: resolved[n].r1});
+				};
+				return aligned;
+			}
+		}
+	}
+
 
 
 	function combinate(move1, move2) {
@@ -1323,6 +1380,9 @@ let VS3D = {}; //
 		// if the move has a plane, we keep that; otherwise, we use the wall plane.
 		let args = merge(prev, recipe);
 		let single = MoveFactory[args.recipe](args);
+		for (m of single) {
+			m.notes = recipe.notes;
+		}
 		if (!recipe.nofit) {
 			single = realign(single, (s)=>fits(prev,s));
 		}
