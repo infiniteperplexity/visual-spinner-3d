@@ -241,7 +241,7 @@ VS3D = (function(VS3D) {
 			if (entry!==undefined) {
 				console.log("flag 1");
 				move = realign(move,(s)=>{
-					console.log(entry);
+					console.log(entry);	
 					console.log(s.hand);
 					console.log(s.helper);
 					console.log(hand);

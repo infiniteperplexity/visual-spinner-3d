@@ -41,8 +41,11 @@ Bugs:
 
 - Is combinating still a thing?
 
-- How does twist translate to a prop?  Like, when you twist in wall plane, how do things end in wheel or whatever?
+
+- should any change in radius default to linear movement in the editor?
+- drag insert doesn't bump time codes.
 
 ****for the "direct edit" mode****
 
 the interface sometimes lies to you about how it's rounding.
+
