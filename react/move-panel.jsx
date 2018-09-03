@@ -544,11 +544,11 @@ function SpeedMeter(props, context) {
   let spd = <polygon transform="translate(34,19)" points="0,0 0,12, 12,6" fill={color} stroke={stroke}/>;
   if (node==="head" && vb) {
     speed = round(va || 0, 0.5);
-    let bend = -round(vb, 0.5);
+    let bend = round(vb, 0.5);
     let bendcw = <path d={ARROW} transform="translate(32, 17)" fill={color} stroke="lightgray"/>;
     let bendccw = <path d={ARROW} transform="scale(-1, 1) translate(-48, 17)" fill={color} stroke="lightgray"/>;
     title = "plane bend ("+speed+", "+bend+")";
-    spinshape = (speed>0) ? cw : ccw;
+    spinshape = (speed>=0) ? cw : ccw;
     spintext = <text textAnchor="middle" x="5" y="29" style={{fontSize: (parseInt(speed)===speed) ? "10px" : "8px"}}>{roundable(Math.abs(speed),0.5)}</text>;
     acctext = <text textAnchor="middle" x="29" y="29" style={{fontSize: (parseInt(bend)===bend) ? "10px" : "8px"}}>{roundable(Math.abs(bend),0.5)}</text>;
     accshape = (bend>0) ? bendcw : bendccw;

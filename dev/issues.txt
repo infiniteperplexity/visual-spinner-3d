@@ -43,7 +43,9 @@ Bugs:
 
 
 - should any change in radius default to linear movement in the editor?
-- drag insert doesn't bump time codes.
+- drag insert doesn't bump time codes.  hmmm...should it?  that's a tough one.  I think yes...that's tough because it's gonna have to do it for changed duration as well.
+
+-speedmeter shows forward bend as backwards
 
 ****for the "direct edit" mode****
 
