@@ -43,7 +43,10 @@ Bugs:
 
 
 - should any change in radius default to linear movement in the editor?
+
 - drag insert doesn't bump time codes.  hmmm...should it?  that's a tough one.  I think yes...that's tough because it's gonna have to do it for changed duration as well.
+
+- The unscrolled [+] at the end creeps further and further over as the routine gets longer.  Sometimes snapping to wrong thing?
 
 -speedmeter shows forward bend as backwards
 
