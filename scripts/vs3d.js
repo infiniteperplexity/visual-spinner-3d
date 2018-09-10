@@ -843,7 +843,7 @@ let VS3D = {}; //
 					spin = +1;
 				} else if (trend<0) {
 					spin = -1;
-				} else if (x1===x0) {
+				} else if (nearly(x1,x0,0.1)) {
 					spin = 0;
 				} else if (x1>x0) {
 					if ((x1-x0)*UNIT<=Math.PI) {

@@ -3,8 +3,6 @@ Engine:
 - Are defaults injected in the right places?  Probably not, given that object spread is the single biggest performance hog.  Much less of a problem now that I cache the fitted moves.
 - Various fitting methods still don't handle plane breaks (fits does check it correctly, but not bends)
 - GRIP is untested in combination with BENT and TWIST.
-- GRIP seems to display wrong for FLOOR plane, dunno why, something with bearings and angles.  Or maybe it's the optional planes per node?
-- Over and under-solving are causing recurring problems.
 - Might want to actually make PIVOT named SHOULDER and so on.
 - Does resolve() keep spin?
 
@@ -17,18 +15,12 @@ Bugs:
 
 	Nice:
 	- Might want to remove default properties when exporting.
-	- Make looking at a move in the wrong plane more sensible.
 
 	General:
 	- Mucho testing.
 
 
 - Maybe let locking a node zeroify it?
-
-
-
-- Maybe should drag using tethers, in case something gets pulled off screen?.
-
 
 - Sure would be nice to remove zero nodes from the saved files.
 
@@ -37,21 +29,9 @@ Bugs:
 
 - Maybe we should fit twist whenever the plane doesn't change?
 
-- Oh...we can't actually re-angle a zero hand node in a transition.
-
-- Is combinating still a thing?
-
-
-- should any change in radius default to linear movement in the editor?
-
-- drag insert doesn't bump time codes.  hmmm...should it?  that's a tough one.  I think yes...that's tough because it's gonna have to do it for changed duration as well.
 
 - The unscrolled [+] at the end creeps further and further over as the routine gets longer.  Sometimes snapping to wrong thing?
 
 - I'm not sure if timecode shifting works how I want it, but it does kind of work.
 
-
-To Do List:
-- Make it so you can drag-adjust zero-radius hand angles in transitions.
-	- Two bugs actually...one is to make the handle show up in transitions.
-	- The other is to fix the rounding issue when respecting head lock.
+- I don't think matches() checks plane bends correctly.
