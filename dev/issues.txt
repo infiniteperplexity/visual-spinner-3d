@@ -48,8 +48,10 @@ Bugs:
 
 - The unscrolled [+] at the end creeps further and further over as the routine gets longer.  Sometimes snapping to wrong thing?
 
+- I'm not sure if timecode shifting works how I want it, but it does kind of work.
 
 
 To Do List:
-- Make timecode functionality work smoothly with "cusps".
 - Make it so you can drag-adjust zero-radius hand angles in transitions.
+	- Two bugs actually...one is to make the handle show up in transitions.
+	- The other is to fix the rounding issue when respecting head lock.

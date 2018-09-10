@@ -268,7 +268,7 @@ class PropNode extends React.PureComponent {
       let z2 = round(z, 0.5);
       let d1 = (x1-x)*(x1-x)+(y1-y)*(y1-y)+(z1-z)*(z1-z);
       let d2 = (x2-x)*(x2-x)+(y2-y)*(y2-y)+(z2-z)*(z2-z);
-      if (decoupled && this.props.locks.head && (this.props.node===GRIP || (this.props.node===HAND && this.props.locks.grip))) {
+      if (decoupled && !this.props.transition && this.props.locks.head && (this.props.node===GRIP || (this.props.node===HAND && this.props.locks.grip))) {
         // respect the tether lock in decoupled mode
         let origin = this.localState.origin;
         let headsum = (this.props.node===HAND) ? cumulate([origin.hand, origin.grip, origin.head]) : cumulate([origin.grip, origin.head]);
@@ -423,10 +423,13 @@ class PropNode extends React.PureComponent {
       shape = <HeadNode x={X0} y={Y0} fill={this.props.color} dim={UNIT/8} />
     }
     let marker = null;
-    // !!! should I also do this somehow for decoupling?
-    if (zeroish(node.r, 0.015) && this.props.activeNode===this.props.node && this.props.getActivePropId()===this.props.propid) {
-      // !!!! I can't really do this with node.a
-      let a = node.a;
+    if (zeroish(node.r, 0.015) /*&& this.props.activeNode===this.props.node*/ && this.localState.beingDragged && this.props.getActivePropId()===this.props.propid) {
+      let a = sphere$planify(node, VS3D[this.props.plane]);
+      if (plane==="WHEEL") {
+        a = angle(-a);
+      } else if (plane==="FLOOR") {
+        a = angle(180-a);
+      }
       if (isNaN(a)) {
         a = 0;
       }
@@ -452,6 +455,10 @@ class PropNode extends React.PureComponent {
           <circle cx={xc} cy={yc} r={2*UNIT} fill="none" stroke={dimmer} />
         </g>
       ;
+    }
+    // allow switching the order of display during transitions
+    if (this.props.transition && this.props.modifier) {
+      decoupled = false;
     }
     return (
       <g transform={"translate("+x+","+y+")"}>
