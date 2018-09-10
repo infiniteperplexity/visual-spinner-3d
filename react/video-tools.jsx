@@ -37,19 +37,22 @@ class VideoTools extends React.PureComponent {
   handleBackFrame = ()=>{
     this.props.gotoSeconds(this.props.seconds-0.05);
   }
-  handleNextCode = ()=>{
-    // move forward to the next timecode
-  }
-  handleBackCode = ()=>{
-    // move back to the previous timecode
-  }
   handleAddCode = ()=>{
-    this.props.addTimeCode();
+    this.props.setTimeCode();
     // add a new timecode
+  }
+  handleInsertCode = ()=>{
+    if (confirm("really shift all subsequent codes forward?")) {
+      this.props.insertTimeCode();
+    }
   }
   handleRemoveCode = ()=>{
     this.props.removeTimeCode();
-    // remove the current timecode
+  }
+  handleSliceCode = ()=>{
+    if (confirm("really shift all subsequent codes backward?")) {
+      this.props.sliceTimeCode();
+    }
   }
   componentDidUpdate = (prev)=>{
     if (ytPlayer && this.props.youtube && prev.youtube!==this.props.youtube) {
@@ -79,9 +82,11 @@ class VideoTools extends React.PureComponent {
           </video>
           <div id="youtube" style={{display: (this.props.youtube) ? "block" : "none"}}/>
         </div>
-        <button title="add a timecode" onClick={this.handleAddCode}>Add Timecode</button>
-        <button title="remove current timecode" onClick={this.handleRemoveCode}>Remove Timecode</button>
-        <span style={{marginLeft: "60px"}} />
+        <button title="set current timecode" onClick={this.handleAddCode}>Set</button>
+        <button title="remove current timecode" onClick={this.handleRemoveCode}>Unset</button>
+        <button title="insert timecode and shift others forward" onClick={this.handleInsertCode}>Insert</button>
+        <button title="remove current timecode and shift others back" onClick={this.handleSliceCode}>Slice</button>
+        <span style={{marginLeft: "95px"}} />
         <button onClick={this.handleBackFrame} >&lt;</button>
         <input type="text" size="4" value={this.props.seconds.toFixed(3)} onChange={this.handleChange}></input>
         <button onClick={this.handleForwardFrame}>&gt;</button>
@@ -90,12 +95,28 @@ class VideoTools extends React.PureComponent {
           <button title="load an *.mp4 video from your computer" onClick={this.handleMP4}>*.mp4</button>
           <button title="pop up a downloadable version of a Facebook video" onClick={this.handleFacebook}>Facebook</button>
         </div>
+        <br/>
+        <p style={{fontSize: "12px", marginLeft: "70px", marginTop: "-1px"}}>Timecodes</p>
       </div>
     );
   }
 }
 
-function addTimeCode() {
+
+function validateTimeCodes() {
+  updateCusps();
+  let {timecodes} = store.getState();
+  timecodes = clone(timecodes);
+  for (let index in timecodes) {
+    if (!index in _cusps) {
+      delete timecodes[index];
+    }
+  }
+  store.dispatch({type: "SET_TIMECODES", timecodes: timecodes});
+}
+
+function setTimeCode() {
+  validateTimeCodes();
   let {timecodes, tick2, seconds} = store.getState();
   timecodes = clone(timecodes);
   tick2+=1;
@@ -105,10 +126,70 @@ function addTimeCode() {
   }
 }
 
+
+/* I don't know if this is the logic I actually want, but it is something */
+function insertTimeCode() {
+  validateTimeCodes();
+  let {timecodes, tick2, seconds} = store.getState();
+  let keys = Object.keys(timecodes).map(e=>parseInt(e)).filter(e=>!isNaN(e));
+  keys.sort((a,b)=>(a-b));
+  if (keys.length===0) {
+    setTimeCode();
+    return;
+  }
+  let mx = keys[keys.length-1];
+  timecodes = clone(timecodes);
+  do {
+    tick2+=1;
+  } while (!(tick2 in timecodes) && tick2<mx);
+  if (tick2>mx) {
+    timecodes[tick2] = parseFloat(seconds.toFixed(2));
+  } else {
+    let last = _cusps2.indexOf(mx);
+    if (last<_cusps2.length-1) {
+      timecodes[_cusps2[last+1]] = timecodes[mx];
+    }
+    let index = keys.indexOf(tick2);
+    for (let i=keys.length-1; i>index; i--) {
+      timecodes[keys[i]] = timecodes[keys[i-1]];
+    }
+    timecodes[tick2] = parseFloat(seconds.toFixed(2));
+  }
+  store.dispatch({type: "SET_TIMECODES", timecodes: timecodes});
+}
+
+function sliceTimeCode() {
+  validateTimeCodes();
+  let {timecodes, tick2} = store.getState();
+  let keys = Object.keys(timecodes).map(e=>parseInt(e)).filter(e=>!isNaN(e));
+  keys.sort((a,b)=>(a-b));
+  let mx = keys[keys.length-1];
+  do {
+    tick2+=1;
+  } while (!(tick2 in timecodes) && tick2<mx);
+  if (tick2>mx) {
+    return;
+  }
+  timecodes = clone(timecodes);
+  let index = keys.indexOf(tick2);
+  for (let i=index; i<keys.length-1; i++) {
+    timecodes[keys[i]] = timecodes[keys[i+1]];
+  }
+  if (timecodes[mx]!==undefined) {
+    delete timecodes[mx];
+  }
+  store.dispatch({type: "SET_TIMECODES", timecodes: timecodes});
+}
+
 function removeTimeCode() {
+  validateTimeCodes();
   let {timecodes, tick2} = store.getState();
   timecodes = clone(timecodes);
-  tick2+=1;
+  let mx = _cusps2[_cusps2.length-1];
+  do {
+    tick2+=1;
+  } while (!(tick2 in _cusps) && tick2<mx);
+  timecodes = clone(timecodes);
   if (timecodes[tick2]!==undefined) {
     delete timecodes[tick2];
   }

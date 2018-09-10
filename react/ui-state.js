@@ -139,16 +139,8 @@ function renderEngine() {
 }
 
 
-function updateEngine() {
-  let {moves, props, starters} = store.getState();
-  for (let i=0; i<moves.length; i++) {
-    player.props[i].prop = dummy(starters[i]);
-    player.props[i].moves = clone(moves[i]);
-    // this prevents the player from trying to refit the moves itself.
-    // the fact that that's not a good idea says there's something wrong with fitting, right?
-    player.props[i].fitted = player.props[i].moves;
-  }
-  renderEngine();
+function updateCusps() {
+  let {moves} = store.getState();
   _cusps = {};
   _cusps2 = [];
   for (let sequence of moves) {
@@ -166,6 +158,19 @@ function updateEngine() {
     }
   }
   _cusps2.sort((a,b)=>(a-b));
+}
+
+function updateEngine() {
+  let {moves, props, starters} = store.getState();
+  for (let i=0; i<moves.length; i++) {
+    player.props[i].prop = dummy(starters[i]);
+    player.props[i].moves = clone(moves[i]);
+    // this prevents the player from trying to refit the moves itself.
+    // the fact that that's not a good idea says there's something wrong with fitting, right?
+    player.props[i].fitted = player.props[i].moves;
+  }
+  renderEngine();
+  updateCusps();
 }
 
 function getMovesAtTick(tick) {

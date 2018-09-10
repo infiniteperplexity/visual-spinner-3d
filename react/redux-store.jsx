@@ -76,7 +76,9 @@ let AppComponent = ReactRedux.connect(
       cueYouTubeVideo: cueYouTubeVideo,
       gotoSeconds: gotoSeconds,
       updateTimeCoder: updateTimeCoder,
-      addTimeCode: addTimeCode,
+      setTimeCode: setTimeCode,
+      insertTimeCode: insertTimeCode,
+      sliceTimeCode: sliceTimeCode,
       removeTimeCode: removeTimeCode,
 
       toggleRawEdit: toggleRawEdit,

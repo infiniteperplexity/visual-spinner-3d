@@ -48,9 +48,8 @@ Bugs:
 
 - The unscrolled [+] at the end creeps further and further over as the routine gets longer.  Sometimes snapping to wrong thing?
 
--speedmeter shows forward bend as backwards
 
-****for the "direct edit" mode****
 
-the interface sometimes lies to you about how it's rounding.
-
+To Do List:
+- Make timecode functionality work smoothly with "cusps".
+- Make it so you can drag-adjust zero-radius hand angles in transitions.
