@@ -1209,6 +1209,17 @@ let VS3D = {}; //
 		);
 	}
 
+	function angle$bend(a, b) {
+		b = b || 0;
+		if (angle$zeroish(b)) {
+			return a;
+		} else if (angle$nearly(b, 180)) {
+			return angle(a+180);
+		} else {
+			return NaN;
+		}
+	}
+
 	function matches(prev, move, delta) {
 		delta = delta || 0.01
 		if (Array.isArray(move)) {
@@ -1220,7 +1231,17 @@ let VS3D = {}; //
 			// !!!need to handle planes!
 			let node1 = prev[n];
 			let node2 = move[n];
-			if (!vector$nearly(prev.plane, move.plane, delta) || !nearly(node1.r1, node2.r, delta) || !angle$nearly(node1.a1, node2.a, delta)) {
+			if (n==="head" && vector$nearly(prev.plane, move.plane, delta) && nearly(node1.r1, node2.r, delta)) {
+				if (!prev.bent && !prev.vb) {
+					continue;
+				}
+				let bent = (prev.bent || 0) + (BEAT*prev.vb*beats(prev) || 0);
+				if (angle$nearly(move.head.a, angle$bend(prev.head.a1, bent))) {
+					continue;
+				} else {
+					return false;
+				}
+			} else if (!vector$nearly(prev.plane, move.plane, delta) || !nearly(node1.r1, node2.r, delta) || !angle$nearly(node1.a1, node2.a, delta)) {
 				return false;
 			}
 		}
@@ -1951,6 +1972,7 @@ function Player(renderer) {
 	VS3D.cumulate = cumulate;
 	VS3D.axis = axis;
 	VS3D.inplane = inplane;
+	VS3D.angle$bend = angle$bend;
 	VS3D.extend = extend;
 	VS3D.dummy = dummy;
 	VS3D.MoveFactory = MoveFactory;
