@@ -9,9 +9,12 @@
 <script src="scripts/vs3d-moves.js"></script>
 <script src="scripts/three.min.js"></script>
 <script src="scripts/vs3d-render.js"></script>
+<script src="buugeng/OBJLoader.js"></script>
+<script src="buugeng/FBXLoader.js"></script>
+<script src="buugeng/ColladaLoader.js"></script>
 <script>
 
-	let renderer, player;
+	let renderer, player, scene, buugeng;
 	let red = new VS3D.Prop();
 	let move = {hand: {la: VS3D.DOWN, vl: 0, al: 2}, head: {va: 0, aa: 1}, beats: 1};
 	let overlay;
@@ -26,9 +29,31 @@
 			renderer.render(this.props, positions);
 			controls.update(this.tick);
 		}
-		overlay = new VS3D.Overlay();
-		renderer.div.appendChild(overlay.div);
-		player.play();
+		scene = renderer.scene;
+		//player.play();
+		load();
+	}
+
+	function load() {
+		var loader = new THREE.OBJLoader();
+		// load a resource
+		loader.load(
+			// resource URL
+			'buugeng/buugeng.obj',
+			// called when resource is loaded
+			function ( object ) {
+				scene.add( object );
+				buugeng = scene.children[4].children[0].geometry;
+			},
+			// called when loading is in progresses
+			function ( xhr ) {
+				console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+			},
+			// called when loading has errors
+			function ( error ) {
+				console.log( 'An error happened' );
+			}
+		);
 	}
 </script>
 <body onload="init();">
