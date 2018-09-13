@@ -475,6 +475,8 @@ class ModelPicker extends React.PureComponent {
         <option value="hoop">Hoop</option>
         <option value="minihoop">Mini Hoop</option>
         <option value="fan">Fan</option>
+        <option value="buugeng">Buugeng</option>
+        <option value="flipbuugeng">Mirrored Buugeng</option>
       </select>
     );
   }

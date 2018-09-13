@@ -207,7 +207,7 @@ class TwistControl extends React.PureComponent {
   }
   render() {
     let propid = this.props.order[this.props.order.length-1];
-    if (!["fan","minihoop","hoop","buugeng"].includes(this.props.models[propid])) {
+    if (!["fan","minihoop","hoop","buugeng","flipbuugeng"].includes(this.props.models[propid])) {
       return null;
     }
     let {move, color} = this.props;

@@ -292,42 +292,9 @@ VS3D = (function(VS3D) {
 		return new THREE.Group();
 	}
 
-	// not even close to working
-	ThreeRenderer.prototype.builder.buugeng = function(prop) {
-		let {color, alpha} = prop;
-		let shape = new THREE.Shape();
-		shape.moveTo(0,0);
-		shape.arc(0,0,0.5,0,Math.PI);
-		shape.moveTo(0,0);
-		shape.arc(0,0,0.25,0,Math.PI);
 
-		// shape.arc(1,0.5,0,Math.PI);
-		// shape.lineTo(1,0);
-		// shape.lineTo(1,1);
-		// shape.lineTo(0,1);
-		// shape.lineTo(0,0);
-		let extrudeSettings = {
-			amount: 0.1,
-	        steps: 5,
-	        bevelEnabled: true,
-	        bevelSegments: 3,
-	        bevelSize: .1,
-	        bevelThickness: 0.05
-		}
-		let geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-		let material = new THREE.MeshLambertMaterial({color: color});
-		let blade = new THREE.Mesh(geometry, material);
-		blade.rotateZ(Math.PI/2);
-		let group = new THREE.Group();
-		group.add(blade);
-		if (alpha<1) {
-			for (let child of group.children) {
-				material.transparent = true;
-				material.opacity = alpha;
-			}
-		}
-		return group;
-	}
+
+	
 
 	VS3D.ThreeRenderer = ThreeRenderer;
 
@@ -501,7 +468,7 @@ VS3D = (function(VS3D) {
 	    d.style.color = color;
 	    let c = getComputedStyle(d).color;
 	    let rgb = c.split("rgb(").join("").split(")").join("").split(", ");
-	    return Colors.rgb2hex(...rgb);
+	    return Colors.rgb2hex(rgb[0],rgb[1],rgb[2]);
 	}
 	Colors.hex2svg = function(hex) {
 		let color = Colors.key[hex];
