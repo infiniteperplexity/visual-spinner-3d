@@ -127,13 +127,13 @@ VS3D = (function(VS3D) {
 			let segment = Move(merge(options, {
 				beats: 1,
 				hand: {a: orient, va: direction},
-				head: {a: bangle, a1: orient+QUARTER*direction, spin: 1, va1: 0}
+				head: {a: bangle, a1: orient+QUARTER*direction, spin: direction, va1: 0}
 			}));
 			let move = chain([
 				segment,
 				{head: {a1: orient, spin: -direction}},
 				{head: {a1: orient-QUARTER*direction, va1: 0}},
-				{head: {a1: bangle, va: 0, spin: 1}}
+				{head: {a1: bangle, va: 0, spin: direction}}
 			]);
 			if (entry!==undefined) {
 				move = realign(move,(s)=>angle$nearly(s.hand.a,entry));
