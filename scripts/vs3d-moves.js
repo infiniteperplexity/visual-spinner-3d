@@ -76,7 +76,7 @@ VS3D = (function(VS3D) {
 	let clone = VS3D.clone;
 	let realign = VS3D.realign;
 	let angle$nearly = VS3D.angle$nearly;
-	let {nearly, zeroish} = VS3D;
+	let {nearly, zeroish, angle} = VS3D;
 
 	recipe(
 		"ccap",
@@ -123,6 +123,34 @@ VS3D = (function(VS3D) {
 		},
 		options => {
 			let {beats, hand, head, spin, orient, direction, onepointfive, hybrid, entry} = options;
+			let bangle = (onepointfive) ? angle(orient+SPLIT) : orient;
+			let segment = Move(merge(options, {
+				beats: 1,
+				hand: {a: orient, va: direction},
+				head: {a: bangle, a1: orient+QUARTER*direction, spin: 1, va1: 0}
+			}));
+			let move = chain([
+				segment,
+				{head: {a1: orient, spin: -direction}},
+				{head: {a1: orient-QUARTER*direction, va1: 0}},
+				{head: {a1: bangle, va: 0, spin: 1}}
+			]);
+			if (entry!==undefined) {
+				move = realign(move,(s)=>angle$nearly(s.hand.a,entry));
+			}
+			return move;
+		}
+	);
+		recipe(
+		"oldpendulum",
+		{
+			orient: DOWN,
+			onepointfive: false,
+			// hybrid does nothing for now...makes sense only for bottom half
+			hybrid: false
+		},
+		options => {
+			let {beats, hand, head, spin, orient, direction, onepointfive, hybrid, entry} = options;
 			let segment = Move(merge(options, {
 				beats: 1,
 				hand: {a: orient, va: direction},
@@ -141,6 +169,7 @@ VS3D = (function(VS3D) {
 			return move;
 		}
 	);
+
 
 	recipe(
 		"flower",

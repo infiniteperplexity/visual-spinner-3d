@@ -66771,7 +66771,7 @@ VS3D = (function(VS3D) {
             blade.rotateZ(Math.PI);
         }
         blade.translateX(-0.8);
-        blade.translateZ(-1.05);
+        blade.translateZ(-2.05);
         let group = new THREE.Group();
         group.add(blade);
         let handle = new THREE.Mesh(
