@@ -30,8 +30,7 @@ Bugs:
 - Maybe we should fit twist whenever the plane doesn't change?
 
 
-- The unscrolled [+] at the end creeps further and further over as the routine gets longer.  Sometimes snapping to wrong thing?
-
 - I'm not sure if timecode shifting works how I want it, but it does kind of work.
 
-- I don't think matches() checks plane bends correctly.
+
+- While editing, the "shadow" props always show up as poi.
