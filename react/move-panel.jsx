@@ -205,6 +205,14 @@ class TwistControl extends React.PureComponent {
     this.props.modifyTwist({propid: propid, twist: +0, vt: -1});
     this.props.pushStoreState();
   }
+  handleAlignTwist = (e)=>{
+    if (this.props.frozen) {
+      return;
+    }
+    let propid = this.props.order[this.props.order.length-1];
+    this.props.alignTwist(propid);
+    this.props.pushStoreState();
+  }
   render() {
     let propid = this.props.order[this.props.order.length-1];
     if (!["fan","minihoop","hoop","buugeng","flipbuugeng"].includes(this.props.models[propid])) {
@@ -236,6 +244,15 @@ class TwistControl extends React.PureComponent {
       </SpeedButton>
     ];
     if (!this.props.transition && this.props.tick!==-1) {
+      // // the logic for this is not correct yet
+      buttons.unshift(
+        <div key="-1" style={{display: "inline-block", width: "3px"}}/>
+      );
+      buttons.unshift(
+        <SpeedButton key="-2" onClick={this.handleAlignTwist} title={"align to previous move (experimental)"}>
+          <polygon points={LINEAR} transform="translate(20,9) scale(-1,1)" fill={color} stroke={stroke}/>
+        </SpeedButton>
+      );
       buttons.push(
         <div key="3" style={{display: "inline-block", width: "3px"}}/>
       );

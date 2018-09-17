@@ -33,4 +33,4 @@ Bugs:
 - I'm not sure if timecode shifting works how I want it, but it does kind of work.
 
 
-- While editing, the "shadow" props always show up as poi.
+- The "default to slide" thing doesn't work.

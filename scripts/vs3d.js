@@ -563,32 +563,19 @@ let VS3D = {}; //
 		// let head = spin_node({beats: b, plane: p, ...mhead}, t);
 		let twist = mtwist + mvt*t*SPEED;
 		let bent = mbent + mvb*t*SPEED;
-		let bearing = head.b;
-		// correct for cusps
+		let twangle = sphere$twist(head, p, bent, move.vb);
+		// let bearing = head.b;
+		// // correct for cusps
 		if (angle$nearly(head.a, 0) || angle$nearly(head.a, 180)) {
 			let tiny = angle$spherify(head.a+1, p);
-			bearing = tiny.b;
 			head.b = tiny.b;
 		}
-		let twangle = angle$longitude(bearing,p);
+		// let twangle = angle$longitude(bearing,p);
 		if (bent || move.vb) {
-			// this part is correct; bend displays correctly
 			let headv = sphere$vectorize(head);
 			let axis = vector$unitize(headv);
-			// does this meaning my cross product formula is backwards, or my brain is backwards?
 			let tangent = vector$cross(p, axis);
-			let ang = head.a;
 			head = vector$spherify(vector$rotate(headv,bent,tangent));
-			bearing = head.b;
-			if (angle(bent)>90 && angle(bent)<=270) {
-				head.a = angle(-head.a);
-				head.b = angle(head.b-180);
-				bearing = head.b;
-			}
-			twangle = angle$longitude(bearing, tangent);
-			if (move.vb<0) {
-				twangle = angle(twangle-180);
-			}
 		}
 		
 		twist+=twangle;
@@ -1043,18 +1030,18 @@ let VS3D = {}; //
 				for (let n of NODES) {
 					aligned[n] = merge({a: resolved[n].a1, r: resolved[n].r1}, aligned[n]);
 				};
-				if (fits(move1, aligned)) {
+				if (fits(move1, aligned, 0.1)) {
 					console.log("fitting by propagation only for unspecified");
 					return aligned;
 				}
-				let combinated = combinate(move1, move2);
-				if (combinated) {
-					for (let n of NODES) {
-						combinated[n] = merge({a: resolved[n].a1, r: resolved[n].r1}, combinated[n]);
-					}
-					console.log("fitting using recombination");
-					return combinated;
-				}
+				// let combinated = combinate(move1, move2);
+				// if (combinated) {
+				// 	for (let n of NODES) {
+				// 		combinated[n] = merge({a: resolved[n].a1, r: resolved[n].r1}, combinated[n]);
+				// 	}
+				// 	console.log("fitting using recombination");
+				// 	return combinated;
+				// }
 				console.log("basically failed to fit and kludging");
 				aligned = merge(move2, move1);
 				return aligned;
@@ -1207,6 +1194,41 @@ let VS3D = {}; //
 				// sphere$nearly(	cumulate([s.grip, s.head]),
 				// 				cumulate([m.grip, m.head]), delta)
 		);
+	}
+
+	// calculate the default TWIST offset for a prop, given its head orientation, plane of motion, and bending motion
+	function sphere$twist(s, p, bent, vb) {
+		s = clone(s);
+		p = p || WALL;
+		bent = bent || 0;
+		vb = vb || 0;
+		let bearing = s.b;
+			// correct for cusps
+		if (angle$nearly(s.a, 0) || angle$nearly(s.a, 180)) {
+			let tiny = angle$spherify(s.a+1, p);
+			bearing = tiny.b;
+			s.b = tiny.b;
+		}
+		let twist = angle$longitude(bearing, p);
+		if (bent || vb) {
+			// this part is correct; bend displays correctly
+			let v = sphere$vectorize(s);
+			let axis = vector$unitize(v);
+			// does this meaning my cross product formula is backwards, or my brain is backwards?
+			let tangent = vector$cross(p, axis);
+			s = vector$spherify(vector$rotate(v,bent,tangent));
+			bearing = s.b;
+			if (angle(bent)>90 && angle(bent)<=270) {
+				s.a = angle(-s.a);
+				s.b = angle(s.b-180);
+				bearing = s.b;
+			}
+			twist = angle$longitude(bearing, tangent);
+			if (vb<0) {
+				twist = angle(twist-180);
+			}
+		}
+		return twist;
 	}
 
 	function angle$bend(a, b) {
@@ -1973,6 +1995,7 @@ function Player(renderer) {
 	VS3D.axis = axis;
 	VS3D.inplane = inplane;
 	VS3D.angle$bend = angle$bend;
+	VS3D.sphere$twist = sphere$twist;
 	VS3D.extend = extend;
 	VS3D.dummy = dummy;
 	VS3D.MoveFactory = MoveFactory;

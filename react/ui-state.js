@@ -193,7 +193,7 @@ function setPropNodesByTick(tick) {
     props = subs.map(({move, tick})=>dummy(move, tick+1));
     // props = state.moves.map(m=>dummy(m, tick+1));
   }
-  ;
+  // this
   store.dispatch({type: "SET_PROPS", props: props});
   updateEngine();
 }

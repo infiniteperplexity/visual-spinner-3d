@@ -472,7 +472,13 @@ function validateSequences() {
       let previous = moves[i][j-1];
       let move = moves[i][j];
       // we could also force the moves to resolve() at this point...
+      if (i===0 && j===17) {
+        console.log("hello world");
+      }
       if (!vector$nearly(previous.plane || VS3D.WALL, move.plane || VS3D.WALL)) {
+        if (i===0 && j===17) {
+          console.log("flag1");
+        }
         // kind of a weird way of doing this...use handlePlaneChange, but use the beginning of the move
         let deflt = handlePlaneChange(previous, move, move.plane || VS3D.WALL);
         NODES.map(node=>{
@@ -486,6 +492,9 @@ function validateSequences() {
         });
         deflt = resolve(deflt);
         if (!matches(deflt, move, 0.1)) {
+          if (i===0 && j===17) {
+           console.log("flag 2");
+          }
           let transition = {};
           NODES.map(node=>{
             transition[node] = {
@@ -498,7 +507,13 @@ function validateSequences() {
           transitions[i][j] = transition;
         }
       } else if (!matches(previous, move, 0.1)) {
+        if (i===0 && j===17) {
+          console.log("flag 3");
+        }
         if (fits(previous, move, 0.1)) {
+          if (i===0 && j===17) {
+            console.log("flag 4");
+          }
           let transition = {};
           NODES.map(node=>{
             transition[node] = {
@@ -1119,7 +1134,63 @@ function modifyTwist({propid, twist, vt}) {
   props = clone(props);
   props[propid] = prop;
   store.dispatch({type: "SET_PROPS", props: props});
-  updateEngine();
+  // for some reason this doesn't always update properly...
+  // updateEngine();
+  setPropNodesByTick(tick2);
+}
+
+// the logic here is wrong
+function alignTwist(propid) {
+  player.stop();
+  let {tick, tick2, moves, starters, props} = store.getState();
+  let move, index, prev;
+  let sub = submove(moves[propid], tick);
+  move = sub.move;
+  index = sub.index;
+  // make sure we align to the beginning of the move
+  let past = 0;
+  let i = 0;
+  while (past<tick) {
+    let ticks = beats(moves[propid][i])*BEAT;
+    if (past+ticks>tick) {
+      gotoTick(past);
+      tick = past;
+    }
+    past+=ticks;
+    i+=1;
+  }
+  if (tick===0) {
+    prev = starters[propid];
+  } else {
+    prev = moves[propid][index-1];
+  }
+  let bent = (prev.bent || 0) + (prev.vb || 0);
+  let twisted = (prev.twist || 0) + (prev.vt || 0);
+  let p = prev.plane || VS3D.WALL;
+  let head = angle$spherify(prev.head.a1, p);
+  head.r = prev.head.r1;
+  let bearing = head.b;
+  console.log("end bearing: "+bearing);
+  let endt = twisted + VS3D.sphere$twist(head, p, bent, prev.vb || 0);
+  console.log("end twist: "+endt);
+  bent = move.bent || 0;
+  p = move.plane || VS3D.WALL;
+  head = angle$spherify(move.head.a, p);
+  head.r = move.head.r;
+  let begint = VS3D.sphere$twist(head, p, bent, move.vb || 0);
+  if (angle$nearly(head.a,0) || angle$nearly(head.a,180)) {
+    head = angle$spherify(move.head.a+1, p);
+  }
+  console.log("begin bearing:"+head.b);
+  console.log("begin twist: "+begint);
+  let twist = angle(endt-begint+bearing-head.b);
+  move = clone(move);
+  move.twist = twist;
+  moves = clone(moves);
+  moves[propid][index] = move;
+  store.dispatch({type: "SET_MOVES", moves: moves});
+  // updateEngine();
+  setPropNodesByTick(tick2);
 }
 
 
