@@ -464,9 +464,12 @@ VS3D = (function(VS3D) {
 		return "#"+r+g+b;
 	}
 	Colors.svg2hex = function(color) {
+		console.log(color);
 	    let d = document.createElement("div");
+	    document.body.appendChild(d);
 	    d.style.color = color;
 	    let c = getComputedStyle(d).color;
+	    document.body.removeChild(d);
 	    let rgb = c.split("rgb(").join("").split(")").join("").split(", ");
 	    return Colors.rgb2hex(rgb[0],rgb[1],rgb[2]);
 	}
