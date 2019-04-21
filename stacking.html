@@ -54,7 +54,7 @@
 		mel: {hand: -1, head: -3},
 		charlie: {hand: -1, head: -2},
 		extension: {hand: -1, head: -1},
-		antispin: {hand: -1, head: 1},
+		antispin: {hand: -1, head: 3},
 		illegal: {hand: 0, head: 0}
 	};
 
@@ -185,8 +185,9 @@
 		}
 	}
 
-	function resolvePositions()
+	function resolvePositions(e)
 	{
+		let caller = (e) ? e.target.id : null;
 		// set the initial position
 		for (let j of ["a","b"]) {
 			let position = document.getElementById("p1"+j).value;
@@ -198,48 +199,59 @@
 		for (let i=1; i<=4; i++) {
 			for (let j of ["a","b"]) 
 			{
-				let menu = document.getElementById("t"+i+j);
-				menu.onchange = resolveTransitions;
-				// this should happen only when something really changed
-				while (menu.firstChild) {
-				    menu.removeChild(menu.firstChild);
-				}
+				// update transitions only if an adjacent position was changed
+				if (caller===null || (caller[2]===j && (caller[1]==i || (i%4+1)==caller[1]))) {
+					let menu = document.getElementById("t"+i+j);
+					menu.onchange = resolveTransitions;
+					// this should happen only when something really changed
+					while (menu.firstChild) {
+					    menu.removeChild(menu.firstChild);
+					}
 
-				let p0 = document.getElementById("p"+i+j).value;
-				let p1 = document.getElementById("p"+(i%4+1)+j).value;
-				let positions = p0+"2"+p1;
-				for (let transition of menus[positions])
-				{
-					option = document.createElement("option");
-					option.txt = transition.txt;
-					option.value = transition.value;
-					if (transition.value==="illegal" || transition.value==="-illegal")
+					let p0 = document.getElementById("p"+i+j).value;
+					let p1 = document.getElementById("p"+(i%4+1)+j).value;
+					let positions = p0+"2"+p1;
+					for (let transition of menus[positions])
 					{
-						menu.style.color = "red";
+						option = document.createElement("option");
+						option.txt = transition.txt;
+						option.value = transition.value;
+						if (transition.value==="illegal" || transition.value==="-illegal")
+						{
+							menu.style.color = "red";
+						}
+						else
+						{
+							menu.style.color = "black";
+						}
+						txt = document.createTextNode(transition.txt);
+						option.appendChild(txt);
+						menu.appendChild(option);
 					}
-					else
-					{
-						menu.style.color = "black";
-					}
-					txt = document.createTextNode(transition.txt);
-					option.appendChild(txt);
-					menu.appendChild(option);
 				}
 				
 			}
 		}
-		resolveTransitions();
+		resolveTransitions(e);
 	}
 
-	function resolveTransitions()
+	function resolveTransitions(e)
 	{
+		let caller = (e) ? e.target.id : null;
 		for (let j of ["a","b"]) {
 			let prop = (j==="a") ? player.props[0] : player.props[1];
 			prop.moves = [];
 			for (let i=1; i<=4; i++) {
 				let menu = document.getElementById("t"+i+j);
-				// figure out how to handle this
-				menu.firstChild.selected = true;
+				// choose default if adjacent positions were changed and on page load
+				if (caller===null) {
+					menu.firstChild.selected = true;
+				}
+				else if (caller[0]==="p" && caller[2]===j && (caller[1]==i || (i%4+1)==caller[1]))
+				{
+					menu.firstChild.selected = true;
+				}
+				//else if (caller[0]==="t" && caller[2]===j && caller[1]==i)
 				let transition = moves[menu.value];
 				prop.moves.push({hand: {va: transition.hand}, head: {va: transition.head}, beats: 2});
 			}
