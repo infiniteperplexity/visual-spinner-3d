@@ -52,7 +52,10 @@
 	let moves = {
 		pendulum: {hand: 0, head: -2},
 		mel: {hand: -2, head: -6},
-		charlie: {hand: -2, head: -4}
+		charlie: {hand: -2, head: -4},
+		extension: {hand: -2, head: -2},
+		antispin: {hand: -2, head: 2},
+		illegal: {hand: 0, head: 0}
 	};
 
 	let aliases = {
@@ -69,9 +72,14 @@
 			{txt: "Right, Left", value: "RL"},
 			{txt: "Right, Right", value: "RR"}
 		],
+		LL2LL: [{txt: "Illegal", value: "illegal"}],
+		LR2LR: [{txt: "Illegal", value: "illegal"}],
 		LL2LR: [{txt: "Pendulum", value: "pendulum"}],
 		LL2RL: [{txt: "Charlie's Stalls", value: "charlie"}],
-		LL2RR: [{txt: "Extension" , value: "extension"}],
+		LL2RR: [
+			{txt: "Extension" , value: "extension"},
+			{txt: "Antispin" , value: "antispin"}
+		],
 		LR2RL: [{txt: "Mel's Stalls" , value: "mel"}],
 		LR2RR: [{txt: "Charlie's Stalls", value: "charlie"}],
 		RL2RR: [{txt: "Pendulum", value: "pendulum"}]
@@ -83,7 +91,7 @@
 		mirrorMoves();
 		setupMenus();
 		setMoves();
-		//play();
+		play();
 
 	}
 
@@ -184,6 +192,10 @@
 					option = document.createElement("option");
 					option.txt = transition.txt;
 					option.value = transition.value;
+					if (transition.value==="illegal" || transition.value==="illegal")
+					{
+						menu.style.color = "red";
+					}
 					if (option.value==defaults["t"+i+j])
 					{
 						option.selected = true;
@@ -191,6 +203,7 @@
 					txt = document.createTextNode(transition.txt);
 					option.appendChild(txt);
 					menu.appendChild(option);
+					
 				}
 			}
 		}
@@ -232,6 +245,19 @@
 		//player.play();
 	}
 
+/*
+
+Alright, let's think about how this interface should work.
+- For positions, you're not allowed to do two of the same in a row.  So I could forbid that.
+- The tricky thing is...if you're altering only one at a time, that means you're locked into two choices.
+	- We could see if that works.
+	- We could trigger an invalid state.
+	- We could attempt to resolve.
+		- Any adjacent chain of things that works on both ends should be untouched.  And I think we prefer changing later stuff rather than earlier.
+	- We could just allow illegal transitions, and maybe make them red or something.  That's actually a really simple solution.
+- For transitions, I think we just automatically pick the first one in line after changing.
+
+*/
 
 </script>
 <body onload="init();">
@@ -240,25 +266,25 @@
 	<div id="display"></div>
 	<div>
 		<div id="grid2">
-			<p>First:</p>
+			<p>Beat 1:</p>
 			<select id="p1a"></select>
 			<select id="p1b"></select>
 			<p>Transition:</p>
 			<select id="t1a"></select>
 			<select id="t1b"></select>
-			<p>Second:</p>
+			<p>Beat 2:</p>
 			<select id="p2a"></select>
 			<select id="p2b"></select>
 			<p>Transition:</p>
 			<select id="t2a"></select>
 			<select id="t2b"></select>
-			<p>Third:</p>
+			<p>Beat 3:</p>
 			<select id="p3a"></select>
 			<select id="p3b"></select>
 			<p>Transition:</p>
 			<select id="t3a"></select>
 			<select id="t3b"></select>
-			<p>Fourth:</p>
+			<p>Beat 4:</p>
 			<select id="p4a"></select>
 			<select id="p4b"></select>
 			<p>Transition:</p>
