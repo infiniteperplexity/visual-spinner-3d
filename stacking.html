@@ -51,7 +51,7 @@
 
 	let moves = {
 		pendulum: {hand: 0, head: -2},
-		mel: {hand: -2, head: -2},
+		mel: {hand: -2, head: -6},
 		charlie: {hand: -2, head: -4}
 	};
 
@@ -80,6 +80,7 @@
 	function init() {
 		// hideDebugger();
 		setupPlayer();
+		mirrorMoves();
 		setupMenus();
 		setMoves();
 		//play();
@@ -97,15 +98,64 @@
 	function setupPlayer() {
 		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
 		player = new VS3D.Player();
-		player.addProp(new VS3D.Prop(), {color: "red", nudge: 0.0});
-		player.addProp(new VS3D.Prop(), {color: "blue", nudge: 0.05});
-
+		player.addProp(new VS3D.Prop({
+			hand: {a: aliases[defaults.p1a[0]]},
+			head: {a: aliases[defaults.p1a[1]]}
+		}), {color: "red", nudge: 0.0});
+		player.addProp(new VS3D.Prop({
+			hand: {a: aliases[defaults.p1b[0]]},
+			head: {a: aliases[defaults.p1b[1]]}
+		}), {color: "white", nudge: 0.05});
+		let controls = new VS3D.Controls(player);
+		renderer.div.appendChild(controls.div);
 		player.update = function(positions) {
 			renderer.render(this.props, positions);
+			controls.update(this.tick);
 		}
 		player.reset();
 	}
 
+	function mirrorMoves()
+	{
+		let mirrors;
+		mirrors = {};
+		for (let menu in menus)
+		{
+			if (menu[2]==="2")
+			{
+				let mirror;
+				mirror = menu.replace(/L/g, "X");
+				mirror = mirror.replace(/R/g, "L");
+				mirror = mirror.replace(/X/g, "R");
+				mirrors[mirror] = [];
+				for (let transition of menus[menu])
+				{
+					let move = {};
+					move.txt = transition.txt;
+					move.value = "-"+transition.value;
+					mirrors[mirror].push(move);
+				}
+				
+			}
+		}
+		for (let mirror in mirrors)
+		{
+			menus[mirror] = mirrors[mirror];
+		}
+		mirrors = {};
+		for (let move in moves)
+		{
+			let mirror = {hand: {}, head: {}};
+			mirror.hand = -moves[move].hand;
+			mirror.head = -moves[move].head;
+			mirrors[move] = mirror;
+		}
+		for (let mirror in mirrors)
+		{
+			moves["-"+mirror] = mirrors[mirror];
+		}
+
+	}
 	function setupMenus() {
 		let menu, option, txt;
 		for (let i=1; i<=4; i++) {
@@ -124,7 +174,24 @@
 					option.appendChild(txt);
 					menu.appendChild(option);
 				}
-				// much more complex logic for transitions
+				menu = document.getElementById("t"+i+j);
+				menu.onchange = setMoves;
+				let p0 = defaults["p"+i+j];
+				let p1 = defaults["p"+(i%4+1)+j];
+				let positions = p0+"2"+p1;
+				for (let transition of menus[positions])
+				{
+					option = document.createElement("option");
+					option.txt = transition.txt;
+					option.value = transition.value;
+					if (option.value==defaults["t"+i+j])
+					{
+						option.selected = true;
+					}
+					txt = document.createTextNode(transition.txt);
+					option.appendChild(txt);
+					menu.appendChild(option);
+				}
 			}
 		}
 	}
@@ -133,23 +200,36 @@
 	}
 
 	function setMoves(e) {
-		player.stop();
-		player.reset();
+		//player.stop();
+		//player.reset();
 		//let chosen = (e) ? e.target.id : "";
-		for (let i=1; i<=1; i++) { // for now, just the initial position
+		for (let i=1; i<=4; i++) { // for now, just the initial position
 			for (let j of ["a","b"]) {
 				let position = document.getElementById("p"+i+j).value;
-				let prop = (j==="a") ? player.props[0].prop : player.props[1].prop;
-				prop.hand.a = aliases[position[0]];
-				prop.head.a = aliases[position[1]];
+				let prop = (j==="a") ? player.props[0] : player.props[1];
+				if (i===1)
+				{
+					prop.prop.hand.a = aliases[position[0]];
+					prop.prop.head.a = aliases[position[1]];
+				}
+				let transition = moves[document.getElementById("t"+i+j).value];
+				let direction = +1;
+				prop.moves.push({hand: {va: direction*transition.hand}, head: {va: direction*transition.head}});
+				
 			}
 		}
 		try {
-			player.refresh();
+			//player.refresh();
 		} catch(e) {
 			throw e;
 		}
-		renderer.refresh(player.props);
+		for (let prop of player.props)
+		{
+			//prop.refit();
+		}
+		//renderer.refresh(player.props);
+		player.ready();
+		//player.play();
 	}
 
 
