@@ -3,203 +3,194 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>VisualSpinner3D Coding Sandbox, by Glenn Wright</title>
+<title>VisualSpinner3D Demo, by Glenn Wright</title>
+<style>
+	body {background-color: #99CCFF}
+	#grid1 {
+		width: 450px;
+        display: grid;
+        grid-column-gap: 3px;
+        grid-row-gap: 3px;
+        grid-template-rows: 400px auto;
+        grid-template-columns: 400px auto;
+     }
+     #grid2 {
+     	width: 450px;
+        display: grid;
+        grid-template-rows: auto auto auto auto auto auto;
+        grid-template-columns: 80px 100px 100px;
+     }
+</style>
 </head>
 <script src="scripts/vs3d.js"></script>
 <script src="scripts/vs3d-moves.js"></script>
 <script src="scripts/three.min.js"></script>
 <script src="scripts/vs3d-render.js"></script>
+<script src="scripts/vs3d-buugeng.js"></script>
 <script>
-
-	const {UP, DOWN, LEFT, RIGHT, nearly, angle$nearly} = VS3D;
-	// 1A, 1B, 2A, 2B, 3A, 3B
-	let moves = {
-		p1a: {
-			p1b: [
-				{hand: {va: 0}, head: {va: -2}}
-			],
-			p2a: {
-
-			},
-			p2b: {
-
-			},
-			p3a: [
-				{hand: {va: -2}, head: {va: -4}}
-			],
-			p3b: {
-				
-			}
-		},
-		p1b: {
-			p1a: [
-				{hand: {va: 0}, head: {va: 2}}
-			],
-			p2a: {
-
-			},
-			p2b: {
-
-			},
-			p3a: [
-				{hand: {va: -2}, head: {va: -6}}
-			],
-			p3b: {
-				
-			}
-		},
-		p2a: {
-			p1a: {
-
-			},
-			p1b: {
-
-			},
-			p2b: {
-
-			},
-			p3a: {
-
-			},
-			p3b: {
-				
-			}
-		},
-		p2b: {
-			p1a: {
-
-			},
-			p1b: {
-
-			},
-			p2a: {
-
-			},
-			p3a: {
-
-			},
-			p3b: {
-				
-			}
-		},
-		p3a: {
-			p1a: {
-
-			},
-			p1b: [
-				{hand: {va: 2}, head: {va: 6}}
-			],
-			p2a: {
-
-			},
-			p2b: {
-
-			},
-			p3b: [
-				{hand: {va: 0}, head: {va: -2}}
-			]
-		},
-		p3b: {
-			p1a: {
-
-			},
-			p1b: [
-				{hand: {va: 2}, head: {va: 4}}
-			],
-			p2a: {
-
-			},
-			p2b: {
-
-			},
-			p3a: [
-				{hand: {va: 0}, head: {va: 2}}
-			]
-		}
+	let debug = VS3D.debug;
+	let renderer, player;
+	let defaults = {
+		p1a: "LL",
+		p1b: "LR",
+		t1a: "pendulum",
+		t1b: "mel",
+		p2a: "LR",
+		p2b: "RL",
+		t2a: "mel",
+		t2b: "pendulum",
+		p3a: "RL",
+		p3b: "RR",
+		t3a: "mel",
+		t3b: "pendulum",
+		p4a: "LR",
+		p4b: "RL",
+		t4a: "pendulum",
+		t4b: "mel"
 	};
 
-	let renderer, player;
-	let red = new VS3D.Prop({
-		hand: {a: VS3D.RIGHT},
-		head: {a: VS3D.RIGHT}
-	});
-	let blue = new VS3D.Prop({
-		hand: {a: VS3D.RIGHT},
-		head: {a: VS3D.LEFT}
-	});
-	function getPosition(poi)
-	{
-		let radius = poi.prop.hand.r;
-		let hand = poi.prop.hand.a;
-		let head = poi.prop.head.a;
-		if (nearly(radius, 0))
-		{
-			if (angle$nearly(head, RIGHT))
-			{
-				return "p2b";
-			}
-			else
-			{
-				return "p2a";
-			}
-		}
-		else if (angle$nearly(hand, RIGHT))
-		{
-			if (angle$nearly(head, RIGHT))
-			{
-				return "p3b";
-			}
-			else
-			{
-				return "p3a";
-			}
-		}
-		else
-		{
-			if (angle$nearly(head, RIGHT))
-			{
-				return "p1b";
-			}
-			else
-			{
-				return "p1a";
-			}
-		}
+	let moves = {
+		pendulum: {hand: 0, head: -2},
+		mel: {hand: -2, head: -2},
+		charlie: {hand: -2, head: -4}
+	};
+
+	let aliases = {
+		a: 0,
+		b: 1,
+		L: VS3D.LEFT,
+		R: VS3D.RIGHT
+	};
+
+	let menus = {
+		positions: [
+			{txt: "Left, Left", value: "LL"},
+			{txt: "Left, Right", value: "LR"},
+			{txt: "Right, Left", value: "RL"},
+			{txt: "Right, Right", value: "RR"}
+		],
+		LL2LR: [{txt: "Pendulum", value: "pendulum"}],
+		LL2RL: [{txt: "Charlie's Stalls", value: "charlie"}],
+		LL2RR: [{txt: "Extension" , value: "extension"}],
+		LR2RL: [{txt: "Mel's Stalls" , value: "mel"}],
+		LR2RR: [{txt: "Charlie's Stalls", value: "charlie"}],
+		RL2RR: [{txt: "Pendulum", value: "pendulum"}]
+	};
+
+	function init() {
+		// hideDebugger();
+		setupPlayer();
+		setupMenus();
+		setMoves();
+		//play();
+
 	}
-	function getMove(p1, p2)
-	{
-		let arr = moves[p1][p2];
-		let i = parseInt(Math.random()*arr.length);
-		return arr[i];
+
+	function hideDebugger() {
+		document.getElementById("debugger").style.display = "none";
 	}
-	function init() {	
+
+	function play() {
+		player.play();
+	}
+
+	function setupPlayer() {
 		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
 		player = new VS3D.Player();
-		let controls = new VS3D.Controls(player);
-		renderer.div.appendChild(controls.div);
-		red = player.addProp(red,{model: "poi"});
-		blue = player.addProp(blue,{model: "poi", color: "blue"});
-		red.moves.push(getMove("p3b","p3a"));
-		red.moves.push(getMove("p3a","p1b"));
-		red.moves.push(getMove("p1b","p3a"));
-		red.moves.push(getMove("p3a","p3b"));
-
-		blue.moves.push(getMove("p3a","p1b"));
-		blue.moves.push(getMove("p1b","p1a"));	
-		blue.moves.push(getMove("p1a","p1b"));
-		blue.moves.push(getMove("p1b","p3a"));
+		player.addProp(new VS3D.Prop(), {color: "red", nudge: 0.0});
+		player.addProp(new VS3D.Prop(), {color: "blue", nudge: 0.05});
 
 		player.update = function(positions) {
 			renderer.render(this.props, positions);
-			controls.update(this.tick);
 		}
-		player.ready();
-		//player.play();
+		player.reset();
 	}
+
+	function setupMenus() {
+		let menu, option, txt;
+		for (let i=1; i<=4; i++) {
+			for (let j of ["a","b"]) {
+				menu = document.getElementById("p"+i+j);
+				menu.onchange = setMoves;
+				for (let position of menus.positions) {
+					option = document.createElement("option");
+					option.txt = position.txt;
+					option.value = position.value;
+					if (option.value==defaults["p"+i+j])
+					{
+						option.selected = true;
+					}
+					txt = document.createTextNode(position.txt);
+					option.appendChild(txt);
+					menu.appendChild(option);
+				}
+				// much more complex logic for transitions
+			}
+		}
+	}
+
+	function shuffleMenus() {
+	}
+
+	function setMoves(e) {
+		player.stop();
+		player.reset();
+		//let chosen = (e) ? e.target.id : "";
+		for (let i=1; i<=1; i++) { // for now, just the initial position
+			for (let j of ["a","b"]) {
+				let position = document.getElementById("p"+i+j).value;
+				let prop = (j==="a") ? player.props[0].prop : player.props[1].prop;
+				prop.hand.a = aliases[position[0]];
+				prop.head.a = aliases[position[1]];
+			}
+		}
+		try {
+			player.refresh();
+		} catch(e) {
+			throw e;
+		}
+		renderer.refresh(player.props);
+	}
+
+
 </script>
 <body onload="init();">
-	<div id="display">
+<a href="https://github.com/infiniteperplexity/visual-spinner-3d">See more at the VisualSpinner3D main site.</a>
+<div id="grid1">
+	<div id="display"></div>
+	<div>
+		<div id="grid2">
+			<p>First:</p>
+			<select id="p1a"></select>
+			<select id="p1b"></select>
+			<p>Transition:</p>
+			<select id="t1a"></select>
+			<select id="t1b"></select>
+			<p>Second:</p>
+			<select id="p2a"></select>
+			<select id="p2b"></select>
+			<p>Transition:</p>
+			<select id="t2a"></select>
+			<select id="t2b"></select>
+			<p>Third:</p>
+			<select id="p3a"></select>
+			<select id="p3b"></select>
+			<p>Transition:</p>
+			<select id="t3a"></select>
+			<select id="t3b"></select>
+			<p>Fourth:</p>
+			<select id="p4a"></select>
+			<select id="p4b"></select>
+			<p>Transition:</p>
+			<select id="t4a"></select>
+			<select id="t4b"></select>
+		</div>
 	</div>
+	<div>
+		<p>https://github.com/infiniteperplexity/visual-spinner-3d</p>
+		<p>infinite DOT perplexity AT gmail DOT com</p>
+		<button id="debugger" onclick="shuffleMenus();">debug</button>
+	</div>
+</div>
 </body>
 </html>
-
