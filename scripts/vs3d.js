@@ -1555,7 +1555,7 @@ function Player(renderer) {
 			if (this._stopped) {
 				return;
 			}
-			setTimeout(_play, this.speed);
+			this._interval = setTimeout(_play, this.speed);
 			this.goto(this.tick+this.rate);
 		}
 		_play();

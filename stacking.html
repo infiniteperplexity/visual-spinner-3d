@@ -3,7 +3,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>VisualSpinner3D Demo, by Glenn Wright</title>
+<title>VisualSpinner3D: Horizontal Stacking, by Glenn Wright</title>
 <style>
 	body {background-color: #99CCFF}
 	#grid1 {
@@ -50,11 +50,11 @@
 	};
 
 	let moves = {
-		pendulum: {hand: 0, head: -2},
-		mel: {hand: -2, head: -6},
-		charlie: {hand: -2, head: -4},
-		extension: {hand: -2, head: -2},
-		antispin: {hand: -2, head: 2},
+		pendulum: {hand: 0, head: -1},
+		mel: {hand: -1, head: -3},
+		charlie: {hand: -1, head: -2},
+		extension: {hand: -1, head: -1},
+		antispin: {hand: -1, head: 1},
 		illegal: {hand: 0, head: 0}
 	};
 
@@ -86,7 +86,7 @@
 	};
 
 	function init() {
-		// hideDebugger();
+		hideDebugger();
 		setupPlayer();
 		mirrorMoves();
 		setupMenus();
@@ -97,9 +97,9 @@
 		document.getElementById("debugger").style.display = "none";
 	}
 
-	function play() {
-		player.play();
-	}
+	// function play() {
+	// 	player.play();
+	// }
 
 	function setupPlayer() {
 		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
@@ -112,11 +112,11 @@
 			hand: {a: aliases[defaults.p1b[0]]},
 			head: {a: aliases[defaults.p1b[1]]}
 		}), {color: "white", nudge: 0.05});
-		let controls = new VS3D.Controls(player);
-		renderer.div.appendChild(controls.div);
-		player.update = function(positions) {
-			renderer.render(this.props, positions);
-			controls.update(this.tick);
+		//let controls = new VS3D.Controls(player);
+		//renderer.div.appendChild(controls.div);
+		player.update = function(pos) {
+			renderer.render(this.props, pos);
+			//controls.update(this.tick);
 		}
 		player.ready();
 	}
@@ -187,8 +187,6 @@
 
 	function resolvePositions()
 	{
-		console.log("resolving positions");
-		player.reset();
 		// set the initial position
 		for (let j of ["a","b"]) {
 			let position = document.getElementById("p1"+j).value;
@@ -198,30 +196,36 @@
 		}
 		// rebuild the transition menus
 		for (let i=1; i<=4; i++) {
-			for (let j of ["a","b"]) {
+			for (let j of ["a","b"]) 
+			{
 				let menu = document.getElementById("t"+i+j);
-				
+				menu.onchange = resolveTransitions;
 				// this should happen only when something really changed
 				while (menu.firstChild) {
 				    menu.removeChild(menu.firstChild);
 				}
-				let p0 = defaults["p"+i+j];
-				let p1 = defaults["p"+(i%4+1)+j];
+
+				let p0 = document.getElementById("p"+i+j).value;
+				let p1 = document.getElementById("p"+(i%4+1)+j).value;
 				let positions = p0+"2"+p1;
 				for (let transition of menus[positions])
 				{
 					option = document.createElement("option");
 					option.txt = transition.txt;
 					option.value = transition.value;
-					if (transition.value==="illegal" || transition.value==="illegal")
+					if (transition.value==="illegal" || transition.value==="-illegal")
 					{
 						menu.style.color = "red";
+					}
+					else
+					{
+						menu.style.color = "black";
 					}
 					txt = document.createTextNode(transition.txt);
 					option.appendChild(txt);
 					menu.appendChild(option);
 				}
-				menu.onchange = resolveTransitions;
+				
 			}
 		}
 		resolveTransitions();
@@ -229,18 +233,19 @@
 
 	function resolveTransitions()
 	{
-		player.reset();	
-		for (let i=1; i<=4; i++) {
-			for (let j of ["a","b"]) {
+		for (let j of ["a","b"]) {
+			let prop = (j==="a") ? player.props[0] : player.props[1];
+			prop.moves = [];
+			for (let i=1; i<=4; i++) {
 				let menu = document.getElementById("t"+i+j);
 				// figure out how to handle this
 				menu.firstChild.selected = true;
 				let transition = moves[menu.value];
-				let direction = +1;
-				let prop = (j==="a") ? player.props[0] : player.props[1];
-				prop.moves.push({hand: {va: direction*transition.hand}, head: {va: direction*transition.head}});
+				prop.moves.push({hand: {va: transition.hand}, head: {va: transition.head}, beats: 2});
 			}
+			prop.refit();
 		}
+		player.reset();
 		player.play();
 	}
 	
