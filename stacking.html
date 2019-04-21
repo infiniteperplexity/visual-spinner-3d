@@ -90,9 +90,7 @@
 		setupPlayer();
 		mirrorMoves();
 		setupMenus();
-		setMoves();
-		play();
-
+		resolvePositions();
 	}
 
 	function hideDebugger() {
@@ -120,7 +118,7 @@
 			renderer.render(this.props, positions);
 			controls.update(this.tick);
 		}
-		player.reset();
+		player.ready();
 	}
 
 	function mirrorMoves()
@@ -164,12 +162,13 @@
 		}
 
 	}
+
 	function setupMenus() {
 		let menu, option, txt;
 		for (let i=1; i<=4; i++) {
 			for (let j of ["a","b"]) {
 				menu = document.getElementById("p"+i+j);
-				menu.onchange = setMoves;
+				menu.onchange = resolvePositions;
 				for (let position of menus.positions) {
 					option = document.createElement("option");
 					option.txt = position.txt;
@@ -182,8 +181,30 @@
 					option.appendChild(txt);
 					menu.appendChild(option);
 				}
-				menu = document.getElementById("t"+i+j);
-				menu.onchange = setMoves;
+			}
+		}
+	}
+
+	function resolvePositions()
+	{
+		console.log("resolving positions");
+		player.reset();
+		// set the initial position
+		for (let j of ["a","b"]) {
+			let position = document.getElementById("p1"+j).value;
+			let prop = (j==="a") ? player.props[0] : player.props[1];
+			prop.prop.hand.a = aliases[position[0]];
+			prop.prop.head.a = aliases[position[1]];
+		}
+		// rebuild the transition menus
+		for (let i=1; i<=4; i++) {
+			for (let j of ["a","b"]) {
+				let menu = document.getElementById("t"+i+j);
+				
+				// this should happen only when something really changed
+				while (menu.firstChild) {
+				    menu.removeChild(menu.firstChild);
+				}
 				let p0 = defaults["p"+i+j];
 				let p1 = defaults["p"+(i%4+1)+j];
 				let positions = p0+"2"+p1;
@@ -196,53 +217,35 @@
 					{
 						menu.style.color = "red";
 					}
-					if (option.value==defaults["t"+i+j])
-					{
-						option.selected = true;
-					}
 					txt = document.createTextNode(transition.txt);
 					option.appendChild(txt);
 					menu.appendChild(option);
-					
 				}
+				menu.onchange = resolveTransitions;
 			}
 		}
+		resolveTransitions();
 	}
+
+	function resolveTransitions()
+	{
+		player.reset();	
+		for (let i=1; i<=4; i++) {
+			for (let j of ["a","b"]) {
+				let menu = document.getElementById("t"+i+j);
+				// figure out how to handle this
+				menu.firstChild.selected = true;
+				let transition = moves[menu.value];
+				let direction = +1;
+				let prop = (j==="a") ? player.props[0] : player.props[1];
+				prop.moves.push({hand: {va: direction*transition.hand}, head: {va: direction*transition.head}});
+			}
+		}
+		player.play();
+	}
+	
 
 	function shuffleMenus() {
-	}
-
-	function setMoves(e) {
-		//player.stop();
-		//player.reset();
-		//let chosen = (e) ? e.target.id : "";
-		for (let i=1; i<=4; i++) { // for now, just the initial position
-			for (let j of ["a","b"]) {
-				let position = document.getElementById("p"+i+j).value;
-				let prop = (j==="a") ? player.props[0] : player.props[1];
-				if (i===1)
-				{
-					prop.prop.hand.a = aliases[position[0]];
-					prop.prop.head.a = aliases[position[1]];
-				}
-				let transition = moves[document.getElementById("t"+i+j).value];
-				let direction = +1;
-				prop.moves.push({hand: {va: direction*transition.hand}, head: {va: direction*transition.head}});
-				
-			}
-		}
-		try {
-			//player.refresh();
-		} catch(e) {
-			throw e;
-		}
-		for (let prop of player.props)
-		{
-			//prop.refit();
-		}
-		//renderer.refresh(player.props);
-		player.ready();
-		//player.play();
 	}
 
 /*
