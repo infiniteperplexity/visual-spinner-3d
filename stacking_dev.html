@@ -61,11 +61,11 @@
 		extension: {hand: -1, head: -1},
 		antispin: {hand: -1, head: 3},
 		top: {hand: 1, head: -3},
-		isolation: {hand: 2, head: 2}
+		isolation: {hand: 2, head: 2} // gets special handling
 	};
 
 
-	let nodes = {
+	let positions = {
 		LL: {
 			hand: {r: 1, a: LEFT},
 			head: {r: 1, a: LEFT}
@@ -103,11 +103,11 @@
 		],
 		LL2LL: [
 			{txt: "Isolation", value: "isolation"},
-			{txt: "Clockwise Isolation", value: "-isolation"}
+			{txt: "Inside Isolation", value: "-isolation"}
 		],
 		LR2LR: [
 			{txt: "Isolation", value: "isolation"},
-			{txt: "Clockwise Isolation", value: "-isolation"}
+			{txt: "Inside Isolation", value: "-isolation"}
 		],
 		LL2LR: [
 			{txt: "Pendulum", value: "pendulum"},
@@ -140,7 +140,7 @@
 	function init() {
 		hideDebugger();
 		setupPlayer();
-		mirrorMoves();
+		generalizeMoves();
 		setupMenus();
 		resolvePositions();
 	}
@@ -158,22 +158,22 @@
 		player = new VS3D.Player();
 		player.addProp(new VS3D.Prop({
 			hand: {	
-				a: nodes[defaults.p10].hand.a,
-				r: nodes[defaults.p10].hand.r
+				a: positions[defaults.p10].hand.a,
+				r: positions[defaults.p10].hand.r
 			},
 			head: {	
-				a: nodes[defaults.p10].head.a,
-				r: nodes[defaults.p10].head.r
+				a: positions[defaults.p10].head.a,
+				r: positions[defaults.p10].head.r
 			},
 		}), {color: "red", nudge: 0.0});
 		player.addProp(new VS3D.Prop({
 			hand: {	
-				a: nodes[defaults.p11].hand.a,
-				r: nodes[defaults.p11].hand.r
+				a: positions[defaults.p11].hand.a,
+				r: positions[defaults.p11].hand.r
 			},
 			head: {	
-				a: nodes[defaults.p11].head.a,
-				r: nodes[defaults.p11].head.r
+				a: positions[defaults.p11].head.a,
+				r: positions[defaults.p11].head.r
 			},
 		}), {color: "white", nudge: 0.05});
 		//let controls = new VS3D.Controls(player);
@@ -185,8 +185,49 @@
 		player.ready();
 	}
 
-	function mirrorMoves()
+	function generalizeMoves()
 	{
+		// translations involving center hand position
+		let translates;
+		translates = {};
+		for (let menu in menus)
+		{
+			if (menu[2]==="2")
+			{
+				let translate = menu;
+				let fun = ()=>{
+					if (translate!==menu)
+					{
+						translates[translate] = [];
+						for (let transition of menus[menu])
+						{
+							let move = {txt: transition.txt, value: transition.value};
+							translates[translate].push(move);
+						}
+					}
+				};
+				if (menu[0]=="L")
+				{
+					translate = "C" + translate.substr(1);
+					fun();
+				}
+				if (menu[3]=="L")
+				{
+					translate = translate.substr(0,3) + "C" + translate.substr(4);
+					fun();
+				}
+				if (menu[0]=="L" && menu[3]=="L")
+				{
+					translate = "C" + translate.substr(1,2)  + "C" + translate.substr(4);;
+					fun();
+				}	
+			}
+		}
+		for (let translate in translates)
+		{
+			menus[translate] = translates[translate];
+		}
+		// mirror across Left/Right
 		let mirrors;
 		mirrors = {};
 		for (let menu in menus)
@@ -202,7 +243,14 @@
 				{
 					let move = {};
 					move.txt = transition.txt;
-					move.value = "-"+transition.value;
+					if (transition.value[0]=="-")
+					{
+						move.value = transition.value.substr(1);
+					}
+					else
+					{
+						move.value = "-"+transition.value;
+					}
 					mirrors[mirror].push(move);
 				}
 				
@@ -256,7 +304,7 @@
 		for (let j=0; j<=1; j++) {
 			let position = document.getElementById("p1"+j).value;
 			let prop = player.props[j];
-			let node = nodes[position];
+			let node = positions[position];
 			prop.prop.hand.a = node.hand.a;
 			prop.prop.hand.r = node.hand.r;
 			prop.prop.head.a = node.head.a;
@@ -274,23 +322,14 @@
 					while (menu.firstChild) {
 					    menu.removeChild(menu.firstChild);
 					}
-
 					let p0 = document.getElementById("p"+i+j).value;
 					let p1 = document.getElementById("p"+(i%4+1)+j).value;
-					let positions = p0+"2"+p1;
-					for (let transition of menus[positions])
+					let endpoints = p0+"2"+p1;
+					for (let transition of menus[endpoints])
 					{
 						option = document.createElement("option");
 						option.txt = transition.txt;
 						option.value = transition.value;
-						if (transition.value==="illegal" || transition.value==="-illegal")
-						{
-							menu.style.color = "red";
-						}
-						else
-						{
-							menu.style.color = "black";
-						}
 						txt = document.createTextNode(transition.txt);
 						option.appendChild(txt);
 						menu.appendChild(option);
@@ -318,9 +357,48 @@
 				{
 					menu.firstChild.selected = true;
 				}
-				//else if (caller[0]==="t" && caller[2]===j && caller[1]==i)
 				let transition = moves[menu.value];
-				prop.moves.push({hand: {va: transition.hand}, head: {va: transition.head}, beats: 2});
+				let p0 = document.getElementById("p"+i+j).value;
+				let p1 = document.getElementById("p"+(i%4+1)+j).value;
+				let endpoints = p0+"2"+p1;
+				// build and add the move
+				let move = {
+					hand: {va: transition.hand},
+					head: {va: transition.head},
+					beats: 2
+				};
+				if (p0[0]=="C" && p1[0]!="C")
+				{
+					if (p1[0]=="L")
+					{
+						move.pivot = {};
+					}
+					else if (p1[0]=="R")
+					{
+						move.pivot = {};
+					}
+				}
+				else if (p0[0]!="C" && p1[0]=="C")
+				{
+					if (p0[0]=="L")
+					{
+						move.pivot = {};
+					}
+					else if (p0[0]=="R")
+					{
+						move.pivot = {};
+					}
+				}
+				// right now the isolation is the only pivoted move
+				else if (menu.value=="isolation")
+				{
+					if (endpoints=="LL2LL")
+					{
+						move.pivot = {r: -1.5, a: LEFT};
+					}
+					// else if...
+				}
+				prop.moves.push(move);
 			}
 			prop.refit();
 		}
@@ -331,20 +409,6 @@
 
 	function shuffleMenus() {
 	}
-
-/*
-
-Alright, let's think about how this interface should work.
-- For positions, you're not allowed to do two of the same in a row.  So I could forbid that.
-- The tricky thing is...if you're altering only one at a time, that means you're locked into two choices.
-	- We could see if that works.
-	- We could trigger an invalid state.
-	- We could attempt to resolve.
-		- Any adjacent chain of things that works on both ends should be untouched.  And I think we prefer changing later stuff rather than earlier.
-	- We could just allow illegal transitions, and maybe make them red or something.  That's actually a really simple solution.
-- For transitions, I think we just automatically pick the first one in line after changing.
-
-*/
 
 </script>
 <body onload="init();">
