@@ -105,10 +105,7 @@
 			{txt: "Isolation", value: "isolation"},
 			{txt: "Inside Isolation", value: "-isolation"}
 		],
-		LR2LR: [
-			{txt: "Isolation", value: "isolation"},
-			{txt: "Inside Isolation", value: "-isolation"}
-		],
+		LR2LR: [],
 		LL2LR: [
 			{txt: "Pendulum", value: "pendulum"},
 			{txt: "Static Spin", value: "static"}
@@ -136,6 +133,10 @@
 			{txt: "Static Spin", value: "static"}
 		]
 	};
+	for (let move of menus.LL2LL)
+	{
+		menus.LR2LR.push({txt: move.txt, value: move.value});
+	}
 
 	function init() {
 		hideDebugger();
@@ -188,39 +189,48 @@
 	function generalizeMoves()
 	{
 		// translations involving center hand position
-		let translates;
-		translates = {};
+		let translates = {};
 		for (let menu in menus)
 		{
-			if (menu[2]==="2")
+			if (menu[2]!="2")
 			{
-				let translate = menu;
-				let fun = ()=>{
-					if (translate!==menu)
-					{
-						translates[translate] = [];
-						for (let transition of menus[menu])
-						{
-							let move = {txt: transition.txt, value: transition.value};
-							translates[translate].push(move);
-						}
-					}
-				};
-				if (menu[0]=="L")
+				continue;
+			}
+			let translate, dir;
+			translate = "C"+menu.substr(1);
+			if (translates[translate]===undefined)
+			{
+				translates[translate] = [];
+			}
+			for (let move of menus[menu])
+			{
+				dir = (menu[0]=="R") ? ">" : "<";
+				move = {txt: move.txt, value: move.value+dir};
+				translates[translate].push(move);
+			}
+			translate = "C"+menu.substr(1,2)+"C"+menu[4];
+			if (translates[translate]===undefined)
+			{
+				translates[translate] = [];
+			}
+			// don't translate opposite sides to center
+			if (menu[0]===menu[3])
+			{
+				for (let move of menus[menu])
 				{
-					translate = "C" + translate.substr(1);
-					fun();
+					translates[translate].push(move);
 				}
-				if (menu[3]=="L")
-				{
-					translate = translate.substr(0,3) + "C" + translate.substr(4);
-					fun();
-				}
-				if (menu[0]=="L" && menu[3]=="L")
-				{
-					translate = "C" + translate.substr(1,2)  + "C" + translate.substr(4);;
-					fun();
-				}	
+			}
+			translate = menu.substr(0,3)+"C"+menu[4];
+			if (translates[translate]===undefined)
+			{
+				translates[translate] = [];
+			}
+			for (let move of menus[menu])
+			{
+				dir = (menu[3]=="R") ? "<" : ">";
+				move = {txt: move.txt, value: move.value+dir};
+				translates[translate].push(move);	
 			}
 		}
 		for (let translate in translates)
@@ -258,7 +268,25 @@
 		}
 		for (let mirror in mirrors)
 		{
-			menus[mirror] = mirrors[mirror];
+			if (menus[mirror]===undefined)
+			{
+				menus[mirror] = [];
+			}
+			// to put the defaults in the right spot
+			if (["LR2CL"].includes(mirror))
+			{
+				for (let i=mirrors[mirror].length-1; i>=0; i--)
+				{
+					menus[mirror].unshift(mirrors[mirror][i]);
+				}
+			}
+			else 
+			{
+				for (let move of mirrors[mirror])
+				{
+					menus[mirror].push(move);
+				}
+			}
 		}
 		mirrors = {};
 		for (let move in moves)
@@ -271,6 +299,16 @@
 		for (let mirror in mirrors)
 		{
 			moves["-"+mirror] = mirrors[mirror];
+		}
+		translates = {};
+		for (let move in moves)
+		{
+			translates[move+">"] = moves[move];
+			translates[move+"<"] = moves[move];
+		}
+		for (let translate in translates)
+		{
+			moves[translate] = translates[translate];
 		}
 
 	}
@@ -325,6 +363,7 @@
 					let p0 = document.getElementById("p"+i+j).value;
 					let p1 = document.getElementById("p"+(i%4+1)+j).value;
 					let endpoints = p0+"2"+p1;
+					//console.log(endpoints);
 					for (let transition of menus[endpoints])
 					{
 						option = document.createElement("option");
@@ -360,43 +399,83 @@
 				let transition = moves[menu.value];
 				let p0 = document.getElementById("p"+i+j).value;
 				let p1 = document.getElementById("p"+(i%4+1)+j).value;
+				let position = positions[p0];
 				let endpoints = p0+"2"+p1;
 				// build and add the move
 				let move = {
-					hand: {va: transition.hand},
-					head: {va: transition.head},
+					hand: {
+						r: position.hand.r,
+						a: position.hand.a,
+						va: transition.hand
+					},
+					head: {
+						r: position.head.r,
+						a: position.head.a,
+						va: transition.head
+					},
 					beats: 2
 				};
-				if (p0[0]=="C" && p1[0]!="C")
+				// translate moves that involve center hand positions
+
+				let suffix = menu.value[menu.value.length-1];
+				if (suffix===">")
 				{
-					if (p1[0]=="L")
-					{
-						move.pivot = {};
-					}
-					else if (p1[0]=="R")
-					{
-						move.pivot = {};
-					}
+					move.pivot = {r0: 0, r1: 1, a: RIGHT};
 				}
-				else if (p0[0]!="C" && p1[0]=="C")
+				else if (suffix==="<")
 				{
-					if (p0[0]=="L")
-					{
-						move.pivot = {};
-					}
-					else if (p0[0]=="R")
-					{
-						move.pivot = {};
-					}
+					move.pivot = {r0: 0, r1: 1, a: LEFT};
 				}
-				// right now the isolation is the only pivoted move
-				else if (menu.value=="isolation")
+				else
 				{
-					if (endpoints=="LL2LL")
+					move.pivot = {r0: 0, r1: 0};
+				}
+
+				// if (p0[0]=="C" && p1[0]!="C")
+				// {
+				// 	if (p1[0]=="L")
+				// 	{
+				// 		move.pivot = {r0: 0, r1: 1, a: RIGHT};
+				// 	}
+				// 	else if (p1[0]=="R")
+				// 	{
+				// 		move.pivot = {r0: 0, r1: 1, a: LEFT};
+				// 	}
+				// }
+				// else if (p0[0]!="C" && p1[0]=="C")
+				// {
+				// 	if (p0[0]=="L")
+				// 	{
+				// 		move.pivot = {r0: 0, r1: 1, a: LEFT};
+				// 	}
+				// 	else if (p0[0]=="R")
+				// 	{
+				// 		move.pivot = {r0: 0, r1: 1, a: RIGHT};
+				// 	}
+				// }
+				// else
+				// {
+				// 	move.pivot = {r0: 0, r1: 0};
+				// }
+				// right now the isolation is the only move that needs special handling
+				if (menu.value=="isolation" || menu.value=="-isolation")
+				{
+					if (p0=="LL")
 					{
-						move.pivot = {r: -1.5, a: LEFT};
+						move.pivot = {r: 1.5, a: LEFT};
 					}
-					// else if...
+					else if (p0=="RR")
+					{
+						move.pivot = {r: 1.5, a: RIGHT};
+					}
+					else if (p0=="LR" || p=="CL")
+					{
+						move.pivot = {r: 0.5, a: LEFT};
+					}
+					else if (p0=="RL" || p=="CR")
+					{
+						move.pivot = {r: 0.5, a: RIGHT};
+					}
 				}
 				prop.moves.push(move);
 			}
