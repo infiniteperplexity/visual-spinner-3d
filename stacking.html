@@ -49,12 +49,17 @@
 		t4b: "mel"
 	};
 
+	// this system is difficult for more complex moves
 	let moves = {
 		pendulum: {hand: 0, head: -1},
+		static: {hand: 0, head: 1},
 		mel: {hand: -1, head: -3},
+		point: {hand: 1, head: 1},
 		charlie: {hand: -1, head: -2},
+		ainside: {hand: -1, head: 2},
 		extension: {hand: -1, head: -1},
 		antispin: {hand: -1, head: 3},
+		top: {hand: 1, head: -3},
 		illegal: {hand: 0, head: 0}
 	};
 
@@ -74,15 +79,31 @@
 		],
 		LL2LL: [{txt: "Illegal", value: "illegal"}],
 		LR2LR: [{txt: "Illegal", value: "illegal"}],
-		LL2LR: [{txt: "Pendulum", value: "pendulum"}],
-		LL2RL: [{txt: "Charlie's Stalls", value: "charlie"}],
+		LL2LR: [
+			{txt: "Pendulum", value: "pendulum"},
+			{txt: "Static Spin", value: "static"}
+		],
+		LL2RL: [
+			{txt: "Charlie's Stalls", value: "charlie"},
+			{txt: "Inside Antispin", value: "ainside"}
+		],
 		LL2RR: [
 			{txt: "Extension" , value: "extension"},
-			{txt: "Antispin" , value: "antispin"}
+			{txt: "Antispin" , value: "antispin"},
+			{txt: "Top Antispin" , value: "top"}
 		],
-		LR2RL: [{txt: "Mel's Stalls" , value: "mel"}],
-		LR2RR: [{txt: "Charlie's Stalls", value: "charlie"}],
-		RL2RR: [{txt: "Pendulum", value: "pendulum"}]
+		LR2RL: [
+			{txt: "Mel's Stalls" , value: "mel"},
+			{txt: "Point Isolation", value: "point"}
+		],
+		LR2RR: [
+			{txt: "Charlie's Stalls", value: "charlie"},
+			{txt: "Inside Antispin", value: "ainside"}
+		],
+		RL2RR: [
+			{txt: "Pendulum", value: "pendulum"},
+			{txt: "Static Spin", value: "static"}
+		]
 	};
 
 	function init() {
@@ -313,6 +334,12 @@ Alright, let's think about how this interface should work.
 		</div>
 	</div>
 	<div>
+		<div>
+			To do:
+			<ul>
+				<li>plane-break transitions</li>
+				<li>center hand positions</li>
+		</div>
 		<p>https://github.com/infiniteperplexity/visual-spinner-3d</p>
 		<p>infinite DOT perplexity AT gmail DOT com</p>
 		<button id="debugger" onclick="shuffleMenus();">debug</button>
