@@ -61,7 +61,7 @@
 		extension: {hand: -1, head: -1},
 		antispin: {hand: -1, head: 3},
 		top: {hand: 1, head: -3},
-		illegal: {hand: 0, head: 0}
+		isolation: {hand: 2, head: 2}
 	};
 
 
@@ -120,7 +120,8 @@
 		LL2RR: [
 			{txt: "Extension" , value: "extension"},
 			{txt: "Antispin" , value: "antispin"},
-			{txt: "Top Antispin" , value: "top"}
+			{txt: "Top Antispin", value: "top"},
+			{txt: "Top Inspin", value: "-antispin"}
 		],
 		LR2RL: [
 			{txt: "Mel's Stalls" , value: "mel"},
@@ -156,12 +157,24 @@
 		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
 		player = new VS3D.Player();
 		player.addProp(new VS3D.Prop({
-			hand: {a: aliases[defaults.p1a[0]]},
-			head: {a: aliases[defaults.p1a[1]]}
+			hand: {	
+				a: nodes[defaults.p10].hand.a,
+				r: nodes[defaults.p10].hand.r
+			},
+			head: {	
+				a: nodes[defaults.p10].head.a,
+				r: nodes[defaults.p10].head.r
+			},
 		}), {color: "red", nudge: 0.0});
 		player.addProp(new VS3D.Prop({
-			hand: {a: aliases[defaults.p1b[0]]},
-			head: {a: aliases[defaults.p1b[1]]}
+			hand: {	
+				a: nodes[defaults.p11].hand.a,
+				r: nodes[defaults.p11].hand.r
+			},
+			head: {	
+				a: nodes[defaults.p11].head.a,
+				r: nodes[defaults.p11].head.r
+			},
 		}), {color: "white", nudge: 0.05});
 		//let controls = new VS3D.Controls(player);
 		//renderer.div.appendChild(controls.div);
@@ -217,7 +230,7 @@
 	function setupMenus() {
 		let menu, option, txt;
 		for (let i=1; i<=4; i++) {
-			for (let j of ["a","b"]) {
+			for (let j=0; j<=1; j++) {
 				menu = document.getElementById("p"+i+j);
 				menu.onchange = resolvePositions;
 				for (let position of menus.positions) {
@@ -240,18 +253,21 @@
 	{
 		let caller = (e) ? e.target.id : null;
 		// set the initial position
-		for (let j of ["a","b"]) {
+		for (let j=0; j<=1; j++) {
 			let position = document.getElementById("p1"+j).value;
-			let prop = (j==="a") ? player.props[0] : player.props[1];
-			prop.prop.hand.a = aliases[position[0]];
-			prop.prop.head.a = aliases[position[1]];
+			let prop = player.props[j];
+			let node = nodes[position];
+			prop.prop.hand.a = node.hand.a;
+			prop.prop.hand.r = node.hand.r;
+			prop.prop.head.a = node.head.a;
+			prop.prop.head.r = node.head.r;
 		}
 		// rebuild the transition menus
 		for (let i=1; i<=4; i++) {
-			for (let j of ["a","b"]) 
+			for (let j=0; j<=1; j++) 
 			{
 				// update transitions only if an adjacent position was changed
-				if (caller===null || (caller[2]===j && (caller[1]==i || (i%4+1)==caller[1]))) {
+				if (caller===null || (caller[2]==j && (caller[1]==i || (i%4+1)==caller[1]))) {
 					let menu = document.getElementById("t"+i+j);
 					menu.onchange = resolveTransitions;
 					// this should happen only when something really changed
@@ -289,8 +305,8 @@
 	function resolveTransitions(e)
 	{
 		let caller = (e) ? e.target.id : null;
-		for (let j of ["a","b"]) {
-			let prop = (j==="a") ? player.props[0] : player.props[1];
+		for (let j=0; j<=1; j++) {
+			let prop = player.props[j];
 			prop.moves = [];
 			for (let i=1; i<=4; i++) {
 				let menu = document.getElementById("t"+i+j);
@@ -338,29 +354,29 @@ Alright, let's think about how this interface should work.
 	<div>
 		<div id="grid2">
 			<p>Beat 1:</p>
-			<select id="p1a"></select>
-			<select id="p1b"></select>
+			<select id="p10"></select>
+			<select id="p11"></select>
 			<p>Transition:</p>
-			<select id="t1a"></select>
-			<select id="t1b"></select>
+			<select id="t10"></select>
+			<select id="t11"></select>
 			<p>Beat 2:</p>
-			<select id="p2a"></select>
-			<select id="p2b"></select>
+			<select id="p20"></select>
+			<select id="p21"></select>
 			<p>Transition:</p>
-			<select id="t2a"></select>
-			<select id="t2b"></select>
+			<select id="t20"></select>
+			<select id="t21"></select>
 			<p>Beat 3:</p>
-			<select id="p3a"></select>
-			<select id="p3b"></select>
+			<select id="p30"></select>
+			<select id="p31"></select>
 			<p>Transition:</p>
-			<select id="t3a"></select>
-			<select id="t3b"></select>
+			<select id="t30"></select>
+			<select id="t31"></select>
 			<p>Beat 4:</p>
-			<select id="p4a"></select>
-			<select id="p4b"></select>
+			<select id="p40"></select>
+			<select id="p41"></select>
 			<p>Transition:</p>
-			<select id="t4a"></select>
-			<select id="t4b"></select>
+			<select id="t40"></select>
+			<select id="t41"></select>
 		</div>
 	</div>
 	<div>
