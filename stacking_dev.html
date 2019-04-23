@@ -228,7 +228,8 @@
 			}
 			for (let move of menus[menu])
 			{
-				dir = (menu[3]=="R") ? "<" : ">";
+				// I don't think this generalizes properly
+				dir = (menu[3]=="R") ? ">" : "<";
 				move = {txt: move.txt, value: move.value+dir};
 				translates[translate].push(move);	
 			}
@@ -260,6 +261,14 @@
 					else
 					{
 						move.value = "-"+transition.value;
+					}
+					if (transition.value[transition.value.length-1]==="<")
+					{
+						transition.value.replace("<",">");
+					}
+					else if (transition.value[transition.value.length-1]===">")
+					{
+						transition.value.replace(">","<");
 					}
 					mirrors[mirror].push(move);
 				}
@@ -460,6 +469,7 @@
 				// right now the isolation is the only move that needs special handling
 				if (menu.value=="isolation" || menu.value=="-isolation")
 				{
+					console.log("are we friggin' getting here?");
 					if (p0=="LL")
 					{
 						move.pivot = {r: 1.5, a: LEFT};
