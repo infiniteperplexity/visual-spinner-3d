@@ -29,7 +29,7 @@
 <script src="scripts/vs3d-buugeng.js"></script>
 <script>
 	let debug = VS3D.debug;
-	const {LEFT, RIGHT} = VS3D;
+	const {LEFT, RIGHT, DOWN, UP} = VS3D;
 	let renderer, player;
 	let defaults = {
 		p10: "LL",
@@ -62,6 +62,98 @@
 		antispin: {hand: -1, head: 3},
 		top: {hand: 1, head: -3},
 		isolation: {hand: 2, head: 2} // gets special handling
+	};
+
+	let moves2 = {
+		// static pendulum along side
+		pendLL2LL: {
+			hand: {a: LEFT, r: 1, va: 0},
+			head: {a: LEFT, va: -1}
+		},
+		// static pendulum in center
+		pendCL2CL: {
+			hand: {a: LEFT, r: 0, va: 0},
+			head: {a: LEFT, va: -1}
+		},
+		// Mel's inspin stalls from LR to RL
+		melLR2RL: {
+			hand: {a: LEFT, r: 1, va: -1}.
+			head: {a: RIGHT, va: -3}
+		},
+		// !!!inspin stalls from CL to CR
+		melCL2CR: {
+			pivot: {a: DOWN, r: 0.5, va: 0},
+			hand: {a: UP r: 0.5, va: 2},
+			head: {a: LEFT, va: 3}
+		},
+		// !!!inspin stalls from LR to CL
+		melLR2CL:
+		{
+			pivot: {a: LEFT, r0: 0, r1: 1},
+			hand: {a: LEFT, r: 1, va: -1}.
+			head: {a: RIGHT, va: -3}
+		},
+		// !!!inspin stalls from CL to RR
+		melCL2RR:
+		{
+			pivot: {a: LEFT, r0: 0, r1: 1},
+			hand: {a: LEFT, r: 1, va: -1}.
+			head: {a: RIGHT, va: -3}
+		},
+		// !!! CCW isolation at LL
+		isoccwLL2LL:
+		{
+			pivot: {a: LEFT, r: 1.5},
+			hand: {a: RIGHT, r: 0.5, va: -2},
+			head: {a: LEFT, va: -2}
+		},
+		/// !!! CCW isolation at LR
+		isoccwLR2LR:
+		{
+			pivot: {a: LEFT, r: 0.5},
+			hand: {a: LEFT, r: 0.5, va: -2},
+			head: {a: RIGHT, va: -2}
+		},
+		/// !!! CW isolation at LR
+		isocwLR2LR:
+		{
+			pivot: {a: LEFT, r: 0.5},
+			hand: {a: LEFT, r: 0.5, va: 2},
+			head: {a: RIGHT, va: 2}
+		},
+		/// !!! CCW isolation at CL
+		isoccwCL2CL:
+		{
+			pivot: {a: LEFT, r: 0.5},
+			hand: {a: RIGHT, r: 0.5, va: 2},
+			head: {a: LEFT, va: -2}
+		},
+		/// !!! CCW isolation at CL
+		isocwCL2CL:
+		{
+			pivot: {a: LEFT, r: 0.5},
+			hand: {a: RIGHT, r: 0.5, va: 2},
+			head: {a: LEFT, va: -2}
+		},
+		// Charlie's stalls from LL to RL
+		charLL2RL:
+		{
+			hand: {a: LEFT, r: 1, va: -1},
+			head: {a: LEFT, r: -3}
+		},
+		// Charlie's stalls from LL to CL
+		charLL2CL:
+		{
+			pivot: {a: LEFT, r0: 0, r1: 1},
+			hand: {a: LEFT, r: 1, va: -1},
+			head: {a: LEFT, r: -3}
+		},
+		// Point isolation from LR to RL
+		pointLR2RL:
+		{
+			hand: {a: LEFT, r: 1, va: 1},
+			head: {a: RIGHT, va: 1}
+		}
 	};
 
 
