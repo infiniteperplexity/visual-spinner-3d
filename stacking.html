@@ -51,53 +51,64 @@
 		t41: "char_RR2CR"
 	};
 
+
+
+	/*
+
+	To Do:
+
+	- Antispins
+	- Top antispins
+	- Point Isolations
+
+	*/
 	let moves = {
-		// *static pendulum along side
+		// ****Pendulums****
 		pend_LL2LR: {
 			hand: {a: LEFT, r: 1, va: 0},
 			head: {a: LEFT, va: -1}
 		},
-		// *static pendulum along side
 		pend_LR2LL: {
 			hand: {a: LEFT, r: 1, va: 0},
 			head: {a: RIGHT, va: 1}
 		},
-		// *static pendulum in center
 		pend_CL2CR: {
 			hand: {a: LEFT, r: 0, va: 0},
 			head: {a: LEFT, va: -1}
 		},
-		// *could make this a small pendulum rather than a slidey one
 		pend_LL2CR: {
 			pivot: {a: RIGHT, r0: 0, r1: 1},
 			hand: {a: LEFT, r: 1, va: 0},
 			head: {a: LEFT, va: -1}
 		},
-		// *could make this a small pendulum rather than a slidey one
 		pend_CL2RR: {
 			pivot: {a: RIGHT, r0: 0, r1: 1},
 			hand: {a: LEFT, r: 0, va: 0},
 			head: {a: LEFT, va: -1}
 		},
-		// *Mel's inspin stalls from LR to RL
+		// ****Extensions*****
+		extend_LL2RR:
+		{
+			hand: {a: LEFT, r: 1, va: -1},
+			head: {a: LEFT, va: -1}
+		},
+		// ****Inside stalls ("Mel")****
 		mel_LR2RL: {
 			hand: {a: LEFT, r: 1, va: -1},
 			head: {a: RIGHT, va: -3}
 		},
-		// !!!inspin stalls from CL to CR
+		// !!!
 		mel_CL2CR: {
 			pivot: {a: DOWN, r: 0.5, va: 0},
 			hand: {a: UP, r: 0.5, va: 2},
 			head: {a: LEFT, va: 3}
 		},
-		// *inspin stalls from LR to CL
 		mel_LR2CL:
 		{
 			pivot: {a: LEFT, r0: 0, r1: 1},
 			hand: {a: LEFT, r: 1, va: -1},
 			head: {a: RIGHT, va: -3}
 		},
-		// *inspin stalls from CL to LR
 		mel_CL2LR:
 		{
 			pivot: {a: LEFT, r0: 1, r1: 0},
@@ -111,82 +122,72 @@
 			hand: {a: LEFT, r: 1, va: -1},
 			head: {a: RIGHT, va: -3}
 		},
-		// * CCW isolation at LL
+		// ****Isolations****
 		isoccw_LL2LL:
 		{
 			pivot: {a: LEFT, r: 1.5},
 			hand: {a: RIGHT, r: 0.5, va: -2},
 			head: {a: LEFT, va: -2}
 		},
-		// *
 		isocw_LL2LL:
 		{
 			pivot: {a: LEFT, r: 1.5},
 			hand: {a: RIGHT, r: 0.5, va: 2},
 			head: {a: LEFT, va: 2}
 		},
-		/// * CCW isolation at LR
 		isoccw_LR2LR:
 		{
 			pivot: {a: LEFT, r: 0.5},
 			hand: {a: LEFT, r: 0.5, va: -2},
 			head: {a: RIGHT, va: -2}
 		},
-		/// * CW isolation at LR
 		isocw_LR2LR:
 		{
 			pivot: {a: LEFT, r: 0.5},
 			hand: {a: LEFT, r: 0.5, va: 2},
 			head: {a: RIGHT, va: 2}
 		},
-		/// * CCW isolation at CL
 		isoccw_CL2CL:
 		{
 			pivot: {a: LEFT, r: 0.5},
 			hand: {a: RIGHT, r: 0.5, va: -2},
 			head: {a: LEFT, va: -2}
 		},
-		/// * CCW isolation at CL
 		isocw_CL2CL:
 		{
 			pivot: {a: LEFT, r: 0.5},
 			hand: {a: RIGHT, r: 0.5, va: 2},
 			head: {a: LEFT, va: 2}
 		},
-		// *Charlie's stalls from LL to RL
+		// ****Outside/Inside Stalls ("Charlie")****
 		char_LL2RL:
 		{
 			hand: {a: LEFT, r: 1, va: -1},
 			head: {a: LEFT, va: -2}
 		},
-		// *Charlie's stalls from RL to LL
 		char_RL2LL:
 		{
 			hand: {a: RIGHT, r: 1, va: 1},
 			head: {a: LEFT, va: 2}
 		},
-		// *Charlie's stalls from LL to CL
 		char_LL2CL:
 		{
 			pivot: {a: LEFT, r0: 0, r1: 1},
 			hand: {a: LEFT, r: 1, va: -1},
 			head: {a: LEFT, va: -2}
 		},
-		// *Charlie's stalls from CL to LL
 		char_CL2LL:
 		{
 			pivot: {a: LEFT, r0: 1, r1: 0},
 			hand: {a: RIGHT, r: 1, va: 1},
 			head: {a: LEFT, va: 2}
 		},
-		// *Charlie's stalls from LR to CR
 		char_LR2CR:
 		{
 			pivot: {a: LEFT, r0: 0, r1: 1},
 			hand: {a: LEFT, r: 1, va: -1},
 			head: {a: RIGHT, va: -2}
 		},
-		// *Charlie's stalls from CL to RL
 		char_CL2RL:
 		{
 			pivot: {a: RIGHT, r0: 1, r1: 0},
@@ -256,7 +257,7 @@
 			{txt: "Charlie's Stalls", value: "char_LL2RL"}
 		],
 		LL2RR: [
-			{txt: "Extension" , value: "extens_LL2RR"}
+			{txt: "Extension" , value: "extend_LL2RR"}
 		],
 		LR2RL: [
 			{txt: "Mel's Stalls" , value: "mel_LR2RL"}
@@ -352,6 +353,10 @@
 		for (let move in moves)
 		{
 			moves[move].beats = 2;
+			if (!moves[move].p)
+			{
+				moves[move].p = VS3D.WALL;
+			}
 			if (!moves[move].pivot)
 			{
 				moves[move].pivot = {a: LEFT, r: 0};
