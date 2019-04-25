@@ -33,14 +33,23 @@
 	let renderer, player;
 	let defaults = {
 		p10: "LL",
-		
 		t10: "pend_LL2LR",
 		p20: "LR",
 		t20: "mel_LR2RL",
 		p30: "RL",
 		t30: "mel_RL2LR",
-		t40: "pend_LR2LL",
 		p40: "LR",
+		t40: "pend_LR2LL",
+
+		// p10: "LR",
+		// t10: "pend_LR2LL",
+		// p20: "LL",
+		// t20: "char_LL2RL",
+		// p30: "RL",
+		// t30: "char_RL2LL",
+		// p40: "LL",
+		// t40: "pend_LL2LR",
+
 		p11: "LR",
 		t11: "mel_LR2RL",	
 		p21: "RL",
@@ -51,55 +60,23 @@
 		t41: "mel_RL2LR"
 	};
 
-	let defaults2 = {
-		p10: "LL",
-		p11: "LR",
-		t10: "pendulum",
-		t11: "mel",
-		p20: "LR",
-		p21: "RL",
-		t20: "mel",
-		t21: "pendulum",
-		p30: "RL",
-		p31: "RR",
-		t30: "mel",
-		t31: "pendulum",
-		p40: "LR",
-		p41: "RL",
-		t40: "pendulum",
-		t41: "mel"
-	};
-
-	// this system is difficult for more complex moves
-	let moves2 = {
-		pendulum: {hand: 0, head: -1},
-		static: {hand: 0, head: 1},
-		mel: {hand: -1, head: -3},
-		point: {hand: 1, head: 1},
-		charlie: {hand: -1, head: -2},
-		ainside: {hand: -1, head: 2},
-		extension: {hand: -1, head: -1},
-		antispin: {hand: -1, head: 3},
-		top: {hand: 1, head: -3},
-		isolation: {hand: 2, head: 2} // gets special handling
-	};
-
 	let moves = {
-		// static pendulum along side
+		// *static pendulum along side
 		pend_LL2LR: {
 			hand: {a: LEFT, r: 1, va: 0},
 			head: {a: LEFT, va: -1}
 		},
+		// *static pendulum along side
 		pend_LR2LL: {
 			hand: {a: LEFT, r: 1, va: 0},
 			head: {a: RIGHT, va: 1}
 		},
-		// static pendulum in center
+		// !!!static pendulum in center
 		pend_CL2CL: {
 			hand: {a: LEFT, r: 0, va: 0},
 			head: {a: LEFT, va: -1}
 		},
-		// Mel's inspin stalls from LR to RL
+		// *Mel's inspin stalls from LR to RL
 		mel_LR2RL: {
 			hand: {a: LEFT, r: 1, va: -1},
 			head: {a: RIGHT, va: -3}
@@ -110,12 +87,19 @@
 			hand: {a: UP, r: 0.5, va: 2},
 			head: {a: LEFT, va: 3}
 		},
-		// !!!inspin stalls from LR to CL
+		// *inspin stalls from LR to CL
 		mel_LR2CL:
 		{
 			pivot: {a: LEFT, r0: 0, r1: 1},
 			hand: {a: LEFT, r: 1, va: -1},
 			head: {a: RIGHT, va: -3}
+		},
+		// *inspin stalls from CL to LR
+		mel_CL2LR:
+		{
+			pivot: {a: LEFT, r0: 1, r1: 0},
+			hand: {a: RIGHT, r: 1, va: 1},
+			head: {a: LEFT, va: 3}
 		},
 		// !!!inspin stalls from CL to RR
 		mel_CL2RR:
@@ -159,20 +143,26 @@
 			hand: {a: RIGHT, r: 0.5, va: 2},
 			head: {a: LEFT, va: -2}
 		},
-		// Charlie's stalls from LL to RL
+		// *Charlie's stalls from LL to RL
 		char_LL2RL:
 		{
 			hand: {a: LEFT, r: 1, va: -1},
-			head: {a: LEFT, r: -3}
+			head: {a: LEFT, va: -2}
 		},
-		// Charlie's stalls from LL to CL
+		// *Charlie's stalls from RL to LL
+		char_RL2LL:
+		{
+			hand: {a: RIGHT, r: 1, va: 1},
+			head: {a: LEFT, va: 2}
+		},
+		// !!!Charlie's stalls from LL to CL
 		char_LL2CL:
 		{
 			pivot: {a: LEFT, r0: 0, r1: 1},
 			hand: {a: LEFT, r: 1, va: -1},
-			head: {a: LEFT, r: -3}
+			head: {a: LEFT, va: -2}
 		},
-		// Point isolation from LR to RL
+		// !!!Point isolation from LR to RL
 		point_LR2RL:
 		{
 			hand: {a: LEFT, r: 1, va: 1},
@@ -240,54 +230,18 @@
 		],
 		LR2RR: [
 			{txt: "Charlie's Stalls", value: "char_LR2RR"}
+		],
+		LL2CL: [
+		],
+		CL2LL: [
+		],
+		LR2CL: [
+			{txt: "Mel's Stalls" , value: "mel_LR2CL"}
+		],
+		CL2LR: [
+			{txt: "Mel's Stalls" , value: "mel_CL2LR"}
 		]
 	};
-
-	let menus2 = {
-		positions: [
-			{txt: "Left, Left", value: "LL"},
-			{txt: "Left, Right", value: "LR"},
-			{txt: "Center, Left", value: "CL"},
-			{txt: "Center, Right", value: "CR"},
-			{txt: "Right, Left", value: "RL"},
-			{txt: "Right, Right", value: "RR"}
-		],
-		LL2LL: [
-			{txt: "Isolation", value: "isolation"},
-			{txt: "Inside Isolation", value: "-isolation"}
-		],
-		LR2LR: [],
-		LL2LR: [
-			{txt: "Pendulum", value: "pendulum"},
-			{txt: "Static Spin", value: "static"}
-		],
-		LL2RL: [
-			{txt: "Charlie's Stalls", value: "charlie"},
-			{txt: "Inside Antispin", value: "ainside"}
-		],
-		LL2RR: [
-			{txt: "Extension" , value: "extension"},
-			{txt: "Antispin" , value: "antispin"},
-			{txt: "Top Antispin", value: "top"},
-			{txt: "Top Inspin", value: "-antispin"}
-		],
-		LR2RL: [
-			{txt: "Mel's Stalls" , value: "mel"},
-			{txt: "Point Isolation", value: "point"}
-		],
-		LR2RR: [
-			{txt: "Charlie's Stalls", value: "charlie"},
-			{txt: "Inside Antispin", value: "ainside"}
-		],
-		RL2RR: [
-			{txt: "Pendulum", value: "pendulum"},
-			{txt: "Static Spin", value: "static"}
-		]
-	};
-	for (let move of menus.LL2LL)
-	{
-		menus.LR2LR.push({txt: move.txt, value: move.value});
-	}
 
 	function init() {
 		hideDebugger();
@@ -342,6 +296,15 @@
 		for (let move in moves)
 		{
 			moves[move].beats = 2;
+			if (!moves[move].pivot)
+			{
+				moves[move].pivot = {a: LEFT, r: 0};
+
+			}
+			if (!moves[move].pivot.va)
+			{
+				moves[move].pivot.va = 0;
+			}
 		}
 		// mirror across Left/Right
 		let mirrors;
@@ -496,6 +459,7 @@
 			let prop = player.props[j];
 			prop.moves = [];
 			for (let i=1; i<=4; i++) {
+			//for (let i=1; i<=2; i++) {
 				let menu = document.getElementById("t"+i+j);
 				// choose default if adjacent positions were changed and on page load
 				if (caller===null) {
