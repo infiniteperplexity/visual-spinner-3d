@@ -29,87 +29,280 @@
 <script src="scripts/vs3d-buugeng.js"></script>
 <script>
 	let debug = VS3D.debug;
+	const {LEFT, RIGHT, DOWN, UP, clone, angle$nearly, unwind} = VS3D;
 	let renderer, player;
 	let defaults = {
-		p1a: "LL",
-		p1b: "LR",
-		t1a: "pendulum",
-		t1b: "mel",
-		p2a: "LR",
-		p2b: "RL",
-		t2a: "mel",
-		t2b: "pendulum",
-		p3a: "RL",
-		p3b: "RR",
-		t3a: "mel",
-		t3b: "pendulum",
-		p4a: "LR",
-		p4b: "RL",
-		t4a: "pendulum",
-		t4b: "mel"
+		p10: "LR",
+		t10: "pend_LR2LL",
+		p20: "LL",
+		t20: "char_LL2CL",
+		p30: "CL",
+		t30: "char_CL2LL",
+		p40: "LL",
+		t40: "pend_LL2LR",
+
+		p11: "CR",
+		t11: "char_CR2RR",	
+		p21: "RR",
+		t21: "pend_RR2RL",
+		p31: "RL",
+		t31: "pend_RL2RR",
+		p41: "RR",
+		t41: "char_RR2CR"
 	};
 
-	// this system is difficult for more complex moves
 	let moves = {
-		pendulum: {hand: 0, head: -1},
-		static: {hand: 0, head: 1},
-		mel: {hand: -1, head: -3},
-		point: {hand: 1, head: 1},
-		charlie: {hand: -1, head: -2},
-		ainside: {hand: -1, head: 2},
-		extension: {hand: -1, head: -1},
-		antispin: {hand: -1, head: 3},
-		top: {hand: 1, head: -3},
-		illegal: {hand: 0, head: 0}
+		// *static pendulum along side
+		pend_LL2LR: {
+			hand: {a: LEFT, r: 1, va: 0},
+			head: {a: LEFT, va: -1}
+		},
+		// *static pendulum along side
+		pend_LR2LL: {
+			hand: {a: LEFT, r: 1, va: 0},
+			head: {a: RIGHT, va: 1}
+		},
+		// *static pendulum in center
+		pend_CL2CR: {
+			hand: {a: LEFT, r: 0, va: 0},
+			head: {a: LEFT, va: -1}
+		},
+		// *could make this a small pendulum rather than a slidey one
+		pend_LL2CR: {
+			pivot: {a: RIGHT, r0: 0, r1: 1},
+			hand: {a: LEFT, r: 1, va: 0},
+			head: {a: LEFT, va: -1}
+		},
+		// *could make this a small pendulum rather than a slidey one
+		pend_CL2RR: {
+			pivot: {a: RIGHT, r0: 0, r1: 1},
+			hand: {a: LEFT, r: 0, va: 0},
+			head: {a: LEFT, va: -1}
+		},
+		// *Mel's inspin stalls from LR to RL
+		mel_LR2RL: {
+			hand: {a: LEFT, r: 1, va: -1},
+			head: {a: RIGHT, va: -3}
+		},
+		// !!!inspin stalls from CL to CR
+		mel_CL2CR: {
+			pivot: {a: DOWN, r: 0.5, va: 0},
+			hand: {a: UP, r: 0.5, va: 2},
+			head: {a: LEFT, va: 3}
+		},
+		// *inspin stalls from LR to CL
+		mel_LR2CL:
+		{
+			pivot: {a: LEFT, r0: 0, r1: 1},
+			hand: {a: LEFT, r: 1, va: -1},
+			head: {a: RIGHT, va: -3}
+		},
+		// *inspin stalls from CL to LR
+		mel_CL2LR:
+		{
+			pivot: {a: LEFT, r0: 1, r1: 0},
+			hand: {a: RIGHT, r: 1, va: 1},
+			head: {a: LEFT, va: 3}
+		},
+		// !!!inspin stalls from CL to RR
+		mel_CL2RR:
+		{
+			pivot: {a: LEFT, r0: 0, r1: 1},
+			hand: {a: LEFT, r: 1, va: -1},
+			head: {a: RIGHT, va: -3}
+		},
+		// * CCW isolation at LL
+		isoccw_LL2LL:
+		{
+			pivot: {a: LEFT, r: 1.5},
+			hand: {a: RIGHT, r: 0.5, va: -2},
+			head: {a: LEFT, va: -2}
+		},
+		// *
+		isocw_LL2LL:
+		{
+			pivot: {a: LEFT, r: 1.5},
+			hand: {a: RIGHT, r: 0.5, va: 2},
+			head: {a: LEFT, va: 2}
+		},
+		/// * CCW isolation at LR
+		isoccw_LR2LR:
+		{
+			pivot: {a: LEFT, r: 0.5},
+			hand: {a: LEFT, r: 0.5, va: -2},
+			head: {a: RIGHT, va: -2}
+		},
+		/// * CW isolation at LR
+		isocw_LR2LR:
+		{
+			pivot: {a: LEFT, r: 0.5},
+			hand: {a: LEFT, r: 0.5, va: 2},
+			head: {a: RIGHT, va: 2}
+		},
+		/// * CCW isolation at CL
+		isoccw_CL2CL:
+		{
+			pivot: {a: LEFT, r: 0.5},
+			hand: {a: RIGHT, r: 0.5, va: -2},
+			head: {a: LEFT, va: -2}
+		},
+		/// * CCW isolation at CL
+		isocw_CL2CL:
+		{
+			pivot: {a: LEFT, r: 0.5},
+			hand: {a: RIGHT, r: 0.5, va: 2},
+			head: {a: LEFT, va: 2}
+		},
+		// *Charlie's stalls from LL to RL
+		char_LL2RL:
+		{
+			hand: {a: LEFT, r: 1, va: -1},
+			head: {a: LEFT, va: -2}
+		},
+		// *Charlie's stalls from RL to LL
+		char_RL2LL:
+		{
+			hand: {a: RIGHT, r: 1, va: 1},
+			head: {a: LEFT, va: 2}
+		},
+		// *Charlie's stalls from LL to CL
+		char_LL2CL:
+		{
+			pivot: {a: LEFT, r0: 0, r1: 1},
+			hand: {a: LEFT, r: 1, va: -1},
+			head: {a: LEFT, va: -2}
+		},
+		// *Charlie's stalls from CL to LL
+		char_CL2LL:
+		{
+			pivot: {a: LEFT, r0: 1, r1: 0},
+			hand: {a: RIGHT, r: 1, va: 1},
+			head: {a: LEFT, va: 2}
+		},
+		// *Charlie's stalls from LR to CR
+		char_LR2CR:
+		{
+			pivot: {a: LEFT, r0: 0, r1: 1},
+			hand: {a: LEFT, r: 1, va: -1},
+			head: {a: RIGHT, va: -2}
+		},
+		// *Charlie's stalls from CL to RL
+		char_CL2RL:
+		{
+			pivot: {a: RIGHT, r0: 1, r1: 0},
+			hand: {a: LEFT, r: 1, va: -1},
+			head: {a: LEFT, va: -2}
+		},
+		// !!!Point isolation from LR to RL
+		point_LR2CL:
+		{
+			hand: {a: LEFT, r: 1, va: 1},
+			head: {a: RIGHT, va: 1}
+		}
 	};
 
-	let aliases = {
-		a: 0,
-		b: 1,
-		L: VS3D.LEFT,
-		R: VS3D.RIGHT
+
+	let positions = {
+		LL: {
+			hand: {r: 1, a: LEFT},
+			head: {r: 1, a: LEFT}
+		},
+		LR: {
+			hand: {r: 1, a: LEFT},
+			head: {r: 1, a: RIGHT}
+		},
+		CL: {
+			hand: {r: 0, a: LEFT},
+			head: {r: 1, a: LEFT}
+		},
+		CR: {
+			hand: {r: 0, a: RIGHT},
+			head: {r: 1, a: RIGHT}
+		},
+		RL: {
+			hand: {r: 1, a: RIGHT},
+			head: {r: 1, a: LEFT}
+		},
+		RR: {
+			hand: {r: 1, a: RIGHT},
+			head: {r: 1, a: RIGHT}
+		}
 	};
 
 	let menus = {
 		positions: [
 			{txt: "Left, Left", value: "LL"},
 			{txt: "Left, Right", value: "LR"},
+			{txt: "Center, Left", value: "CL"},
+			{txt: "Center, Right", value: "CR"},
 			{txt: "Right, Left", value: "RL"},
 			{txt: "Right, Right", value: "RR"}
 		],
-		LL2LL: [{txt: "Illegal", value: "illegal"}],
-		LR2LR: [{txt: "Illegal", value: "illegal"}],
+		LL2LL: [
+			{txt: "Isolation", value: "isoccw_LL2LL"},
+			{txt: "-Isolation", value: "isocw_LL2LL"}
+		],
+		LR2LR: [
+			{txt: "Isolation", value: "isoccw_LR2LR"},
+			{txt: "-Isolation", value: "isocw_LR2LR"}
+		],
 		LL2LR: [
-			{txt: "Pendulum", value: "pendulum"},
-			{txt: "Static Spin", value: "static"}
+			{txt: "Pendulum", value: "pend_LL2LR"}
+		],
+		LR2LL: [
+			{txt: "Pendulum", value: "pend_LR2LL"}
 		],
 		LL2RL: [
-			{txt: "Charlie's Stalls", value: "charlie"},
-			{txt: "Inside Antispin", value: "ainside"}
+			{txt: "Charlie's Stalls", value: "char_LL2RL"}
 		],
 		LL2RR: [
-			{txt: "Extension" , value: "extension"},
-			{txt: "Antispin" , value: "antispin"},
-			{txt: "Top Antispin" , value: "top"}
+			{txt: "Extension" , value: "extens_LL2RR"}
 		],
 		LR2RL: [
-			{txt: "Mel's Stalls" , value: "mel"},
-			{txt: "Point Isolation", value: "point"}
+			{txt: "Mel's Stalls" , value: "mel_LR2RL"}
 		],
 		LR2RR: [
-			{txt: "Charlie's Stalls", value: "charlie"},
-			{txt: "Inside Antispin", value: "ainside"}
+			{txt: "Charlie's Stalls", value: "char_LR2RR"}
 		],
-		RL2RR: [
-			{txt: "Pendulum", value: "pendulum"},
-			{txt: "Static Spin", value: "static"}
+		LL2CL: [
+			{txt: "Charlie's Stalls", value: "char_LL2CL"}
+		],
+		CL2LL: [
+			{txt: "Charlie's Stalls", value: "char_CL2LL"}
+		],
+		LL2CR: [
+			{txt: "Pendulum", value: "pend_LL2CR"}
+		],
+		LR2CL: [
+			{txt: "Mel's Stalls" , value: "mel_LR2CL"}
+			// point iso
+		],
+		CL2LR: [
+			{txt: "Mel's Stalls" , value: "mel_CL2LR"},
+			// point iso
+		],
+		LR2CR: [
+			{txt: "Charlie's Stalls", value: "char_LR2CR"}
+		],
+		CL2CL: [
+			{txt: "Isolation", value: "isoccw_CL2CL"},
+			{txt: "-Isolation", value: "isocw_CL2CL"}
+		],
+		CL2CR: [
+			{txt: "Pendulum", value: "pend_CL2CR"}
+		],
+		CL2RL: [
+			{txt: "Charlie's Stalls", value: "char_CL2RL"}
+		],
+		CL2RR: [
+			{txt: "Pendulum", value: "pend_CL2RR"}
 		]
 	};
 
 	function init() {
 		hideDebugger();
 		setupPlayer();
-		mirrorMoves();
+		generalizeMoves();
 		setupMenus();
 		resolvePositions();
 	}
@@ -126,12 +319,24 @@
 		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
 		player = new VS3D.Player();
 		player.addProp(new VS3D.Prop({
-			hand: {a: aliases[defaults.p1a[0]]},
-			head: {a: aliases[defaults.p1a[1]]}
+			hand: {	
+				a: positions[defaults.p10].hand.a,
+				r: positions[defaults.p10].hand.r
+			},
+			head: {	
+				a: positions[defaults.p10].head.a,
+				r: positions[defaults.p10].head.r
+			},
 		}), {color: "red", nudge: 0.0});
 		player.addProp(new VS3D.Prop({
-			hand: {a: aliases[defaults.p1b[0]]},
-			head: {a: aliases[defaults.p1b[1]]}
+			hand: {	
+				a: positions[defaults.p11].hand.a,
+				r: positions[defaults.p11].hand.r
+			},
+			head: {	
+				a: positions[defaults.p11].head.a,
+				r: positions[defaults.p11].head.r
+			},
 		}), {color: "white", nudge: 0.05});
 		//let controls = new VS3D.Controls(player);
 		//renderer.div.appendChild(controls.div);
@@ -142,10 +347,25 @@
 		player.ready();
 	}
 
-	function mirrorMoves()
+	function generalizeMoves()
 	{
+		for (let move in moves)
+		{
+			moves[move].beats = 2;
+			if (!moves[move].pivot)
+			{
+				moves[move].pivot = {a: LEFT, r: 0};
+
+			}
+			if (!moves[move].pivot.va)
+			{
+				moves[move].pivot.va = 0;
+			}
+		}
+		// mirror across Left/Right
 		let mirrors;
 		mirrors = {};
+		// populate the menus with keys to mirrored moves
 		for (let menu in menus)
 		{
 			if (menu[2]==="2")
@@ -159,7 +379,11 @@
 				{
 					let move = {};
 					move.txt = transition.txt;
-					move.value = "-"+transition.value;
+					let value = transition.value;
+					value = value.replace(/L/g, "X");
+					value = value.replace(/R/g, "L");
+					value = value.replace(/X/g, "R");
+					move.value = value;
 					mirrors[mirror].push(move);
 				}
 				
@@ -167,27 +391,60 @@
 		}
 		for (let mirror in mirrors)
 		{
-			menus[mirror] = mirrors[mirror];
+			if (menus[mirror]===undefined)
+			{
+				menus[mirror] = [];
+			}
+			// to put the defaults in the right spot
+			if (["LR2CL"].includes(mirror))
+			{
+				for (let i=mirrors[mirror].length-1; i>=0; i--)
+				{
+					menus[mirror].unshift(mirrors[mirror][i]);
+				}
+			}
+			else 
+			{
+				for (let move of mirrors[mirror])
+				{
+					menus[mirror].push(move);
+				}
+			}
 		}
+		// build the mirrored moves themselves
 		mirrors = {};
 		for (let move in moves)
 		{
-			let mirror = {hand: {}, head: {}};
-			mirror.hand = -moves[move].hand;
-			mirror.head = -moves[move].head;
+			let mirror = VS3D.clone(moves[move]);
+			for (let node of ["pivot", "hand", "head"])
+			{
+				if (!mirror[node])
+				{
+					continue;
+				}
+				if ([LEFT, RIGHT].includes(mirror[node].a))
+				{
+					mirror[node].a = VS3D.angle(VS3D.HALF+mirror[node].a);
+				}
+				mirror[node].va = -mirror[node].va;
+			}
 			mirrors[move] = mirror;
 		}
 		for (let mirror in mirrors)
 		{
-			moves["-"+mirror] = mirrors[mirror];
-		}
+			let key = mirror.replace(/L/g, "X");
+			key = key.replace(/R/g, "L");
+			key = key.replace(/X/g, "R");
+			moves[key] = mirrors[mirror];
 
+
+		}
 	}
 
 	function setupMenus() {
 		let menu, option, txt;
 		for (let i=1; i<=4; i++) {
-			for (let j of ["a","b"]) {
+			for (let j=0; j<=1; j++) {
 				menu = document.getElementById("p"+i+j);
 				menu.onchange = resolvePositions;
 				for (let position of menus.positions) {
@@ -210,41 +467,36 @@
 	{
 		let caller = (e) ? e.target.id : null;
 		// set the initial position
-		for (let j of ["a","b"]) {
+		for (let j=0; j<=1; j++) {
 			let position = document.getElementById("p1"+j).value;
-			let prop = (j==="a") ? player.props[0] : player.props[1];
-			prop.prop.hand.a = aliases[position[0]];
-			prop.prop.head.a = aliases[position[1]];
+			let prop = player.props[j];
+			let node = positions[position];
+			prop.prop.hand.a = node.hand.a;
+			prop.prop.hand.r = node.hand.r;
+			prop.prop.head.a = node.head.a;
+			prop.prop.head.r = node.head.r;
 		}
 		// rebuild the transition menus
 		for (let i=1; i<=4; i++) {
-			for (let j of ["a","b"]) 
+			for (let j=0; j<=1; j++) 
 			{
 				// update transitions only if an adjacent position was changed
-				if (caller===null || (caller[2]===j && (caller[1]==i || (i%4+1)==caller[1]))) {
+				if (caller===null || (caller[2]==j && (caller[1]==i || (i%4+1)==caller[1]))) {
 					let menu = document.getElementById("t"+i+j);
 					menu.onchange = resolveTransitions;
 					// this should happen only when something really changed
 					while (menu.firstChild) {
 					    menu.removeChild(menu.firstChild);
 					}
-
 					let p0 = document.getElementById("p"+i+j).value;
 					let p1 = document.getElementById("p"+(i%4+1)+j).value;
-					let positions = p0+"2"+p1;
-					for (let transition of menus[positions])
+					let endpoints = p0+"2"+p1;
+					//console.log(endpoints);
+					for (let transition of menus[endpoints])
 					{
 						option = document.createElement("option");
 						option.txt = transition.txt;
 						option.value = transition.value;
-						if (transition.value==="illegal" || transition.value==="-illegal")
-						{
-							menu.style.color = "red";
-						}
-						else
-						{
-							menu.style.color = "black";
-						}
 						txt = document.createTextNode(transition.txt);
 						option.appendChild(txt);
 						menu.appendChild(option);
@@ -259,22 +511,24 @@
 	function resolveTransitions(e)
 	{
 		let caller = (e) ? e.target.id : null;
-		for (let j of ["a","b"]) {
-			let prop = (j==="a") ? player.props[0] : player.props[1];
+		for (let j=0; j<=1; j++) {
+			let prop = player.props[j];
 			prop.moves = [];
 			for (let i=1; i<=4; i++) {
+			//for (let i=1; i<=2; i++) {
 				let menu = document.getElementById("t"+i+j);
 				// choose default if adjacent positions were changed and on page load
 				if (caller===null) {
+					// this actually chooses the top item, not the set default
 					menu.firstChild.selected = true;
 				}
 				else if (caller[0]==="p" && caller[2]===j && (caller[1]==i || (i%4+1)==caller[1]))
 				{
 					menu.firstChild.selected = true;
 				}
-				//else if (caller[0]==="t" && caller[2]===j && caller[1]==i)
-				let transition = moves[menu.value];
-				prop.moves.push({hand: {va: transition.hand}, head: {va: transition.head}, beats: 2});
+				console.log("t"+i+j, menu.value);
+				let transition = clone(moves[menu.value]);
+				prop.moves.push(transition);
 			}
 			prop.refit();
 		}
@@ -286,20 +540,6 @@
 	function shuffleMenus() {
 	}
 
-/*
-
-Alright, let's think about how this interface should work.
-- For positions, you're not allowed to do two of the same in a row.  So I could forbid that.
-- The tricky thing is...if you're altering only one at a time, that means you're locked into two choices.
-	- We could see if that works.
-	- We could trigger an invalid state.
-	- We could attempt to resolve.
-		- Any adjacent chain of things that works on both ends should be untouched.  And I think we prefer changing later stuff rather than earlier.
-	- We could just allow illegal transitions, and maybe make them red or something.  That's actually a really simple solution.
-- For transitions, I think we just automatically pick the first one in line after changing.
-
-*/
-
 </script>
 <body onload="init();">
 <a href="https://github.com/infiniteperplexity/visual-spinner-3d">See more at the VisualSpinner3D main site.</a>
@@ -308,29 +548,29 @@ Alright, let's think about how this interface should work.
 	<div>
 		<div id="grid2">
 			<p>Beat 1:</p>
-			<select id="p1a"></select>
-			<select id="p1b"></select>
+			<select id="p10"></select>
+			<select id="p11"></select>
 			<p>Transition:</p>
-			<select id="t1a"></select>
-			<select id="t1b"></select>
+			<select id="t10"></select>
+			<select id="t11"></select>
 			<p>Beat 2:</p>
-			<select id="p2a"></select>
-			<select id="p2b"></select>
+			<select id="p20"></select>
+			<select id="p21"></select>
 			<p>Transition:</p>
-			<select id="t2a"></select>
-			<select id="t2b"></select>
+			<select id="t20"></select>
+			<select id="t21"></select>
 			<p>Beat 3:</p>
-			<select id="p3a"></select>
-			<select id="p3b"></select>
+			<select id="p30"></select>
+			<select id="p31"></select>
 			<p>Transition:</p>
-			<select id="t3a"></select>
-			<select id="t3b"></select>
+			<select id="t30"></select>
+			<select id="t31"></select>
 			<p>Beat 4:</p>
-			<select id="p4a"></select>
-			<select id="p4b"></select>
+			<select id="p40"></select>
+			<select id="p41"></select>
 			<p>Transition:</p>
-			<select id="t4a"></select>
-			<select id="t4b"></select>
+			<select id="t40"></select>
+			<select id="t41"></select>
 		</div>
 	</div>
 	<div>
@@ -338,7 +578,6 @@ Alright, let's think about how this interface should work.
 			To do:
 			<ul>
 				<li>plane-break transitions</li>
-				<li>center hand positions</li>
 		</div>
 		<p>https://github.com/infiniteperplexity/visual-spinner-3d</p>
 		<p>infinite DOT perplexity AT gmail DOT com</p>

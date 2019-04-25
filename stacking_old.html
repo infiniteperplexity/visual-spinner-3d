@@ -1,0 +1,349 @@
+<!--Distributed under GNU Public License version 3-->
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>VisualSpinner3D: Horizontal Stacking, by Glenn Wright</title>
+<style>
+	body {background-color: #99CCFF}
+	#grid1 {
+		width: 450px;
+        display: grid;
+        grid-column-gap: 3px;
+        grid-row-gap: 3px;
+        grid-template-rows: 400px auto;
+        grid-template-columns: 400px auto;
+     }
+     #grid2 {
+     	width: 450px;
+        display: grid;
+        grid-template-rows: auto auto auto auto auto auto;
+        grid-template-columns: 80px 100px 100px;
+     }
+</style>
+</head>
+<script src="scripts/vs3d.js"></script>
+<script src="scripts/vs3d-moves.js"></script>
+<script src="scripts/three.min.js"></script>
+<script src="scripts/vs3d-render.js"></script>
+<script src="scripts/vs3d-buugeng.js"></script>
+<script>
+	let debug = VS3D.debug;
+	let renderer, player;
+	let defaults = {
+		p1a: "LL",
+		p1b: "LR",
+		t1a: "pendulum",
+		t1b: "mel",
+		p2a: "LR",
+		p2b: "RL",
+		t2a: "mel",
+		t2b: "pendulum",
+		p3a: "RL",
+		p3b: "RR",
+		t3a: "mel",
+		t3b: "pendulum",
+		p4a: "LR",
+		p4b: "RL",
+		t4a: "pendulum",
+		t4b: "mel"
+	};
+
+	// this system is difficult for more complex moves
+	let moves = {
+		pendulum: {hand: 0, head: -1},
+		static: {hand: 0, head: 1},
+		mel: {hand: -1, head: -3},
+		point: {hand: 1, head: 1},
+		charlie: {hand: -1, head: -2},
+		ainside: {hand: -1, head: 2},
+		extension: {hand: -1, head: -1},
+		antispin: {hand: -1, head: 3},
+		top: {hand: 1, head: -3},
+		illegal: {hand: 0, head: 0}
+	};
+
+	let aliases = {
+		a: 0,
+		b: 1,
+		L: VS3D.LEFT,
+		R: VS3D.RIGHT
+	};
+
+	let menus = {
+		positions: [
+			{txt: "Left, Left", value: "LL"},
+			{txt: "Left, Right", value: "LR"},
+			{txt: "Right, Left", value: "RL"},
+			{txt: "Right, Right", value: "RR"}
+		],
+		LL2LL: [{txt: "Illegal", value: "illegal"}],
+		LR2LR: [{txt: "Illegal", value: "illegal"}],
+		LL2LR: [
+			{txt: "Pendulum", value: "pendulum"},
+			{txt: "Static Spin", value: "static"}
+		],
+		LL2RL: [
+			{txt: "Charlie's Stalls", value: "charlie"},
+			{txt: "Inside Antispin", value: "ainside"}
+		],
+		LL2RR: [
+			{txt: "Extension" , value: "extension"},
+			{txt: "Antispin" , value: "antispin"},
+			{txt: "Top Antispin" , value: "top"}
+		],
+		LR2RL: [
+			{txt: "Mel's Stalls" , value: "mel"},
+			{txt: "Point Isolation", value: "point"}
+		],
+		LR2RR: [
+			{txt: "Charlie's Stalls", value: "charlie"},
+			{txt: "Inside Antispin", value: "ainside"}
+		],
+		RL2RR: [
+			{txt: "Pendulum", value: "pendulum"},
+			{txt: "Static Spin", value: "static"}
+		]
+	};
+
+	function init() {
+		hideDebugger();
+		setupPlayer();
+		mirrorMoves();
+		setupMenus();
+		resolvePositions();
+	}
+
+	function hideDebugger() {
+		document.getElementById("debugger").style.display = "none";
+	}
+
+	// function play() {
+	// 	player.play();
+	// }
+
+	function setupPlayer() {
+		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
+		player = new VS3D.Player();
+		player.addProp(new VS3D.Prop({
+			hand: {a: aliases[defaults.p1a[0]]},
+			head: {a: aliases[defaults.p1a[1]]}
+		}), {color: "red", nudge: 0.0});
+		player.addProp(new VS3D.Prop({
+			hand: {a: aliases[defaults.p1b[0]]},
+			head: {a: aliases[defaults.p1b[1]]}
+		}), {color: "white", nudge: 0.05});
+		//let controls = new VS3D.Controls(player);
+		//renderer.div.appendChild(controls.div);
+		player.update = function(pos) {
+			renderer.render(this.props, pos);
+			//controls.update(this.tick);
+		}
+		player.ready();
+	}
+
+	function mirrorMoves()
+	{
+		let mirrors;
+		mirrors = {};
+		for (let menu in menus)
+		{
+			if (menu[2]==="2")
+			{
+				let mirror;
+				mirror = menu.replace(/L/g, "X");
+				mirror = mirror.replace(/R/g, "L");
+				mirror = mirror.replace(/X/g, "R");
+				mirrors[mirror] = [];
+				for (let transition of menus[menu])
+				{
+					let move = {};
+					move.txt = transition.txt;
+					move.value = "-"+transition.value;
+					mirrors[mirror].push(move);
+				}
+				
+			}
+		}
+		for (let mirror in mirrors)
+		{
+			menus[mirror] = mirrors[mirror];
+		}
+		mirrors = {};
+		for (let move in moves)
+		{
+			let mirror = {hand: {}, head: {}};
+			mirror.hand = -moves[move].hand;
+			mirror.head = -moves[move].head;
+			mirrors[move] = mirror;
+		}
+		for (let mirror in mirrors)
+		{
+			moves["-"+mirror] = mirrors[mirror];
+		}
+
+	}
+
+	function setupMenus() {
+		let menu, option, txt;
+		for (let i=1; i<=4; i++) {
+			for (let j of ["a","b"]) {
+				menu = document.getElementById("p"+i+j);
+				menu.onchange = resolvePositions;
+				for (let position of menus.positions) {
+					option = document.createElement("option");
+					option.txt = position.txt;
+					option.value = position.value;
+					if (option.value==defaults["p"+i+j])
+					{
+						option.selected = true;
+					}
+					txt = document.createTextNode(position.txt);
+					option.appendChild(txt);
+					menu.appendChild(option);
+				}
+			}
+		}
+	}
+
+	function resolvePositions(e)
+	{
+		let caller = (e) ? e.target.id : null;
+		// set the initial position
+		for (let j of ["a","b"]) {
+			let position = document.getElementById("p1"+j).value;
+			let prop = (j==="a") ? player.props[0] : player.props[1];
+			prop.prop.hand.a = aliases[position[0]];
+			prop.prop.head.a = aliases[position[1]];
+		}
+		// rebuild the transition menus
+		for (let i=1; i<=4; i++) {
+			for (let j of ["a","b"]) 
+			{
+				// update transitions only if an adjacent position was changed
+				if (caller===null || (caller[2]===j && (caller[1]==i || (i%4+1)==caller[1]))) {
+					let menu = document.getElementById("t"+i+j);
+					menu.onchange = resolveTransitions;
+					// this should happen only when something really changed
+					while (menu.firstChild) {
+					    menu.removeChild(menu.firstChild);
+					}
+
+					let p0 = document.getElementById("p"+i+j).value;
+					let p1 = document.getElementById("p"+(i%4+1)+j).value;
+					let positions = p0+"2"+p1;
+					for (let transition of menus[positions])
+					{
+						option = document.createElement("option");
+						option.txt = transition.txt;
+						option.value = transition.value;
+						if (transition.value==="illegal" || transition.value==="-illegal")
+						{
+							menu.style.color = "red";
+						}
+						else
+						{
+							menu.style.color = "black";
+						}
+						txt = document.createTextNode(transition.txt);
+						option.appendChild(txt);
+						menu.appendChild(option);
+					}
+				}
+				
+			}
+		}
+		resolveTransitions(e);
+	}
+
+	function resolveTransitions(e)
+	{
+		let caller = (e) ? e.target.id : null;
+		for (let j of ["a","b"]) {
+			let prop = (j==="a") ? player.props[0] : player.props[1];
+			prop.moves = [];
+			for (let i=1; i<=4; i++) {
+				let menu = document.getElementById("t"+i+j);
+				// choose default if adjacent positions were changed and on page load
+				if (caller===null) {
+					menu.firstChild.selected = true;
+				}
+				else if (caller[0]==="p" && caller[2]===j && (caller[1]==i || (i%4+1)==caller[1]))
+				{
+					menu.firstChild.selected = true;
+				}
+				//else if (caller[0]==="t" && caller[2]===j && caller[1]==i)
+				let transition = moves[menu.value];
+				prop.moves.push({hand: {va: transition.hand}, head: {va: transition.head}, beats: 2});
+			}
+			prop.refit();
+		}
+		player.reset();
+		player.play();
+	}
+	
+
+	function shuffleMenus() {
+	}
+
+/*
+
+Alright, let's think about how this interface should work.
+- For positions, you're not allowed to do two of the same in a row.  So I could forbid that.
+- The tricky thing is...if you're altering only one at a time, that means you're locked into two choices.
+	- We could see if that works.
+	- We could trigger an invalid state.
+	- We could attempt to resolve.
+		- Any adjacent chain of things that works on both ends should be untouched.  And I think we prefer changing later stuff rather than earlier.
+	- We could just allow illegal transitions, and maybe make them red or something.  That's actually a really simple solution.
+- For transitions, I think we just automatically pick the first one in line after changing.
+
+*/
+
+</script>
+<body onload="init();">
+<a href="https://github.com/infiniteperplexity/visual-spinner-3d">See more at the VisualSpinner3D main site.</a>
+<div id="grid1">
+	<div id="display"></div>
+	<div>
+		<div id="grid2">
+			<p>Beat 1:</p>
+			<select id="p1a"></select>
+			<select id="p1b"></select>
+			<p>Transition:</p>
+			<select id="t1a"></select>
+			<select id="t1b"></select>
+			<p>Beat 2:</p>
+			<select id="p2a"></select>
+			<select id="p2b"></select>
+			<p>Transition:</p>
+			<select id="t2a"></select>
+			<select id="t2b"></select>
+			<p>Beat 3:</p>
+			<select id="p3a"></select>
+			<select id="p3b"></select>
+			<p>Transition:</p>
+			<select id="t3a"></select>
+			<select id="t3b"></select>
+			<p>Beat 4:</p>
+			<select id="p4a"></select>
+			<select id="p4b"></select>
+			<p>Transition:</p>
+			<select id="t4a"></select>
+			<select id="t4b"></select>
+		</div>
+	</div>
+	<div>
+		<div>
+			To do:
+			<ul>
+				<li>plane-break transitions</li>
+				<li>center hand positions</li>
+		</div>
+		<p>https://github.com/infiniteperplexity/visual-spinner-3d</p>
+		<p>infinite DOT perplexity AT gmail DOT com</p>
+		<button id="debugger" onclick="shuffleMenus();">debug</button>
+	</div>
+</div>
+</body>
+</html>
