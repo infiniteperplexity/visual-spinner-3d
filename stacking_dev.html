@@ -29,9 +29,29 @@
 <script src="scripts/vs3d-buugeng.js"></script>
 <script>
 	let debug = VS3D.debug;
-	const {LEFT, RIGHT, DOWN, UP} = VS3D;
+	const {LEFT, RIGHT, DOWN, UP, clone, angle$nearly, unwind} = VS3D;
 	let renderer, player;
 	let defaults = {
+		p10: "LL",
+		
+		t10: "pend_LL2LR",
+		p20: "LR",
+		t20: "mel_LR2RL",
+		p30: "RL",
+		t30: "mel_RL2LR",
+		t40: "pend_LR2LL",
+		p40: "LR",
+		p11: "LR",
+		t11: "mel_LR2RL",	
+		p21: "RL",
+		t21: "pend_RL2RR",
+		p31: "RR",
+		t31: "pend_RR2RL",
+		p41: "RL",
+		t41: "mel_RL2LR"
+	};
+
+	let defaults2 = {
 		p10: "LL",
 		p11: "LR",
 		t10: "pendulum",
@@ -51,7 +71,7 @@
 	};
 
 	// this system is difficult for more complex moves
-	let moves = {
+	let moves2 = {
 		pendulum: {hand: 0, head: -1},
 		static: {hand: 0, head: 1},
 		mel: {hand: -1, head: -3},
@@ -64,92 +84,96 @@
 		isolation: {hand: 2, head: 2} // gets special handling
 	};
 
-	let moves2 = {
+	let moves = {
 		// static pendulum along side
-		pendLL2LL: {
+		pend_LL2LR: {
 			hand: {a: LEFT, r: 1, va: 0},
 			head: {a: LEFT, va: -1}
 		},
+		pend_LR2LL: {
+			hand: {a: LEFT, r: 1, va: 0},
+			head: {a: RIGHT, va: 1}
+		},
 		// static pendulum in center
-		pendCL2CL: {
+		pend_CL2CL: {
 			hand: {a: LEFT, r: 0, va: 0},
 			head: {a: LEFT, va: -1}
 		},
 		// Mel's inspin stalls from LR to RL
-		melLR2RL: {
-			hand: {a: LEFT, r: 1, va: -1}.
+		mel_LR2RL: {
+			hand: {a: LEFT, r: 1, va: -1},
 			head: {a: RIGHT, va: -3}
 		},
 		// !!!inspin stalls from CL to CR
-		melCL2CR: {
+		mel_CL2CR: {
 			pivot: {a: DOWN, r: 0.5, va: 0},
-			hand: {a: UP r: 0.5, va: 2},
+			hand: {a: UP, r: 0.5, va: 2},
 			head: {a: LEFT, va: 3}
 		},
 		// !!!inspin stalls from LR to CL
-		melLR2CL:
+		mel_LR2CL:
 		{
 			pivot: {a: LEFT, r0: 0, r1: 1},
-			hand: {a: LEFT, r: 1, va: -1}.
+			hand: {a: LEFT, r: 1, va: -1},
 			head: {a: RIGHT, va: -3}
 		},
 		// !!!inspin stalls from CL to RR
-		melCL2RR:
+		mel_CL2RR:
 		{
 			pivot: {a: LEFT, r0: 0, r1: 1},
-			hand: {a: LEFT, r: 1, va: -1}.
+			hand: {a: LEFT, r: 1, va: -1},
 			head: {a: RIGHT, va: -3}
 		},
 		// !!! CCW isolation at LL
-		isoccwLL2LL:
+		isoccw_LL2LL:
 		{
 			pivot: {a: LEFT, r: 1.5},
 			hand: {a: RIGHT, r: 0.5, va: -2},
 			head: {a: LEFT, va: -2}
 		},
 		/// !!! CCW isolation at LR
-		isoccwLR2LR:
+		isoccw_LR2LR:
 		{
 			pivot: {a: LEFT, r: 0.5},
 			hand: {a: LEFT, r: 0.5, va: -2},
 			head: {a: RIGHT, va: -2}
 		},
 		/// !!! CW isolation at LR
-		isocwLR2LR:
+		isocw_LR2LR:
 		{
 			pivot: {a: LEFT, r: 0.5},
 			hand: {a: LEFT, r: 0.5, va: 2},
 			head: {a: RIGHT, va: 2}
 		},
 		/// !!! CCW isolation at CL
-		isoccwCL2CL:
+		isoccw_CL2CL:
 		{
 			pivot: {a: LEFT, r: 0.5},
 			hand: {a: RIGHT, r: 0.5, va: 2},
 			head: {a: LEFT, va: -2}
 		},
 		/// !!! CCW isolation at CL
-		isocwCL2CL:
+		isocw_CL2CL:
 		{
 			pivot: {a: LEFT, r: 0.5},
 			hand: {a: RIGHT, r: 0.5, va: 2},
 			head: {a: LEFT, va: -2}
 		},
 		// Charlie's stalls from LL to RL
-		charLL2RL:
+		char_LL2RL:
 		{
 			hand: {a: LEFT, r: 1, va: -1},
 			head: {a: LEFT, r: -3}
 		},
 		// Charlie's stalls from LL to CL
-		charLL2CL:
+		char_LL2CL:
 		{
 			pivot: {a: LEFT, r0: 0, r1: 1},
 			hand: {a: LEFT, r: 1, va: -1},
 			head: {a: LEFT, r: -3}
 		},
 		// Point isolation from LR to RL
-		pointLR2RL:
+		point_LR2RL:
 		{
 			hand: {a: LEFT, r: 1, va: 1},
 			head: {a: RIGHT, va: 1}
@@ -185,6 +209,41 @@
 	};
 
 	let menus = {
+		positions: [
+			{txt: "Left, Left", value: "LL"},
+			{txt: "Left, Right", value: "LR"},
+			{txt: "Center, Left", value: "CL"},
+			{txt: "Center, Right", value: "CR"},
+			{txt: "Right, Left", value: "RL"},
+			{txt: "Right, Right", value: "RR"}
+		],
+		LL2LL: [
+			{txt: "Isolation", value: "isoccw_CL2CL"}
+		],
+		LR2LR: [
+			{txt: "Isolation", value: "isocw_LR2LR"}
+		],
+		LL2LR: [
+			{txt: "Pendulum", value: "pend_LL2LR"}
+		],
+		LR2LL: [
+			{txt: "Pendulum", value: "pend_LR2LL"}
+		],
+		LL2RL: [
+			{txt: "Charlie's Stalls", value: "char_LL2RL"}
+		],
+		LL2RR: [
+			{txt: "Extension" , value: "extens_LL2RR"}
+		],
+		LR2RL: [
+			{txt: "Mel's Stalls" , value: "mel_LR2RL"}
+		],
+		LR2RR: [
+			{txt: "Charlie's Stalls", value: "char_LR2RR"}
+		]
+	};
+
+	let menus2 = {
 		positions: [
 			{txt: "Left, Left", value: "LL"},
 			{txt: "Left, Right", value: "LR"},
@@ -280,59 +339,14 @@
 
 	function generalizeMoves()
 	{
-		// translations involving center hand position
-		let translates = {};
-		for (let menu in menus)
+		for (let move in moves)
 		{
-			if (menu[2]!="2")
-			{
-				continue;
-			}
-			let translate, dir;
-			translate = "C"+menu.substr(1);
-			if (translates[translate]===undefined)
-			{
-				translates[translate] = [];
-			}
-			for (let move of menus[menu])
-			{
-				dir = (menu[0]=="R") ? ">" : "<";
-				move = {txt: move.txt, value: move.value+dir};
-				translates[translate].push(move);
-			}
-			translate = "C"+menu.substr(1,2)+"C"+menu[4];
-			if (translates[translate]===undefined)
-			{
-				translates[translate] = [];
-			}
-			// don't translate opposite sides to center
-			if (menu[0]===menu[3])
-			{
-				for (let move of menus[menu])
-				{
-					translates[translate].push(move);
-				}
-			}
-			translate = menu.substr(0,3)+"C"+menu[4];
-			if (translates[translate]===undefined)
-			{
-				translates[translate] = [];
-			}
-			for (let move of menus[menu])
-			{
-				// I don't think this generalizes properly
-				dir = (menu[3]=="R") ? ">" : "<";
-				move = {txt: move.txt, value: move.value+dir};
-				translates[translate].push(move);	
-			}
-		}
-		for (let translate in translates)
-		{
-			menus[translate] = translates[translate];
+			moves[move].beats = 2;
 		}
 		// mirror across Left/Right
 		let mirrors;
 		mirrors = {};
+		// populate the menus with keys to mirrored moves
 		for (let menu in menus)
 		{
 			if (menu[2]==="2")
@@ -346,22 +360,11 @@
 				{
 					let move = {};
 					move.txt = transition.txt;
-					if (transition.value[0]=="-")
-					{
-						move.value = transition.value.substr(1);
-					}
-					else
-					{
-						move.value = "-"+transition.value;
-					}
-					if (transition.value[transition.value.length-1]==="<")
-					{
-						transition.value.replace("<",">");
-					}
-					else if (transition.value[transition.value.length-1]===">")
-					{
-						transition.value.replace(">","<");
-					}
+					let value = transition.value;
+					value = value.replace(/L/g, "X");
+					value = value.replace(/R/g, "L");
+					value = value.replace(/X/g, "R");
+					move.value = value;
 					mirrors[mirror].push(move);
 				}
 				
@@ -389,29 +392,34 @@
 				}
 			}
 		}
+		// build the mirrored moves themselves
 		mirrors = {};
 		for (let move in moves)
 		{
-			let mirror = {hand: {}, head: {}};
-			mirror.hand = -moves[move].hand;
-			mirror.head = -moves[move].head;
+			let mirror = VS3D.clone(moves[move]);
+			for (let node of ["pivot", "hand", "head"])
+			{
+				if (!mirror[node])
+				{
+					continue;
+				}
+				if ([LEFT, RIGHT].includes(mirror[node].a))
+				{
+					mirror[node].a = VS3D.angle(VS3D.HALF+mirror[node].a);
+				}
+				mirror[node].va = -mirror[node].va;
+			}
 			mirrors[move] = mirror;
 		}
 		for (let mirror in mirrors)
 		{
-			moves["-"+mirror] = mirrors[mirror];
-		}
-		translates = {};
-		for (let move in moves)
-		{
-			translates[move+">"] = moves[move];
-			translates[move+"<"] = moves[move];
-		}
-		for (let translate in translates)
-		{
-			moves[translate] = translates[translate];
-		}
+			let key = mirror.replace(/L/g, "X");
+			key = key.replace(/R/g, "L");
+			key = key.replace(/X/g, "R");
+			moves[key] = mirrors[mirror];
 
+
+		}
 	}
 
 	function setupMenus() {
@@ -497,89 +505,9 @@
 				{
 					menu.firstChild.selected = true;
 				}
-				let transition = moves[menu.value];
-				let p0 = document.getElementById("p"+i+j).value;
-				let p1 = document.getElementById("p"+(i%4+1)+j).value;
-				let position = positions[p0];
-				let endpoints = p0+"2"+p1;
-				// build and add the move
-				let move = {
-					hand: {
-						r: position.hand.r,
-						a: position.hand.a,
-						va: transition.hand
-					},
-					head: {
-						r: position.head.r,
-						a: position.head.a,
-						va: transition.head
-					},
-					beats: 2
-				};
-				// translate moves that involve center hand positions
-
-				let suffix = menu.value[menu.value.length-1];
-				if (suffix===">")
-				{
-					move.pivot = {r0: 0, r1: 1, a: RIGHT};
-				}
-				else if (suffix==="<")
-				{
-					move.pivot = {r0: 0, r1: 1, a: LEFT};
-				}
-				else
-				{
-					move.pivot = {r0: 0, r1: 0};
-				}
-
-				// if (p0[0]=="C" && p1[0]!="C")
-				// {
-				// 	if (p1[0]=="L")
-				// 	{
-				// 		move.pivot = {r0: 0, r1: 1, a: RIGHT};
-				// 	}
-				// 	else if (p1[0]=="R")
-				// 	{
-				// 		move.pivot = {r0: 0, r1: 1, a: LEFT};
-				// 	}
-				// }
-				// else if (p0[0]!="C" && p1[0]=="C")
-				// {
-				// 	if (p0[0]=="L")
-				// 	{
-				// 		move.pivot = {r0: 0, r1: 1, a: LEFT};
-				// 	}
-				// 	else if (p0[0]=="R")
-				// 	{
-				// 		move.pivot = {r0: 0, r1: 1, a: RIGHT};
-				// 	}
-				// }
-				// else
-				// {
-				// 	move.pivot = {r0: 0, r1: 0};
-				// }
-				// right now the isolation is the only move that needs special handling
-				if (menu.value=="isolation" || menu.value=="-isolation")
-				{
-					console.log("are we friggin' getting here?");
-					if (p0=="LL")
-					{
-						move.pivot = {r: 1.5, a: LEFT};
-					}
-					else if (p0=="RR")
-					{
-						move.pivot = {r: 1.5, a: RIGHT};
-					}
-					else if (p0=="LR" || p=="CL")
-					{
-						move.pivot = {r: 0.5, a: LEFT};
-					}
-					else if (p0=="RL" || p=="CR")
-					{
-						move.pivot = {r: 0.5, a: RIGHT};
-					}
-				}
-				prop.moves.push(move);
+				console.log("t"+i+j, menu.value);
+				let transition = clone(moves[menu.value]);
+				prop.moves.push(transition);
 			}
 			prop.refit();
 		}
