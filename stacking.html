@@ -60,6 +60,7 @@
 	- Antispins
 	- Top antispins
 	- Point Isolations
+	- Iso Pendulums
 
 	*/
 	let moves = {
@@ -87,8 +88,32 @@
 			head: {a: LEFT, va: -1}
 		},
 		// ****Extensions*****
+		extend_LL2LR:
+		{
+			pivot: {a: LEFT, r0: 0, r1: 2},
+			hand: {a: LEFT, r: 1, va: -1},
+			head: {a: LEFT, va: -1}
+		},
+		extend_LR2LL:
+		{
+			pivot: {a: LEFT, r0: 2, r1: 0},
+			hand: {a: RIGHT, r: 1, va: 1},
+			head: {a: RIGHT, va: 1}
+		},
 		extend_LL2RR:
 		{
+			hand: {a: LEFT, r: 1, va: -1},
+			head: {a: LEFT, va: -1}
+		},
+		extend_LL2CR:
+		{
+			pivot: {a: LEFT, r0: 0, r1: 1},
+			hand: {a: LEFT, r: 1, va: -1},
+			head: {a: LEFT, va: -1}
+		},
+		extend_CL2CR:
+		{
+			pivot: {a: RIGHT, r0: 1, r1: -1},
 			hand: {a: LEFT, r: 1, va: -1},
 			head: {a: LEFT, va: -1}
 		},
@@ -97,10 +122,9 @@
 			hand: {a: LEFT, r: 1, va: -1},
 			head: {a: RIGHT, va: -3}
 		},
-		// !!!
 		mel_CL2CR: {
-			pivot: {a: DOWN, r: 0.5, va: 0},
-			hand: {a: UP, r: 0.5, va: 2},
+			pivot: {a: LEFT, r0: 1, r1: -1},
+			hand: {a: RIGHT, r: 1, va: 1},
 			head: {a: LEFT, va: 3}
 		},
 		mel_LR2CL:
@@ -115,12 +139,13 @@
 			hand: {a: RIGHT, r: 1, va: 1},
 			head: {a: LEFT, va: 3}
 		},
-		// !!!inspin stalls from CL to RR
-		mel_CL2RR:
+		// ****Antispin stalls
+		// !!!!I originally had this as a "Mel" thing but I think once you cross over it's antispin
+		anti_CL2RR:
 		{
-			pivot: {a: LEFT, r0: 0, r1: 1},
+			pivot: {a: RIGHT, r0: 1, r1: 0},
 			hand: {a: LEFT, r: 1, va: -1},
-			head: {a: RIGHT, va: -3}
+			head: {a: LEFT, va: 3}
 		},
 		// ****Isolations****
 		isoccw_LL2LL:
@@ -248,10 +273,12 @@
 			{txt: "-Isolation", value: "isocw_LR2LR"}
 		],
 		LL2LR: [
-			{txt: "Pendulum", value: "pend_LL2LR"}
+			{txt: "Pendulum", value: "pend_LL2LR"},
+			{txt: "Extension", value: "extend_LL2LR"}
 		],
 		LR2LL: [
-			{txt: "Pendulum", value: "pend_LR2LL"}
+			{txt: "Pendulum", value: "pend_LR2LL"},
+			{txt: "Extension", value: "extend_LR2LL"}
 		],
 		LL2RL: [
 			{txt: "Charlie's Stalls", value: "char_LL2RL"}
@@ -272,7 +299,8 @@
 			{txt: "Charlie's Stalls", value: "char_CL2LL"}
 		],
 		LL2CR: [
-			{txt: "Pendulum", value: "pend_LL2CR"}
+			{txt: "Pendulum", value: "pend_LL2CR"},
+			{txt: "Extension", value: "extend_LL2CR"}
 		],
 		LR2CL: [
 			{txt: "Mel's Stalls" , value: "mel_LR2CL"}
@@ -290,13 +318,17 @@
 			{txt: "-Isolation", value: "isocw_CL2CL"}
 		],
 		CL2CR: [
-			{txt: "Pendulum", value: "pend_CL2CR"}
+			{txt: "Pendulum", value: "pend_CL2CR"},
+			{txt: "Extension", value: "extend_CL2CR"},
+			{txt: "Mel's Stalls", value: "mel_CL2CR"}
 		],
 		CL2RL: [
 			{txt: "Charlie's Stalls", value: "char_CL2RL"}
 		],
 		CL2RR: [
-			{txt: "Pendulum", value: "pend_CL2RR"}
+			{txt: "Pendulum", value: "pend_CL2RR"},
+			{txt: "Extension", value: "extend_CL2RR"},
+			{txt: "Antispin", value: "anti_CL2RR"}
 		]
 	};
 
@@ -531,7 +563,7 @@
 				{
 					menu.firstChild.selected = true;
 				}
-				console.log("t"+i+j, menu.value);
+				//console.log("t"+i+j, menu.value);
 				let transition = clone(moves[menu.value]);
 				prop.moves.push(transition);
 			}
