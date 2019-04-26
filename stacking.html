@@ -31,24 +31,90 @@
 	let debug = VS3D.debug;
 	const {LEFT, RIGHT, DOWN, UP, WALL, FLOOR, clone, angle$nearly, unwind} = VS3D;
 	let renderer, player;
-	let defaults = {
-		p10: "LR",
-		t10: "pend_LR2LL",
-		p20: "LL",
-		t20: "char_LL2CL",
-		p30: "CL",
-		t30: "char_CL2LL",
-		p40: "LL",
-		t40: "pend_LL2LR",
+	let defaultPattern = "mel";
+	let prefabs = {
+		mel:
+		{
+			txt: "Mel's Inside Stacks (U,U)",
+			p10: "LL",
+			t10: "pend_LL2LR",
+			p20: "LR",
+			t20: "mel_LR2RL",
+			p30: "RL",
+			t30: "mel_RL2LR",
+			p40: "LR",
+			t40: "pend_LR2LL",
+			p11: "LR",
+			t11: "mel_LR2RL",	
+			p21: "RL",
+			t21: "pend_RL2RR",
+			p31: "RR",
+			t31: "pend_RR2RL",
+			p41: "RL",
+			t41: "mel_RL2LR"
+		},
+		charlie:
+		{
+			txt: "Charlie's Outside/Inside Stacks",
+			p10: "LR",
+			t10: "pend_LR2LL",
+			p20: "LL",
+			t20: "char_LL2CL",
+			p30: "CL",
+			t30: "char_CL2LL",
+			p40: "LL",
+			t40: "pend_LL2LR",
+			p11: "CR",
+			t11: "char_CR2RR",	
+			p21: "RR",
+			t21: "pend_RR2RL",
+			p31: "RL",
+			t31: "pend_RL2RR",
+			p41: "RR",
+			t41: "char_RR2CR"
+		},
+		xx:
+		{
+			txt: "Drex's Extension Stack (X,X)",
+			p10: "LR",
+			t10: "pend_LR2LL",
+			p20: "LL",
+			t20: "extend_LL2RR",
+			p30: "RR",
+			t30: "extend_RR2LL",
+			p40: "LL",
+			t40: "pend_LL2LR",
+			p11: "LL",
+			t11: "extend_LL2RR",	
+			p21: "RR",
+			t21: "pend_RR2RL",
+			p31: "RL",
+			t31: "pend_RL2RR",
+			p41: "RR",
+			t41: "extend_RR2LL"
+		},
+		vv:
+		{
+			txt: "Drex's Antispin Stacks (V,V)",
+			p10: "LR",
+			t10: "pend_LR2LL",
+			p20: "LL",
+			t20: "anti_LL2CR",
+			p30: "CR",
+			t30: "anti_CR2LL",
+			p40: "LL",
+			t40: "pend_LL2LR",
 
-		p11: "CR",
-		t11: "char_CR2RR",	
-		p21: "RR",
-		t21: "pend_RR2RL",
-		p31: "RL",
-		t31: "pend_RL2RR",
-		p41: "RR",
-		t41: "char_RR2CR"
+
+			p11: "CL",
+			t11: "anti_CL2RR",	
+			p21: "RR",
+			t21: "pend_RR2RL",
+			p31: "RL",
+			t31: "pend_RL2RR",
+			p41: "RR",
+			t41: "anti_RR2CL"
+		}
 	};
 
 
@@ -606,6 +672,7 @@
 	function setupPlayer() {
 		renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
 		player = new VS3D.Player();
+		let defaults = prefabs[defaultPattern];
 		player.addProp(new VS3D.Prop({
 			hand: {	
 				a: positions[defaults.p10].hand.a,
@@ -735,6 +802,7 @@
 
 	function setupMenus() {
 		let menu, option, txt;
+		let defaults = prefabs[defaultPattern];
 		for (let i=1; i<=4; i++) {
 			for (let j=0; j<=1; j++) {
 				menu = document.getElementById("p"+i+j);
@@ -753,6 +821,45 @@
 				}
 			}
 		}
+		menu = document.getElementById("prefabs");
+		menu.onchange = resolvePrefab;
+		for (let prefab in prefabs)
+		{
+			let vals = prefabs[prefab];
+			option = document.createElement("option");
+			option.txt = vals.txt;
+			option.value = prefab;
+			if (option.value===defaultPattern)
+			{
+				option.selected = true;
+			}
+			txt = document.createTextNode(option.txt);
+			option.appendChild(txt);
+			menu.appendChild(option);
+		}
+		option = document.createElement("option");
+		option.value = "none;"
+		option.setAttribute("hidden",true);
+		menu.appendChild(option);
+	}
+
+	function resolvePrefab(e)
+	{
+		let menu = document.getElementById("prefabs");
+		if (menu.value==="none")
+		{
+			return;
+		}
+		let k = "p";
+		for (let i=1; i<=4; i++)
+		{
+			for (let j=0; j<=1; j++)
+			{
+				let key = k+i+j;
+				document.getElementById(key).value = prefabs[menu.value][key];
+			}
+		}
+		resolvePositions(e);
 	}
 
 	function resolvePositions(e)
@@ -773,7 +880,7 @@
 			for (let j=0; j<=1; j++) 
 			{
 				// update transitions only if an adjacent position was changed
-				if (caller===null || (caller[2]==j && (caller[1]==i || (i%4+1)==caller[1]))) {
+				if (caller===null || caller==="prefab" || (caller[2]==j && (caller[1]==i || (i%4+1)==caller[1]))) {
 					let menu = document.getElementById("t"+i+j);
 					menu.onchange = resolveTransitions;
 					// this should happen only when something really changed
@@ -814,6 +921,23 @@
 					// this actually chooses the top item, not the set default
 					menu.firstChild.selected = true;
 				}
+				else if (caller==="prefabs")
+				{
+					let prefab = document.getElementById("prefabs").value;
+					// console.log(prefabs[prefab]["t"+i+j]);
+					menu.value = prefabs[prefab]["t"+i+j];
+					document.getElementById("t"+i+j).value = prefabs[prefab]["t"+i+j];
+					// console.log(document.getElementById("t"+i+j).value);
+					let test = prefabs[prefab]["t"+i+j];
+					menu.firstChild.selected = true;
+					console.log("testing");
+					console.log(prefab);
+					console.log(test);
+					for (let child of menu.children)
+					{
+						console.log(child.value);
+					}
+				}
 				else if (caller[0]==="p" && caller[2]===j && (caller[1]==i || (i%4+1)==caller[1]))
 				{
 					menu.firstChild.selected = true;
@@ -824,6 +948,40 @@
 			}
 			prop.refit();
 		}
+		// make sure the correct prefab, or none, is chosen
+		let match = "none";
+		let diff;
+		for (let prefab in prefabs)
+		{
+			diff = false;
+			for (let k of ["p","t"])
+			{
+				for (let i=1; i<=4; i++)
+				{
+					for (let j=0; j<=1; j++)
+					{	
+						if (prefabs[prefab][k+i+j] !== document.getElementById(k+i+j).value)
+						{
+							diff = true;
+						}
+						if (prefab=="vv")
+						{
+							// console.log(k+i+j);
+							// console.log(prefabs[prefab][k+i+j]);
+							// console.log(document.getElementById(k+i+j).value);
+							// console.log(prefabs[prefab][k+i+j] !== document.getElementById(k+i+j).value);
+							// console.log(diff);
+						}
+			
+					}
+				}
+			}
+			if (diff===false)
+			{
+				match = prefab;
+			}
+		}
+		document.getElementById("prefabs").value = match;
 		player.reset();
 		player.play();
 	}
@@ -866,6 +1024,8 @@
 		</div>
 	</div>
 	<div>
+		Prefabs:
+		<select id="prefabs"></select>
 		<p>https://github.com/infiniteperplexity/visual-spinner-3d</p>
 		<p>infinite DOT perplexity AT gmail DOT com</p>
 		<button id="debugger" onclick="shuffleMenus();">debug</button>
