@@ -31,8 +31,28 @@
 	let debug = VS3D.debug;
 	const {LEFT, RIGHT, DOWN, UP, WALL, FLOOR, clone, angle$nearly, unwind} = VS3D;
 	let renderer, player;
-	let defaultPattern = "mel";
+	let defaultPattern = "example";
 	let prefabs = {
+		example:
+		{
+			txt: "Example Hybrid: Mel vs Charlie (U, U/X)",
+			p10: "LL",
+			t10: "pend_LL2LR",
+			p20: "LR",
+			t20: "mel_LR2CL",
+			p30: "CL",
+			t30: "mel_CL2LR",
+			p40: "LR",
+			t40: "pend_LR2LL",
+			p11: "LR",
+			t11: "char_LR2RR",	
+			p21: "RR",
+			t21: "pend_RR2RL",
+			p31: "RL",
+			t31: "pend_RL2RR",
+			p41: "RR",
+			t41: "char_RR2LR"
+		},
 		mel:
 		{
 			txt: "Mel's Inside Stacks (U,U)",
@@ -55,7 +75,7 @@
 		},
 		charlie:
 		{
-			txt: "Charlie's Outside/Inside Stacks",
+			txt: "Charlie's Outside/Inside Stacks (U/X, U/X)",
 			p10: "LR",
 			t10: "pend_LR2LL",
 			p20: "LL",
@@ -104,8 +124,6 @@
 			t30: "anti_CR2LL",
 			p40: "LL",
 			t40: "pend_LL2LR",
-
-
 			p11: "CL",
 			t11: "anti_CL2RR",	
 			p21: "RR",
@@ -114,6 +132,46 @@
 			t31: "pend_RL2RR",
 			p41: "RR",
 			t41: "anti_RR2CL"
+		},
+		ux:
+		{
+			txt: "Drex's Extension Hybrid (U,X)",
+			p10: "LL",
+			t10: "pend_LL2LR",
+			p20: "LR",
+			t20: "mel_LR2RL",
+			p30: "RL",
+			t30: "mel_RL2LR",
+			p40: "LR",
+			t40: "pend_LR2LL",
+			p11: "LL",
+			t11: "extend_LL2RR",	
+			p21: "RR",
+			t21: "pend_RR2RL",
+			p31: "RL",
+			t31: "pend_RL2RR",
+			p41: "RR",
+			t41: "extend_RR2LL"
+		},
+		vx:
+		{
+			txt: "Drex's Antispin Hybrid (V,X)",
+			p10: "LR",
+			t10: "pend_LR2LL",
+			p20: "LL",
+			t20: "anti_LL2CR",
+			p30: "CR",
+			t30: "anti_CR2LL",
+			p40: "LL",
+			t40: "pend_LL2LR",
+			p11: "LL",
+			t11: "extend_LL2RR",	
+			p21: "RR",
+			t21: "pend_RR2RL",
+			p31: "RL",
+			t31: "pend_RL2RR",
+			p41: "RR",
+			t41: "extend_RR2LL"
 		}
 	};
 
@@ -455,13 +513,13 @@
 			head: {a: RIGHT, va: 1}
 		},
 		// ****Iso-Pendulum****
-		point_CL2LR:
+		isop_CL2LR:
 		{
 			pivot: {a: LEFT, r: 0.5},
 			hand: {a: RIGHT, r: 0.5, va: -1},
 			head: {a: LEFT, va: -1}
 		},
-		point_LR2CL:
+		isop_LR2CL:
 		{
 			pivot: {a: LEFT, r: 0.5},
 			hand: {a: LEFT, r: 0.5, va: 1},
@@ -610,13 +668,13 @@
 		LR2CL: [
 			{txt: "Mel's Stalls" , value: "mel_LR2CL"},
 			{txt: "Cat-Eye Stalls" , value: "cat_LR2CL"},
-			{txt: "Point Isolation", value: "point_LR2CL"},
+			{txt: "Iso-Pendulum", value: "isop_LR2CL"},
 			{txt: "Top Inspins" , value: "tin_LR2CL"},
 		],
 		CL2LR: [
 			{txt: "Mel's Stalls" , value: "mel_CL2LR"},
 			{txt: "Cat-Eye Stalls" , value: "cat_CL2LR"},
-			{txt: "Point Isolation", value: "point_CL2LR"},
+			{txt: "Iso-Pendulum", value: "isop_CL2LR"},
 			{txt: "Top Inspins" , value: "tin_CL2LR"},
 		],
 		LR2CR: [
@@ -658,7 +716,8 @@
 		setupPlayer();
 		generalizeMoves();
 		setupMenus();
-		resolvePositions();
+		document.getElementById("prefabs").value = defaultPattern;
+		selectNewPrefab();
 	}
 
 	function hideDebugger() {
@@ -806,7 +865,7 @@
 		for (let i=1; i<=4; i++) {
 			for (let j=0; j<=1; j++) {
 				menu = document.getElementById("p"+i+j);
-				menu.onchange = resolvePositions;
+				menu.onchange = selectNewPosition;
 				for (let position of menus.positions) {
 					option = document.createElement("option");
 					option.txt = position.txt;
@@ -822,7 +881,7 @@
 			}
 		}
 		menu = document.getElementById("prefabs");
-		menu.onchange = resolvePrefab;
+		menu.onchange = selectNewPrefab;
 		for (let prefab in prefabs)
 		{
 			let vals = prefabs[prefab];
@@ -843,14 +902,51 @@
 		menu.appendChild(option);
 	}
 
-	function resolvePrefab(e)
+
+
+	function selectNewPosition(e)
 	{
+		let caller = (e) ? e.target.id : null;
+		console.log("selecting new position: "+caller);
+		setStartingPositions();
+		buildTransitionMenus(caller);
+		fixPrefabSelection();
+		buildMoves();
+		player.reset();
+		player.play();
+	}
+
+	function selectNewTransition(e)
+	{
+		let caller = (e) ? e.target.id : null;
+		console.log("selecting new transition: "+caller);
+		fixPrefabSelection();
+		buildMoves();
+		player.reset();
+		player.play();
+	}
+
+	function selectNewPrefab(e)
+	{
+		let caller = (e) ? e.target.id : null;
+		console.log("selecting new prefab: "+caller);
+		setPrefabValues("p");
+		setStartingPositions();
+		buildTransitionMenus(caller);
+		setPrefabValues("t");
+		buildMoves();
+		player.reset();
+		player.play();
+	}
+
+	function setPrefabValues(k) // should be either "p" or "t"
+	{
+		console.log("setting prefab values: "+k);
 		let menu = document.getElementById("prefabs");
 		if (menu.value==="none")
 		{
 			return;
 		}
-		let k = "p";
 		for (let i=1; i<=4; i++)
 		{
 			for (let j=0; j<=1; j++)
@@ -859,12 +955,11 @@
 				document.getElementById(key).value = prefabs[menu.value][key];
 			}
 		}
-		resolvePositions(e);
 	}
 
-	function resolvePositions(e)
+	function setStartingPositions()
 	{
-		let caller = (e) ? e.target.id : null;
+		console.log("setting starting prop positions");
 		// set the initial position
 		for (let j=0; j<=1; j++) {
 			let position = document.getElementById("p1"+j).value;
@@ -875,14 +970,21 @@
 			prop.prop.head.a = node.head.a;
 			prop.prop.head.r = node.head.r;
 		}
+	}
+
+	function buildTransitionMenus(caller)
+	{	
+		console.log("building transition menus");
+		console.log(caller);
 		// rebuild the transition menus
 		for (let i=1; i<=4; i++) {
 			for (let j=0; j<=1; j++) 
 			{
-				// update transitions only if an adjacent position was changed
-				if (caller===null || caller==="prefab" || (caller[2]==j && (caller[1]==i || (i%4+1)==caller[1]))) {
+			// if caller was defaults, prefab, or adjacent position setter
+				if (caller===null || caller==="prefabs" || (caller[2]==j && (caller[1]==i || (i%4+1)==caller[1]))) {
 					let menu = document.getElementById("t"+i+j);
-					menu.onchange = resolveTransitions;
+					console.log("building menu t"+i+j);
+					menu.onchange = selectNewTransition;
 					// this should happen only when something really changed
 					while (menu.firstChild) {
 					    menu.removeChild(menu.firstChild);
@@ -890,7 +992,6 @@
 					let p0 = document.getElementById("p"+i+j).value;
 					let p1 = document.getElementById("p"+(i%4+1)+j).value;
 					let endpoints = p0+"2"+p1;
-					//console.log(endpoints);
 					for (let transition of menus[endpoints])
 					{
 						option = document.createElement("option");
@@ -900,55 +1001,31 @@
 						option.appendChild(txt);
 						menu.appendChild(option);
 					}
-				}
-				
+					menu.firstChild.selected = true;
+				}	
 			}
 		}
-		resolveTransitions(e);
 	}
 
-	function resolveTransitions(e)
+	function buildMoves(e)
 	{
-		let caller = (e) ? e.target.id : null;
+		console.log("building moves");
 		for (let j=0; j<=1; j++) {
 			let prop = player.props[j];
 			prop.moves = [];
 			for (let i=1; i<=4; i++) {
-			//for (let i=1; i<=2; i++) {
 				let menu = document.getElementById("t"+i+j);
-				// choose default if adjacent positions were changed and on page load
-				if (caller===null) {
-					// this actually chooses the top item, not the set default
-					menu.firstChild.selected = true;
-				}
-				else if (caller==="prefabs")
-				{
-					let prefab = document.getElementById("prefabs").value;
-					// console.log(prefabs[prefab]["t"+i+j]);
-					menu.value = prefabs[prefab]["t"+i+j];
-					document.getElementById("t"+i+j).value = prefabs[prefab]["t"+i+j];
-					// console.log(document.getElementById("t"+i+j).value);
-					let test = prefabs[prefab]["t"+i+j];
-					menu.firstChild.selected = true;
-					console.log("testing");
-					console.log(prefab);
-					console.log(test);
-					for (let child of menu.children)
-					{
-						console.log(child.value);
-					}
-				}
-				else if (caller[0]==="p" && caller[2]===j && (caller[1]==i || (i%4+1)==caller[1]))
-				{
-					menu.firstChild.selected = true;
-				}
-				//console.log("t"+i+j, menu.value);
 				let transition = clone(moves[menu.value]);
 				prop.moves.push(transition);
 			}
-			prop.refit();
+			prop.refit();	
 		}
-		// make sure the correct prefab, or none, is chosen
+	}
+
+	// make sure the correct prefab, or none, is chosen
+	function fixPrefabSelection()
+	{
+		console.log("fixing prefab selection");
 		let match = "none";
 		let diff;
 		for (let prefab in prefabs)
@@ -964,15 +1041,6 @@
 						{
 							diff = true;
 						}
-						if (prefab=="vv")
-						{
-							// console.log(k+i+j);
-							// console.log(prefabs[prefab][k+i+j]);
-							// console.log(document.getElementById(k+i+j).value);
-							// console.log(prefabs[prefab][k+i+j] !== document.getElementById(k+i+j).value);
-							// console.log(diff);
-						}
-			
 					}
 				}
 			}
@@ -982,10 +1050,10 @@
 			}
 		}
 		document.getElementById("prefabs").value = match;
-		player.reset();
-		player.play();
 	}
+		
 	
+
 
 	function shuffleMenus() {
 	}
@@ -1029,6 +1097,7 @@
 		<p>https://github.com/infiniteperplexity/visual-spinner-3d</p>
 		<p>infinite DOT perplexity AT gmail DOT com</p>
 		<button id="debugger" onclick="shuffleMenus();">debug</button>
+		<p>Inspiration: <a href="https://www.youtube.com/watch?v=7EFgSUlC1Z4">Drex's Tech Poi Blog #141</a><p>
 	</div>
 </div>
 </body>
