@@ -29,7 +29,7 @@
 <script src="scripts/vs3d-buugeng.js"></script>
 <script>
 	let debug = VS3D.debug;
-	const {LEFT, RIGHT, DOWN, UP, clone, angle$nearly, unwind} = VS3D;
+	const {LEFT, RIGHT, DOWN, UP, WALL, FLOOR, clone, angle$nearly, unwind} = VS3D;
 	let renderer, player;
 	let defaults = {
 		p10: "LR",
@@ -53,16 +53,6 @@
 
 
 
-	/*
-
-	To Do:
-
-	- Antispins
-	- Top antispins
-	- Point Isolations
-	- Iso Pendulums
-
-	*/
 	let moves = {
 		// ****Pendulums****
 		pend_LL2LR: {
@@ -83,6 +73,34 @@
 			head: {a: LEFT, va: -1}
 		},
 		pend_CL2RR: {
+			pivot: {a: RIGHT, r0: 0, r1: 1},
+			hand: {a: LEFT, r: 0, va: 0},
+			head: {a: LEFT, va: -1}
+		},
+		// ****Static Plane Break****
+		splan_LL2LR: {
+			plane: FLOOR,
+			hand: {a: LEFT, r: 1, va: 0},
+			head: {a: LEFT, va: -1}
+		},
+		splan_LR2LL: {
+			plane: FLOOR,
+			hand: {a: LEFT, r: 1, va: 0},
+			head: {a: RIGHT, va: 1}
+		},
+		splan_CL2CR: {
+			plane: FLOOR,
+			hand: {a: LEFT, r: 0, va: 0},
+			head: {a: LEFT, va: -1}
+		},
+		splan_LL2CR: {
+			plane: FLOOR,
+			pivot: {a: RIGHT, r0: 0, r1: 1},
+			hand: {a: LEFT, r: 1, va: 0},
+			head: {a: LEFT, va: -1}
+		},
+		splan_CL2RR: {
+			plane: FLOOR,
 			pivot: {a: RIGHT, r0: 0, r1: 1},
 			hand: {a: LEFT, r: 0, va: 0},
 			head: {a: LEFT, va: -1}
@@ -117,7 +135,23 @@
 			hand: {a: LEFT, r: 1, va: -1},
 			head: {a: LEFT, va: -1}
 		},
+		extend_CL2RR:
+		{
+			pivot: {a: RIGHT, r0: 1, r1: 0},
+			hand: {a: LEFT, r: 1, va: -1},
+			head: {a: LEFT, va: -1}
+		},
 		// ****Inside stalls ("Mel")****
+		mel_LL2LR: {
+			pivot: {a: LEFT, r0: 2, r1: 0},
+			hand: {a: RIGHT, r: 1, va: 1},
+			head: {a: LEFT, va: 3}
+		},
+		mel_LR2LL: {
+			pivot: {a: LEFT, r0: 0, r1: 2},
+			hand: {a: LEFT, r: 1, va: -1},
+			head: {a: RIGHT, va: -3}
+		},
 		mel_LR2RL: {
 			hand: {a: LEFT, r: 1, va: -1},
 			head: {a: RIGHT, va: -3}
@@ -139,13 +173,107 @@
 			hand: {a: RIGHT, r: 1, va: 1},
 			head: {a: LEFT, va: 3}
 		},
-		// ****Antispin stalls
-		// !!!!I originally had this as a "Mel" thing but I think once you cross over it's antispin
+		// ****Antispin stalls****
 		anti_CL2RR:
 		{
 			pivot: {a: RIGHT, r0: 1, r1: 0},
 			hand: {a: LEFT, r: 1, va: -1},
 			head: {a: LEFT, va: 3}
+		},
+		anti_LL2RR:
+		{
+			hand: {a: LEFT, r: 1, va: -1},
+			head: {a: LEFT, va: 3}
+		},
+		anti_LL2CR:
+		{
+			pivot: {a: LEFT, r0: 0, r1: 1},
+			hand: {a: LEFT, r: 1, va: -1},
+			head: {a: LEFT, va: 3}
+		},
+		anti_CL2CR:
+		{
+			pivot: {a: RIGHT, r0: 1, r1: -1},
+			hand: {a: LEFT, r: 1, va: -1},
+			head: {a: LEFT, va: 3}
+		},
+		// ****Top antispins****
+		tanti_CL2RR:
+		{
+			pivot: {a: RIGHT, r0: 1, r1: 0},
+			hand: {a: LEFT, r: 1, va: 1},
+			head: {a: LEFT, va: -3}
+		},
+		tanti_LL2RR:
+		{
+			hand: {a: LEFT, r: 1, va: 1},
+			head: {a: LEFT, va: -3}
+		},
+		tanti_LL2CR:
+		{
+			pivot: {a: LEFT, r0: 0, r1: 1},
+			hand: {a: LEFT, r: 1, va: 1},
+			head: {a: LEFT, va: -3}
+		},
+		tanti_CL2CR:
+		{
+			pivot: {a: RIGHT, r0: 1, r1: -1},
+			hand: {a: LEFT, r: 1, va: 1},
+			head: {a: LEFT, va: -3}
+		},
+		// ****Top Inspins***
+		tin_LL2LR: {
+			pivot: {a: LEFT, r0: 2, r1: 0},
+			hand: {a: RIGHT, r: 1, va: -1},
+			head: {a: LEFT, va: -3}
+		},
+		tin_LR2LL: {
+			pivot: {a: LEFT, r0: 0, r1: 2},
+			hand: {a: LEFT, r: 1, va: 1},
+			head: {a: RIGHT, va: 3}
+		},
+		tin_LR2RL: {
+			hand: {a: LEFT, r: 1, va: 1},
+			head: {a: RIGHT, va: 3}
+		},
+		tin_CL2CR: {
+			pivot: {a: LEFT, r0: 1, r1: -1},
+			hand: {a: RIGHT, r: 1, va: -1},
+			head: {a: LEFT, va: -3}
+		},
+		tin_LR2CL:
+		{
+			pivot: {a: LEFT, r0: 0, r1: 1},
+			hand: {a: LEFT, r: 1, va: 1},
+			head: {a: RIGHT, va: 3}
+		},
+		tin_CL2LR:
+		{
+			pivot: {a: LEFT, r0: 1, r1: 0},
+			hand: {a: RIGHT, r: 1, va: -1},
+			head: {a: LEFT, va: -3}
+		},
+		// ****Cat-Eyes****
+		cat_LR2RL: {
+			hand: {a: LEFT, r: 1, va: -1},
+			head: {a: RIGHT, va: 1}
+		},
+		cat_CL2CR: {
+			pivot: {a: LEFT, r0: 1, r1: -1},
+			hand: {a: RIGHT, r: 1, va: 1},
+			head: {a: LEFT, va: -1}
+		},
+		cat_LR2CL:
+		{
+			pivot: {a: LEFT, r0: 0, r1: 1},
+			hand: {a: LEFT, r: 1, va: -1},
+			head: {a: RIGHT, va: 1}
+		},
+		cat_CL2LR:
+		{
+			pivot: {a: LEFT, r0: 1, r1: 0},
+			hand: {a: RIGHT, r: 1, va: 1},
+			head: {a: LEFT, va: -1}
 		},
 		// ****Isolations****
 		isoccw_LL2LL:
@@ -219,11 +347,101 @@
 			hand: {a: LEFT, r: 1, va: -1},
 			head: {a: LEFT, va: -2}
 		},
-		// !!!Point isolation from LR to RL
-		point_LR2CL:
+		// ****Outside/Inside Mixed Antispins ("Charlie"?)****
+		manti_LL2RL:
+		{
+			hand: {a: LEFT, r: 1, va: -1},
+			head: {a: LEFT, va: 2}
+		},
+		manti_RL2LL:
+		{
+			hand: {a: RIGHT, r: 1, va: 1},
+			head: {a: LEFT, va: -2}
+		},
+		manti_LL2CL:
+		{
+			pivot: {a: LEFT, r0: 0, r1: 1},
+			hand: {a: LEFT, r: 1, va: -1},
+			head: {a: LEFT, va: 2}
+		},
+		manti_CL2LL:
+		{
+			pivot: {a: LEFT, r0: 1, r1: 0},
+			hand: {a: RIGHT, r: 1, va: 1},
+			head: {a: LEFT, va: -2}
+		},
+		manti_LR2CR:
+		{
+			pivot: {a: LEFT, r0: 0, r1: 1},
+			hand: {a: LEFT, r: 1, va: -1},
+			head: {a: RIGHT, va: 2}
+		},
+		manti_CL2RL:
+		{
+			pivot: {a: RIGHT, r0: 1, r1: 0},
+			hand: {a: LEFT, r: 1, va: -1},
+			head: {a: LEFT, va: 2}
+		},
+		// ****Point Isolation
+		point_LR2RL:
 		{
 			hand: {a: LEFT, r: 1, va: 1},
 			head: {a: RIGHT, va: 1}
+		},
+		// ****Iso-Pendulum****
+		point_CL2LR:
+		{
+			pivot: {a: LEFT, r: 0.5},
+			hand: {a: RIGHT, r: 0.5, va: -1},
+			head: {a: LEFT, va: -1}
+		},
+		point_LR2CL:
+		{
+			pivot: {a: LEFT, r: 0.5},
+			hand: {a: LEFT, r: 0.5, va: 1},
+			head: {a: RIGHT, va: 1}
+		},
+		// ****Plane Break Extension****
+		plex_LL2RR:
+		{
+			plane: FLOOR,
+			hand: {a: LEFT, r: 1, va: -1},
+			head: {a: LEFT, va: -1}
+		},
+		plex_CL2RR:
+		{
+			plane: FLOOR,
+			pivot: {a: RIGHT, r0: 1, r1: 0},
+			hand: {a: LEFT, r: 1, va: -1},
+			head: {a: LEFT, va: -1}
+		},
+		plex_LL2CR:
+		{
+			plane: FLOOR,
+			pivot: {a: LEFT, r0: 0, r1: 1},
+			hand: {a: LEFT, r: 1, va: -1},
+			head: {a: LEFT, va: -1}
+		},
+		// ****Plane Break Antispin****
+		plan_CL2RR:
+		{
+			plane: FLOOR,
+			pivot: {a: RIGHT, r0: 1, r1: 0},
+			hand: {a: LEFT, r: 1, va: -1},
+			head: {a: LEFT, va: 3}
+		},
+		plan_LL2RR:
+		{
+			plane: FLOOR,
+			hand: {a: LEFT, r: 1, va: -1},
+			head: {a: LEFT, va: 3}
+		},
+		plan_LL2CR:
+		{
+			plane: FLOOR,
+			pivot: {a: LEFT, r0: 0, r1: 1},
+			hand: {a: LEFT, r: 1, va: -1},
+			head: {a: LEFT, va: 3}
 		}
 	};
 
@@ -274,44 +492,70 @@
 		],
 		LL2LR: [
 			{txt: "Pendulum", value: "pend_LL2LR"},
-			{txt: "Extension", value: "extend_LL2LR"}
+			{txt: "Extension", value: "extend_LL2LR"},
+			{txt: "Mel's Stalls", value: "mel_LL2LR"},
+			{txt: "Top Inspins", value: "tin_LL2LR"},
+			{txt: "Static Plane Break", value: "splan_LL2LR"}
 		],
 		LR2LL: [
 			{txt: "Pendulum", value: "pend_LR2LL"},
-			{txt: "Extension", value: "extend_LR2LL"}
+			{txt: "Extension", value: "extend_LR2LL"},
+			{txt: "Mel's Stalls", value: "mel_LR2LL"},
+			{txt: "Top Inspins", value: "tin_LR2LL"},
+			{txt: "Static Plane Break", value: "splan_LR2LL"}
 		],
 		LL2RL: [
-			{txt: "Charlie's Stalls", value: "char_LL2RL"}
+			{txt: "Charlie's Stalls", value: "char_LL2RL"},
+			{txt: "Mixed Antispin", value: "manti_LL2RL"}
 		],
 		LL2RR: [
-			{txt: "Extension" , value: "extend_LL2RR"}
+			{txt: "Extension" , value: "extend_LL2RR"},
+			{txt: "Antispin", value: "anti_LL2RR"},
+			{txt: "Top Antispin", value: "tanti_LL2RR"},
+			{txt: "Plane Break Antispin", value: "plan_LL2RR"},
+			{txt: "Plane Break Extension", value: "plex_LL2RR"}
 		],
 		LR2RL: [
-			{txt: "Mel's Stalls" , value: "mel_LR2RL"}
+			{txt: "Mel's Stalls" , value: "mel_LR2RL"},
+			{txt: "Cat-Eye Stalls", value: "cat_LR2RL"},
+			{txt: "Point Isolation", value: "point_LR2RL"},
+			{txt: "Mel's Stalls" , value: "tin_LR2RL"},
 		],
 		LR2RR: [
-			{txt: "Charlie's Stalls", value: "char_LR2RR"}
+			{txt: "Charlie's Stalls", value: "char_LR2RR"},
+			{txt: "Mixed Antispin", value: "manti_LR2RR"},
 		],
 		LL2CL: [
-			{txt: "Charlie's Stalls", value: "char_LL2CL"}
+			{txt: "Charlie's Stalls", value: "char_LL2CL"},
+			{txt: "Mixed Antispin", value: "manti_LL2CL"}
 		],
 		CL2LL: [
-			{txt: "Charlie's Stalls", value: "char_CL2LL"}
+			{txt: "Charlie's Stalls", value: "char_CL2LL"},
+			{txt: "Mixed Antispin", value: "manti_CL2LL"},
 		],
 		LL2CR: [
 			{txt: "Pendulum", value: "pend_LL2CR"},
-			{txt: "Extension", value: "extend_LL2CR"}
+			{txt: "Extension", value: "extend_LL2CR"},
+			{txt: "Antispin", value: "anti_LL2CR"},
+			{txt: "Top Antispin", value: "tanti_LL2CR"},
+			{txt: "Plane Break Antispin", value: "plan_LL2CR"},
+			{txt: "Plane Break Extension", value: "plex_LL2CR"}
 		],
 		LR2CL: [
-			{txt: "Mel's Stalls" , value: "mel_LR2CL"}
-			// point iso
+			{txt: "Mel's Stalls" , value: "mel_LR2CL"},
+			{txt: "Cat-Eye Stalls" , value: "cat_LR2CL"},
+			{txt: "Point Isolation", value: "point_LR2CL"},
+			{txt: "Top Inspins" , value: "tin_LR2CL"},
 		],
 		CL2LR: [
 			{txt: "Mel's Stalls" , value: "mel_CL2LR"},
-			// point iso
+			{txt: "Cat-Eye Stalls" , value: "cat_CL2LR"},
+			{txt: "Point Isolation", value: "point_CL2LR"},
+			{txt: "Top Inspins" , value: "tin_CL2LR"},
 		],
 		LR2CR: [
-			{txt: "Charlie's Stalls", value: "char_LR2CR"}
+			{txt: "Charlie's Stalls", value: "char_LR2CR"},
+			{txt: "Mixed Antispin", value: "manti_LR2CR"}
 		],
 		CL2CL: [
 			{txt: "Isolation", value: "isoccw_CL2CL"},
@@ -320,15 +564,26 @@
 		CL2CR: [
 			{txt: "Pendulum", value: "pend_CL2CR"},
 			{txt: "Extension", value: "extend_CL2CR"},
-			{txt: "Mel's Stalls", value: "mel_CL2CR"}
+			{txt: "Mel's Stalls", value: "mel_CL2CR"},
+			{txt: "Cat-Eye Stalls", value: "cat_CL2CR"},
+			{txt: "Antispin", value: "anti_CL2CR"},
+			{txt: "Top Antispin", value: "tanti_CL2CR"},
+			{txt: "Point Isolation", value: "point_CL2CR"},
+			{txt: "Top Inspins", value: "tin_CL2CR"},
+			{txt: "Static Plane Break", value: "splan_CL2CR"}
 		],
 		CL2RL: [
-			{txt: "Charlie's Stalls", value: "char_CL2RL"}
+			{txt: "Charlie's Stalls", value: "char_CL2RL"},
+			{txt: "Mixed Antispins", value: "manti_CL2RL"}
 		],
 		CL2RR: [
 			{txt: "Pendulum", value: "pend_CL2RR"},
 			{txt: "Extension", value: "extend_CL2RR"},
-			{txt: "Antispin", value: "anti_CL2RR"}
+			{txt: "Antispin", value: "anti_CL2RR"},
+			{txt: "Top Antispin", value: "tanti_CL2RR"},
+			{txt: "Static Plane Break", value: "splan_CL2RR"},
+			{txt: "Plane Break Antispin", value: "plan_CL2RR"},
+			{txt: "Plane Break Extension", value: "plex_CL2RR"}
 		]
 	};
 
@@ -611,11 +866,6 @@
 		</div>
 	</div>
 	<div>
-		<div>
-			To do:
-			<ul>
-				<li>plane-break transitions</li>
-		</div>
 		<p>https://github.com/infiniteperplexity/visual-spinner-3d</p>
 		<p>infinite DOT perplexity AT gmail DOT com</p>
 		<button id="debugger" onclick="shuffleMenus();">debug</button>
