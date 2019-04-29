@@ -712,7 +712,7 @@
 	};
 
 	function init() {
-		hideDebugger();
+		//hideDebugger();
 		setupPlayer();
 		generalizeMoves();
 		setupMenus();
@@ -939,6 +939,50 @@
 		player.play();
 	}
 
+	function shuffleMenus(e ){
+		let caller = (e) ? e.target.id : null;
+		console.log("shuffling everything: "+caller);
+		randomizePositions();
+		setStartingPositions();
+		buildTransitionMenus(null);
+		randomizeTransitions();
+		fixPrefabSelection();
+		buildMoves();
+		player.reset();
+		player.play();
+	}
+
+	function randomizePositions()
+	{
+		let hands = ["L","R","C"];
+		let r, pos;
+		for (let i=1; i<=4; i++)
+		{
+			for (let j=0; j<=1; j++)
+			{
+				r = parseInt(Math.random()*3);
+				pos = hands[r];
+				r = parseInt(Math.random()*2);
+				pos+= hands[r];
+				document.getElementById("p"+i+j).value = pos;
+			}
+		}
+	}
+
+	function randomizeTransitions()
+	{
+		let r, children;
+		for (let i=1; i<=4; i++)
+		{
+			for (let j=0; j<=1; j++)
+			{
+				children = document.getElementById("t"+i+j).children;
+				r = parseInt(Math.random()*children.length);
+				document.getElementById("t"+i+j).value = children[r].value;
+			}
+		}
+	}
+
 	function setPrefabValues(k) // should be either "p" or "t"
 	{
 		console.log("setting prefab values: "+k);
@@ -1055,8 +1099,7 @@
 	
 
 
-	function shuffleMenus() {
-	}
+
 
 </script>
 <body onload="init();">
@@ -1093,10 +1136,10 @@
 	</div>
 	<div>
 		Prefabs:
-		<select id="prefabs"></select>
+		<select id="prefabs"></select><button id="debugger" onclick="shuffleMenus();">Shuffle</button>
 		<p>https://github.com/infiniteperplexity/visual-spinner-3d</p>
 		<p>infinite DOT perplexity AT gmail DOT com</p>
-		<button id="debugger" onclick="shuffleMenus();">debug</button>
+		
 		<p>Inspiration: <a href="https://www.youtube.com/watch?v=7EFgSUlC1Z4">Drex's Tech Poi Blog #141</a><p>
 	</div>
 </div>
