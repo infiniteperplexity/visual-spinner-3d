@@ -210,11 +210,17 @@ function gotoSeconds(seconds) {
   } else if (youtube) {
     if (ytPlayer) {
       ytPlayer.seekTo(seconds);
+      // double setTimeout...the first one tries to make the transition look seemless...
       setTimeout(()=>{
         seconds = VS3D.round(ytPlayer.getCurrentTime(),0.05);
         store.dispatch({type: "SET_SECONDS", seconds: seconds});
-      },100);
-      setTimeout(()=>ytPlayer.pauseVideo(),1000);
+      },50);
+      // ...and the second one makes absolutely sure the transition happens.
+      setTimeout(()=>{
+        seconds = VS3D.round(ytPlayer.getCurrentTime(),0.05);
+        store.dispatch({type: "SET_SECONDS", seconds: seconds});
+      },250);
+      setTimeout(()=>ytPlayer.pauseVideo(),500);
     }  
   }
 }
