@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+     <style>
+      .grid {
+        display: grid;
+        grid-column-gap: 3px;
+        grid-row-gap: 0px;
+      }
+      .app {
+        grid-template-rows: 25px 385px auto;
+      }
+      .header {
+        grid-template-columns: 350px 350px auto;
+      }
+      .top {
+        position: relative;
+        grid-template-columns: 350px 350px auto;
+        grid-template-rows: auto auto;
+      }
+      .bottom {
+        margin-top: 10px;
+        padding: 5px;
+      }
+      .movepanel {
+        grid-column: 2/3;
+        grid-row: 1/3;
+        grid-row-gap: 0px;
+        grid-template-rows: 49px 49px 49px 49px 49px 49px 30px 30px 30px;
+      }
+      .rawpanel {
+        grid-column: 2/3;
+        grid-row: 1/3;
+      }
+      .movecontrol {
+        grid-template-columns: 50px 64px 55px 25px 25px 25px 25px 25px 25px;
+        align-items: center;
+      }
+      .gridover {
+        grid-column: 2/4;
+        grid-row: 1/3;
+      }
+      input:invalid {
+        box-shadow: none;
+      }
+    }
+    </style>
+    <link rel="stylesheet" type="text/css" href="todo.css" />
+    <title>React VS3D</title>
+    <script src="pkg/react.development.js"></script>
+    <script src="pkg/react-dom.development.js"></script>
+    <script src="pkg/redux.js"></script>
+    <script src="pkg/babel.min.js"></script>
+    <script src="pkg/react-redux.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="scripts/vs3d.js"></script>
+    <script src="scripts/vs3d-moves.js"></script>
+    <script src="scripts/three.min.js"></script>
+    <script src="scripts/vs3d-render.js"></script>
+    <script src="scripts/vs3d-buugeng.js"></script>
+    <script src="react/vs3d-setup.js"></script>
+    <script src="react/ui-state.js"></script>
+    <script src="react/edit-moves.js"></script>
+    <script src="react/keyboard.js"></script>
+  </head>
+  <body>
+    <div id="container">
+      <script type="text/babel" src="react/draggable-svg.jsx"></script>
+      <script type="text/babel" src="react/prop-node.jsx"></script>
+      <script type="text/babel" src="react/react-grids.jsx"></script>
+      <script type="text/babel" src="react/move-queues.jsx"></script>
+      <script type="text/babel" src="react/move-panel.jsx"></script>
+      <script type="text/babel" src="react/react-controls.jsx"></script>
+      <script type="text/babel" src="react/video-tools.jsx"></script>
+      <script type="text/babel" src="react/redux-store.jsx"></script>
+    </div>
+  </body>
+</html>
