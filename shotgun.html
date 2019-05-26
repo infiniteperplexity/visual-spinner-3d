@@ -1,0 +1,138 @@
+<!--Distributed under GNU Public License version 3-->
+<!DOCTYPE html>
+<html><head>
+<style>
+body {background-color: #99CCFF}
+#grid {
+	display: grid;
+	grid-column-gap: 3px;
+	grid-row-gap: 3px;
+	grid-template-columns: 400px auto;
+}
+video {
+	height: 400px;
+}
+</style>
+
+
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Drex's "combo-rific" video modeled in VisualSpinner, by Glenn Wright)</title>
+<script src="scripts/vs3d.js"></script>
+<script src="scripts/vs3d-moves.js"></script>
+<script src="scripts/three.min.js"></script>
+<script src="scripts/vs3d-render.js"></script>
+<script>
+
+function init() {
+	setup();
+}
+
+let renderer, player, magenta, cyan;
+function setup() {
+	const {UP, DOWN, LEFT, RIGHT, SE, SW, NW, NE, FOUR, FIVE, EIGHT} = VS3D;
+	renderer = new VS3D.ThreeRenderer(document.getElementById("display"));
+	player = new VS3D.Player();
+	player.rate = 4;
+	let controls = new VS3D.Controls(player);
+	renderer.div.appendChild(controls.div);
+	let button = document.createElement("button");
+	button.innerHTML = "Export";
+	button.onclick = ()=>{
+		VS3D.save(player.props);	
+	}
+	controls.div.appendChild(button);
+	player.update = function(positions) {
+		renderer.render(this.props, positions);
+		controls.update(this.tick);
+	}
+	magenta = player.addProp(new VS3D.Prop({hand: {a: LEFT}, head: {a: LEFT}}), {color: "magenta"});
+	cyan = player.addProp(new VS3D.Prop({hand: {a: RIGHT}, head: {a: RIGHT}}), {color: "cyan"});
+	
+	
+	magenta.moves.push({head: {va: -1}});
+	magenta.moves.push({head: {va: -1}});
+	magenta.moves.push({head: {va: -1}});
+	magenta.moves.push({head: {va: -1}});
+	magenta.moves.push({head: {va: -2, vr: -0.25}});
+	magenta.moves.push({head: {va: -2, vr: -0.25}});
+	magenta.moves.push({head: {va: -2, vr: -0.25}});
+	magenta.moves.push({head: {va: -2, vr: -0.25}});
+	magenta.moves.push({head: {va: +2, vr: +0.25}});
+	magenta.moves.push({head: {va: +2, vr: +0.25}});
+	magenta.moves.push({head: {va: +2, vr: +0.25}});
+	magenta.moves.push({head: {va: +2, vr: +0.25}});
+	magenta.moves.push({head: {va: +1}});
+	magenta.moves.push({head: {va: +1}});
+	magenta.moves.push({head: {va: +1}});
+	magenta.moves.push({head: {va: +1}});
+
+	cyan.moves.push({hand: {vr: -0.25}, head: {va: -0.5}});
+	cyan.moves.push({hand: {vr: -0.25}, head: {va: -0.5}});
+	cyan.moves.push({hand: {vr: -0.5}, head: {va: -0.5}});
+	cyan.moves.push({hand: {vr: -0.5}, head: {va: -0.5}});
+	cyan.moves.push({nofit: true, hand: {a: LEFT, r: 1, v: 0}, head: {a: LEFT, va: -1, r: 0.5, vr: -0.125}});
+	cyan.moves.push({head: {va: -1, vr: -0.125}});
+	cyan.moves.push({head: {va: -1, vr: -0.125}});
+	cyan.moves.push({head: {va: -1, vr: -0.125}});
+	cyan.moves.push({head: {va: +1, vr: +0.125}});
+	cyan.moves.push({head: {va: +1, vr: +0.125}});
+	cyan.moves.push({head: {va: +1, vr: +0.125}});
+	cyan.moves.push({head: {va: +1, vr: +0.125}});
+	cyan.moves.push({nofit: true, hand: {a: RIGHT, r: -0.5, vr: +0.5}, head: {a: LEFT, r: 1, va: +0.5}});
+	cyan.moves.push({hand: {vr: +0.5},head: {va: +0.5}});
+	cyan.moves.push({hand: {vr: +0.25},head: {va: +0.5}});
+	cyan.moves.push({hand: {vr: +0.25},head: {va: +0.5}});
+
+
+	magenta.moves.push({head: {va: +1}});
+	magenta.moves.push({head: {va: +1}});
+	magenta.moves.push({head: {va: +1}});
+	magenta.moves.push({head: {va: +1}});
+	magenta.moves.push({head: {va: +2, vr: -0.25}});
+	magenta.moves.push({head: {va: +2, vr: -0.25}});
+	magenta.moves.push({head: {va: +2, vr: -0.25}});
+	magenta.moves.push({head: {va: +2, vr: -0.25}});
+	magenta.moves.push({head: {va: -2, vr: +0.25}});
+	magenta.moves.push({head: {va: -2, vr: +0.25}});
+	magenta.moves.push({head: {va: -2, vr: +0.25}});
+	magenta.moves.push({head: {va: -2, vr: +0.25}});
+	magenta.moves.push({head: {va: -1}});
+	magenta.moves.push({head: {va: -1}});
+	magenta.moves.push({head: {va: -1}});
+	magenta.moves.push({head: {va: -1}});
+
+	cyan.moves.push({hand: {vr: -0.25}, head: {va: +0.5}});
+	cyan.moves.push({hand: {vr: -0.25}, head: {va: +0.5}});
+	cyan.moves.push({hand: {vr: -0.5}, head: {va: +0.5}});
+	cyan.moves.push({hand: {vr: -0.5}, head: {va: +0.5}});
+	cyan.moves.push({nofit: true, hand: {a: LEFT, r: 1, v: 0}, head: {a: LEFT, va: +1, r: 0.5, vr: -0.125}});
+	cyan.moves.push({head: {va: +1, vr: -0.125}});
+	cyan.moves.push({head: {va: +1, vr: -0.125}});
+	cyan.moves.push({head: {va: +1, vr: -0.125}});
+	cyan.moves.push({head: {va: -1, vr: +0.125}});
+	cyan.moves.push({head: {va: -1, vr: +0.125}});
+	cyan.moves.push({head: {va: -1, vr: +0.125}});
+	cyan.moves.push({head: {va: -1, vr: +0.125}});
+	cyan.moves.push({nofit: true, hand: {a: RIGHT, r: -0.5, vr: +0.5}, head: {a: LEFT, r: 1, va: -0.5}});
+	cyan.moves.push({hand: {vr: +0.5},head: {va: -0.5}});
+	cyan.moves.push({hand: {vr: +0.25},head: {va: -0.5}});
+	cyan.moves.push({hand: {vr: +0.25},head: {va: -0.5}});
+	
+
+
+	//orange.moves.push({hand: {va: 0, a1: DOWN}, head: {va: 0, a1: DOWN}});
+	//white.moves.push({head: {va: 0, a1: DOWN}});
+	
+
+	player.ready();
+	//player.play();	
+}
+</script>
+</head>
+<body onload="init();">
+<div id="grid">
+	<div id="display">
+	</div>
+</div>
+</header>
+</body></html>
