@@ -52,8 +52,9 @@ body {background-color: #99CCFF}
     		}
 		};
 		let vars = getUrlVars();
+		console.log("routines/" + vars.path+".json");
 		if (vars.path) {
-			xhttp.open("GET", vars.path+".json");
+			xhttp.open("GET", "routines/" + vars.path+".json");
 			xhttp.send();
 		}
 	}
