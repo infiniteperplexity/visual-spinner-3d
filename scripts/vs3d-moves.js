@@ -118,6 +118,7 @@ VS3D = (function(VS3D) {
 		{
 			orient: DOWN,
 			onepointfive: false,
+			spin: INSPIN,
 			// hybrid does nothing for now...makes sense only for bottom half
 			hybrid: false
 		},
@@ -127,13 +128,43 @@ VS3D = (function(VS3D) {
 			let segment = Move(merge(options, {
 				beats: 1,
 				hand: {a: orient, va: direction},
-				head: {a: bangle, a1: orient+QUARTER*direction, spin: direction, va1: 0}
+				head: {a: bangle, a1: orient+QUARTER*spin*direction, spin: spin*direction, va1: 0}
 			}));
 			let move = chain([
 				segment,
-				{head: {a1: orient, spin: -direction}},
-				{head: {a1: orient-QUARTER*direction, va1: 0}},
-				{head: {a1: bangle, va: 0, spin: direction}}
+				{head: {a1: orient, spin: -spin*direction}},
+				{head: {a1: orient-QUARTER*spin*direction, va1: 0}},
+				{head: {a1: bangle, va: 0, spin: spin*direction}}
+			]);
+			if (entry!==undefined) {
+				move = realign(move,(s)=>angle$nearly(s.hand.a,entry));
+			}
+			return move;
+		}
+	);
+
+
+	recipe(
+		"bupendulum",
+		{
+			orient: DOWN,
+			onepointfive: false,
+			// hybrid does nothing for now...makes sense only for bottom half
+			hybrid: false
+		},
+		options => {
+			let {beats, hand, head, spin, orient, direction, onepointfive, hybrid, entry} = options;
+			let bangle = (onepointfive) ? angle(orient+SPLIT) : orient;
+			let segment = Move(merge(options, {
+				beats: 1,
+				hand: {a: orient, va: direction},
+				head: {a: bangle, a1: orient+QUARTER*direction, spin: direction, va1: 0} // antispin reverse a1 and spin
+			}));
+			let move = chain([
+				segment,
+				{head: {a1: orient, spin: -direction}}, // antispin reverses spin
+				{head: {a1: orient-QUARTER*direction, va1: 0}}, // antispin reverses a1
+				{head: {a1: bangle, va: 0, spin: direction}} // antispin reverses spin
 			]);
 			if (entry!==undefined) {
 				move = realign(move,(s)=>angle$nearly(s.hand.a,entry));

@@ -91,6 +91,8 @@
 			{txt: "Linear Isolation", value: "liso"},
 			{txt: "Pendulum", value: "pendulum"},
 			{txt: "1.5", value: "1.5"},
+			{txt: "Anti-Spin Pendulum", value: "isop"},
+			{txt: "Anti-Spin 1.5", value: "a1.5"},
 			{txt: "Iso-Bend Toroid", value: "isobend4"},
 			{txt: "Anti-Bend Toroid", value: "antibend4"},
 			{txt: "Pro-Bend Toroid", value: "probend2"},
@@ -190,7 +192,7 @@
 			let direction = document.getElementById("direction"+i).value;
 			let recipe = document.getElementById("move"+i).value;
 			// special overrides
-			if (chosen==="move"+i && ["pendulum","1.5"].includes(recipe)) {
+			if (chosen==="move"+i && ["pendulum","1.5","isop","a1.5"].includes(recipe)) {
 				oriented = "DOWN";
 				document.getElementById("orient"+i).value = "DOWN";
 			}
@@ -278,6 +280,10 @@
 				move = {recipe: "pendulum"};
 			} else if (recipe==="1.5") {
 				move = {recipe: "pendulum", onepointfive: true};
+			} else if (recipe==="isop") {
+				move = {recipe: "pendulum", spin: -1};
+			} else if (recipe==="a1.5") {
+				move = {recipe: "pendulum", spin: -1, onepointfive: true};
 			};
 			move.nofit = true;
 			move.entry = angle;
