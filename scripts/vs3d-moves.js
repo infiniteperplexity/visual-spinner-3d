@@ -120,6 +120,42 @@ VS3D = (function(VS3D) {
 			onepointfive: false,
 			spin: INSPIN,
 			// hybrid does nothing for now...makes sense only for bottom half
+			hybrid: false,
+			// I may change the name for this at some point; it's for a variant I have been working on
+			variant: false
+			// there's also craziness you can do with the antispin variants...you can throw the top half of a two-petal inspin in there
+			// and you can throw the bottom half of an antispin flower into a normal pendulum...is there a way to general the arguments here?
+		},
+		options => {
+			let {beats, hand, head, spin, orient, direction, onepointfive, hybrid, entry, variant} = options;
+			let bangle = (onepointfive) ? angle(orient+SPLIT) : orient;
+			let tangle = (variant) ? angle(orient+SPLIT) : orient;
+			//let tangle = angle(orient+SPLIT);
+			let segment = Move(merge(options, {
+				beats: 1,
+				hand: {a: orient, va: direction},
+				head: {a: bangle, a1: orient+QUARTER*spin*direction, spin: spin*direction, va1: 0}
+			}));
+			let move = chain([
+				segment,
+				{head: {a1: tangle, spin: -spin*direction}},
+				{head: {a1: orient-QUARTER*spin*direction, va1: 0}},
+				{head: {a1: bangle, va: 0, spin: spin*direction}}
+			]);
+			if (entry!==undefined) {
+				move = realign(move,(s)=>angle$nearly(s.hand.a,entry));
+			}
+			return move;
+		}
+	);
+
+	recipe(
+		"bupendulum",
+		{
+			orient: DOWN,
+			onepointfive: false,
+			spin: INSPIN,
+			// hybrid does nothing for now...makes sense only for bottom half
 			hybrid: false
 		},
 		options => {
@@ -143,63 +179,6 @@ VS3D = (function(VS3D) {
 		}
 	);
 
-
-	recipe(
-		"bupendulum",
-		{
-			orient: DOWN,
-			onepointfive: false,
-			// hybrid does nothing for now...makes sense only for bottom half
-			hybrid: false
-		},
-		options => {
-			let {beats, hand, head, spin, orient, direction, onepointfive, hybrid, entry} = options;
-			let bangle = (onepointfive) ? angle(orient+SPLIT) : orient;
-			let segment = Move(merge(options, {
-				beats: 1,
-				hand: {a: orient, va: direction},
-				head: {a: bangle, a1: orient+QUARTER*direction, spin: direction, va1: 0} // antispin reverse a1 and spin
-			}));
-			let move = chain([
-				segment,
-				{head: {a1: orient, spin: -direction}}, // antispin reverses spin
-				{head: {a1: orient-QUARTER*direction, va1: 0}}, // antispin reverses a1
-				{head: {a1: bangle, va: 0, spin: direction}} // antispin reverses spin
-			]);
-			if (entry!==undefined) {
-				move = realign(move,(s)=>angle$nearly(s.hand.a,entry));
-			}
-			return move;
-		}
-	);
-		recipe(
-		"oldpendulum",
-		{
-			orient: DOWN,
-			onepointfive: false,
-			// hybrid does nothing for now...makes sense only for bottom half
-			hybrid: false
-		},
-		options => {
-			let {beats, hand, head, spin, orient, direction, onepointfive, hybrid, entry} = options;
-			let segment = Move(merge(options, {
-				beats: 1,
-				hand: {a: orient, va: direction},
-				head: {a: orient, a1: orient+QUARTER*direction, va1: 0}
-			}));
-			let topangle = (onepointfive) ? orient+SPLIT : orient;
-			let move = chain([
-				segment,
-				{head: {a1: topangle, spin: -direction}},
-				{head: {a1: orient-QUARTER*direction, va1: 0}},
-				{head: {a1: orient}}
-			]);
-			if (entry!==undefined) {
-				move = realign(move,(s)=>angle$nearly(s.hand.a,entry));
-			}
-			return move;
-		}
-	);
 
 
 	recipe(

@@ -31,7 +31,7 @@
 	let debug = VS3D.debug;
 	let renderer, player;
 	let defaults = {
-		model: ["flipbuugeng","buugeng","buugeng","flipbuugeng"],
+		model: ["poi","poi","poi","poi"],
 		plane: ["WALL","WALL","WALL","WALL"],
 		align: ["UP","UP","UP","UP"],
 		orient: ["UP","UP","UP","UP"],
@@ -93,6 +93,8 @@
 			{txt: "1.5", value: "1.5"},
 			{txt: "Anti-Spin Pendulum", value: "isop"},
 			{txt: "Anti-Spin 1.5", value: "a1.5"},
+			{txt: "Variant 1.5 A", value: "v1.5a"},
+			{txt: "Variant 1.5 B", value: "v1.5b"},
 			{txt: "Iso-Bend Toroid", value: "isobend4"},
 			{txt: "Anti-Bend Toroid", value: "antibend4"},
 			{txt: "Pro-Bend Toroid", value: "probend2"},
@@ -192,7 +194,7 @@
 			let direction = document.getElementById("direction"+i).value;
 			let recipe = document.getElementById("move"+i).value;
 			// special overrides
-			if (chosen==="move"+i && ["pendulum","1.5","isop","a1.5"].includes(recipe)) {
+			if (chosen==="move"+i && ["pendulum","1.5","isop","a1.5","v1.5a","v1.5b"].includes(recipe)) {
 				oriented = "DOWN";
 				document.getElementById("orient"+i).value = "DOWN";
 			}
@@ -284,6 +286,10 @@
 				move = {recipe: "pendulum", spin: -1};
 			} else if (recipe==="a1.5") {
 				move = {recipe: "pendulum", spin: -1, onepointfive: true};
+			} else if (recipe==="v1.5a") {
+				move = {recipe: "pendulum", variant: true};
+			} else if (recipe==="v1.5b") {
+				move = {recipe: "pendulum", variant: true, onepointfive: true};
 			};
 			move.nofit = true;
 			move.entry = angle;
