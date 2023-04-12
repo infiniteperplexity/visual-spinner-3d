@@ -22,105 +22,8 @@
 <script src="scripts/vs3d.js"></script>
 <script src="scripts/vs3d-moves.js"></script>
 <script src="scripts/three.min.js"></script>
-<script src="scripts/vs3d-render.js"></script><script>
+<script src="scripts/vs3d-render.js"></script>
 
-function init() {
-	setup();
-}
-const {UP, DOWN, LEFT, RIGHT, ISOBEND, ANTIBEND, PROBEND} = VS3D;
-let renderer1, renderer2, renderer3, player, red, blue;
-let overlays = [{beats: 4}];
-function setup() {
-	renderer1 = new VS3D.ThreeRenderer(document.getElementById("side"));
-	renderer2 = new VS3D.ThreeRenderer(document.getElementById("front"));
-	renderer3 = new VS3D.ThreeRenderer(document.getElementById("top"));
-	renderer1.setCameraPosition(8,0,0);
-	renderer3.setCameraPosition(0,8,0);
-	renderer2.div.appendChild(document.getElementById("controls"));
-	let overlay1 = new VS3D.Overlay(overlays);
-	let overlay2 = new VS3D.Overlay(overlays);
-	let overlay3 = new VS3D.Overlay(overlays);
-	renderer1.div.appendChild(overlay1.div);
-	renderer2.div.appendChild(overlay2.div);
-	renderer3.div.appendChild(overlay3.div);
-	player = new VS3D.Player();
-	player.update = function(positions) {
-		renderer1.render(this.props, positions);
-		renderer2.render(this.props, positions);
-		renderer3.render(this.props, positions);
-		overlay1.update(this.tick);
-		overlay2.update(this.tick);
-		overlay3.update(this.tick);
-	}
-	red = player.addProp(new VS3D.Prop({hand: {a: LEFT}, head: {a: LEFT}}), {color: "red", nudge: 0.1});
-	blue = player.addProp(new VS3D.Prop({hand: {a: RIGHT}, head: {a: RIGHT}}), {color: "blue", nudge: 0.05});
-
-	update();
-	player.play();
-}
-
-let captions = {
-	b0l0: "Static Extension (infeasible)",
-	b0l1: "Helical Extension",
-	b0l2: "Two-Lobe Helix",
-	b0l3: "Three-Lobe Helix",
-	b0l4: "Four-Lobe Helix",
-	b0l5: "Five-Lobe Helix",
-	b1l0: "Extension",
-	b2l0: "One-Petal Inspin Flower",
-	b3l0: "Two-Petal Inspin Flower",
-	b4l0: "Three-Petal Inspin Flower",
-	b5l0: "Four-Petal Inspin Flower",
-	b1l1: "One-lobe Isobend Toroid",
-	b1l2: "Two-lobe Isobend Toroid",
-	b1l3: "Three-Lobe Isobend Toroid",
-	b1l4: "Iso-Bend Toroid",
-	b_1l0: "Anti-Spin (infeasible)",
-	b_2l0: "Three-Petal Antispin Flower (Triquetra)",
-	b_3l0: "Four-Petal Antispin Flower",
-	b_1l1: "One-Lobe Antibend Toroid",
-	b_1l2: "Two-Lobe Antibend Toroid",
-	b_1l3: "Three-Lobe Antibend Toroid",
-	b_1l4: "Four-Lobe Antibend Toroid",
-	b2l1: "1bend Toroid?",
-	b2l2: "1bend Toroid?",
-	b2l3: "1bend Toroid?",
-	b2l4: "1bend Toroid?",
-	b3l1: "One-Lobe Probend Toroid",
-	b3l2: 'Pro-Bend Toroid <a href="https://www.youtube.com/watch?v=x7sTraHbIGI">(DrexFactor #325)</a>',
-	b3l3: "Three-Lobe Probend Toroid",
-	b3l4: "Four-Lobe Probend Toroid",
-	b4l1: "3bend Toroid?",
-	b4l2: "3bend Toroid?",
-	b4l3: "3bend Toroid?",
-	b4l4: "3bend Toroid?",
-	b5l1: "4bend Toroid?",
-	b5l2: "4bend Toroid?",
-	b5l3: "4bend Toroid?",
-	b5l4: "4bend Toroid?",
-	b_2l1: "-3bend Toroid?",
-	b_2l2: "-3bend Toroid?",
-	b_2l3: "-3bend Toroid?",
-	b_2l4: "-3bend Toroid?",
-	b_3l1: "-4bend Toroid?",
-	b_3l2: "-4bend Toroid?",
-	b_3l3: "-4bend Toroid?",
-	b_3l4: "-4bend Toroid?"
-}
-function update() {
-	let bends = parseInt(document.getElementById("bends").value);
-	let lobes = parseInt(document.getElementById("lobes").value);
-	red.moves[0] = {recipe: "toroid", bend: bends, harmonics: lobes, orient: LEFT};
-	blue.moves[0] = {recipe: "toroid", bend: bends, harmonics: lobes, orient: RIGHT};
-	red.refit();
-	blue.refit();
-	let bsign = bends<0 ? "_" : "";
-	let idx = "b"+bsign+Math.abs(bends)+"l"+Math.abs(lobes);
-	let caption = captions[idx] || " ";
-	overlays[0].html = caption;
-}
-
-</script>
 </head>
 <body onload="init();">
 <div id="grid">
@@ -132,6 +35,105 @@ function update() {
 		Lobes: <input type="number" id="lobes" value="4" min="-4" max="4" onChange="update();"></input>
 	</div>
 </div>
-</body></html>
+</body>
+<script>
+
+	function init() {
+		setup();
+	}
+	const {UP, DOWN, LEFT, RIGHT, ISOBEND, ANTIBEND, PROBEND} = VS3D;
+	let renderer1, renderer2, renderer3, player, red, blue;
+	let overlays = [{beats: 4}];
+	function setup() {
+		renderer1 = new VS3D.ThreeRenderer(document.getElementById("side"));
+		renderer2 = new VS3D.ThreeRenderer(document.getElementById("front"));
+		renderer3 = new VS3D.ThreeRenderer(document.getElementById("top"));
+		renderer1.setCameraPosition(8,0,0);
+		renderer3.setCameraPosition(0,8,0);
+		renderer2.div.appendChild(document.getElementById("controls"));
+		let overlay1 = new VS3D.Overlay(overlays);
+		let overlay2 = new VS3D.Overlay(overlays);
+		let overlay3 = new VS3D.Overlay(overlays);
+		renderer1.div.appendChild(overlay1.div);
+		renderer2.div.appendChild(overlay2.div);
+		renderer3.div.appendChild(overlay3.div);
+		player = new VS3D.Player();
+		player.update = function(positions) {
+			renderer1.render(this.props, positions);
+			renderer2.render(this.props, positions);
+			renderer3.render(this.props, positions);
+			overlay1.update(this.tick);
+			overlay2.update(this.tick);
+			overlay3.update(this.tick);
+		}
+		red = player.addProp(new VS3D.Prop({hand: {a: LEFT}, head: {a: LEFT}}), {color: "red", nudge: 0.1});
+		blue = player.addProp(new VS3D.Prop({hand: {a: RIGHT}, head: {a: RIGHT}}), {color: "blue", nudge: 0.05});
+	
+		update();
+		player.play();
+	}
+	
+	let captions = {
+		b0l0: "Static Extension (infeasible)",
+		b0l1: "Helical Extension",
+		b0l2: "Two-Lobe Helix",
+		b0l3: "Three-Lobe Helix",
+		b0l4: "Four-Lobe Helix",
+		b0l5: "Five-Lobe Helix",
+		b1l0: "Extension",
+		b2l0: "One-Petal Inspin Flower",
+		b3l0: "Two-Petal Inspin Flower",
+		b4l0: "Three-Petal Inspin Flower",
+		b5l0: "Four-Petal Inspin Flower",
+		b1l1: "One-lobe Isobend Toroid",
+		b1l2: "Two-lobe Isobend Toroid",
+		b1l3: "Three-Lobe Isobend Toroid",
+		b1l4: "Iso-Bend Toroid",
+		b_1l0: "Anti-Spin (infeasible)",
+		b_2l0: "Three-Petal Antispin Flower (Triquetra)",
+		b_3l0: "Four-Petal Antispin Flower",
+		b_1l1: "One-Lobe Antibend Toroid",
+		b_1l2: "Two-Lobe Antibend Toroid",
+		b_1l3: "Three-Lobe Antibend Toroid",
+		b_1l4: "Four-Lobe Antibend Toroid",
+		b2l1: "1bend Toroid?",
+		b2l2: "1bend Toroid?",
+		b2l3: "1bend Toroid?",
+		b2l4: "1bend Toroid?",
+		b3l1: "One-Lobe Probend Toroid",
+		b3l2: 'Pro-Bend Toroid <a href="https://www.youtube.com/watch?v=x7sTraHbIGI">(DrexFactor #325)</a>',
+		b3l3: "Three-Lobe Probend Toroid",
+		b3l4: "Four-Lobe Probend Toroid",
+		b4l1: "3bend Toroid?",
+		b4l2: "3bend Toroid?",
+		b4l3: "3bend Toroid?",
+		b4l4: "3bend Toroid?",
+		b5l1: "4bend Toroid?",
+		b5l2: "4bend Toroid?",
+		b5l3: "4bend Toroid?",
+		b5l4: "4bend Toroid?",
+		b_2l1: "-3bend Toroid?",
+		b_2l2: "-3bend Toroid?",
+		b_2l3: "-3bend Toroid?",
+		b_2l4: "-3bend Toroid?",
+		b_3l1: "-4bend Toroid?",
+		b_3l2: "-4bend Toroid?",
+		b_3l3: "-4bend Toroid?",
+		b_3l4: "-4bend Toroid?"
+	}
+	function update() {
+		let bends = parseInt(document.getElementById("bends").value);
+		let lobes = parseInt(document.getElementById("lobes").value);
+		red.moves[0] = {recipe: "toroid", bend: bends, harmonics: lobes, orient: LEFT};
+		blue.moves[0] = {recipe: "toroid", bend: bends, harmonics: lobes, orient: RIGHT};
+		red.refit();
+		blue.refit();
+		let bsign = bends<0 ? "_" : "";
+		let idx = "b"+bsign+Math.abs(bends)+"l"+Math.abs(lobes);
+		let caption = captions[idx] || " ";
+		overlays[0].html = caption;
+	}
+	
+	</script></html>
 
 
